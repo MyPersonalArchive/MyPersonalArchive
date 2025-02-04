@@ -1,0 +1,78 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "docker-build",
+			"label": "docker-build: debug",
+			"dependsOn": [
+				"build"
+			],
+			"dockerBuild": {
+				"tag": "receiptvaultmanager:dev",
+				"target": "base",
+				"dockerfile": "${workspaceFolder}/Backend.Api/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/Backend.Api/Backend.Api.csproj"
+			}
+		},
+		{
+			"type": "docker-build",
+			"label": "docker-build: release",
+			"dependsOn": [
+				"build"
+			],
+			"dockerBuild": {
+				"tag": "receiptvaultmanager:latest",
+				"dockerfile": "${workspaceFolder}/Backend.Api/Dockerfile",
+				"context": "${workspaceFolder}",
+				"platform": {
+					"os": "linux",
+					"architecture": "amd64"
+				},
+				"pull": true
+			},
+			"netCore": {
+				"appProject": "${workspaceFolder}/Backend.Api/Backend.Api.csproj"
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: debug",
+			"dependsOn": [
+				"docker-build: debug"
+			],
+			"dockerRun": {},
+			"netCore": {
+				"appProject": "${workspaceFolder}/Backend.Api/Backend.Api.csproj",
+				"enableDebugging": true
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: release",
+			"dependsOn": [
+				"docker-build: release"
+			],
+			"dockerRun": {},
+			"netCore": {
+				"appProject": "${workspaceFolder}/Backend.Api/Backend.Api.csproj"
+			}
+		},
+		{
+			"type": "docker-build",
+			"label": "docker-build",
+			"platform": "node",
+			"dockerBuild": {
+				"dockerfile": "${workspaceFolder}/frontend-react/Dockerfile",
+				"context": "${workspaceFolder}/frontend-react",
+				"pull": true
+			},
+			"node": {
+				"package": "${workspaceFolder}/frontend-react/package.json"
+			}
+		}
+	]
+}

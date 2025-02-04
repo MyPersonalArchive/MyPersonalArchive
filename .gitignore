@@ -1,0 +1,12 @@
+bin/
+obj/
+.idea/
+
+Backend.Api/Files/
+Backend.Api/Files_old/
+
+Backend.Api/wwwroot/*
+
+*.user
+
+data

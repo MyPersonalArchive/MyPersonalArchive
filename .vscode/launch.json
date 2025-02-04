@@ -1,0 +1,25 @@
+{
+    "configurations": [        
+        {
+            "name": "C#: ConsoleApp1 Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/ConsoleApp1/ConsoleApp1.csproj"
+        },
+        {
+            "name": "C#: Backend.WebApi Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/Backend.WebApi/Backend.WebApi.csproj"
+        },
+        {
+            "name": "Docker .NET Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "netCore": {
+                "appProject": "${workspaceFolder}/Backend.Api/Backend.Api.csproj"
+            }
+        }
+    ]
+}

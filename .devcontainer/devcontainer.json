@@ -1,0 +1,62 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+	"name": "my-personal-archive-dev",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	// "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers-extra/features/node-asdf:0": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"moby": true,
+			"installDockerBuildx": true,
+			"version": "latest",
+			"dockerDashComposeVersion": "v2"
+		}
+	},
+	"containerEnv": {
+		"ASPNETCORE_ENVIRONMENT": "Development",
+		"JWT_SECRET": "=:|V7hblR0eD+7+S10F6e~4RPc_!87hd*1kashdh_dsada123*",
+		"JWT_ISSUER": "gotnonameapps.com",
+		"AUDIENCE": ""
+		// "ASPNETCORE_HTTP_PORTS": "",
+		// "ASPNETCORE_HTTPS_PORTS": ""
+	},
+	"mounts": [
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
+	],
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [5000, 5001],
+	// "portsAttributes": {
+	//		"5001": {
+	//			"protocol": "https"
+	//		}
+	// }
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "dotnet restore",
+	
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit",
+				"josefpihrt-vscode.roslynator",
+				"eamodio.gitlens",
+				"ms-azuretools.vscode-docker",
+				"codeium.codeium",
+				"humao.rest-client",
+				"cweijan.vscode-database-client2"
+			]
+		}
+	},
+
+	"postCreateCommand": "chmod u=+rwx .devcontainer/*.sh && .devcontainer/setup-environment.sh && .devcontainer/setup-shell.sh && .devcontainer/setup-project.sh"
+	
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

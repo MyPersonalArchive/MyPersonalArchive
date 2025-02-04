@@ -1,0 +1,108 @@
+:root {
+    --complementary-background-color: hsla(197, 68%, 37%, 10);
+    --complementary-text-color: whitesmoke;
+    --primary-button-background-color: var(--complementary-background-color);
+    --primary-button-text-color: var(--complementary-text-color);
+}
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+}
+
+.layout-container {
+    header,
+    footer {
+        background: var(--complementary-background-color);
+        color: var(--complementary-text-color);
+
+        & a {
+            color: currentColor;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    header {
+        background: url(../assets/receiptly_logo.png) no-repeat  27px/27px;
+        background-position: .6em .3em;
+        background-color: var(--complementary-background-color);
+        &>*:first-child{
+            margin-left: 1.5em;
+        }
+    }
+}
+
+
+label {
+    /* display: inline-block; */
+    /* width: 10ex; */
+}
+
+
+input,
+span.input,
+button {
+    margin: .5em 0;
+    padding: .3em .6em;
+    border-radius: .5em;
+    border: thin solid lightgray;
+    font-size: 1em;
+}
+
+button {
+    /* margin-top: 1em; */
+    background: var(--primary-button-background-color);
+    color: var(--primary-button-text-color);
+
+    &+button {
+        margin-left: 1em;
+    }
+}
+
+*+input,
+*+span.input{
+    margin-left: 1em;
+}
+
+.message {
+    border-radius: .5em;
+    padding: .7em 1.4em;
+
+    &.error {
+        background: hsl(0deg, 100%, 85%);
+    }
+
+    &.warning {
+        background: hsl(53, 100%, 85%);
+    }
+}
+
+
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+
+    &>tbody td {
+        border: thin solid hsla(0deg, 0%, 75%, 1);
+        padding: .5em;
+    }
+}
+
+
+span.tag {
+    background: hsl(0, 0%, 90%);
+    border-radius: .7em;
+    padding: .1em .5em;
+    /* margin-left: .2em; */
+    margin-right: .2em;
+
+    &>span{
+        padding-left: .2em;
+        color: hsl(0, 0%, 70%);
+        border-left: thin solid currentColor;
+    }
+}
