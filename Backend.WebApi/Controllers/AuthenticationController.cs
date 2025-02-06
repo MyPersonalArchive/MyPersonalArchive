@@ -9,12 +9,12 @@ namespace Backend.WebApi.Controllers;
 [ApiController]
 [Route("api/[Controller]")]
 public class AuthenticationController : ControllerBase
-{
+{    
     private readonly MpaDbContext _dbContext;
-    private readonly PasswordHasher _passwordHasher;
-
+    private readonly PasswordHasher _passwordHasher; 
+       
     private const string RefreshTokenKey = "refresh-token";
-    private readonly CookieOptions _refreshCookieOptions = new CookieOptions
+    private readonly CookieOptions _refreshCookieOptions = new()
     {
         HttpOnly = true,
         Secure = false, //TODO: Set to true in production
@@ -28,7 +28,6 @@ public class AuthenticationController : ControllerBase
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
     }
-
 
     [AllowAnonymous]
     [HttpPost("SignIn")]
@@ -88,7 +87,7 @@ public class AuthenticationController : ControllerBase
 
         var user = token.User ?? throw new NullReferenceException("A Token must always have a user");
 
-        // delete the user's expired refreah tokens
+        // delete the user's expired refresh tokens
         var expiredTokens = user.Tokens!.Where(token => token.Expires < DateTime.Now);
         _dbContext.Tokens.RemoveRange(expiredTokens);
 
