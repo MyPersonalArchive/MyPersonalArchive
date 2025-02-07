@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png";
@@ -14,15 +14,9 @@ export const SignInPage = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [username, setUsername] = useState(lastLoggedInUsername ?? "")
     const [password, setPassword] = useState("")
-    const [loggedInUser, setLoggedInUser] = useAtom(loggedInUserAtom)
+    const setLoggedInUser = useSetAtom(loggedInUserAtom)
 
     const navigate = useNavigate()
-
-    useEffect(() => {
-        if (loggedInUser !== undefined) {
-            navigate(RoutePaths.Archive)
-        }
-    })
 
     const login = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -31,7 +25,9 @@ export const SignInPage = () => {
 
         const success = await loginAction(username, password)
         if (success) {
-            navigate(RoutePaths.Archive)
+            
+            var redirect = new URLSearchParams(window.location.search).get("redirect")
+            navigate(redirect ?? RoutePaths.Archive)
         } else {
             setIsLoading(false)
         }

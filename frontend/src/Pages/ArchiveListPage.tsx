@@ -5,7 +5,7 @@ import { useApiClient } from "../Utils/useApiClient"
 type ArchiveItemResponse = {
     id: number
     title: string
-    created: Date
+    created: string
 }
 
 type ArchiveItem = {
@@ -23,7 +23,7 @@ export const ArchiveListPage = () => {
     useEffect(() => {
         apiClient.get<ArchiveItemResponse[]>("/api/archive/list")
             .then(response => {
-                setArchiveItems(response.map(item => ({ ...item })))
+                setArchiveItems(response.map(item => ({ ...item, created: new Date(item.created) })))
             })
     }, [])
 

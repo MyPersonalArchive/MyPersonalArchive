@@ -16,17 +16,18 @@ export const SignOutPage = () => {
 
     useEffect(() => {
         logoutAction().then(() => navigate(RoutePaths.Index))
-    })
+    }, [])
 
     async function logoutAction() {
         try {
             if (loggedInUser !== null) {
                 // const username = loggedInUser.username
-                await apiClient.post("/api/authentication/signout", null, { credentials: "same-origin" })    // will trow if not authenticated
+                await apiClient.post("/api/authentication/signout", null, { credentials: "include" })    // will trow if not authenticated
             }
         } finally {
-            setLoggedInUser(RESET)
-            setAccessToken(RESET)
+            setLoggedInUser(undefined)
+            setAccessToken(undefined)
+            navigate(RoutePaths.Index)
         }
     }
 

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    [Migration("20250205225640_InitialMigration")]
+    [Migration("20250206204112_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -174,12 +174,9 @@ namespace Backend.DbModel.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Username1")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("Username1");
+                    b.HasIndex("Username");
 
                     b.ToTable("Token");
                 });
@@ -212,6 +209,9 @@ namespace Backend.DbModel.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("User");
 
                     b.HasData(
@@ -241,6 +241,13 @@ namespace Backend.DbModel.Migrations
                         .IsUnique();
 
                     b.ToTable("UserTenant");
+
+                    b.HasData(
+                        new
+                        {
+                            TenantId = -1,
+                            UserId = 1
+                        });
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.ArchiveItemAndTag", b =>
@@ -269,8 +276,10 @@ namespace Backend.DbModel.Migrations
                 {
                     b.HasOne("Backend.DbModel.Database.User", "User")
                         .WithMany("Tokens")
-                        .HasForeignKey("Username1")
-                        .HasPrincipalKey("Username");
+                        .HasForeignKey("Username")
+                        .HasPrincipalKey("Username")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

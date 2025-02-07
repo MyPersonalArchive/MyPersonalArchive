@@ -1,20 +1,29 @@
-import { useAtom } from "jotai"
-import { accessTokenAtom, loggedInUserAtom } from "./Atoms"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { accessTokenAtom, loggedInUserAtom, selectedTenantIdAtom } from "./Atoms"
+import { useNavigate } from "react-router-dom"
+import { RoutePaths } from "../RoutePaths"
 
 
 export const useApiClient = () => {
-    const [loggedInUser, setLoggedInUser] = useAtom(loggedInUserAtom)
+    const setLoggedInUser = useSetAtom(loggedInUserAtom)
+    const selectedTenantId = useAtomValue(selectedTenantIdAtom)
     const [accessToken, setAccessToken] = useAtom(accessTokenAtom)
+    const navigate = useNavigate()
+
+    const currentPath = window.location.pathname
 
     const commonHeaders: any = {}
-    if (loggedInUser !== null) {
+    if (accessToken !== null) {
         commonHeaders.Authorization = `Bearer ${accessToken}`
-        commonHeaders.username = loggedInUser?.username
+    }
+    if (selectedTenantId !== null) {
+        commonHeaders.TenantId = selectedTenantId
     }
 
     const interceptedFetch = (url: string, options: RequestInit, retryAfterRefreshingToken = true): Promise<Response> => {
         options = {
             ...options,
+            credentials: options.credentials ?? "omit",
             headers: {
                 ...options.headers,
                 ...commonHeaders
@@ -30,6 +39,11 @@ export const useApiClient = () => {
                         credentials: "include", // needed so that http-only cookies are sent with this request (Should it be "include" or "same-origin"?)
                         headers: { "Content-Type": "application/json" }
                     })
+                    if(response.status === 403) {
+                        navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
+                        return response
+                    }
+
                     const json = await response.json() as RefreshResponse
 
                     setAccessToken(json.accessToken)

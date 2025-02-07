@@ -57,8 +57,13 @@ public class MpaDbContext : DbContext
         }
 
         modelBuilder.Entity<User>()
-            .HasMany(e => e.Tokens)
-            .WithOne(e => e.User)
+            .HasIndex(user => user.Username)
+            .IsUnique();
+            
+        modelBuilder.Entity<Token>()
+            .HasOne(e => e.User)
+            .WithMany(e => e.Tokens)
+            .HasForeignKey(e => e.Username)
             .HasPrincipalKey(e => e.Username);
 
         modelBuilder.Entity<User>()
@@ -89,6 +94,13 @@ public class MpaDbContext : DbContext
         {
             users.HasData(
                 new User { Id = 1, Username = "admin@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") }
+            );
+        });
+
+        modelBuilder.Entity<UserTenant>(ut =>
+        {
+            ut.HasData(
+                new UserTenant { UserId = 1, TenantId = -1 }
             );
         });
 

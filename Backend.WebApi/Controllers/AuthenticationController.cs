@@ -17,7 +17,7 @@ public class AuthenticationController : ControllerBase
     private readonly CookieOptions _refreshCookieOptions = new CookieOptions
     {
         HttpOnly = true,
-        Secure = true,
+        Secure = false, //TODO: Set to true in production
         SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
         Expires = DateTime.UtcNow.AddDays(7), // Cookie expiration
     };
@@ -36,8 +36,7 @@ public class AuthenticationController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
-            throw new UnauthorizedAccessException();
-            // return BadRequest("Unable to login");
+            return BadRequest("Unable to login");
         }
 
         var user = await _dbContext.Users.SingleOrDefaultAsync(user => user.Username == request.Username);
@@ -76,12 +75,15 @@ public class AuthenticationController : ControllerBase
     {
         var incomingRefreshToken = Request.Cookies[RefreshTokenKey];
 
-        var token = await _dbContext.Tokens
+        var tokens = await _dbContext.Tokens
             .Include(token => token.User)
-            .SingleOrDefaultAsync(token => token.RefreshToken == incomingRefreshToken && token.Expires >= DateTimeOffset.Now);
+            .Where(token => token.RefreshToken == incomingRefreshToken)
+            .ToListAsync();
+
+        var token = tokens.SingleOrDefault(token => token.Expires >= DateTimeOffset.Now);
         if (token == null)
         {
-            return Forbid("Unable to refresh tokens");
+            return Forbid();
         }
 
         var user = token.User ?? throw new NullReferenceException("A Token must always have a user");
@@ -111,15 +113,14 @@ public class AuthenticationController : ControllerBase
 
     [Authorize]
     [HttpPost("SignOut")]
-    public async Task<IActionResult> SignOut(SignOutRequest request)
+    public async Task<IActionResult> SignOut()
     {
         var incomingRefreshToken = Request.Cookies[RefreshTokenKey];
 
         // overwrite the refreshToken cookie
-        Response.Cookies.Append(RefreshTokenKey, string.Empty, _refreshCookieOptions);
+        Response.Cookies.Append(RefreshTokenKey, " ", _refreshCookieOptions);
 
-        var username = User.Identity!.Name;
-        var tokenToRemove = await _dbContext.Tokens.SingleOrDefaultAsync(token => token.RefreshToken == incomingRefreshToken && token.Username == username);
+        var tokenToRemove = await _dbContext.Tokens.SingleOrDefaultAsync(token => token.RefreshToken == incomingRefreshToken);
         if (tokenToRemove == null)
         {
             return NotFound("Unable to signout user");
@@ -151,10 +152,6 @@ public class AuthenticationController : ControllerBase
         public required string Username { get; set; }
         public required string Fullname { get; set; }
         public required string AccessToken { get; set; }
-    }
-
-    public class SignOutRequest
-    {
     }
 }
 

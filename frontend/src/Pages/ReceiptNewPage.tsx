@@ -17,7 +17,7 @@ export const ReceiptNewPage = () => {
             name, amount, tags
         }
 
-        apiClient.post("/api/receipt/postReceipt", receipt)
+        apiClient.post("/api/receipt/postReceipt", receipt, {})
 
         navigate(-1)
     }

@@ -20,10 +20,11 @@ public class ArchiveController : ControllerBase
 
 
     [HttpGet("list")]
-    public async Task<ActionResult<IEnumerable<ArchiveItemResponse>>> List(ListRequest request)
+    public async Task<ActionResult<IEnumerable<ArchiveItemResponse>>> List()
     {
+        // return Ok();
         return await _dbContext.ArchiveItems
-            .Select(item => new ArchiveItemResponse { Id = item.Id, Title = item.Title })
+            .Select(item => new ArchiveItemResponse { Id = item.Id, Title = item.Title, Created = item.Created })
             .ToListAsync();
     }
 
@@ -37,6 +38,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public DateTimeOffset Created { get; internal set; }
     }
 }
 

@@ -19,6 +19,5 @@ public class Token : SharedEntity
 
     public DateTimeOffset Expires { get; set; }
 
-    [ForeignKey(nameof(Username))]
     public User? User { get; set; }
 }

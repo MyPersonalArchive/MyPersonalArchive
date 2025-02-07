@@ -128,17 +128,17 @@ namespace Backend.DbModel.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
                     RefreshToken = table.Column<string>(type: "TEXT", maxLength: 44, nullable: false),
-                    Expires = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    Username1 = table.Column<string>(type: "TEXT", nullable: true)
+                    Expires = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Token", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Token_User_Username1",
-                        column: x => x.Username1,
+                        name: "FK_Token_User_Username",
+                        column: x => x.Username,
                         principalTable: "User",
-                        principalColumn: "Username");
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -184,6 +184,11 @@ namespace Backend.DbModel.Migrations
                 columns: new[] { "Id", "Fullname", "HashedPassword", "Salt", "Username" },
                 values: new object[] { 1, "administrator", new byte[] { 66, 97, 132, 170, 246, 16, 68, 68, 72, 145, 44, 35, 199, 50, 35, 84, 112, 60, 127, 205, 114, 113, 188, 167, 150, 243, 56, 250, 120, 177, 230, 211 }, new byte[] { 1, 213, 129, 249, 180, 144, 52, 198, 48, 36, 202, 218, 185, 111, 72, 110 }, "admin@localhost" });
 
+            migrationBuilder.InsertData(
+                table: "UserTenant",
+                columns: new[] { "TenantId", "UserId" },
+                values: new object[] { -1, 1 });
+
             migrationBuilder.CreateIndex(
                 name: "IX_ArchiveItemAndTag_ArchiveItemId_TagId",
                 table: "ArchiveItemAndTag",
@@ -207,9 +212,15 @@ namespace Backend.DbModel.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Token_Username1",
+                name: "IX_Token_Username",
                 table: "Token",
-                column: "Username1");
+                column: "Username");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_Username",
+                table: "User",
+                column: "Username",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserTenant_TenantId_UserId",

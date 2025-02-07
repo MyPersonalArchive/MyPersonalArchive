@@ -18,7 +18,7 @@ export const Layout = () => {
                         {/* <FontAwesomeIcon icon={faBars} /> */}
                         &nbsp;
                         {
-                            loggedInUser && <Link to={RoutePaths.Archive}>Receipts</Link>
+                            loggedInUser && <Link to={RoutePaths.Archive}>Archive</Link>
                         }
                     </div>
                     <div>

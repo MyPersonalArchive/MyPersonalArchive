@@ -12,12 +12,12 @@ internal class Program
     {
         Console.WriteLine("Hello!");
 
-        var environemt = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
         var config = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // Set the base path
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from JSON
-            .AddJsonFile($"appsettings.{environemt}.json", optional: true, reloadOnChange: true) // Load from JSON
+            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true) // Load from JSON
             .AddEnvironmentVariables() // Load from Environment Variables
             .AddCommandLine(args) // Load from Command-Line Arguments
             .Build();

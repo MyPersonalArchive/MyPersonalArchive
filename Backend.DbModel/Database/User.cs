@@ -1,10 +1,12 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.DbModel.Database;
 
 [Table(nameof(User))]
+[Index(nameof(Username), IsUnique = true)]
 public class User : SharedEntity
 {
     public int Id { get; set; }
