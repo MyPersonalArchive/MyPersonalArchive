@@ -2,22 +2,25 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Backend.Core.Providers;
 
+//If we find a common implementation for storage types this can be IStorageProvider which 
+//can handle cloud, local etc... Currently, we only have local file storage
 public interface IFileStorageProvider
 {
     Task<string> StoreFile(string fileName, string data);
-    Task<StorageFile> GetFile(string fileName);
+    Task<StorageFile> GetFile(string filePath);
     void DeleteFile(string fileName);
 }
 
-public class FileStorageProvider : IFileStorageProvider
+public class FileStorageProvider(IOptions<AppConfig> config): IFileStorageProvider
 {
     private const string MetadataExtension = ".metadata";
 
-    private readonly string _baseFolder = "gotnoname/data/Blobs";
+    private readonly string _baseFolder = config.Value.BlobFolder;
 
     public async Task<string> StoreFile(string fileName, string data)
     {
@@ -48,9 +51,8 @@ public class FileStorageProvider : IFileStorageProvider
         return filePath;
     }
 
-    public async Task<StorageFile> GetFile(string fileName)
+    public async Task<StorageFile> GetFile(string filePath)
     {
-        var filePath = Path.Combine(GetFolderPath(Path.GetFileNameWithoutExtension(fileName)), fileName);
         var metadataPath = Path.ChangeExtension(filePath, MetadataExtension);
 
         var metadata = JsonConvert.DeserializeObject<FileMetadata>(await File.ReadAllTextAsync(metadataPath));

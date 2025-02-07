@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Backend.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
@@ -22,6 +23,7 @@ public static class Program
 
         // builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
+        builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
 
         builder.Services.AddHttpContextAccessor();
