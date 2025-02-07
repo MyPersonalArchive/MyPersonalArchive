@@ -6,6 +6,7 @@
 // using Backend.Core.Repositories;
 // using Backend.Core.Models.Database;
 
+using Backend.Core;
 using Backend.DbModel.Database;
 
 namespace Backend.WebApi;

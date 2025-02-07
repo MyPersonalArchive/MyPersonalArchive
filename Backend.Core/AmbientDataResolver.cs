@@ -1,5 +1,5 @@
 
-namespace Backend.DbModel.Database;
+namespace Backend.Core;
 
 public abstract class AmbientDataResolver
 {

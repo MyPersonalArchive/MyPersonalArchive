@@ -4,6 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Backend.DbModel.Database;
 
+public enum StoreRoot
+{
+    FileStorage,
+    CloudStorage
+}
+
 [Table(nameof(Blob))]
 public class Blob : TenantEntity
 {

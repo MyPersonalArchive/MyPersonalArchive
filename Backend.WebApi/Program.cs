@@ -2,12 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Backend.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using ConsoleApp1;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.OpenApi.Models;
+using Backend.Core.Providers;
 
 namespace Backend.WebApi;
 
@@ -23,6 +23,7 @@ public static class Program
 
         // builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
+        builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
 
         builder.Services.AddHttpContextAccessor();
@@ -39,7 +40,7 @@ public static class Program
         builder.RegisterJwtServices();
         builder.RegisterSwaggerServices();
 
-        // builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
+        builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
         // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
         // builder.Services.AddScoped<ISeedService, SeedService>();
 
