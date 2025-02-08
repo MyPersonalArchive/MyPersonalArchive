@@ -26,21 +26,28 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
     public async Task<ActionResult> PostArchiveItem(ArchiveItemRequest archiveItem)
     {
         var blobs = new List<Blob>();
+        var tags = new List<Tag>();
         foreach (var blob in archiveItem.Blobs)
         {
             var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
             blobs.Add(new Blob
             {
                 PathInStore = filePath,
-                StoreRoot = StoreRoot.FileStorage.ToString()
+                StoreRoot = StoreRoot.FileStorage.ToString(),
             });
+
+            var blobTags = blob.Tags.Select(tag => new Tag
+            {
+                Title = tag.Title,
+            });
+            tags.AddRange(blobTags);
         }
         
         _dbContext.ArchiveItems.Add(new ArchiveItem
         {
             Created = DateTime.Now,
             Title = archiveItem.Title,
-            Tags = new List<Tag>(),
+            Tags = tags,
             Blobs = blobs
         });
 
@@ -48,6 +55,77 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
         return Ok();
     }
 
+    [HttpPatch]
+    [AllowAnonymous]
+    public async Task<ActionResult> UpdateArchiveItem(ArchiveItemUpdateRequest updateRequest)
+    {
+        var archiveItem = await _dbContext.ArchiveItems
+            .Include(archiveItem => archiveItem.Blobs)
+            .Include(archiveItem => archiveItem.Tags)
+            .SingleOrDefaultAsync(x => x.Id == updateRequest.Id);
+        
+        if (archiveItem == null)
+        {
+            return NotFound();
+        }
+        
+        archiveItem.Title = updateRequest.Title;
+
+        if (archiveItem.Blobs != null)
+        {
+            foreach (var blob in updateRequest.Blobs)
+            {
+                switch (blob.Type)
+                {
+                    case ArchiveItemUpdateRequest.ArchiveUpdateActionType.Added:
+                        var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
+                        archiveItem.Blobs.Add(new Blob
+                        {
+                            PathInStore = filePath,
+                            StoreRoot = StoreRoot.FileStorage.ToString()
+                        });
+                        break;
+                    case ArchiveItemUpdateRequest.ArchiveUpdateActionType.Deleted:
+                        var blobItem = archiveItem.Blobs.SingleOrDefault(x => x.Id == blob.Id);
+                        if (blobItem != null)
+                        {
+                            _fileProvider.DeleteFile(blobItem.PathInStore);
+                            _dbContext.Blobs.Remove(blobItem);
+                        }
+                        
+                        break;
+                }
+
+                if (blob.Tags != null)
+                {
+                    foreach (var tag in blob.Tags)
+                    {
+                        switch (tag.Type)
+                        {
+                            case ArchiveItemUpdateRequest.ArchiveUpdateActionType.Added:
+                                archiveItem.Tags.Add(new Tag
+                                {
+                                    Title = tag.Title,
+                                });
+                                break;
+                            case ArchiveItemUpdateRequest.ArchiveUpdateActionType.Deleted:
+                                var tagItem = archiveItem.Tags.SingleOrDefault(x => x.Title == tag.Title);
+                                if (tagItem != null)
+                                {
+                                    archiveItem.Tags.Remove(tagItem);
+                                }
+                                break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+    }
+    
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<ArchiveItemResponse>> GetArchivedItem(int id)
@@ -61,7 +139,7 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
             return NotFound();
         }
 
-        var archiveBlobTasks = archiveItem.Blobs.Select(async blob =>
+        var archiveBlobTasks = archiveItem.Blobs?.Select(async blob =>
         {
             var file = await _fileProvider.GetFile(blob.PathInStore);
             return new ArchiveItemResponse.ArchiveBlob
@@ -74,7 +152,7 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
             };
         });
 
-        var archiveBlobs = await Task.WhenAll(archiveBlobTasks);
+        var archiveBlobs = await Task.WhenAll(archiveBlobTasks ?? Array.Empty<Task<ArchiveItemResponse.ArchiveBlob>>());
     
         return new ArchiveItemResponse
         {
@@ -96,10 +174,13 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
             return NotFound();
         }
 
-        foreach (var blob in archiveItem.Blobs)
+        if (archiveItem.Blobs != null)
         {
-            _fileProvider.DeleteFile(blob.PathInStore);
-            _dbContext.Blobs.Remove(blob);
+            foreach (var blob in archiveItem.Blobs)
+            {
+                _fileProvider.DeleteFile(blob.PathInStore);
+                _dbContext.Blobs.Remove(blob);
+            }
         }
 
         _dbContext.ArchiveItems.Remove(archiveItem);
@@ -112,14 +193,48 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
     {
         public string Title { get; set; }
         public List<ArchiveBlobRequest> Blobs { get; set; }
-
+        
         public class ArchiveBlobRequest
         {
+            public List<ArchiveTagRequest> Tags { get; set; }
             public string FileName { get; set; }
             public string Data { get; set; }    
         }
+
+        public class ArchiveTagRequest
+        {
+            public string Title { get; set; }
+        }
     }
 
+    public class ArchiveItemUpdateRequest
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public List<ArchiveBlobUpdateRequest> Blobs { get; set; }
+        
+        public class ArchiveBlobUpdateRequest
+        {
+            public ArchiveUpdateActionType Type { get; set; }
+            public List<ArchiveTagUpdateRequest>? Tags { get; set; }
+            public int Id { get; set; }
+            public string?  FileName { get; set; }
+            public string? Data { get; set; }    
+        }
+
+        public class ArchiveTagUpdateRequest
+        {
+            public ArchiveUpdateActionType Type { get; set; }
+            public string? Title { get; set; }
+        }
+
+        public enum ArchiveUpdateActionType
+        {
+            NoChanges = 0,
+            Added = 1,
+            Deleted = 2
+        }
+    }
     
     public class ListRequest
     {
