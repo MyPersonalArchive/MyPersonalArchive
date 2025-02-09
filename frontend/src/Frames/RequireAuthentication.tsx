@@ -9,9 +9,11 @@ export const RequireAuthentication = () => {
     const loggedInUser = useAtomValue(loggedInUserAtom)
     const navigate = useNavigate()
 
+    const currentPath = window.location.pathname
+
     useEffect(() => {
         if (loggedInUser === null) {
-            navigate(RoutePaths.SignIn)
+            navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
         }
     }, [loggedInUser, navigate])
 

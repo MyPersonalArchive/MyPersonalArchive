@@ -1,23 +1,40 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import { IResponseReceipt } from "../Stuff/ReceiptModels"
+import { IReceiptTag } from "../Stuff/CategoryModels"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
+import { useSignalR } from "../Frames/SignalRProvider"
 
-export const ReceiptNewPage = () => {
-    const [name, setName] = useState<string>()
-    const [amount, setAmount] = useState<number>()
+export const ArchiveItemEditPage = () => {
+    const [id, setId] = useState<number | null>(null)
+    const [name, setName] = useState<string | null>(null)
     const [tags, setTags] = useState<string[]>([])
+
+    const params = useParams()
     const navigate = useNavigate()
     const apiClient = useApiClient()
+
+    useSignalR("archiveItemUpdated", (message) => {
+        console.log("SignalR - archiveItemUpdated", message)
+    })
+
+    useEffect(() => {
+        apiClient.get<IResponseReceipt>("/api/archive/Get", { id: params.receiptId })
+            .then(receipt => {
+                setId(receipt.receiptId)
+                setName(receipt.name)
+                setTags(receipt.tags.map((tag: IReceiptTag) => tag.name))
+            })
+    }, [])
 
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        const receipt = {
-            name, amount, tags
+        const archiveItem = {
+            id, name, tags
         }
-
-        apiClient.post("/api/receipt/postReceipt", receipt, {})
+        apiClient.post("/api/archive/Create", archiveItem, {})
 
         navigate(-1)
     }
@@ -26,12 +43,10 @@ export const ReceiptNewPage = () => {
         navigate(-1)
     }
 
-
-
     return (
         <div>
             <h1>
-                New receipt {name}
+                Edit item
             </h1>
             <form onSubmit={save}>
                 <div>
@@ -42,25 +57,14 @@ export const ReceiptNewPage = () => {
                         placeholder=""
                         autoFocus
                         required
-                        value={name}
+                        value={name ?? ""}
                         data-1p-ignore
                         onChange={event => setName(event.target.value)}
                     />
                 </div>
                 <div>
-                    <label htmlFor="amount">Amount</label>
-                    <input
-                        type="number"
-                        placeholder=""
-                        id="amount"
-                        required
-                        value={amount}
-                        onChange={event => setAmount(Number.parseFloat(event.target.value))}
-                    />
-                </div>
-                <div>
                     <label htmlFor="tags">Tags</label>
-                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={["stein", "saks", "papir"]} />
+                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" />
                 </div>
                 <div>
                     <button type="button" onClick={back}>
@@ -71,6 +75,6 @@ export const ReceiptNewPage = () => {
                     </button>
                 </div>
             </form>
-        </div >
+        </div>
     )
 }

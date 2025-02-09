@@ -5,23 +5,25 @@ import { useApiClient } from "../Utils/useApiClient"
 type ListResponse = {
     id: number
     title: string
+    tags: string[]
     createdAt: string
 }
 
 type ArchiveItem = {
     id: number
     title: string
+    tags: string[]
     createdAt: Date
 }
 
-export const ArchiveListPage = () => {
+export const ArchiveItemListPage = () => {
     const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>()
     const navigate = useNavigate()
 
     const apiClient = useApiClient()
 
     useEffect(() => {
-        apiClient.get<ListResponse[]>("/api/archive/")
+        apiClient.get<ListResponse[]>("/api/archive/List")
             .then(response => {
                 setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
             })
@@ -64,9 +66,8 @@ const Row = ({ archiveItem }: RowProps) => {
                 <Link to={`/archive/edit/${archiveItem.id}`}>{archiveItem.title}</Link>
             </td>
             <td>
-                [not implemented]
                 {
-                    // archiveItem.tags.map((tag, ix) => <span key={ix} className="tag">{tag.name}</span>)
+                    archiveItem.tags.map((tag, ix) => <span key={ix} className="tag">{tag}</span>)
                 }
             </td>
             <td>
