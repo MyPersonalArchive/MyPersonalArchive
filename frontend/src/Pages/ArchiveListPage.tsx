@@ -21,7 +21,7 @@ export const ArchiveListPage = () => {
     const apiClient = useApiClient()
 
     useEffect(() => {
-        apiClient.get<ArchiveItemResponse[]>("/api/archive/list")
+        apiClient.get<ArchiveItemResponse[]>("/api/archive/")
             .then(response => {
                 setArchiveItems(response.map(item => ({ ...item, created: new Date(item.created) })))
             })
