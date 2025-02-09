@@ -42,7 +42,6 @@ public class MpaDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-
         // Apply global filter to enforce tenant isolation
         ConfigureTenantReadIsolation(modelBuilder);
 

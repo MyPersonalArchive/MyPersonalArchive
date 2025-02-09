@@ -150,13 +150,29 @@ public static class Program
         if (app.Environment.IsDevelopment())
         {
             // Seed the development database with some initial data
-            
-            var archiverItemsToEnsure = new List<ArchiveItem>{
-                    new ArchiveItem { Id = 1, Title = "First demo item", Created = new DateTimeOffset(2025, 2, 5, 12, 0, 0, TimeSpan.FromHours(-2)) },
-                    new ArchiveItem { Id = 2, Title = "Second demo item", Created = new DateTimeOffset(2025, 2, 5, 12, 15, 0, TimeSpan.FromHours(-2)) },
-                    new ArchiveItem { Id = 3, Title = "Third demo item", Created = new DateTimeOffset(2025, 2, 9, 15, 20, 0, TimeSpan.FromHours(-2)) }
+
+            var timezoneOffset = TimeSpan.FromHours(-2);
+            var archiveItemsToEnsure = new List<ArchiveItem>{
+                    new ArchiveItem {
+                        Id = 1,
+                        Title = "First demo item",
+                        Tags = Tags.Ensure(dbContext, "Disco", "Pop", "Metal", "Rock"),
+                        CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 0, 0, timezoneOffset)
+                    },
+                    new ArchiveItem {
+                        Id = 2,
+                        Title = "Second demo item",
+                        Tags = Tags.Ensure(dbContext, "Techno", "Pop", "Rave"),
+                        CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
+                    },
+                    new ArchiveItem {
+                        Id = 3,
+                        Title = "Third demo item",
+                        Tags = Tags.Ensure(dbContext, "House", "EDM", "Hiphop"),
+                        CreatedAt = new DateTimeOffset(2025, 2, 9, 15, 20, 0, timezoneOffset)
+                    }
             };
-            foreach (var item in archiverItemsToEnsure)
+            foreach (var item in archiveItemsToEnsure)
             {
                 if (dbContext.ArchiveItems.All(ai => ai.Id != item.Id))
                 {

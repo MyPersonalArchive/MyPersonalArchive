@@ -17,7 +17,7 @@ public class Token : SharedEntity
     [Required]
     public required string RefreshToken { get; set; }
 
-    public DateTimeOffset Expires { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
 
     public User? User { get; set; }
 }

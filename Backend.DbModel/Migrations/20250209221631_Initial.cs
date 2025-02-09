@@ -18,7 +18,7 @@ namespace Backend.DbModel.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
-                    Created = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -126,7 +126,7 @@ namespace Backend.DbModel.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
                     RefreshToken = table.Column<string>(type: "TEXT", maxLength: 44, nullable: false),
-                    Expires = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -195,9 +195,9 @@ namespace Backend.DbModel.Migrations
                 column: "ArchiveItemId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tag_Title",
+                name: "IX_Tag_Title_TenantId",
                 table: "Tag",
-                column: "Title",
+                columns: new[] { "Title", "TenantId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

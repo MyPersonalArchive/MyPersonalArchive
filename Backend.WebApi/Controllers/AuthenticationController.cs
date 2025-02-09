@@ -54,7 +54,7 @@ public class AuthenticationController : ControllerBase
         {
             Username = user.Username,
             RefreshToken = refreshToken,
-            Expires = DateTime.Now.Add(PasswordHasher.ExpiryDurationForRefreshTokens),
+            ExpiresAt = DateTime.Now.Add(PasswordHasher.ExpiryDurationForRefreshTokens),
         });
         _dbContext.SaveChanges();
 
@@ -79,7 +79,7 @@ public class AuthenticationController : ControllerBase
             .Where(token => token.RefreshToken == incomingRefreshToken)
             .ToListAsync();
 
-        var token = tokens.SingleOrDefault(token => token.Expires >= DateTimeOffset.Now);
+        var token = tokens.SingleOrDefault(token => token.ExpiresAt >= DateTimeOffset.Now);
         if (token == null)
         {
             return Forbid();
@@ -88,7 +88,7 @@ public class AuthenticationController : ControllerBase
         var user = token.User ?? throw new NullReferenceException("A Token must always have a user");
 
         // delete the user's expired refresh tokens
-        var expiredTokens = user.Tokens!.Where(token => token.Expires < DateTime.Now);
+        var expiredTokens = user.Tokens!.Where(token => token.ExpiresAt < DateTime.Now);
         _dbContext.Tokens.RemoveRange(expiredTokens);
 
         var (accessToken, newRefreshToken) = _passwordHasher.GenerateTokens();
@@ -96,7 +96,7 @@ public class AuthenticationController : ControllerBase
         {
             Username = user.Username,
             RefreshToken = newRefreshToken,
-            Expires = DateTime.Now.AddDays(7)
+            ExpiresAt = DateTime.Now.AddDays(7)
         });
         _dbContext.SaveChanges();
 

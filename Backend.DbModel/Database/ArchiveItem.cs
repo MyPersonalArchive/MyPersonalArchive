@@ -12,7 +12,7 @@ public class ArchiveItem : TenantEntity
     [StringLength(80)]
     public required string Title { get; set; }
 
-    public required DateTimeOffset Created { get; set; }
+    public required DateTimeOffset CreatedAt { get; set; }
 
     public ICollection<Blob>? Blobs { get; set; }
 
