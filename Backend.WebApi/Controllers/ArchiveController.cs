@@ -21,17 +21,42 @@ public class ArchiveController : ControllerBase
         _fileProvider = fileProvider;
     }
 
-    [HttpGet]
+    [HttpGet("List")]
     public async Task<ActionResult<IEnumerable<ListResponse>>> List(/*ListRequest request*/)
     {
         return await _dbContext.ArchiveItems
-            .Select(item => new ListResponse {
+            .Select(item => new ListResponse
+            {
                 Id = item.Id,
                 Title = item.Title,
                 Tags = item.Tags.Select(tag => tag.Title).ToList(),
                 CreatedAt = item.CreatedAt
             })
             .ToListAsync();
+    }
+
+
+    [HttpPost("Create")]
+    public async Task<ActionResult> Create(CreateRequest request)
+    {
+        var tasks = request.Blobs.Select(blob => _fileProvider.StoreFile(blob.FileName, blob.FileData));
+        var filenames = await Task.WhenAll(tasks);
+        var blobs = filenames.Select((filename, index) => new Blob
+        {
+            PathInStore = filename,
+            StoreRoot = StoreRoot.FileStorage.ToString()
+        });
+
+        _dbContext.ArchiveItems.Add(new ArchiveItem
+        {
+            Title = request.Title,
+            CreatedAt = DateTimeOffset.Now,
+            Tags = [.. Tags.Ensure(_dbContext, request.Tags)],
+            Blobs = [.. blobs]
+        });
+        _dbContext.SaveChanges();
+
+        return Ok();
     }
 
     [HttpPost]
@@ -136,8 +161,9 @@ public class ArchiveController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<GetArchiveItemResponse>> GetArchivedItem(int id)
+
+    [HttpGet("Get")]
+    public async Task<ActionResult<GetArchiveItemResponse>> GetArchivedItem([FromQuery] int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
@@ -171,6 +197,7 @@ public class ArchiveController : ControllerBase
             ArchiveBlobs = archiveBlobs.ToList()
         };
     }
+
 
     [HttpDelete]
     public async Task<ActionResult> DeleteArchivedItem(int id)
