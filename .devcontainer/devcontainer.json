@@ -48,6 +48,7 @@
 				"josefpihrt-vscode.roslynator",
 				"eamodio.gitlens",
 				"ms-azuretools.vscode-docker",
+				"github.vscode-pull-request-github",
 				"codeium.codeium",
 				"humao.rest-client",
 				"cweijan.vscode-database-client2"

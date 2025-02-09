@@ -13,7 +13,7 @@ namespace Backend.WebApi.Controllers;
 public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fileProvider) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ArchiveItemResponse>>> GetArchiveItemList(ListRequest request)
+    public async Task<ActionResult<IEnumerable<ArchiveItemResponse>>> GetArchiveItemList(/*ListRequest request*/)
     {
         // return Ok();
         return await _dbContext.ArchiveItems
@@ -22,7 +22,6 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
     }
     
     [HttpPost]
-    [AllowAnonymous]
     public async Task<ActionResult> PostArchiveItem(ArchiveItemRequest archiveItem)
     {
         var blobs = new List<Blob>();
@@ -56,7 +55,6 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
     }
 
     [HttpPatch]
-    [AllowAnonymous]
     public async Task<ActionResult> UpdateArchiveItem(ArchiveItemUpdateRequest updateRequest)
     {
         var archiveItem = await _dbContext.ArchiveItems
@@ -117,7 +115,6 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
                                 break;
                         }
                     }
-
                 }
             }
         }
@@ -127,7 +124,6 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
     }
     
     [HttpGet]
-    [AllowAnonymous]
     public async Task<ActionResult<ArchiveItemResponse>> GetArchivedItem(int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
@@ -162,7 +158,6 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
     }
 
     [HttpDelete]
-    [AllowAnonymous]
     public async Task<ActionResult> DeleteArchivedItem(int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
@@ -218,7 +213,7 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
             public ArchiveUpdateActionType Type { get; set; }
             public List<ArchiveTagUpdateRequest>? Tags { get; set; }
             public int Id { get; set; }
-            public string?  FileName { get; set; }
+            public string? FileName { get; set; }
             public string? Data { get; set; }    
         }
 
