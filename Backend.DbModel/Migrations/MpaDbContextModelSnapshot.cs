@@ -23,7 +23,7 @@ namespace Backend.DbModel.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("Created")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TenantId")
@@ -107,7 +107,7 @@ namespace Backend.DbModel.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Title")
+                    b.HasIndex("Title", "TenantId")
                         .IsUnique();
 
                     b.ToTable("Tag");
@@ -142,7 +142,7 @@ namespace Backend.DbModel.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("Expires")
+                    b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RefreshToken")

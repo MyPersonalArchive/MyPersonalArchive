@@ -29,7 +29,7 @@ public class ArchiveController : ControllerBase
                 Id = item.Id,
                 Title = item.Title,
                 Tags = item.Tags.Select(tag => tag.Title).ToList(),
-                CreatedAt = item.Created
+                CreatedAt = item.CreatedAt
             })
             .ToListAsync();
     }
@@ -57,7 +57,7 @@ public class ArchiveController : ControllerBase
 
         _dbContext.ArchiveItems.Add(new ArchiveItem
         {
-            Created = DateTime.Now,
+            CreatedAt = DateTime.Now,
             Title = archiveItem.Title,
             Tags = tags,
             Blobs = blobs
@@ -161,11 +161,13 @@ public class ArchiveController : ControllerBase
             };
         });
 
-        var archiveBlobs = await Task.WhenAll(archiveBlobTasks ?? []);
+        var archiveBlobs = await Task.WhenAll(archiveBlobTasks);
 
         return new GetArchiveItemResponse
         {
+            Id = archiveItem.Id,
             Title = archiveItem.Title,
+            CreatedAt = archiveItem.CreatedAt,
             ArchiveBlobs = archiveBlobs.ToList()
         };
     }
@@ -203,7 +205,8 @@ public class ArchiveController : ControllerBase
         //TODO: Is filtering or paging needed?
     }
 
-    public class ListResponse{
+    public class ListResponse
+    {
         public int Id { get; set; }
         public required string Title { get; set; }
         public required ICollection<string> Tags { get; set; }
