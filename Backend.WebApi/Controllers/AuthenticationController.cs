@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Backend.DbModel.Database;
 using ConsoleApp1;
 using Microsoft.AspNetCore.Authorization;
@@ -9,9 +10,9 @@ namespace Backend.WebApi.Controllers;
 [ApiController]
 [Route("api/[Controller]")]
 public class AuthenticationController : ControllerBase
-{    
+{
     private readonly MpaDbContext _dbContext;
-    private readonly PasswordHasher _passwordHasher; 
+    private readonly PasswordHasher _passwordHasher;
     private const string RefreshTokenKey = "refresh-token";
     private readonly CookieOptions _refreshCookieOptions = new()
     {
@@ -53,7 +54,7 @@ public class AuthenticationController : ControllerBase
         {
             Username = user.Username,
             RefreshToken = refreshToken,
-            Expires = DateTime.Now.AddDays(7),
+            Expires = DateTime.Now.Add(PasswordHasher.ExpiryDurationForRefreshTokens),
         });
         _dbContext.SaveChanges();
 
