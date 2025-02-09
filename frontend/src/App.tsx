@@ -3,11 +3,11 @@ import { SignInPage } from "./Pages/SignInPage"
 import { useEffect } from "react"
 import { RoutePaths } from "./RoutePaths"
 import { SignOutPage } from "./Pages/SignOutPage"
-import { ArchiveListPage } from "./Pages/ArchiveListPage"
+import { ArchiveItemListPage } from "./Pages/ArchiveItemListPage"
 import { RequireAuthentication } from "./Frames/RequireAuthentication"
 import { IndexPage } from "./Pages/IndexPage"
-import { ReceiptEditPage } from "./Pages/ReceiptEditPage"
-import { ReceiptNewPage } from "./Pages/ReceiptNewPage"
+import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
+import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { Layout } from "./Components/Layout"
 import { SignalRProvider } from "./Frames/SignalRProvider"
 
@@ -36,14 +36,14 @@ const routers = createBrowserRouter([
                             },
                             {
                                 path: RoutePaths.Archive,
-                                element: <ArchiveListPage />
+                                element: <ArchiveItemListPage />
                             }, {
                                 path: "archive/edit/:receiptId",
-                                element: <ReceiptEditPage />
+                                element: <ArchiveItemEditPage />
                             },
                             {
                                 path: "receipt/new",
-                                element: <ReceiptNewPage />
+                                element: <ArchiveItemNewPage />
                             }
                         ]
                     }
