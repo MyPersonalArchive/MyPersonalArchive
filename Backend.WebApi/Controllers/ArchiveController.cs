@@ -8,14 +8,22 @@ namespace Backend.WebApi.Controllers;
 
 
 [ApiController]
-[Route("api/[Controller]/[Action]")]
+[Route("api/[Controller]")]
 [Authorize]
-public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fileProvider) : ControllerBase
+public class ArchiveController : ControllerBase
 {
+    private readonly MpaDbContext _dbContext;
+    private readonly IFileStorageProvider _fileProvider;
+
+    public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider)
+    {
+        _dbContext = dbContext;
+        _fileProvider = fileProvider;
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ArchiveItemResponse>>> GetArchiveItemList(/*ListRequest request*/)
     {
-        // return Ok();
         return await _dbContext.ArchiveItems
             .Select(item => new ArchiveItemResponse { Id = item.Id, Title = item.Title, Created = item.Created })
             .ToListAsync();
@@ -123,7 +131,7 @@ public class ArchiveController(MpaDbContext _dbContext, IFileStorageProvider _fi
         return Ok();
     }
     
-    [HttpGet]
+    [HttpGet("{id}")]
     public async Task<ActionResult<ArchiveItemResponse>> GetArchivedItem(int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
