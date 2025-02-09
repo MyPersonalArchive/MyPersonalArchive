@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Backend.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -9,18 +10,18 @@ namespace Backend.DbModel.Database;
 public class MpaDbContext : DbContext
 {
     private readonly DbConfig _dbConfig;
-    private readonly AmbientDataResolver _resolver;
+    private readonly int? _tenantId;
 
     public MpaDbContext(IOptions<DbConfig> dbConfig, AmbientDataResolver resolver)
     {
         _dbConfig = dbConfig.Value;
-        _resolver = resolver;
+        _tenantId = resolver.GetCurrentTenantId();
     }
 
-    internal MpaDbContext(DbConfig dbConfig, AmbientDataResolver resolver)
+    public MpaDbContext(DbConfig dbConfig, int currentTenantId)
     {
         _dbConfig = dbConfig;
-        _resolver = resolver;
+        _tenantId = currentTenantId;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -31,6 +32,9 @@ public class MpaDbContext : DbContext
         optionsBuilder.EnableSensitiveDataLogging(true);
         optionsBuilder.LogTo(Console.WriteLine, [DbLoggerCategory.Database.Command.Name], LogLevel.Information);
 
+        // This is required to support switching tenants at runtime, since OnModelCreating is only called once and then cached by EF Core
+        optionsBuilder.ReplaceService<IModelCacheKeyFactory, MpaDbModelCacheKeyFactoryDesignTimeSupport>();
+
         base.OnConfiguring(optionsBuilder);
     }
 
@@ -38,29 +42,45 @@ public class MpaDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        var tenantId = _resolver.GetCurrentTenantId();
 
         // Apply global filter to enforce tenant isolation
+        ConfigureTenantReadIsolation(modelBuilder);
+
+        ConfigureEntityRelationships(modelBuilder);
+
+        SeedDatabase(modelBuilder);
+    }
+
+    private void ConfigureTenantReadIsolation(ModelBuilder modelBuilder)
+    {
+        // Ensure that all entities implementing TenantEntity have a query filter applied to enforce tenant isolation
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var parameter = Expression.Parameter(entityType.ClrType, "e");
-                var filter = Expression.Lambda(
-                    Expression.Equal(
-                        Expression.Property(parameter, nameof(TenantEntity.TenantId)),
-                        Expression.Constant(tenantId)
-                    ),
-                    parameter
-                );
+                var tenantIdValue = _tenantId;
+                var filter = tenantIdValue == null 
+                    ? Expression.Lambda(Expression.Constant(false), parameter)
+                    : Expression.Lambda(
+                        Expression.Equal(
+                            Expression.Property(parameter, nameof(TenantEntity.TenantId)),
+                            Expression.Constant(tenantIdValue.Value)
+                        ),
+                        parameter
+                    );
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
             }
         }
+    }
 
+    private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)
+    {
+        // Configure relationships between entities that are not automatically discovered by EF Core conventions
         modelBuilder.Entity<User>()
             .HasIndex(user => user.Username)
             .IsUnique();
-            
+
         modelBuilder.Entity<Token>()
             .HasOne(e => e.User)
             .WithMany(e => e.Tokens)
@@ -82,8 +102,10 @@ public class MpaDbContext : DbContext
                 l => l.HasOne<Tag>().WithMany().HasForeignKey(e => e.TagId),
                 r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(e => e.ArchiveItemId)
             );
+    }
 
-        #region Seed Data
+    private void SeedDatabase(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<Tenant>(tenants =>
         {
             tenants.HasData(
@@ -105,15 +127,6 @@ public class MpaDbContext : DbContext
             );
         });
 
-        modelBuilder.Entity<ArchiveItem>(archiveItems =>
-        {
-            archiveItems.HasData(
-                new ArchiveItem { Id = 1, Title = "First demo item", Created = new DateTimeOffset(2025, 2, 5, 12, 0, 0, TimeSpan.FromHours(-2)) },
-                new ArchiveItem { Id = 2, Title = "Second demo item", Created = new DateTimeOffset(2025, 2, 5, 12, 15, 0, TimeSpan.FromHours(-2)) }
-            );
-        });
-
-        #endregion
     }
 
     public override int SaveChanges()
@@ -124,13 +137,11 @@ public class MpaDbContext : DbContext
             throw new InvalidOperationException($"Only entities of type SharedEntity or TenantEntity are allowed. {string.Join(", ", invalidEntities.Select(e => e.Entity.GetType().Name))}");
         }
 
-
         var entries = ChangeTracker.Entries<TenantEntity>()
             .Where(e => e.State == EntityState.Added);
         if (entries.Any())
         {
-            var tenantId = _resolver.GetCurrentTenantId();
-
+            var tenantId = _tenantId ?? throw new Exception("Missing _tenantId. (Probable cause: missing the 'X-Tenant-Id' http request header.)");
             foreach (var entry in entries)
             {
                 entry.Entity.TenantId = tenantId;
@@ -148,4 +159,18 @@ public class MpaDbContext : DbContext
     public DbSet<Token> Tokens { get; set; }
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
+
+
+    public class MpaDbModelCacheKeyFactoryDesignTimeSupport : IModelCacheKeyFactory
+    {
+        public object Create(DbContext context, bool designTime)
+            => context is MpaDbContext mpaDbContext
+                ? (context.GetType(), mpaDbContext._tenantId, designTime)
+                : (object)context.GetType();
+
+        public object Create(DbContext context)
+            => Create(context, false);
+    }
 }
+
+

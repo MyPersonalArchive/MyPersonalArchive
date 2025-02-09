@@ -37,22 +37,6 @@ namespace Backend.DbModel.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ArchiveItems");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Created = new DateTimeOffset(new DateTime(2025, 2, 5, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -2, 0, 0, 0)),
-                            TenantId = 0,
-                            Title = "First demo item"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Created = new DateTimeOffset(new DateTime(2025, 2, 5, 12, 15, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -2, 0, 0, 0)),
-                            TenantId = 0,
-                            Title = "Second demo item"
-                        });
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.ArchiveItemAndTag", b =>

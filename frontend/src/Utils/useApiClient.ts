@@ -17,7 +17,7 @@ export const useApiClient = () => {
         commonHeaders.Authorization = `Bearer ${accessToken}`
     }
     if (selectedTenantId !== null) {
-        commonHeaders.TenantId = selectedTenantId
+        commonHeaders["X-Tenant-Id"] = selectedTenantId
     }
 
     const interceptedFetch = (url: string, options: RequestInit, retryAfterRefreshingToken = true): Promise<Response> => {
