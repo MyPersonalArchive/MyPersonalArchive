@@ -56,7 +56,7 @@ const routers = createBrowserRouter([
 
 export const App = () => {
     useEffect(() => {
-        document.title = "Receiptly - Digital receipt vault"
+        document.title = "My Personal Archive"
     }, [])
 
     return (

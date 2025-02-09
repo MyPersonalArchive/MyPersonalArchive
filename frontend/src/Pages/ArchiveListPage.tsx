@@ -2,16 +2,16 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 
-type ArchiveItemResponse = {
+type ListResponse = {
     id: number
     title: string
-    created: string
+    createdAt: string
 }
 
 type ArchiveItem = {
     id: number
     title: string
-    created: Date
+    createdAt: Date
 }
 
 export const ArchiveListPage = () => {
@@ -21,9 +21,9 @@ export const ArchiveListPage = () => {
     const apiClient = useApiClient()
 
     useEffect(() => {
-        apiClient.get<ArchiveItemResponse[]>("/api/archive/")
+        apiClient.get<ListResponse[]>("/api/archive/")
             .then(response => {
-                setArchiveItems(response.map(item => ({ ...item, created: new Date(item.created) })))
+                setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
             })
     }, [])
 
@@ -71,7 +71,7 @@ const Row = ({ archiveItem }: RowProps) => {
             </td>
             <td>
                 {
-                    archiveItem.created.toLocaleDateString()
+                    archiveItem.createdAt.toLocaleDateString()
                 }
             </td>
         </tr>

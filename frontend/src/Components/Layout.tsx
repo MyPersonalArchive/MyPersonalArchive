@@ -35,7 +35,7 @@ export const Layout = () => {
                 </main>
 
                 <footer className="footer">
-                    &copy; 2025 Receiptly
+                    &copy; 2025 Stian Thoresen & Arjan Einbu
                 </footer>
             </div>
         </>
