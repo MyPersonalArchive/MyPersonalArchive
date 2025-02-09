@@ -95,14 +95,8 @@ public class FileStorageProvider(IOptions<AppConfig> config): IFileStorageProvid
     {
         using var sha256Hash = SHA256.Create();
         var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-        var builder = new StringBuilder();
 
-        foreach (var b in bytes)
-        {
-            builder.Append(b.ToString("x2"));
-        }
-
-        return builder.ToString();
+        return Convert.ToHexString(bytes);
     }
 }
 
@@ -114,7 +108,7 @@ public class StorageFile
 
 public class FileMetadata
 {
-    public DateTimeOffset Uploaded { get; set; }
+    public DateTimeOffset UploadedAt { get; set; }
     public string UploadedBy { get; set; }
     public string OriginalFilename { get; set; }
     public string MimeType { get; set; }
