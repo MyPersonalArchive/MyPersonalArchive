@@ -43,7 +43,7 @@ public class FileStorageProvider(IOptions<AppConfig> config): IFileStorageProvid
                 Size = dataBytes.Length,
                 OriginalFilename = fileName,
                 Hash = ComputeSha256Hash(data),
-                Uploaded = DateTimeOffset.Now,
+                UploadedAt = DateTimeOffset.Now,
                 UploadedBy = ""
             }));
         await File.WriteAllBytesAsync(filePath, dataBytes);
