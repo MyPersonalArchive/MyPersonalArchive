@@ -10,12 +10,13 @@ namespace ConsoleApp1;
 
 public class PasswordHasher
 {
+    public static readonly TimeSpan ExpiryDurationForRefreshTokens = TimeSpan.FromDays(7);
+    private static readonly TimeSpan ExpiryDurationForAccessTokens = TimeSpan.FromMinutes(60);
+
     private const int SaltSize = 16; // 16 bytes = 128 bits
     private const int HashSize = 32; // 32 bytes = 256 bits
     private const int RefreshTokenSize = 32; // 32 bytes = 256 bits
     private const int Iterations = 100000; // Number of iterations
-    private readonly TimeSpan ExpiryDurationForAccessTokens = TimeSpan.FromMinutes(15);
-
     private readonly JwtConfig _jwtConfig;
 
     public PasswordHasher(IOptions<JwtConfig> jwtConfigAccessor) {
