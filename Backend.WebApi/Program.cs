@@ -8,6 +8,8 @@ using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using ConsoleApp1;
 using Backend.Core.Providers;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Backend.WebApi;
 
@@ -97,7 +99,42 @@ public static class Program
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options => {});
+        services.AddSwaggerGen(options =>
+        {
+            // options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter 'Bearer {your JWT token}' in the Authorization header."
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "Bearer",
+                        BearerFormat = "JWT",
+                        In = ParameterLocation.Header,
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            options.OperationFilter<SwaggerTenantIdHeaderFilter>();
+        });
     }
 
 
@@ -158,11 +195,24 @@ public static class Program
     }
 
 
-    internal class DummyAmbientDataResolver : AmbientDataResolver
+    public class SwaggerTenantIdHeaderFilter : IOperationFilter
     {
-        public override int GetCurrentTenantId()
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            return 0;
+            if (operation.Parameters == null)
+                operation.Parameters = new List<OpenApiParameter>();
+
+            operation.Parameters.Add(new OpenApiParameter
+            {
+                Name = "X-Tenant-Id",
+                In = ParameterLocation.Header,
+                Required = false,  // Change to 'false' if not required
+                Schema = new OpenApiSchema
+                {
+                    Type = "string",
+                    Default = new Microsoft.OpenApi.Any.OpenApiString("")
+                }
+            });
         }
     }
 }

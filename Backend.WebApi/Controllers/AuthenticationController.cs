@@ -12,7 +12,6 @@ public class AuthenticationController : ControllerBase
 {    
     private readonly MpaDbContext _dbContext;
     private readonly PasswordHasher _passwordHasher; 
-       
     private const string RefreshTokenKey = "refresh-token";
     private readonly CookieOptions _refreshCookieOptions = new()
     {
@@ -133,7 +132,10 @@ public class AuthenticationController : ControllerBase
 
     public class SignInRequest
     {
+        [DefaultValue("admin@localhost")]
         public string? Username { get; set; }
+
+        [DefaultValue("p@$$w0rd")]
         public string? Password { get; set; }
     }
 
