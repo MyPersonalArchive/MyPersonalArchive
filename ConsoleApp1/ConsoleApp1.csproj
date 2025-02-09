@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Backend.DbModel\Backend.DbModel.csproj" />
+    <ProjectReference Include="../Backend.DbModel/Backend.DbModel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
