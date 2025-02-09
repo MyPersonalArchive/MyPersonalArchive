@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace Backend.DbModel.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -163,15 +161,6 @@ namespace Backend.DbModel.Migrations
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "ArchiveItems",
-                columns: new[] { "Id", "Created", "TenantId", "Title" },
-                values: new object[,]
-                {
-                    { 1, new DateTimeOffset(new DateTime(2025, 2, 5, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -2, 0, 0, 0)), 0, "First demo item" },
-                    { 2, new DateTimeOffset(new DateTime(2025, 2, 5, 12, 15, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, -2, 0, 0, 0)), 0, "Second demo item" }
                 });
 
             migrationBuilder.InsertData(

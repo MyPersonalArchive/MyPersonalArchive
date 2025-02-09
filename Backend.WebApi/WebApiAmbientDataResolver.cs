@@ -20,11 +20,12 @@ internal class WebApiAmbientDataResolver : AmbientDataResolver
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public override int GetCurrentTenantId()
+    public override int? GetCurrentTenantId()
     {
         var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("Unable to read http request headers");
-        httpContext.Request.Headers.TryGetValue("tenantId", out var values);
-        var tenantId = values.SingleOrDefault() ?? throw new Exception("Missing http request header: 'tenantId'");
-        return int.Parse(tenantId);
+        httpContext.Request.Headers.TryGetValue("X-Tenant-Id", out var values);
+        var tenantId = values.SingleOrDefault();
+
+        return tenantId == null ? null : int.Parse(tenantId);
     }
 }

@@ -21,16 +21,14 @@ public static class Program
         // Add services to the container.
         builder.Services.AddControllers();
 
-        // builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
         builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
 
         builder.Services.AddHttpContextAccessor();
 
-        // builder.Services.AddDbContext<MpaDbContext>();
+        builder.Services.AddDbContext<MpaDbContext>();
 
-        builder.Services.AddScoped<MpaDbContext>();
         builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
         builder.Services.AddTransient<PasswordHasher>();
 
@@ -107,13 +105,29 @@ public static class Program
     {
         var services = app.Services;
 
-        var dbConfigAccessor = services.GetRequiredService<IOptions<DbConfig>>();
-        var dbContext = new MpaDbContext(dbConfigAccessor, new DummyAmbientDataResolver());
-        dbContext.Database.Migrate();  // This will apply any pending migrations
+        var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
+        var tenantId = -1;
+        var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts and seeding database
+        dbContext.Database.Migrate();
 
         if (app.Environment.IsDevelopment())
         {
             // Seed the development database with some initial data
+            
+            var archiverItemsToEnsure = new List<ArchiveItem>{
+                    new ArchiveItem { Id = 1, Title = "First demo item", Created = new DateTimeOffset(2025, 2, 5, 12, 0, 0, TimeSpan.FromHours(-2)) },
+                    new ArchiveItem { Id = 2, Title = "Second demo item", Created = new DateTimeOffset(2025, 2, 5, 12, 15, 0, TimeSpan.FromHours(-2)) },
+                    new ArchiveItem { Id = 3, Title = "Third demo item", Created = new DateTimeOffset(2025, 2, 9, 15, 20, 0, TimeSpan.FromHours(-2)) }
+            };
+            foreach (var item in archiverItemsToEnsure)
+            {
+                if (dbContext.ArchiveItems.All(ai => ai.Id != item.Id))
+                {
+                    dbContext.ArchiveItems.Add(item);
+                }
+            }
+
+            dbContext.SaveChanges();
         }
     }
 

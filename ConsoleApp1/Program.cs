@@ -100,5 +100,5 @@ internal class Program
 
 internal class DummyAmbientDataResolver : AmbientDataResolver
 {
-    public override int GetCurrentTenantId() => -1;
+    public override int? GetCurrentTenantId() => -1;
 }

@@ -1,4 +1,3 @@
-using Backend.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -18,19 +17,7 @@ public class MpaDbContextFactory : IDesignTimeDbContextFactory<MpaDbContext>
 {
     public MpaDbContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<MpaDbContext>();
-        optionsBuilder.UseSqlite("Data Source=blog.db");
-
         var dbConfig = new DbConfig { DatabaseFolder = "/data/Database" };
-        var resolver = new DummyAmbientDataResolver();
-        return new MpaDbContext(dbConfig, resolver);
-    }
-
-    public class DummyAmbientDataResolver : AmbientDataResolver
-    {
-        public override int GetCurrentTenantId()
-        {
-            return 0;
-        }
+        return new MpaDbContext(dbConfig, 0);
     }
 }
