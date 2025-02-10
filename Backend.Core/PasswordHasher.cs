@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
-namespace ConsoleApp1;
+namespace Backend.Core;
 
 
 public class PasswordHasher
