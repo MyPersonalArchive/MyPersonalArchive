@@ -4,7 +4,6 @@ using System;
 using Backend.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ConsoleApp1;
 
 
 internal class Program

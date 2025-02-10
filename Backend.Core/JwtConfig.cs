@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace ConsoleApp1;
+namespace Backend.Core;
 
 
 public class JwtConfig

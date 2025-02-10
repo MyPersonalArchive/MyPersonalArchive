@@ -6,7 +6,6 @@ using Backend.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
-using ConsoleApp1;
 using Backend.Core.Providers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
