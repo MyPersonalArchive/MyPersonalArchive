@@ -4,6 +4,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 namespace ConsoleApp1;
 
@@ -49,7 +50,7 @@ public class PasswordHasher
         }
     }
 
-    public (string accessToken, string refreshToken) GenerateTokens()
+    public (string accessToken, string refreshToken) GenerateTokens(IEnumerable<Claim> claims)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.JwtSecret));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -57,7 +58,7 @@ public class PasswordHasher
         var secToken = new JwtSecurityToken(
             issuer: _jwtConfig.JwtIssuer,
             audience: _jwtConfig.JwtIssuer, //TODO: Should this be "AUDIENCE"?
-            claims: null,
+            claims: claims,
             notBefore: null,
             expires: DateTime.Now.Add(ExpiryDurationForAccessTokens),
             signingCredentials: credentials);

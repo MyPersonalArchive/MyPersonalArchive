@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Security.Claims;
 using Backend.DbModel.Database;
 using ConsoleApp1;
 using Microsoft.AspNetCore.Authorization;
@@ -49,7 +50,8 @@ public class AuthenticationController : ControllerBase
             return Unauthorized("Unable to login");
         }
 
-        var (accessToken, refreshToken) = _passwordHasher.GenerateTokens();
+        List<Claim> claims = [new(ClaimTypes.Name, user.Username), new(ClaimTypes.NameIdentifier, user.Id.ToString())];
+        var (accessToken, refreshToken) = _passwordHasher.GenerateTokens(claims);
         await _dbContext.Tokens.AddAsync(new Token
         {
             Username = user.Username,
@@ -91,7 +93,8 @@ public class AuthenticationController : ControllerBase
         var expiredTokens = user.Tokens!.Where(token => token.ExpiresAt < DateTime.Now);
         _dbContext.Tokens.RemoveRange(expiredTokens);
 
-        var (accessToken, newRefreshToken) = _passwordHasher.GenerateTokens();
+        List<Claim> claims = [new(ClaimTypes.Name, user.Username), new(ClaimTypes.NameIdentifier, user.Id.ToString())];
+        var (accessToken, newRefreshToken) = _passwordHasher.GenerateTokens(claims);
         await _dbContext.Tokens.AddAsync(new Token
         {
             Username = user.Username,
