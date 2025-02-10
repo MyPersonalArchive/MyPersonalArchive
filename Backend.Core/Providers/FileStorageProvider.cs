@@ -16,14 +16,23 @@ public interface IFileStorageProvider
     void DeleteFile(string fileName);
 }
 
-public class FileStorageProvider(IOptions<AppConfig> config): IFileStorageProvider
+public class FileStorageProvider : IFileStorageProvider
 {
     private const string MetadataExtension = ".metadata";
 
-    private readonly string _baseFolder = config.Value.BlobFolder;
+    private readonly string _baseFolder;
+    private readonly AmbientDataResolver _resolver;
+
+    public FileStorageProvider(IOptions<AppConfig> config, AmbientDataResolver resolver)
+    {
+        _baseFolder = config.Value.BlobFolder;
+        _resolver = resolver;
+    }
 
     public async Task<string> StoreFile(string fileName, string data)
     {
+        var username = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
+
         if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(data)) return null;
 
         var uniqueFileId = Guid.NewGuid().ToString();
@@ -44,7 +53,7 @@ public class FileStorageProvider(IOptions<AppConfig> config): IFileStorageProvid
                 OriginalFilename = fileName,
                 Hash = ComputeSha256Hash(data),
                 UploadedAt = DateTimeOffset.Now,
-                UploadedBy = ""
+                UploadedBy = username
             }));
         await File.WriteAllBytesAsync(filePath, dataBytes);
 

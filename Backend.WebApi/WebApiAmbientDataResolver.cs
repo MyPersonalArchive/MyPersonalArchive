@@ -6,6 +6,7 @@
 // using Backend.Core.Repositories;
 // using Backend.Core.Models.Database;
 
+using System.Security.Claims;
 using Backend.Core;
 using Backend.DbModel.Database;
 
@@ -28,4 +29,13 @@ internal class WebApiAmbientDataResolver : AmbientDataResolver
 
         return tenantId == null ? null : int.Parse(tenantId);
     }
+
+    public override string? GetCurrentUsername()
+    {
+        var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("Unable to read http request headers");
+        var username = httpContext.User.Claims.SingleOrDefault(claim => ClaimTypes.NameIdentifier == claim.Type)?.Value;
+
+        return username;
+    }
+
 }

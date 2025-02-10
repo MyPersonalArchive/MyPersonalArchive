@@ -50,7 +50,7 @@ public class AuthenticationController : ControllerBase
             return Unauthorized("Unable to login");
         }
 
-        List<Claim> claims = [new(ClaimTypes.Name, user.Username), new(ClaimTypes.NameIdentifier, user.Id.ToString())];
+        List<Claim> claims = [new(ClaimTypes.Name, user.Fullname), new(ClaimTypes.NameIdentifier, user.Username)];
         var (accessToken, refreshToken) = _passwordHasher.GenerateTokens(claims);
         await _dbContext.Tokens.AddAsync(new Token
         {
@@ -93,7 +93,7 @@ public class AuthenticationController : ControllerBase
         var expiredTokens = user.Tokens!.Where(token => token.ExpiresAt < DateTime.Now);
         _dbContext.Tokens.RemoveRange(expiredTokens);
 
-        List<Claim> claims = [new(ClaimTypes.Name, user.Username), new(ClaimTypes.NameIdentifier, user.Id.ToString())];
+        List<Claim> claims = [new(ClaimTypes.Name, user.Fullname), new(ClaimTypes.NameIdentifier, user.Username)];
         var (accessToken, newRefreshToken) = _passwordHasher.GenerateTokens(claims);
         await _dbContext.Tokens.AddAsync(new Token
         {
