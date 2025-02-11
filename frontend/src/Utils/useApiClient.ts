@@ -90,34 +90,34 @@ export const useApiClient = () => {
                 .then(response => response?.json() as T)
         },
 
-        // put: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
-        //     const options = {
-        //         ...incomingOptions,
-        //         method: "PUT",
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify(payload)
-        //     }
+        put: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
+            const options = {
+                ...incomingOptions,
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }
 
-        //     return interceptedFetch(url, options)
-        //         .then(response => response?.json() as T)
-        // },
+            return interceptedFetch(url, options)
+                .then(response => response?.json() as T)
+        },
 
-        // delete: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
-        //     let queryString
-        //     if (payload != undefined) {
-        //         queryString = new URLSearchParams(payload).toString()
-        //         if (queryString != "") {
-        //             queryString = "?" + queryString
-        //         }
-        //     }
-        //     const options = {
-        //         ...incomingOptions,
-        //         method: "DELETE"
-        //     }
+        delete: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
+            let queryString
+            if (payload != undefined) {
+                queryString = new URLSearchParams(payload).toString()
+                if (queryString != "") {
+                    queryString = "?" + queryString
+                }
+            }
+            const options = {
+                ...incomingOptions,
+                method: "DELETE"
+            }
 
-        //     return interceptedFetch(url + queryString, options)
-        //         .then(response => response?.json() as T)
-        // }
+            return interceptedFetch(url + queryString, options)
+                .then(response => response?.json() as T)
+        }
     }
 
 }
