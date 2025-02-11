@@ -56,7 +56,6 @@ export const TagsInput = ({ tags, setTags, autocompleteList, htmlId }: TagsProps
                     list={htmlId + "List"}
                     placeholder=""
                     id={htmlId}
-                    required
                     value={tagsInput}
                     onKeyDown={keyDown}
                     onChange={onChange}

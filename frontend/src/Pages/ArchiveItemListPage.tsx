@@ -22,6 +22,10 @@ export const ArchiveItemListPage = () => {
 
     const apiClient = useApiClient()
 
+    // useSignalR("archiveItemUpdated", (message) => {
+    //     console.log("SignalR - archiveItemUpdated", message)
+    // })
+
     useEffect(() => {
         apiClient.get<ListResponse[]>("/api/archive/List")
             .then(response => {

@@ -60,13 +60,13 @@ public class ArchiveController : ControllerBase
     }
 
 
-    [HttpPatch]
+    [HttpPut]
     public async Task<ActionResult> Update(UpdateRequest updateRequest)
     {
         var archiveItem = await _dbContext.ArchiveItems
-            .Include(archiveItem => archiveItem.Blobs)
-            .Include(archiveItem => archiveItem.Tags)
-            .SingleOrDefaultAsync(x => x.Id == updateRequest.Id);
+            .Include(item => item.Blobs)
+            .Include(item => item.Tags)
+            .SingleOrDefaultAsync(item => item.Id == updateRequest.Id);
 
         if (archiveItem == null)
         {
@@ -74,67 +74,70 @@ public class ArchiveController : ControllerBase
         }
 
         archiveItem.Title = updateRequest.Title;
+        archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
 
-        if (archiveItem.Blobs != null)
-        {
-            foreach (var blob in updateRequest.Blobs)
-            {
-                switch (blob.Type)
-                {
-                    case UpdateRequest.ArchiveUpdateActionType.Added:
-                        var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
-                        archiveItem.Blobs.Add(new Blob
-                        {
-                            PathInStore = filePath,
-                            StoreRoot = StoreRoot.FileStorage.ToString()
-                        });
-                        break;
-                    case UpdateRequest.ArchiveUpdateActionType.Deleted:
-                        var blobItem = archiveItem.Blobs.SingleOrDefault(x => x.Id == blob.Id);
-                        if (blobItem != null)
-                        {
-                            _fileProvider.DeleteFile(blobItem.PathInStore);
-                            _dbContext.Blobs.Remove(blobItem);
-                        }
+        // if (archiveItem.Blobs != null)
+        // {
+        //     foreach (var blob in updateRequest.Blobs)
+        //     {
+        //         switch (blob.Type)
+        //         {
+        //             case UpdateRequest.ArchiveUpdateActionType.Added:
+        //                 var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
+        //                 archiveItem.Blobs.Add(new Blob
+        //                 {
+        //                     PathInStore = filePath,
+        //                     StoreRoot = StoreRoot.FileStorage.ToString()
+        //                 });
+        //                 break;
+        //             case UpdateRequest.ArchiveUpdateActionType.Deleted:
+        //                 var blobItem = archiveItem.Blobs.SingleOrDefault(x => x.Id == blob.Id);
+        //                 if (blobItem != null)
+        //                 {
+        //                     _fileProvider.DeleteFile(blobItem.PathInStore);
+        //                     _dbContext.Blobs.Remove(blobItem);
+        //                 }
 
-                        break;
-                }
+        //                 break;
+        //         }
 
-                if (blob.Tags != null)
-                {
-                    foreach (var tag in blob.Tags)
-                    {
-                        switch (tag.Type)
-                        {
-                            case UpdateRequest.ArchiveUpdateActionType.Added:
-                                archiveItem.Tags.Add(new Tag
-                                {
-                                    Title = tag.Title,
-                                });
-                                break;
-                            case UpdateRequest.ArchiveUpdateActionType.Deleted:
-                                var tagItem = archiveItem.Tags.SingleOrDefault(x => x.Title == tag.Title);
-                                if (tagItem != null)
-                                {
-                                    archiveItem.Tags.Remove(tagItem);
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-        }
+        //         if (blob.Tags != null)
+        //         {
+        //             foreach (var tag in blob.Tags)
+        //             {
+        //                 switch (tag.Type)
+        //                 {
+        //                     case UpdateRequest.ArchiveUpdateActionType.Added:
+        //                         archiveItem.Tags.Add(new Tag
+        //                         {
+        //                             Title = tag.Title,
+        //                         });
+        //                         break;
+        //                     case UpdateRequest.ArchiveUpdateActionType.Deleted:
+        //                         var tagItem = archiveItem.Tags.SingleOrDefault(x => x.Title == tag.Title);
+        //                         if (tagItem != null)
+        //                         {
+        //                             archiveItem.Tags.Remove(tagItem);
+        //                         }
+        //                         break;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         await _dbContext.SaveChangesAsync();
+        
         return Ok();
     }
 
 
     [HttpGet]
-    public async Task<ActionResult<GetResponse>> Get([FromQuery] int id)
+    public async Task<ActionResult<GetResponse>> Get(int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
+            .Include(archiveItem => archiveItem.Tags)
             .SingleOrDefaultAsync(x => x.Id == id);
 
         if (archiveItem == null)
@@ -142,28 +145,28 @@ public class ArchiveController : ControllerBase
             return NotFound();
         }
 
-        var archiveBlobTasks = archiveItem.Blobs!.Select(async blob =>
-        {
-            var file = await _fileProvider.GetFile(blob.PathInStore);
-            return new GetResponse.ArchiveBlob
-            {
-                FileName = file.Metadata.OriginalFilename,
-                Uploaded = file.Metadata.UploadedAt,
-                Data = file.Data,
-                Size = file.Metadata.Size,
-                UploadedBy = file.Metadata.UploadedBy
-            };
-        });
+        // var archiveBlobTasks = archiveItem.Blobs!.Select(async blob =>
+        // {
+        //     var file = await _fileProvider.GetFile(blob.PathInStore);
+        //     return new GetResponse.Blob
+        //     {
+        //         FileName = file.Metadata.OriginalFilename,
+        //         Uploaded = file.Metadata.UploadedAt,
+        //         Data = file.Data,
+        //         Size = file.Metadata.Size,
+        //         UploadedBy = file.Metadata.UploadedBy
+        //     };
+        // });
 
-        var archiveBlobs = await Task.WhenAll(archiveBlobTasks);
+        // var archiveBlobs = await Task.WhenAll(archiveBlobTasks);
 
         return new GetResponse
         {
             Id = archiveItem.Id,
             Title = archiveItem.Title,
-            Tags = archiveItem.Tags.Select(tag => tag.Title).ToList(),
+            Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
             CreatedAt = archiveItem.CreatedAt,
-            ArchiveBlobs = archiveBlobs.ToList()
+            // ArchiveBlobs = [.. archiveBlobs]
         };
     }
 
@@ -227,29 +230,23 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
-        public required List<ArchiveBlobUpdateRequest> Blobs { get; set; }
+        public required List<string> Tags { get; set; }
+        // public required List<Blob> Blobs { get; set; }
 
-        public class ArchiveBlobUpdateRequest
-        {
-            public ArchiveUpdateActionType Type { get; set; }
-            public List<ArchiveTagUpdateRequest>? Tags { get; set; }
-            public int Id { get; set; }
-            public string? FileName { get; set; }
-            public string? Data { get; set; }
-        }
+        // public class Blob
+        // {
+        //     public ArchiveUpdateActionType Type { get; set; }
+        //     public int Id { get; set; }
+        //     public string? FileName { get; set; }
+        //     public string? Data { get; set; }
+        // }
 
-        public class ArchiveTagUpdateRequest
-        {
-            public ArchiveUpdateActionType Type { get; set; }
-            public string? Title { get; set; }
-        }
-
-        public enum ArchiveUpdateActionType
-        {
-            NoChanges = 0,
-            Added = 1,
-            Deleted = 2
-        }
+        // public enum ArchiveUpdateActionType
+        // {
+        //     NoChanges = 0,
+        //     Added = 1,
+        //     Deleted = 2
+        // }
     }
 
     public class GetResponse
@@ -258,16 +255,16 @@ public class ArchiveController : ControllerBase
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public required List<string> Tags { get; set; }
-        public required List<ArchiveBlob> ArchiveBlobs { get; set; }
+        // public required List<Blob> ArchiveBlobs { get; set; }
 
-        public class ArchiveBlob
-        {
-            public required string FileName { get; set; }
-            public DateTimeOffset Uploaded { get; set; }
-            public required string UploadedBy { get; set; }
-            public required string Data { get; set; }
-            public long Size { get; set; }
-        }
+        // public class Blob
+        // {
+        //     public required string FileName { get; set; }
+        //     public DateTimeOffset Uploaded { get; set; }
+        //     public required string UploadedBy { get; set; }
+        //     public required string Data { get; set; }
+        //     public long Size { get; set; }
+        // }
     }
     #endregion
 }
