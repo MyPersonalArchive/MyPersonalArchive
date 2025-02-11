@@ -8,7 +8,7 @@ namespace Backend.WebApi.Controllers;
 
 
 [ApiController]
-[Route("api/[Controller]")]
+[Route("api/[Controller]/[Action]")]
 [Authorize]
 public class ArchiveController : ControllerBase
 {
@@ -21,7 +21,7 @@ public class ArchiveController : ControllerBase
         _fileProvider = fileProvider;
     }
 
-    [HttpGet("List")]
+    [HttpGet]
     public async Task<ActionResult<IEnumerable<ListResponse>>> List(/*ListRequest request*/)
     {
         return await _dbContext.ArchiveItems
@@ -36,7 +36,7 @@ public class ArchiveController : ControllerBase
     }
 
 
-    [HttpPost("Create")]
+    [HttpPost]
     public async Task<ActionResult> Create(CreateRequest request)
     {
         var tasks = request.Blobs.Select(blob => _fileProvider.StoreFile(blob.FileName, blob.FileData));
@@ -59,41 +59,9 @@ public class ArchiveController : ControllerBase
         return Ok();
     }
 
-    [HttpPost]
-    public async Task<ActionResult> PostArchiveItem(PostArchiveItemRequest archiveItem)
-    {
-        var blobs = new List<Blob>();
-        var tags = new List<Tag>();
-        foreach (var blob in archiveItem.Blobs)
-        {
-            var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
-            blobs.Add(new Blob
-            {
-                PathInStore = filePath,
-                StoreRoot = StoreRoot.FileStorage.ToString(),
-            });
-
-            var blobTags = blob.Tags.Select(tag => new Tag
-            {
-                Title = tag.Title,
-            });
-            tags.AddRange(blobTags);
-        }
-
-        _dbContext.ArchiveItems.Add(new ArchiveItem
-        {
-            CreatedAt = DateTime.Now,
-            Title = archiveItem.Title,
-            Tags = tags,
-            Blobs = blobs
-        });
-
-        await _dbContext.SaveChangesAsync();
-        return Ok();
-    }
 
     [HttpPatch]
-    public async Task<ActionResult> UpdateArchiveItem(UpdateArchiveItemRequest updateRequest)
+    public async Task<ActionResult> Update(UpdateRequest updateRequest)
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
@@ -113,7 +81,7 @@ public class ArchiveController : ControllerBase
             {
                 switch (blob.Type)
                 {
-                    case UpdateArchiveItemRequest.ArchiveUpdateActionType.Added:
+                    case UpdateRequest.ArchiveUpdateActionType.Added:
                         var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
                         archiveItem.Blobs.Add(new Blob
                         {
@@ -121,7 +89,7 @@ public class ArchiveController : ControllerBase
                             StoreRoot = StoreRoot.FileStorage.ToString()
                         });
                         break;
-                    case UpdateArchiveItemRequest.ArchiveUpdateActionType.Deleted:
+                    case UpdateRequest.ArchiveUpdateActionType.Deleted:
                         var blobItem = archiveItem.Blobs.SingleOrDefault(x => x.Id == blob.Id);
                         if (blobItem != null)
                         {
@@ -138,13 +106,13 @@ public class ArchiveController : ControllerBase
                     {
                         switch (tag.Type)
                         {
-                            case UpdateArchiveItemRequest.ArchiveUpdateActionType.Added:
+                            case UpdateRequest.ArchiveUpdateActionType.Added:
                                 archiveItem.Tags.Add(new Tag
                                 {
                                     Title = tag.Title,
                                 });
                                 break;
-                            case UpdateArchiveItemRequest.ArchiveUpdateActionType.Deleted:
+                            case UpdateRequest.ArchiveUpdateActionType.Deleted:
                                 var tagItem = archiveItem.Tags.SingleOrDefault(x => x.Title == tag.Title);
                                 if (tagItem != null)
                                 {
@@ -162,8 +130,8 @@ public class ArchiveController : ControllerBase
     }
 
 
-    [HttpGet("Get")]
-    public async Task<ActionResult<GetArchiveItemResponse>> GetArchivedItem([FromQuery] int id)
+    [HttpGet]
+    public async Task<ActionResult<GetResponse>> Get([FromQuery] int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
@@ -177,7 +145,7 @@ public class ArchiveController : ControllerBase
         var archiveBlobTasks = archiveItem.Blobs!.Select(async blob =>
         {
             var file = await _fileProvider.GetFile(blob.PathInStore);
-            return new GetArchiveItemResponse.ArchiveBlob
+            return new GetResponse.ArchiveBlob
             {
                 FileName = file.Metadata.OriginalFilename,
                 Uploaded = file.Metadata.UploadedAt,
@@ -189,10 +157,11 @@ public class ArchiveController : ControllerBase
 
         var archiveBlobs = await Task.WhenAll(archiveBlobTasks);
 
-        return new GetArchiveItemResponse
+        return new GetResponse
         {
             Id = archiveItem.Id,
             Title = archiveItem.Title,
+            Tags = archiveItem.Tags.Select(tag => tag.Title).ToList(),
             CreatedAt = archiveItem.CreatedAt,
             ArchiveBlobs = archiveBlobs.ToList()
         };
@@ -200,7 +169,7 @@ public class ArchiveController : ControllerBase
 
 
     [HttpDelete]
-    public async Task<ActionResult> DeleteArchivedItem(int id)
+    public async Task<ActionResult> Delete([FromQuery] int id)
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
@@ -227,6 +196,7 @@ public class ArchiveController : ControllerBase
     }
 
 
+    #region Request and response models
     public class ListRequest
     {
         //TODO: Is filtering or paging needed?
@@ -253,26 +223,7 @@ public class ArchiveController : ControllerBase
         }
     }
 
-
-    public class PostArchiveItemRequest
-    {
-        public required string Title { get; set; }
-        public required List<ArchiveBlobRequest> Blobs { get; set; }
-
-        public class ArchiveBlobRequest
-        {
-            public required List<ArchiveTagRequest> Tags { get; set; }
-            public required string FileName { get; set; }
-            public required string Data { get; set; }
-        }
-
-        public class ArchiveTagRequest
-        {
-            public required string Title { get; set; }
-        }
-    }
-
-    public class UpdateArchiveItemRequest
+    public class UpdateRequest
     {
         public int Id { get; set; }
         public required string Title { get; set; }
@@ -301,11 +252,12 @@ public class ArchiveController : ControllerBase
         }
     }
 
-    public class GetArchiveItemResponse
+    public class GetResponse
     {
         public int Id { get; set; }
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+        public required List<string> Tags { get; set; }
         public required List<ArchiveBlob> ArchiveBlobs { get; set; }
 
         public class ArchiveBlob
@@ -317,5 +269,6 @@ public class ArchiveController : ControllerBase
             public long Size { get; set; }
         }
     }
+    #endregion
 }
 
