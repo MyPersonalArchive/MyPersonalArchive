@@ -42,7 +42,7 @@ const routers = createBrowserRouter([
                                 element: <ArchiveItemEditPage />
                             },
                             {
-                                path: "receipt/new",
+                                path: "archive/new",
                                 element: <ArchiveItemNewPage />
                             }
                         ]
