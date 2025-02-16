@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png";
@@ -7,6 +7,9 @@ import { accessTokenAtom, lastLoggedInUsernameAtom, loggedInUserAtom } from "../
 
 
 export const SignInPage = () => {
+    const userNameInputRef = useRef<HTMLInputElement>()
+    const passwordInputRef = useRef<HTMLInputElement>()
+
     const [lastLoggedInUsername, setLastLoggedInUsername] = useAtom(lastLoggedInUsernameAtom)
     const setAccessToken = useSetAtom(accessTokenAtom)
 
@@ -17,6 +20,14 @@ export const SignInPage = () => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        if(username === "" && userNameInputRef.current) {
+            userNameInputRef.current.focus()
+        } else if(password === "" && passwordInputRef.current) {
+            passwordInputRef.current.focus()
+        }
+    })
 
     const login = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -86,9 +97,9 @@ export const SignInPage = () => {
                                 <input
                                     type="email"
                                     id="username"
+                                    ref={userNameInputRef}
                                     autoComplete="username"
                                     placeholder=""
-                                    autoFocus
                                     required
                                     value={username}
                                     onChange={event => setUsername(event.target.value)}
@@ -99,9 +110,10 @@ export const SignInPage = () => {
                                 &nbsp;
                                 <input
                                     type="password"
+                                    id="password"
+                                    ref={passwordInputRef}
                                     autoComplete="current-password"
                                     placeholder=""
-                                    id="password"
                                     required
                                     value={password}
                                     onChange={event => setPassword(event.target.value)}

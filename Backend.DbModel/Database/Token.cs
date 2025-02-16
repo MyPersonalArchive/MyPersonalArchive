@@ -11,7 +11,7 @@ public class Token : SharedEntity
 
     [StringLength(80)]
     [Required]
-    public required string Username { get; set; }
+    [ForeignKey(nameof(User))]    public required string Username { get; set; }
 
     [MaxLength(44)] // Length for a Base64 encoding of a 256 bit binary (256/8 = 32 bytes, each 3 bytes encodes into 4 characters of base 64 => 44 characters)
     [Required]

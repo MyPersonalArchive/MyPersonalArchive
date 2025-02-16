@@ -161,7 +161,7 @@ public static class Program
                     new ArchiveItem {
                         Id = 2,
                         Title = "Second demo item",
-                        Tags = Tags.Ensure(dbContext, "Techno", "Pop", "Rave"),
+                        Tags = Tags.Ensure(dbContext, "Techno", "Rave"),
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
                     },
                     new ArchiveItem {

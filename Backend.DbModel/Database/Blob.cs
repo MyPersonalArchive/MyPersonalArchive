@@ -18,4 +18,6 @@ public class Blob : TenantEntity
     [Required]
     public required string PathInStore { get; set; }    // Relative to the blob store root
     public required string StoreRoot { get; set; }   // Multiple blob stores could exist (local, cloud, etc.)
+
+    public ArchiveItem? ArchiveItem { get; set; }
 }
