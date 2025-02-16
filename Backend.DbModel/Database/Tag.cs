@@ -28,7 +28,6 @@ public static class Tags
     {
         Tag EnsureTag(string tagTitle) => dbContext.Tags.FirstOrDefault(x => x.Title == tagTitle) ?? dbContext.Tags.Add(new Tag { Title = tagTitle }).Entity;
         var tags = tagTitles.Distinct().Select(EnsureTag);
-        dbContext.SaveChanges();
         
         return [.. tags];
     }

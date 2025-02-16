@@ -24,6 +24,7 @@ namespace Backend.DbModel.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ArchiveItems", x => x.Id);
+                    table.UniqueConstraint("AK_ArchiveItems_Id_TenantId", x => new { x.Id, x.TenantId });
                 });
 
             migrationBuilder.CreateTable(
@@ -38,6 +39,7 @@ namespace Backend.DbModel.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tag", x => x.Id);
+                    table.UniqueConstraint("AK_Tag_Id_TenantId", x => new { x.Id, x.TenantId });
                 });
 
             migrationBuilder.CreateTable(
@@ -79,16 +81,18 @@ namespace Backend.DbModel.Migrations
                     PathInStore = table.Column<string>(type: "TEXT", nullable: false),
                     StoreRoot = table.Column<string>(type: "TEXT", nullable: false),
                     ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: true),
+                    ArchiveItemTenantId = table.Column<int>(type: "INTEGER", nullable: true),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Blob", x => x.Id);
+                    table.UniqueConstraint("AK_Blob_Id_TenantId", x => new { x.Id, x.TenantId });
                     table.ForeignKey(
-                        name: "FK_Blob_ArchiveItems_ArchiveItemId",
-                        column: x => x.ArchiveItemId,
+                        name: "FK_Blob_ArchiveItems_ArchiveItemId_ArchiveItemTenantId",
+                        columns: x => new { x.ArchiveItemId, x.ArchiveItemTenantId },
                         principalTable: "ArchiveItems",
-                        principalColumn: "Id");
+                        principalColumns: new[] { "Id", "TenantId" });
                 });
 
             migrationBuilder.CreateTable(
@@ -105,16 +109,16 @@ namespace Backend.DbModel.Migrations
                 {
                     table.PrimaryKey("PK_ArchiveItemAndTag", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ArchiveItemAndTag_ArchiveItems_ArchiveItemId",
-                        column: x => x.ArchiveItemId,
+                        name: "FK_ArchiveItemAndTag_ArchiveItems_ArchiveItemId_TenantId",
+                        columns: x => new { x.ArchiveItemId, x.TenantId },
                         principalTable: "ArchiveItems",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "Id", "TenantId" },
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ArchiveItemAndTag_Tag_TagId",
-                        column: x => x.TagId,
+                        name: "FK_ArchiveItemAndTag_Tag_TagId_TenantId",
+                        columns: x => new { x.TagId, x.TenantId },
                         principalTable: "Tag",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "Id", "TenantId" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -185,14 +189,19 @@ namespace Backend.DbModel.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ArchiveItemAndTag_TagId",
+                name: "IX_ArchiveItemAndTag_ArchiveItemId_TenantId",
                 table: "ArchiveItemAndTag",
-                column: "TagId");
+                columns: new[] { "ArchiveItemId", "TenantId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Blob_ArchiveItemId",
+                name: "IX_ArchiveItemAndTag_TagId_TenantId",
+                table: "ArchiveItemAndTag",
+                columns: new[] { "TagId", "TenantId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Blob_ArchiveItemId_ArchiveItemTenantId",
                 table: "Blob",
-                column: "ArchiveItemId");
+                columns: new[] { "ArchiveItemId", "ArchiveItemTenantId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tag_Title_TenantId",

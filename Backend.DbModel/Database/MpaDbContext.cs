@@ -77,30 +77,40 @@ public class MpaDbContext : DbContext
     {
         // Configure relationships between entities that are not automatically discovered by EF Core conventions
         modelBuilder.Entity<User>()
-            .HasIndex(user => user.Username)
-            .IsUnique();
+            .HasAlternateKey(user => user.Username);
 
         modelBuilder.Entity<Token>()
-            .HasOne(e => e.User)
-            .WithMany(e => e.Tokens)
-            .HasForeignKey(e => e.Username)
-            .HasPrincipalKey(e => e.Username);
+            .HasOne(token => token.User)
+            .WithMany(user => user.Tokens)
+            .HasForeignKey(token => token.Username)
+            .HasPrincipalKey(user => user.Username);
 
         modelBuilder.Entity<User>()
             .HasMany(user => user.Tenants)
             .WithMany(tenant => tenant.Users)
             .UsingEntity<UserTenant>(
-                l => l.HasOne<Tenant>().WithMany().HasForeignKey(e => e.TenantId),
-                r => r.HasOne<User>().WithMany().HasForeignKey(e => e.UserId)
+                l => l.HasOne<Tenant>().WithMany().HasForeignKey(userTenant => userTenant.TenantId),
+                r => r.HasOne<User>().WithMany().HasForeignKey(userTenant => userTenant.UserId)
             );
 
+        modelBuilder.Entity<Tag>()
+            .HasAlternateKey(tag => new { tag.Id, tag.TenantId });
+        modelBuilder.Entity<ArchiveItem>()
+            .HasAlternateKey(item => new { item.Id, item.TenantId });
         modelBuilder.Entity<ArchiveItem>()
             .HasMany(archiveItem => archiveItem.Tags)
             .WithMany(tag => tag.ArchiveItems)
             .UsingEntity<ArchiveItemAndTag>(
-                l => l.HasOne<Tag>().WithMany().HasForeignKey(e => e.TagId),
-                r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(e => e.ArchiveItemId)
+                l => l.HasOne<Tag>().WithMany().HasForeignKey(m2m => new {m2m.TagId, m2m.TenantId}).HasPrincipalKey(tag => new {tag.Id, tag.TenantId}),
+                r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(m2m => new {m2m.ArchiveItemId, m2m.TenantId}).HasPrincipalKey(item => new {item.Id, item.TenantId})
             );
+
+        modelBuilder.Entity<Blob>()
+            .HasAlternateKey(blob => new { blob.Id, blob.TenantId });
+        modelBuilder.Entity<ArchiveItem>()
+            .HasMany(archiveItem => archiveItem.Blobs)
+            .WithOne(blob => blob.ArchiveItem)
+            .HasPrincipalKey(archiveItem => new { archiveItem.Id, archiveItem.TenantId });
     }
 
     private void SeedDatabase(ModelBuilder modelBuilder)
@@ -128,7 +138,23 @@ public class MpaDbContext : DbContext
 
     }
 
-    public override int SaveChanges()
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        SetupChangeTrackingForSaveChanges();
+
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        SetupChangeTrackingForSaveChanges();
+
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void SetupChangeTrackingForSaveChanges()
     {
         var invalidEntities = ChangeTracker.Entries().Where(e => e.Entity is not (SharedEntity or TenantEntity));
         if (invalidEntities.Any())
@@ -146,8 +172,6 @@ public class MpaDbContext : DbContext
                 entry.Entity.TenantId = tenantId;
             }
         }
-
-        return base.SaveChanges();
     }
 
 

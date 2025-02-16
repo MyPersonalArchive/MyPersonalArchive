@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    [Migration("20250209221631_Initial")]
+    [Migration("20250216154720_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -59,10 +59,12 @@ namespace Backend.DbModel.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TagId");
-
                     b.HasIndex("ArchiveItemId", "TagId")
                         .IsUnique();
+
+                    b.HasIndex("ArchiveItemId", "TenantId");
+
+                    b.HasIndex("TagId", "TenantId");
 
                     b.ToTable("ArchiveItemAndTag");
                 });
@@ -74,6 +76,9 @@ namespace Backend.DbModel.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("ArchiveItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ArchiveItemTenantId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PathInStore")
@@ -89,7 +94,9 @@ namespace Backend.DbModel.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArchiveItemId");
+                    b.HasAlternateKey("Id", "TenantId");
+
+                    b.HasIndex("ArchiveItemId", "ArchiveItemTenantId");
 
                     b.ToTable("Blob");
                 });
@@ -238,22 +245,27 @@ namespace Backend.DbModel.Migrations
                 {
                     b.HasOne("Backend.DbModel.Database.ArchiveItem", null)
                         .WithMany()
-                        .HasForeignKey("ArchiveItemId")
+                        .HasForeignKey("ArchiveItemId", "TenantId")
+                        .HasPrincipalKey("Id", "TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Backend.DbModel.Database.Tag", null)
                         .WithMany()
-                        .HasForeignKey("TagId")
+                        .HasForeignKey("TagId", "TenantId")
+                        .HasPrincipalKey("Id", "TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.Blob", b =>
                 {
-                    b.HasOne("Backend.DbModel.Database.ArchiveItem", null)
+                    b.HasOne("Backend.DbModel.Database.ArchiveItem", "ArchiveItem")
                         .WithMany("Blobs")
-                        .HasForeignKey("ArchiveItemId");
+                        .HasForeignKey("ArchiveItemId", "ArchiveItemTenantId")
+                        .HasPrincipalKey("Id", "TenantId");
+
+                    b.Navigation("ArchiveItem");
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.Token", b =>
