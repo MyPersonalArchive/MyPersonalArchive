@@ -89,6 +89,9 @@ namespace Backend.DbModel.Migrations
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasAlternateKey("Id", "TenantId");

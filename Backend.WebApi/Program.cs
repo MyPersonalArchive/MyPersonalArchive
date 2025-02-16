@@ -156,18 +156,21 @@ public static class Program
                         Id = 1,
                         Title = "First demo item",
                         Tags = Tags.Ensure(dbContext, "Disco", "Pop", "Metal", "Rock"),
+                        Blobs = [],
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 0, 0, timezoneOffset)
                     },
                     new ArchiveItem {
                         Id = 2,
                         Title = "Second demo item",
                         Tags = Tags.Ensure(dbContext, "Techno", "Rave"),
+                        Blobs = [],
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
                     },
                     new ArchiveItem {
                         Id = 3,
                         Title = "Third demo item",
                         Tags = Tags.Ensure(dbContext, "House", "EDM", "Hiphop"),
+                        Blobs = [],
                         CreatedAt = new DateTimeOffset(2025, 2, 9, 15, 20, 0, timezoneOffset)
                     }
             };

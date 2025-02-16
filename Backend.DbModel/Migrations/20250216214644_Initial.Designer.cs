@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    [Migration("20250216154720_Initial")]
+    [Migration("20250216214644_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -91,6 +91,9 @@ namespace Backend.DbModel.Migrations
 
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

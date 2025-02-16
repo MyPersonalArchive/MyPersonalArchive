@@ -80,6 +80,7 @@ namespace Backend.DbModel.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     PathInStore = table.Column<string>(type: "TEXT", nullable: false),
                     StoreRoot = table.Column<string>(type: "TEXT", nullable: false),
+                    UploadedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: true),
                     ArchiveItemTenantId = table.Column<int>(type: "INTEGER", nullable: true),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
