@@ -7,8 +7,8 @@ import { accessTokenAtom, lastLoggedInUsernameAtom, loggedInUserAtom } from "../
 
 
 export const SignInPage = () => {
-    const userNameInputRef = useRef<HTMLInputElement>()
-    const passwordInputRef = useRef<HTMLInputElement>()
+    const userNameInputRef = useRef<HTMLInputElement>(null)
+    const passwordInputRef = useRef<HTMLInputElement>(null)
 
     const [lastLoggedInUsername, setLastLoggedInUsername] = useAtom(lastLoggedInUsernameAtom)
     const setAccessToken = useSetAtom(accessTokenAtom)
