@@ -14,7 +14,7 @@ public class ArchiveItem : TenantEntity
 
     public required DateTimeOffset CreatedAt { get; set; }
 
-    public ICollection<Blob>? Blobs { get; set; }
+    public required ICollection<Blob> Blobs { get; set; }
 
-    public ICollection<Tag> Tags { get; set; } = [];
+    public required ICollection<Tag> Tags { get; set; }
 }

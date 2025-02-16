@@ -165,6 +165,7 @@ public class ArchiveController : ControllerBase
             Id = archiveItem.Id,
             Title = archiveItem.Title,
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
+            BlobIds = [.. archiveItem.Blobs.Select(blob => blob.Id)],
             CreatedAt = archiveItem.CreatedAt,
             // ArchiveBlobs = [.. archiveBlobs]
         };
@@ -255,7 +256,7 @@ public class ArchiveController : ControllerBase
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public required List<string> Tags { get; set; }
-        // public required List<Blob> ArchiveBlobs { get; set; }
+        public required List<int> BlobIds { get; set; }
 
         // public class Blob
         // {
