@@ -117,7 +117,26 @@ export const useApiClient = () => {
 
             return interceptedFetch(url + queryString, options)
                 .then(response => response?.json() as T)
+        },
+
+        getBlob: async (url: string, payload: any = {}, incomingOptions?: RequestInit) => {
+            let queryString
+            if (payload != undefined) {
+                queryString = new URLSearchParams(payload).toString()
+                if (queryString != "") {
+                    queryString = "?" + queryString
+                }
+            }
+            const options = {
+                ...incomingOptions,
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            }
+
+            return interceptedFetch(url + queryString, options)
+                .then(response => response?.blob())
         }
+
     }
 
 }
