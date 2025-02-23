@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
@@ -6,13 +6,15 @@ import { useApiClient } from "../Utils/useApiClient"
 type GetResponse = {
     id: number
     title: string
-    tags: string[]
+    tags: string[],
+    blobIds: number[]
 }
 
 type UpdateRequest = {
     id: number
     title: string
     tags: string[]
+    blobIds: number[]
 }
 
 
@@ -20,6 +22,7 @@ export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
     const [title, setTitle] = useState<string | null>(null)
     const [tags, setTags] = useState<string[]>([])
+    const [blobIds, setBlobIds] = useState<number[]>([])
 
     const params = useParams()
     const navigate = useNavigate()
@@ -31,6 +34,7 @@ export const ArchiveItemEditPage = () => {
                 setId(item.id)
                 setTitle(item.title)
                 setTags(item.tags)
+                setBlobIds(item.blobIds)
             })
     }, [])
 
@@ -40,7 +44,7 @@ export const ArchiveItemEditPage = () => {
         //TODO: Tags is not updated from UI!
 
         const requestData: UpdateRequest = {
-            id: id!, title: title!, tags
+            id: id!, title: title!, tags, blobIds
         }
         apiClient.put("/api/archive/Update", requestData, {})
 
@@ -74,6 +78,12 @@ export const ArchiveItemEditPage = () => {
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" />
                 </div>
                 <div>
+                    here!
+                    {
+                        blobIds.map((blobId, ix) => <Preview key={ix} blobId={blobId} />)
+                    }
+                </div>
+                <div>
                     <button type="button" onClick={back}>
                         Back
                     </button>
@@ -84,4 +94,30 @@ export const ArchiveItemEditPage = () => {
             </form>
         </div>
     )
+}
+
+
+type PreviewProps = {
+    blobId: number
+}
+const Preview = ({ blobId }: PreviewProps) => {
+    const imgRef = useRef<HTMLImageElement>(null)
+    const apiClient = useApiClient()
+
+    useEffect(() => {
+        if (imgRef.current !== null) {
+            apiClient.getBlob("/api/blob/Preview", {blobId, dimensions: 1, page: 1})
+                .then(blob => {
+                    const url = URL.createObjectURL(blob)
+                    imgRef.current!.src = url
+                })
+        }
+    }, [])
+
+    return <>
+        <img
+            ref={imgRef}
+            className="preview"
+            alt="Preview image" />
+    </>
 }

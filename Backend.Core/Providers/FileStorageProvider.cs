@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NetVips;
+using Microsoft.VisualBasic;
 
 namespace Backend.Core.Providers;
 
@@ -12,7 +14,8 @@ namespace Backend.Core.Providers;
 public interface IFileStorageProvider
 {
     Task<string> StoreFile(string fileName, string data);
-    Task<StorageFile> GetFile(string filePath);
+    Stream GetFile(string filePath, out FileMetadata metadata);
+    Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
     void DeleteFile(string fileName);
 }
 
@@ -25,12 +28,22 @@ public class FileStorageProvider : IFileStorageProvider
 
     public FileStorageProvider(IOptions<AppConfig> config, AmbientDataResolver resolver)
     {
-        _baseFolder = config.Value.BlobFolder;
         _resolver = resolver;
+        _baseFolder = Path.Combine(config.Value.BlobFolder, resolver.GetCurrentTenantId().ToString());
     }
+
+
+    public async Task<string> StoreFile(Stream stream, FileMetadata metadata)
+    {
+        //TODO:
+        //TODO: If PDF, store the number of pages in the metadata
+        throw new NotImplementedException();
+    }
+
 
     public async Task<string> StoreFile(string fileName, string data)
     {
+        //TODO: If PDF, store the number of pages in the metadata
         var username = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
 
         if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(data)) return null;
@@ -45,34 +58,45 @@ public class FileStorageProvider : IFileStorageProvider
 
         var filePath = Path.Combine(folderPath, uniqueFileId) + Path.GetExtension(fileName);
         var dataBytes = StripBase64AndConvertToByteArray(data);
-        
+
         await File.WriteAllTextAsync(Path.ChangeExtension(filePath, MetadataExtension), JsonConvert.SerializeObject(new FileMetadata
-            {
-                MimeType = GetMimeTypeFromBase64(data),
-                Size = dataBytes.Length,
-                OriginalFilename = fileName,
-                Hash = ComputeSha256Hash(data),
-                UploadedAt = DateTimeOffset.Now,
-                UploadedBy = username
-            }));
+        {
+            MimeType = GetMimeTypeFromBase64(data),
+            Size = dataBytes.Length,
+            OriginalFilename = fileName,
+            Hash = ComputeSha256Hash(data),
+            UploadedAt = DateTimeOffset.Now,
+            UploadedBy = username
+        }));
         await File.WriteAllBytesAsync(filePath, dataBytes);
 
         return filePath;
     }
 
-    public async Task<StorageFile> GetFile(string filePath)
+
+
+    public Stream GetFile(string filePath, out FileMetadata metadata)
     {
         var metadataPath = Path.ChangeExtension(filePath, MetadataExtension);
 
-        var metadata = JsonConvert.DeserializeObject<FileMetadata>(await File.ReadAllTextAsync(metadataPath));
-        var data = await File.ReadAllBytesAsync(filePath);
+        metadata = JsonConvert.DeserializeObject<FileMetadata>(File.ReadAllText(metadataPath));
 
-        return new StorageFile
-        {
-            Data = $"{metadata.MimeType}{Convert.ToBase64String(data)}",
-            Metadata = metadata
-        };
+        var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read); //.ReadAllBytesAsync(filePath);
+        return stream;
     }
+
+
+    public Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata)
+    {
+        var originalStream = GetFile(filePath, out metadata);
+
+        var previewStream = new MemoryStream();
+        //TODO: if PDF, use Image.PdfLoadStream(originalStream, pageNo)
+        Image.NewFromStream(originalStream).ThumbnailImage(maxX, maxY).WriteToStream(previewStream, ".jpg");
+        previewStream.Position = 0;
+        return previewStream;
+    }
+
 
     public void DeleteFile(string fileName)
     {
@@ -84,7 +108,7 @@ public class FileStorageProvider : IFileStorageProvider
         if (File.Exists(filePath)) File.Delete(filePath);
     }
 
-    private string GetFolderPath(string uniqueFileName) => Path.Combine(_baseFolder, uniqueFileName.Replace("-", "/"));
+    private string GetFolderPath(string uniqueFileName) => Path.Combine(_baseFolder, uniqueFileName[..2], uniqueFileName[..4], uniqueFileName[..6]);
 
     private string GetMimeTypeFromBase64(string value) => Regex.Split(value, @"(?<=[,])")[0].Trim(); //Because ',' is an invalid base64 character we can safely split on this
 
@@ -109,11 +133,6 @@ public class FileStorageProvider : IFileStorageProvider
     }
 }
 
-public class StorageFile
-{
-    public string Data { get; set; }
-    public FileMetadata Metadata { get; set; }
-}
 
 public class FileMetadata
 {
