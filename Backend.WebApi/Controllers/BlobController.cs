@@ -1,3 +1,4 @@
+using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Microsoft.AspNetCore.Authorization;
@@ -23,10 +24,8 @@ public class BlobController : ControllerBase
 
 
     [HttpGet]
-    public async Task<ActionResult<FileContentResult>> GetRawFile([FromQuery] int blobId)
+    public async Task<ActionResult<FileContentResult>> Download([FromQuery] int blobId)
     {
-        //TODO: Idea for later: Require special role or priviliges to download raw files
-
         var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
         if (blob == null)
         {
@@ -39,19 +38,22 @@ public class BlobController : ControllerBase
 
 
     [HttpGet]
-    public async Task<ActionResult<byte[]>> Preview([FromQuery] int blobId, [FromQuery] DimensionEnum dimensions, [FromQuery] int pageNo = 1)
+    public async Task<ActionResult<byte[]>> Preview(
+        [FromQuery] int blobId,
+        [FromQuery] DimensionEnum dimensions,
+        [FromQuery] int pageNumber = 1
+    )
     {
-        // IMPORTANT: GetPreviewImage must be a HTTP GET request, so that the URL can be used in <img src="..."> tags
-        // TODO: Idea for later: preview images can have watermarks
-
         var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
         if (blob == null)
         {
             return NotFound();
         }
 
-        var stream = _fileProvider.GetPreview(blob.PathInStore, 400, 400, pageNo, out var metadata);
-        return File(stream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNo}).jpg");
+        var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
+        string mimeType = metadata.MimeType.Replace("data:", "").Replace(";base64,", "");
+        var previewStream = PreviewGenerator.GeneratePreview(originalStream, mimeType, 300, 300, pageNumber);
+        return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
     }
 
 
@@ -61,4 +63,5 @@ public class BlobController : ControllerBase
         Medium,
         Large
     }
+
 }

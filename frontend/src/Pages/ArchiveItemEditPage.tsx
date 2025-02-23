@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
+import { Preview } from "../Components/Preview"
 
 type GetResponse = {
     id: number
@@ -77,8 +78,7 @@ export const ArchiveItemEditPage = () => {
                     <label htmlFor="tags">Tags</label>
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" />
                 </div>
-                <div>
-                    here!
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                     {
                         blobIds.map((blobId, ix) => <Preview key={ix} blobId={blobId} />)
                     }
@@ -94,30 +94,4 @@ export const ArchiveItemEditPage = () => {
             </form>
         </div>
     )
-}
-
-
-type PreviewProps = {
-    blobId: number
-}
-const Preview = ({ blobId }: PreviewProps) => {
-    const imgRef = useRef<HTMLImageElement>(null)
-    const apiClient = useApiClient()
-
-    useEffect(() => {
-        if (imgRef.current !== null) {
-            apiClient.getBlob("/api/blob/Preview", {blobId, dimensions: 1, page: 1})
-                .then(blob => {
-                    const url = URL.createObjectURL(blob)
-                    imgRef.current!.src = url
-                })
-        }
-    }, [])
-
-    return <>
-        <img
-            ref={imgRef}
-            className="preview"
-            alt="Preview image" />
-    </>
 }

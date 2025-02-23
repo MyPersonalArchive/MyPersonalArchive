@@ -1,4 +1,4 @@
-﻿using System.Buffers.Text;
+using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,7 +15,7 @@ public interface IFileStorageProvider
 {
     Task<string> StoreFile(string fileName, string data);
     Stream GetFile(string filePath, out FileMetadata metadata);
-    Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
+    // Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
     void DeleteFile(string fileName);
 }
 
@@ -30,14 +30,6 @@ public class FileStorageProvider : IFileStorageProvider
     {
         _resolver = resolver;
         _baseFolder = Path.Combine(config.Value.BlobFolder, resolver.GetCurrentTenantId().ToString());
-    }
-
-
-    public async Task<string> StoreFile(Stream stream, FileMetadata metadata)
-    {
-        //TODO:
-        //TODO: If PDF, store the number of pages in the metadata
-        throw new NotImplementedException();
     }
 
 
@@ -81,20 +73,9 @@ public class FileStorageProvider : IFileStorageProvider
 
         metadata = JsonConvert.DeserializeObject<FileMetadata>(File.ReadAllText(metadataPath));
 
-        var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read); //.ReadAllBytesAsync(filePath);
+        var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);   //This stream will be returned to the caller, and should NOT be disposed here
+        stream.Position = 0;
         return stream;
-    }
-
-
-    public Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata)
-    {
-        var originalStream = GetFile(filePath, out metadata);
-
-        var previewStream = new MemoryStream();
-        //TODO: if PDF, use Image.PdfLoadStream(originalStream, pageNo)
-        Image.NewFromStream(originalStream).ThumbnailImage(maxX, maxY).WriteToStream(previewStream, ".jpg");
-        previewStream.Position = 0;
-        return previewStream;
     }
 
 

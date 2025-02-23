@@ -27,10 +27,11 @@ body {
     }
 
     header {
-        background: url(../assets/receiptly_logo.png) no-repeat  27px/27px;
+        background: url(../assets/receiptly_logo.png) no-repeat 27px/27px;
         background-position: .6em .3em;
         background-color: var(--complementary-background-color);
-        &>*:first-child{
+
+        &>*:first-child {
             margin-left: 1.5em;
         }
     }
@@ -64,7 +65,7 @@ button {
 }
 
 *+input,
-*+span.input{
+*+span.input {
     margin-left: 1em;
 }
 
@@ -100,9 +101,37 @@ span.tag {
     /* margin-left: .2em; */
     margin-right: .2em;
 
-    &>span{
+    &>span {
         padding-left: .2em;
         color: hsl(0, 0%, 70%);
         border-left: thin solid currentColor;
+    }
+}
+
+
+.preview {
+    display: flex;
+    position: relative;
+    text-align: center;
+    
+    &>img {
+        margin: 0 2em;
+        border: thin dashed hsl(0, 0%, 75%);
+    }
+
+    &>button {
+        background-color: white;
+        color: hsl(0, 0%, 75%);
+        border: none;
+        position: absolute;
+        top: calc(50% - 2em);
+    }
+
+    &>button.previous {
+        left: 0;
+    }
+
+    &>button.next {
+        right: 0;
     }
 }
