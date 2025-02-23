@@ -48,7 +48,7 @@ export const TagsInput = ({ tags, setTags, autocompleteList, htmlId }: TagsProps
         <>
             <span className="input" >
                 {
-                    tags?.map((tag, ix) => <span key={ix} className="tag">{tag} <span onClick={event => removeTag(ix)}>&times;</span></span>)
+                    tags?.map((tag, ix) => <span key={ix} className="tag">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
                 }
                 <input
                     style={{ border: "none", outline: "none", marginLeft: 0 }}

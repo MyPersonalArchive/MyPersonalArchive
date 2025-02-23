@@ -40,7 +40,7 @@ public class BlobController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<byte[]>> Preview(
         [FromQuery] int blobId,
-        [FromQuery] DimensionEnum dimensions,
+        [FromQuery] DimensionEnum dimension,
         [FromQuery] int pageNumber = 1
     )
     {
@@ -50,9 +50,25 @@ public class BlobController : ControllerBase
             return NotFound();
         }
 
+        int maxX, maxY;
+        switch (dimension)
+        {
+            case DimensionEnum.Small:
+                maxX = maxY = 150;
+                break;
+            case DimensionEnum.Medium:
+                maxX = maxY = 300;
+                break;
+            case DimensionEnum.Large:
+                maxX = maxY = 800;
+                break;
+            default:
+                return BadRequest();
+        }
+
         var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
         string mimeType = metadata.MimeType.Replace("data:", "").Replace(";base64,", "");
-        var previewStream = PreviewGenerator.GeneratePreview(originalStream, mimeType, 300, 300, pageNumber);
+        var previewStream = PreviewGenerator.GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
         return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
     }
 
