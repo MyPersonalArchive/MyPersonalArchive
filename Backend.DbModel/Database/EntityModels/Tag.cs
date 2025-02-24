@@ -7,14 +7,11 @@ using Backend.DbModel.Database;
 namespace Backend.DbModel.Database.EntityModels;
 
 
-public record TagId(int value) : StronglyTypedId<int>(value);
-
-
 [Table(nameof(Tag))]
 [Index(nameof(Title), nameof(TenantId), IsUnique = true)]
 public class Tag : TenantEntity
 {
-    public TagId? Id { get; set; }
+    public int Id { get; set; }
 
     [StringLength(80)]
     [Required]

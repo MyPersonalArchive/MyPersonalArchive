@@ -115,6 +115,7 @@ public class FileStorageProvider : IFileStorageProvider
 }
 
 
+//TODO: Consider using a dictionary of StringEnums for metadata
 public class FileMetadata
 {
     public DateTimeOffset UploadedAt { get; set; }

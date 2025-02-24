@@ -26,6 +26,9 @@ namespace Backend.DbModel.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CreatedByUsername")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
 
@@ -35,6 +38,9 @@ namespace Backend.DbModel.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUsername")
+                        .IsUnique();
 
                     b.ToTable("ArchiveItems");
                 });
@@ -51,7 +57,7 @@ namespace Backend.DbModel.Migrations
                     b.Property<int>("TagId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TenantId")
+                    b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -69,6 +75,7 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Blob", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("ArchiveItemId")
@@ -91,9 +98,15 @@ namespace Backend.DbModel.Migrations
                     b.Property<DateTimeOffset>("UploadedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UploadedByUsername")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasAlternateKey("Id", "TenantId");
+
+                    b.HasIndex("UploadedByUsername")
+                        .IsUnique();
 
                     b.HasIndex("ArchiveItemId", "ArchiveItemTenantId");
 
@@ -103,6 +116,7 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Tag", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("TenantId")
@@ -124,6 +138,7 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Tenant", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -146,6 +161,7 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Token", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
@@ -171,6 +187,7 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.User", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Fullname")
@@ -236,27 +253,78 @@ namespace Backend.DbModel.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
+                {
+                    b.HasOne("Backend.DbModel.Database.EntityModels.User", "CreatedBy")
+                        .WithOne()
+                        .HasForeignKey("Backend.DbModel.Database.EntityModels.ArchiveItem", "CreatedByUsername")
+                        .HasPrincipalKey("Backend.DbModel.Database.EntityModels.User", "Username");
+
+                    b.Navigation("CreatedBy");
+                });
+
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItemAndTag", b =>
                 {
                     b.HasOne("Backend.DbModel.Database.EntityModels.ArchiveItem", null)
                         .WithMany()
                         .HasForeignKey("ArchiveItemId", "TenantId")
-                        .HasPrincipalKey("Id", "TenantId");
+                        .HasPrincipalKey("Id", "TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Backend.DbModel.Database.EntityModels.Tag", null)
                         .WithMany()
                         .HasForeignKey("TagId", "TenantId")
-                        .HasPrincipalKey("Id", "TenantId");
+                        .HasPrincipalKey("Id", "TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Blob", b =>
                 {
+                    b.HasOne("Backend.DbModel.Database.EntityModels.User", "UploadedBy")
+                        .WithOne()
+                        .HasForeignKey("Backend.DbModel.Database.EntityModels.Blob", "UploadedByUsername")
+                        .HasPrincipalKey("Backend.DbModel.Database.EntityModels.User", "Username");
+
                     b.HasOne("Backend.DbModel.Database.EntityModels.ArchiveItem", "ArchiveItem")
                         .WithMany("Blobs")
                         .HasForeignKey("ArchiveItemId", "ArchiveItemTenantId")
                         .HasPrincipalKey("Id", "TenantId");
 
+                    b.OwnsOne("Backend.DbModel.Database.EntityModels.Metadata", "Metadata", b1 =>
+                        {
+                            b1.Property<int>("BlobId")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<long>("FileSize")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<byte[]>("Hash")
+                                .IsRequired()
+                                .HasMaxLength(32)
+                                .HasColumnType("BLOB");
+
+                            b1.Property<string>("MimeType")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("OriginalFilename")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("BlobId");
+
+                            b1.ToTable("Blob");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BlobId");
+                        });
+
                     b.Navigation("ArchiveItem");
+
+                    b.Navigation("Metadata")
+                        .IsRequired();
+
+                    b.Navigation("UploadedBy");
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Token", b =>

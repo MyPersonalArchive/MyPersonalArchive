@@ -27,7 +27,7 @@ public class BlobController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<FileContentResult>> Download([FromQuery] int blobId)
     {
-        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == new BlobId(blobId));
+        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
         if (blob == null)
         {
             return NotFound();
@@ -45,7 +45,7 @@ public class BlobController : ControllerBase
         [FromQuery] int pageNumber = 1
     )
     {
-        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == new BlobId(blobId));
+        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
         if (blob == null)
         {
             return NotFound();

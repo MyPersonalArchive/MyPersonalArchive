@@ -116,7 +116,7 @@ public class AuthenticationController : ControllerBase
 
     [Authorize]
     [HttpPost("SignOut")]
-    public async Task<IActionResult> SignOut()
+    public new async Task<IActionResult> SignOut()  //TODO: Change name or signature to not have to use 'new' here?
     {
         var incomingRefreshToken = Request.Cookies[RefreshTokenKey];
 

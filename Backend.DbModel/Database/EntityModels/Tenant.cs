@@ -6,13 +6,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.DbModel.Database.EntityModels;
 
 
-public record TenantId(int value) : StronglyTypedId<int>(value);
-
 [Table(nameof(Tenant))]
 [PrimaryKey(nameof(Id))]
 public class Tenant : SharedEntity
 {
-    public required TenantId Id { get; set; }
+    public int Id { get; set; }
 
     [Required]
     [StringLength(80)]

@@ -80,7 +80,7 @@ export const ArchiveItemEditPage = () => {
                 </div>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                     {
-                        blobIds.map((blobId, ix) => <Preview key={ix} blobId={blobId} />)
+                        blobIds.map((blobId, ix) => <Preview key={ix} blobId={blobId} numberOfPages={10} />)
                     }
                 </div>
                 <div>

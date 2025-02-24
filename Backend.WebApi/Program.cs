@@ -154,24 +154,27 @@ public static class Program
             var timezoneOffset = TimeSpan.FromHours(-2);
             var archiveItemsToEnsure = new List<ArchiveItem>{
                     new ArchiveItem {
-                        Id = new ArchiveItemId(1),
+                        Id = 1,
                         Title = "First demo item",
                         Tags = Tags.Ensure(dbContext, "Disco", "Pop", "Metal", "Rock"),
                         Blobs = [],
+                        // CreatedByUsername = "admin",
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 0, 0, timezoneOffset)
                     },
                     new ArchiveItem {
-                        Id = new ArchiveItemId(2),
+                        Id = 2,
                         Title = "Second demo item",
                         Tags = Tags.Ensure(dbContext, "Techno", "Rave"),
                         Blobs = [],
+                        // CreatedByUsername = "admin",
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
                     },
                     new ArchiveItem {
-                        Id = new ArchiveItemId(3),
+                        Id = 3,
                         Title = "Third demo item",
                         Tags = Tags.Ensure(dbContext, "House", "EDM", "Hiphop"),
                         Blobs = [],
+                        // CreatedByUsername = "admin",
                         CreatedAt = new DateTimeOffset(2025, 2, 9, 15, 20, 0, timezoneOffset)
                     }
             };

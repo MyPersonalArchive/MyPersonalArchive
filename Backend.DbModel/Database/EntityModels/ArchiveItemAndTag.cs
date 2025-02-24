@@ -10,6 +10,6 @@ namespace Backend.DbModel.Database.EntityModels;
 public class ArchiveItemAndTag : TenantEntity
 {
     public int Id { get; set; }
-    public required ArchiveItemId ArchiveItemId { get; set; }
-    public required TagId TagId { get; set; }
+    public int ArchiveItemId { get; set; }
+    public int TagId { get; set; }
 }
