@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +9,6 @@ namespace Backend.DbModel.Database.EntityModels;
 [PrimaryKey(nameof(TenantId), nameof(UserId))]
 public class UserTenant : SharedEntity
 {
-    public required TenantId TenantId { get; set; }
-    public required UserId UserId { get; set; }
+    public required int TenantId { get; set; }
+    public required int UserId { get; set; }
 }

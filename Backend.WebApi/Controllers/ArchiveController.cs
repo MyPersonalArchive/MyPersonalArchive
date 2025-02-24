@@ -1,3 +1,4 @@
+using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
@@ -15,11 +16,13 @@ public class ArchiveController : ControllerBase
 {
     private readonly MpaDbContext _dbContext;
     private readonly IFileStorageProvider _fileProvider;
+    private readonly AmbientDataResolver _resolver;
 
-    public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider)
+    public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
     {
         _dbContext = dbContext;
         _fileProvider = fileProvider;
+        _resolver = resolver;
     }
 
     [HttpGet]
@@ -28,7 +31,7 @@ public class ArchiveController : ControllerBase
         return await _dbContext.ArchiveItems
             .Select(item => new ListResponse
             {
-                Id = item.Id!.Value,
+                Id = item.Id,
                 Title = item.Title,
                 Tags = item.Tags.Select(tag => tag.Title).ToList(),
                 CreatedAt = item.CreatedAt
@@ -45,12 +48,21 @@ public class ArchiveController : ControllerBase
         var blobs = filenames.Select((filename, index) => new Blob
         {
             PathInStore = filename,
-            StoreRoot = StoreRoot.FileStorage.ToString()
+            StoreRoot = StoreRoot.FileStorage.ToString(),
+            // UploadedByUsername = _resolver.GetCurrentUsername()!,
+            UploadedAt = DateTimeOffset.Now,
+            Metadata = new Metadata
+            {
+                OriginalFilename = request.Blobs[index].FileName,
+                FileSize = request.Blobs[index].FileData.Length,
+                Hash = new byte[32]
+            }
         });
 
         _dbContext.ArchiveItems.Add(new ArchiveItem
         {
             Title = request.Title,
+            // CreatedByUsername = _resolver.GetCurrentUsername()!,
             CreatedAt = DateTimeOffset.Now,
             Tags = [.. Tags.Ensure(_dbContext, request.Tags)],
             Blobs = [.. blobs]
@@ -67,7 +79,7 @@ public class ArchiveController : ControllerBase
         var archiveItem = await _dbContext.ArchiveItems
             .Include(item => item.Blobs)
             .Include(item => item.Tags)
-            .SingleOrDefaultAsync(item => item.Id == new ArchiveItemId(updateRequest.Id));
+            .SingleOrDefaultAsync(item => item.Id == updateRequest.Id);
 
         if (archiveItem == null)
         {
@@ -139,7 +151,7 @@ public class ArchiveController : ControllerBase
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
             .Include(archiveItem => archiveItem.Tags)
-            .SingleOrDefaultAsync(x => x.Id == new ArchiveItemId(id));
+            .SingleOrDefaultAsync(x => x.Id == id);
 
         if (archiveItem == null)
         {
@@ -163,10 +175,10 @@ public class ArchiveController : ControllerBase
 
         return new GetResponse
         {
-            Id = archiveItem.Id!.Value,
+            Id = archiveItem.Id,
             Title = archiveItem.Title,
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
-            BlobIds = [.. archiveItem.Blobs.Select(blob => blob.Id!.Value)],
+            BlobIds = [.. archiveItem.Blobs.Select(blob => blob.Id)],
             CreatedAt = archiveItem.CreatedAt,
             // ArchiveBlobs = [.. archiveBlobs]
         };
@@ -178,7 +190,7 @@ public class ArchiveController : ControllerBase
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
-            .SingleOrDefaultAsync(x => x.Id == new ArchiveItemId(id));
+            .SingleOrDefaultAsync(x => x.Id == id);
 
         if (archiveItem == null)
         {

@@ -1,6 +1,6 @@
-import { faSquareCaretLeft, faSquareCaretRight, faMinimize, faMaximize } from "@fortawesome/free-solid-svg-icons"
+import { faSquareCaretLeft, faSquareCaretRight, faMinimize, faMaximize, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import React, { Children, useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 
 
@@ -27,7 +27,7 @@ export const Preview = ({ blobId, numberOfPages }: PreviewProps) => {
                         type="button"
                         onClick={() => setIsMaximized(false)}
                     >
-                        <FontAwesomeIcon icon={faMinimize} size="2x" />
+                        <FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="2x" />
                     </button>
                 </InlinePreview>
                 {
@@ -50,7 +50,7 @@ export const Preview = ({ blobId, numberOfPages }: PreviewProps) => {
                 type="button"
                 onClick={() => setIsMaximized(true)}
             >
-                <FontAwesomeIcon icon={faMaximize} size="1x" />
+                <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
             </button>
         </InlinePreview>
 }

@@ -12,25 +12,11 @@ namespace Backend.DbModel.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ArchiveItems",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ArchiveItems", x => x.Id);
-                    table.UniqueConstraint("AK_ArchiveItems_Id_TenantId", x => new { x.Id, x.TenantId });
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tag",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -44,7 +30,8 @@ namespace Backend.DbModel.Migrations
                 name: "Tenant",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false)
                 },
                 constraints: table =>
@@ -56,7 +43,8 @@ namespace Backend.DbModel.Migrations
                 name: "User",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
                     Fullname = table.Column<string>(type: "TEXT", maxLength: 400, nullable: false),
                     HashedPassword = table.Column<byte[]>(type: "BLOB", maxLength: 32, nullable: false),
@@ -69,58 +57,33 @@ namespace Backend.DbModel.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Blob",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    PathInStore = table.Column<string>(type: "TEXT", nullable: false),
-                    StoreRoot = table.Column<string>(type: "TEXT", nullable: false),
-                    UploadedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: true),
-                    ArchiveItemTenantId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Blob", x => x.Id);
-                    table.UniqueConstraint("AK_Blob_Id_TenantId", x => new { x.Id, x.TenantId });
-                    table.ForeignKey(
-                        name: "FK_Blob_ArchiveItems_ArchiveItemId_ArchiveItemTenantId",
-                        columns: x => new { x.ArchiveItemId, x.ArchiveItemTenantId },
-                        principalTable: "ArchiveItems",
-                        principalColumns: new[] { "Id", "TenantId" });
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ArchiveItemAndTag",
+                name: "ArchiveItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TagId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TenantId = table.Column<int>(type: "INTEGER", nullable: true)
+                    Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
+                    CreatedByUsername = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
+                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ArchiveItemAndTag", x => x.Id);
+                    table.PrimaryKey("PK_ArchiveItems", x => x.Id);
+                    table.UniqueConstraint("AK_ArchiveItems_Id_TenantId", x => new { x.Id, x.TenantId });
                     table.ForeignKey(
-                        name: "FK_ArchiveItemAndTag_ArchiveItems_ArchiveItemId_TenantId",
-                        columns: x => new { x.ArchiveItemId, x.TenantId },
-                        principalTable: "ArchiveItems",
-                        principalColumns: new[] { "Id", "TenantId" });
-                    table.ForeignKey(
-                        name: "FK_ArchiveItemAndTag_Tag_TagId_TenantId",
-                        columns: x => new { x.TagId, x.TenantId },
-                        principalTable: "Tag",
-                        principalColumns: new[] { "Id", "TenantId" });
+                        name: "FK_ArchiveItems_User_CreatedByUsername",
+                        column: x => x.CreatedByUsername,
+                        principalTable: "User",
+                        principalColumn: "Username");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Token",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
                     RefreshToken = table.Column<string>(type: "TEXT", maxLength: 44, nullable: false),
                     ExpiresAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
@@ -160,6 +123,67 @@ namespace Backend.DbModel.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ArchiveItemAndTag",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ArchiveItemAndTag", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ArchiveItemAndTag_ArchiveItems_ArchiveItemId_TenantId",
+                        columns: x => new { x.ArchiveItemId, x.TenantId },
+                        principalTable: "ArchiveItems",
+                        principalColumns: new[] { "Id", "TenantId" },
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ArchiveItemAndTag_Tag_TagId_TenantId",
+                        columns: x => new { x.TagId, x.TenantId },
+                        principalTable: "Tag",
+                        principalColumns: new[] { "Id", "TenantId" },
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Blob",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PathInStore = table.Column<string>(type: "TEXT", nullable: false),
+                    StoreRoot = table.Column<string>(type: "TEXT", nullable: false),
+                    UploadedByUsername = table.Column<string>(type: "TEXT", nullable: true),
+                    UploadedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
+                    Metadata_OriginalFilename = table.Column<string>(type: "TEXT", nullable: true),
+                    Metadata_MimeType = table.Column<string>(type: "TEXT", nullable: true),
+                    Metadata_FileSize = table.Column<long>(type: "INTEGER", nullable: false),
+                    Metadata_Hash = table.Column<byte[]>(type: "BLOB", maxLength: 32, nullable: false),
+                    ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: true),
+                    ArchiveItemTenantId = table.Column<int>(type: "INTEGER", nullable: true),
+                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Blob", x => x.Id);
+                    table.UniqueConstraint("AK_Blob_Id_TenantId", x => new { x.Id, x.TenantId });
+                    table.ForeignKey(
+                        name: "FK_Blob_ArchiveItems_ArchiveItemId_ArchiveItemTenantId",
+                        columns: x => new { x.ArchiveItemId, x.ArchiveItemTenantId },
+                        principalTable: "ArchiveItems",
+                        principalColumns: new[] { "Id", "TenantId" });
+                    table.ForeignKey(
+                        name: "FK_Blob_User_UploadedByUsername",
+                        column: x => x.UploadedByUsername,
+                        principalTable: "User",
+                        principalColumn: "Username");
+                });
+
             migrationBuilder.InsertData(
                 table: "Tenant",
                 columns: new[] { "Id", "Title" },
@@ -192,9 +216,21 @@ namespace Backend.DbModel.Migrations
                 columns: new[] { "TagId", "TenantId" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ArchiveItems_CreatedByUsername",
+                table: "ArchiveItems",
+                column: "CreatedByUsername",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Blob_ArchiveItemId_ArchiveItemTenantId",
                 table: "Blob",
                 columns: new[] { "ArchiveItemId", "ArchiveItemTenantId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Blob_UploadedByUsername",
+                table: "Blob",
+                column: "UploadedByUsername",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tag_Title_TenantId",

@@ -5,12 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Backend.DbModel.Database.EntityModels;
 
 
-public record TokenId(int value) : StronglyTypedId<int>(value);
-
 [Table(nameof(Token))]
 public class Token : SharedEntity
 {
-    public TokenId? Id { get; set; }
+    public int Id { get; set; }
 
     [StringLength(80)]
     [Required]
