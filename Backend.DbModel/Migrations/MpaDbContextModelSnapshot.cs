@@ -17,7 +17,7 @@ namespace Backend.DbModel.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.1");
 
-            modelBuilder.Entity("Backend.DbModel.Database.ArchiveItem", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,7 +39,7 @@ namespace Backend.DbModel.Migrations
                     b.ToTable("ArchiveItems");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.ArchiveItemAndTag", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItemAndTag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,7 +51,7 @@ namespace Backend.DbModel.Migrations
                     b.Property<int>("TagId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TenantId")
+                    b.Property<int?>("TenantId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -66,10 +66,9 @@ namespace Backend.DbModel.Migrations
                     b.ToTable("ArchiveItemAndTag");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.Blob", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Blob", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("ArchiveItemId")
@@ -101,10 +100,9 @@ namespace Backend.DbModel.Migrations
                     b.ToTable("Blob");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.Tag", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Tag", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("TenantId")
@@ -123,10 +121,9 @@ namespace Backend.DbModel.Migrations
                     b.ToTable("Tag");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.Tenant", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Tenant", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -146,10 +143,9 @@ namespace Backend.DbModel.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.Token", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Token", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
@@ -172,10 +168,9 @@ namespace Backend.DbModel.Migrations
                     b.ToTable("Token");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.User", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.User", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Fullname")
@@ -216,7 +211,7 @@ namespace Backend.DbModel.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.UserTenant", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.UserTenant", b =>
                 {
                     b.Property<int>("TenantId")
                         .HasColumnType("INTEGER");
@@ -241,26 +236,22 @@ namespace Backend.DbModel.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.ArchiveItemAndTag", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItemAndTag", b =>
                 {
-                    b.HasOne("Backend.DbModel.Database.ArchiveItem", null)
+                    b.HasOne("Backend.DbModel.Database.EntityModels.ArchiveItem", null)
                         .WithMany()
                         .HasForeignKey("ArchiveItemId", "TenantId")
-                        .HasPrincipalKey("Id", "TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasPrincipalKey("Id", "TenantId");
 
-                    b.HasOne("Backend.DbModel.Database.Tag", null)
+                    b.HasOne("Backend.DbModel.Database.EntityModels.Tag", null)
                         .WithMany()
                         .HasForeignKey("TagId", "TenantId")
-                        .HasPrincipalKey("Id", "TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasPrincipalKey("Id", "TenantId");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.Blob", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Blob", b =>
                 {
-                    b.HasOne("Backend.DbModel.Database.ArchiveItem", "ArchiveItem")
+                    b.HasOne("Backend.DbModel.Database.EntityModels.ArchiveItem", "ArchiveItem")
                         .WithMany("Blobs")
                         .HasForeignKey("ArchiveItemId", "ArchiveItemTenantId")
                         .HasPrincipalKey("Id", "TenantId");
@@ -268,9 +259,9 @@ namespace Backend.DbModel.Migrations
                     b.Navigation("ArchiveItem");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.Token", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Token", b =>
                 {
-                    b.HasOne("Backend.DbModel.Database.User", "User")
+                    b.HasOne("Backend.DbModel.Database.EntityModels.User", "User")
                         .WithMany("Tokens")
                         .HasForeignKey("Username")
                         .HasPrincipalKey("Username")
@@ -280,27 +271,27 @@ namespace Backend.DbModel.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.UserTenant", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.UserTenant", b =>
                 {
-                    b.HasOne("Backend.DbModel.Database.Tenant", null)
+                    b.HasOne("Backend.DbModel.Database.EntityModels.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.DbModel.Database.User", null)
+                    b.HasOne("Backend.DbModel.Database.EntityModels.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.ArchiveItem", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
                 {
                     b.Navigation("Blobs");
                 });
 
-            modelBuilder.Entity("Backend.DbModel.Database.User", b =>
+            modelBuilder.Entity("Backend.DbModel.Database.EntityModels.User", b =>
                 {
                     b.Navigation("Tokens");
                 });

@@ -1,13 +1,18 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Backend.DbModel.Database;
+namespace Backend.DbModel.Database.EntityModels;
+
+
+public record TenantId(int value) : StronglyTypedId<int>(value);
 
 [Table(nameof(Tenant))]
+[PrimaryKey(nameof(Id))]
 public class Tenant : SharedEntity
 {
-    public int Id { get; set; }
+    public required TenantId Id { get; set; }
 
     [Required]
     [StringLength(80)]

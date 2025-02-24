@@ -2,14 +2,19 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Backend.DbModel.Database;
 
-namespace Backend.DbModel.Database;
+namespace Backend.DbModel.Database.EntityModels;
+
+
+public record TagId(int value) : StronglyTypedId<int>(value);
+
 
 [Table(nameof(Tag))]
 [Index(nameof(Title), nameof(TenantId), IsUnique = true)]
 public class Tag : TenantEntity
 {
-    public int Id { get; set; }
+    public TagId? Id { get; set; }
 
     [StringLength(80)]
     [Required]
