@@ -9,6 +9,7 @@ using Backend.DbModel.Database;
 using Backend.Core.Providers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Backend.DbModel.Database.EntityModels;
 
 namespace Backend.WebApi;
 
@@ -153,21 +154,21 @@ public static class Program
             var timezoneOffset = TimeSpan.FromHours(-2);
             var archiveItemsToEnsure = new List<ArchiveItem>{
                     new ArchiveItem {
-                        Id = 1,
+                        Id = new ArchiveItemId(1),
                         Title = "First demo item",
                         Tags = Tags.Ensure(dbContext, "Disco", "Pop", "Metal", "Rock"),
                         Blobs = [],
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 0, 0, timezoneOffset)
                     },
                     new ArchiveItem {
-                        Id = 2,
+                        Id = new ArchiveItemId(2),
                         Title = "Second demo item",
                         Tags = Tags.Ensure(dbContext, "Techno", "Rave"),
                         Blobs = [],
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
                     },
                     new ArchiveItem {
-                        Id = 3,
+                        Id = new ArchiveItemId(3),
                         Title = "Third demo item",
                         Tags = Tags.Ensure(dbContext, "House", "EDM", "Hiphop"),
                         Blobs = [],

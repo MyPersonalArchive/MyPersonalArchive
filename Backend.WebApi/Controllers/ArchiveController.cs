@@ -1,5 +1,6 @@
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
+using Backend.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ public class ArchiveController : ControllerBase
         return await _dbContext.ArchiveItems
             .Select(item => new ListResponse
             {
-                Id = item.Id,
+                Id = item.Id!.Value,
                 Title = item.Title,
                 Tags = item.Tags.Select(tag => tag.Title).ToList(),
                 CreatedAt = item.CreatedAt
@@ -66,7 +67,7 @@ public class ArchiveController : ControllerBase
         var archiveItem = await _dbContext.ArchiveItems
             .Include(item => item.Blobs)
             .Include(item => item.Tags)
-            .SingleOrDefaultAsync(item => item.Id == updateRequest.Id);
+            .SingleOrDefaultAsync(item => item.Id == new ArchiveItemId(updateRequest.Id));
 
         if (archiveItem == null)
         {
@@ -127,7 +128,7 @@ public class ArchiveController : ControllerBase
         // }
 
         await _dbContext.SaveChangesAsync();
-        
+
         return Ok();
     }
 
@@ -138,7 +139,7 @@ public class ArchiveController : ControllerBase
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
             .Include(archiveItem => archiveItem.Tags)
-            .SingleOrDefaultAsync(x => x.Id == id);
+            .SingleOrDefaultAsync(x => x.Id == new ArchiveItemId(id));
 
         if (archiveItem == null)
         {
@@ -162,10 +163,10 @@ public class ArchiveController : ControllerBase
 
         return new GetResponse
         {
-            Id = archiveItem.Id,
+            Id = archiveItem.Id!.Value,
             Title = archiveItem.Title,
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
-            BlobIds = [.. archiveItem.Blobs.Select(blob => blob.Id)],
+            BlobIds = [.. archiveItem.Blobs.Select(blob => blob.Id!.Value)],
             CreatedAt = archiveItem.CreatedAt,
             // ArchiveBlobs = [.. archiveBlobs]
         };
@@ -177,7 +178,7 @@ public class ArchiveController : ControllerBase
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
-            .SingleOrDefaultAsync(x => x.Id == id);
+            .SingleOrDefaultAsync(x => x.Id == new ArchiveItemId(id));
 
         if (archiveItem == null)
         {

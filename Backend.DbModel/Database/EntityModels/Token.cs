@@ -2,12 +2,15 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Backend.DbModel.Database;
+namespace Backend.DbModel.Database.EntityModels;
+
+
+public record TokenId(int value) : StronglyTypedId<int>(value);
 
 [Table(nameof(Token))]
 public class Token : SharedEntity
 {
-    public int Id { get; set; }
+    public TokenId? Id { get; set; }
 
     [StringLength(80)]
     [Required]

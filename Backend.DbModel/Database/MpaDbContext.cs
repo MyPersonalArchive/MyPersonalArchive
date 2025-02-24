@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Backend.Core;
+using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -10,18 +11,17 @@ namespace Backend.DbModel.Database;
 public class MpaDbContext : DbContext
 {
     private readonly DbConfig _dbConfig;
-    private readonly int? _tenantId;
+    private readonly TenantId _tenantId;
 
     public MpaDbContext(IOptions<DbConfig> dbConfig, AmbientDataResolver resolver)
+        : this(dbConfig.Value, resolver.GetCurrentTenantId() ?? throw new Exception("Missing tenant id."))
     {
-        _dbConfig = dbConfig.Value;
-        _tenantId = resolver.GetCurrentTenantId();
     }
 
     public MpaDbContext(DbConfig dbConfig, int currentTenantId)
     {
         _dbConfig = dbConfig;
-        _tenantId = currentTenantId;
+        _tenantId = new TenantId(currentTenantId);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -59,12 +59,12 @@ public class MpaDbContext : DbContext
             {
                 var parameter = Expression.Parameter(entityType.ClrType, "e");
                 var tenantIdValue = _tenantId;
-                var filter = tenantIdValue == null 
+                var filter = tenantIdValue == null
                     ? Expression.Lambda(Expression.Constant(false), parameter)
                     : Expression.Lambda(
                         Expression.Equal(
                             Expression.Property(parameter, nameof(TenantEntity.TenantId)),
-                            Expression.Constant(tenantIdValue.Value)
+                            Expression.Constant(tenantIdValue)
                         ),
                         parameter
                     );
@@ -76,41 +76,66 @@ public class MpaDbContext : DbContext
     private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)
     {
         // Configure relationships between entities that are not automatically discovered by EF Core conventions
-        modelBuilder.Entity<User>()
-            .HasAlternateKey(user => user.Username);
+        modelBuilder.Entity<User>(builder =>
+        {
+            builder.Property(user => user.Id).HasConversion(id => id!.Value, v => new UserId(v));
+            builder.HasAlternateKey(user => user.Username);
+            builder.HasMany(user => user.Tenants)
+                .WithMany(tenant => tenant.Users)
+                .UsingEntity<UserTenant>(
+                    l => l.HasOne<Tenant>().WithMany().HasForeignKey(userTenant => userTenant.TenantId),
+                    r => r.HasOne<User>().WithMany().HasForeignKey(userTenant => userTenant.UserId)
+                );
+        });
 
-        modelBuilder.Entity<Token>()
-            .HasOne(token => token.User)
-            .WithMany(user => user.Tokens)
-            .HasForeignKey(token => token.Username)
-            .HasPrincipalKey(user => user.Username);
+        modelBuilder.Entity<UserTenant>(builder =>{
+            builder.Property(UserTenant => UserTenant.UserId).HasConversion(id => id!.Value, v => new UserId(v));
+            builder.Property(UserTenant => UserTenant.TenantId).HasConversion(id => id!.Value, v => new TenantId(v));
+        });
 
-        modelBuilder.Entity<User>()
-            .HasMany(user => user.Tenants)
-            .WithMany(tenant => tenant.Users)
-            .UsingEntity<UserTenant>(
-                l => l.HasOne<Tenant>().WithMany().HasForeignKey(userTenant => userTenant.TenantId),
-                r => r.HasOne<User>().WithMany().HasForeignKey(userTenant => userTenant.UserId)
-            );
+        modelBuilder.Entity<Token>(builder =>
+        {
+            builder.Property(token => token.Id).HasConversion(id => id!.Value, v => new TokenId(v));
+            builder.HasOne(token => token.User)
+                .WithMany(user => user.Tokens)
+                .HasForeignKey(token => token.Username)
+                .HasPrincipalKey(user => user.Username);
+        });
 
-        modelBuilder.Entity<Tag>()
-            .HasAlternateKey(tag => new { tag.Id, tag.TenantId });
-        modelBuilder.Entity<ArchiveItem>()
-            .HasAlternateKey(item => new { item.Id, item.TenantId });
-        modelBuilder.Entity<ArchiveItem>()
-            .HasMany(archiveItem => archiveItem.Tags)
-            .WithMany(tag => tag.ArchiveItems)
-            .UsingEntity<ArchiveItemAndTag>(
-                l => l.HasOne<Tag>().WithMany().HasForeignKey(m2m => new {m2m.TagId, m2m.TenantId}).HasPrincipalKey(tag => new {tag.Id, tag.TenantId}),
-                r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(m2m => new {m2m.ArchiveItemId, m2m.TenantId}).HasPrincipalKey(item => new {item.Id, item.TenantId})
-            );
+        modelBuilder.Entity<Tag>(builder =>
+        {
+            builder.Property(tag => tag.Id).HasConversion(id => id!.Value, v => new TagId(v));
+            builder.Property(tenant => tenant.TenantId).HasConversion(id => id!.Value, v => new TenantId(v));
+            builder.HasAlternateKey(tag => new { tag.Id, tag.TenantId });
+        });
 
-        modelBuilder.Entity<Blob>()
-            .HasAlternateKey(blob => new { blob.Id, blob.TenantId });
-        modelBuilder.Entity<ArchiveItem>()
-            .HasMany(archiveItem => archiveItem.Blobs)
-            .WithOne(blob => blob.ArchiveItem)
-            .HasPrincipalKey(archiveItem => new { archiveItem.Id, archiveItem.TenantId });
+        modelBuilder.Entity<Tenant>(builder =>
+        {
+            builder.Property(tenant => tenant.Id).HasConversion(id => id!.Value, v => new TenantId(v));
+        });
+
+        modelBuilder.Entity<ArchiveItem>(builder =>
+        {
+            builder.Property(archiveItem => archiveItem.Id).HasConversion(id => id!.Value, v => new ArchiveItemId(v));
+            builder.Property(archiveItem => archiveItem.TenantId).HasConversion(id => id!.Value, v => new TenantId(v));
+            builder.HasAlternateKey(item => new { item.Id, item.TenantId });
+            builder.HasMany(archiveItem => archiveItem.Tags)
+                .WithMany(tag => tag.ArchiveItems)
+                .UsingEntity<ArchiveItemAndTag>(
+                    l => l.HasOne<Tag>().WithMany().HasForeignKey(m2m => new { m2m.TagId, m2m.TenantId }).HasPrincipalKey(tag => new { tag.Id, tag.TenantId }),
+                    r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(m2m => new { m2m.ArchiveItemId, m2m.TenantId }).HasPrincipalKey(item => new { item.Id, item.TenantId })
+                );
+            builder.HasMany(archiveItem => archiveItem.Blobs)
+                .WithOne(blob => blob.ArchiveItem)
+                .HasPrincipalKey(archiveItem => new { archiveItem.Id, archiveItem.TenantId });
+        });
+
+        modelBuilder.Entity<Blob>(builder =>
+        {
+            builder.Property(blob => blob.Id).HasConversion(id => id!.Value, v => new BlobId(v));
+            builder.Property(blob => blob.TenantId).HasConversion(id => id!.Value, v => new TenantId(v));
+            builder.HasAlternateKey(blob => new { blob.Id, blob.TenantId });
+        });
     }
 
     private void SeedDatabase(ModelBuilder modelBuilder)
@@ -118,21 +143,21 @@ public class MpaDbContext : DbContext
         modelBuilder.Entity<Tenant>(tenants =>
         {
             tenants.HasData(
-                new Tenant { Id = -1, Title = "Demo tenant" }
+                new Tenant { Id = new TenantId(-1), Title = "Demo tenant" }
             );
         });
 
         modelBuilder.Entity<User>(users =>
         {
             users.HasData(
-                new User { Id = 1, Username = "admin@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") }
+                new User { Id = new UserId(1), Username = "admin@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") }
             );
         });
 
         modelBuilder.Entity<UserTenant>(ut =>
         {
             ut.HasData(
-                new UserTenant { UserId = 1, TenantId = -1 }
+                new UserTenant { UserId = new UserId(1), TenantId = new TenantId(-1) }
             );
         });
 

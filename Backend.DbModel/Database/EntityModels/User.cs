@@ -3,13 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.DbModel.Database;
+namespace Backend.DbModel.Database.EntityModels;
+
+
+public record UserId(int value) : StronglyTypedId<int>(value);
 
 [Table(nameof(User))]
 [Index(nameof(Username), IsUnique = true)]
 public class User : SharedEntity
 {
-    public int Id { get; set; }
+    public required UserId Id { get; set; }
 
     [StringLength(80)]
     public required string Username { get; set; }
