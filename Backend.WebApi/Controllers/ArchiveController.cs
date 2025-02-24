@@ -41,28 +41,29 @@ public class ArchiveController : ControllerBase
 
 
     [HttpPost]
-    public async Task<ActionResult> Create(CreateRequest request)
+    public async Task<ActionResult> Create(CreateRequest request /*, [FromForm] List<IFormFile> files*/)
     {
+        var username = _resolver.GetCurrentUsername();
+
         var tasks = request.Blobs.Select(blob => _fileProvider.StoreFile(blob.FileName, blob.FileData));
         var filenames = await Task.WhenAll(tasks);
         var blobs = filenames.Select((filename, index) => new Blob
         {
             PathInStore = filename,
             StoreRoot = StoreRoot.FileStorage.ToString(),
-            // UploadedByUsername = _resolver.GetCurrentUsername()!,
+            UploadedByUsername = username,
             UploadedAt = DateTimeOffset.Now,
-            Metadata = new Metadata
-            {
-                OriginalFilename = request.Blobs[index].FileName,
-                FileSize = request.Blobs[index].FileData.Length,
-                Hash = new byte[32]
-            }
+            OriginalFilename = request.Blobs[index].FileName,
+            MimeType = null,    //TODO: Determine MIME type
+            PageCount = 1,      //TODO: Determine page count
+            FileSize = request.Blobs[index].FileData.Length,
+            FileHash = new byte[32]
         });
 
         _dbContext.ArchiveItems.Add(new ArchiveItem
         {
             Title = request.Title,
-            // CreatedByUsername = _resolver.GetCurrentUsername()!,
+            CreatedByUsername = username,
             CreatedAt = DateTimeOffset.Now,
             Tags = [.. Tags.Ensure(_dbContext, request.Tags)],
             Blobs = [.. blobs]
@@ -88,56 +89,6 @@ public class ArchiveController : ControllerBase
 
         archiveItem.Title = updateRequest.Title;
         archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
-
-        // if (archiveItem.Blobs != null)
-        // {
-        //     foreach (var blob in updateRequest.Blobs)
-        //     {
-        //         switch (blob.Type)
-        //         {
-        //             case UpdateRequest.ArchiveUpdateActionType.Added:
-        //                 var filePath = await _fileProvider.StoreFile(blob.FileName, blob.Data);
-        //                 archiveItem.Blobs.Add(new Blob
-        //                 {
-        //                     PathInStore = filePath,
-        //                     StoreRoot = StoreRoot.FileStorage.ToString()
-        //                 });
-        //                 break;
-        //             case UpdateRequest.ArchiveUpdateActionType.Deleted:
-        //                 var blobItem = archiveItem.Blobs.SingleOrDefault(x => x.Id == blob.Id);
-        //                 if (blobItem != null)
-        //                 {
-        //                     _fileProvider.DeleteFile(blobItem.PathInStore);
-        //                     _dbContext.Blobs.Remove(blobItem);
-        //                 }
-
-        //                 break;
-        //         }
-
-        //         if (blob.Tags != null)
-        //         {
-        //             foreach (var tag in blob.Tags)
-        //             {
-        //                 switch (tag.Type)
-        //                 {
-        //                     case UpdateRequest.ArchiveUpdateActionType.Added:
-        //                         archiveItem.Tags.Add(new Tag
-        //                         {
-        //                             Title = tag.Title,
-        //                         });
-        //                         break;
-        //                     case UpdateRequest.ArchiveUpdateActionType.Deleted:
-        //                         var tagItem = archiveItem.Tags.SingleOrDefault(x => x.Title == tag.Title);
-        //                         if (tagItem != null)
-        //                         {
-        //                             archiveItem.Tags.Remove(tagItem);
-        //                         }
-        //                         break;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
 
         await _dbContext.SaveChangesAsync();
 

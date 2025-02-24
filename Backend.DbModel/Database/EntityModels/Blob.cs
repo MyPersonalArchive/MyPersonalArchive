@@ -22,24 +22,17 @@ public class Blob : TenantEntity
     public required string PathInStore { get; set; }    // Relative to the blob store root
     public required string StoreRoot { get; set; }   // Multiple blob stores could exist (local, cloud, etc.)
 
-    public string? UploadedByUsername { get; set; }
+    public required string UploadedByUsername { get; set; }
     public User? UploadedBy { get; set; }
     public required DateTimeOffset UploadedAt { get; set; }
 
-    public required Metadata Metadata { get; set; }
+    public string? OriginalFilename { get; set; }
+    [MaxLength(32)]
+    public string? MimeType { get; set; }
+    public required int PageCount { get; set; }
+
+    public required byte[] FileHash { get; set; }
+    public long FileSize { get; set; }
 
     public ArchiveItem? ArchiveItem { get; set; }
 }
-
-
-[Owned]
-public class Metadata
-{
-    public string? OriginalFilename { get; set; }
-    public string? MimeType { get; set; }
-    public long FileSize { get; set; }
-
-    [MaxLength(32)]
-    public required byte[] Hash { get; set; }
-}
-

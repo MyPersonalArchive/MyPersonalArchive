@@ -116,10 +116,10 @@ public class MpaDbContext : DbContext
             builder.HasAlternateKey(item => new { item.Id, item.TenantId });
 
             //HERE
-            builder.HasOne(blob => blob.CreatedBy)
-                .WithOne()
-                // .HasForeignKey<ArchiveItem>(archiveItem => archiveItem.CreatedByUsername)
-                .HasPrincipalKey<User>(user => user.Username);
+            builder.HasOne(archiveItem => archiveItem.CreatedBy)
+                .WithMany()
+                .HasForeignKey(archiveItem => archiveItem.CreatedByUsername)
+                .HasPrincipalKey(user => user.Username);
 
             builder.HasMany(archiveItem => archiveItem.Tags)
                 .WithMany(tag => tag.ArchiveItems)
@@ -137,11 +137,11 @@ public class MpaDbContext : DbContext
         {
             builder.HasAlternateKey(blob => new { blob.Id, blob.TenantId });
 
-            // //HERE
+            //HERE
             builder.HasOne(blob => blob.UploadedBy)
-                .WithOne()
-                // .HasForeignKey<Blob>(blob => blob.UploadedByUsername)
-                .HasPrincipalKey<User>(user => user.Username);
+                .WithMany()
+                .HasForeignKey(blob => blob.UploadedByUsername)
+                .HasPrincipalKey(user => user.Username);
         });
     }
 

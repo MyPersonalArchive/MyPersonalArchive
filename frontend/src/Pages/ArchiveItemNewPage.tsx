@@ -6,7 +6,7 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 
 export const ArchiveItemNewPage = () => {
-    const [title, setTitle] = useState<string>()
+    const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [fileBlobs, setFileBlobs] = useState<({ fileName: string, fileData: string }[])>([])
     const navigate = useNavigate()
@@ -63,8 +63,8 @@ export const ArchiveItemNewPage = () => {
                 <FileDropZone setFileBlobs={addFileBlobs}></FileDropZone>
 
                 <div style={{display: "flex", flexWrap: "wrap"}}>
-                    {fileBlobs?.map(blob => (
-                        <div style={{margin: "5px"}}>
+                    {fileBlobs?.map((blob, ix) => (
+                        <div key={ix} style={{margin: "5px"}}>
                             <LocalFilePreview 
                                 key={blob.fileName} 
                                 removeBlob={removeBlob} 

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Backend.DbModel.Database.EntityModels;
 
 
+[Table(nameof(ArchiveItem))]
 public class ArchiveItem : TenantEntity
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -13,7 +14,7 @@ public class ArchiveItem : TenantEntity
     [StringLength(80)]
     public required string Title { get; set; }
 
-    public string? CreatedByUsername { get; set; }
+    public required string CreatedByUsername { get; set; }
     public User? CreatedBy { get; set; }
     public required DateTimeOffset CreatedAt { get; set; }
 

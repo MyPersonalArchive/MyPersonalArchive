@@ -57,25 +57,26 @@ namespace Backend.DbModel.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ArchiveItems",
+                name: "ArchiveItem",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
-                    CreatedByUsername = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedByUsername = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ArchiveItems", x => x.Id);
-                    table.UniqueConstraint("AK_ArchiveItems_Id_TenantId", x => new { x.Id, x.TenantId });
+                    table.PrimaryKey("PK_ArchiveItem", x => x.Id);
+                    table.UniqueConstraint("AK_ArchiveItem_Id_TenantId", x => new { x.Id, x.TenantId });
                     table.ForeignKey(
-                        name: "FK_ArchiveItems_User_CreatedByUsername",
+                        name: "FK_ArchiveItem_User_CreatedByUsername",
                         column: x => x.CreatedByUsername,
                         principalTable: "User",
-                        principalColumn: "Username");
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -137,9 +138,9 @@ namespace Backend.DbModel.Migrations
                 {
                     table.PrimaryKey("PK_ArchiveItemAndTag", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ArchiveItemAndTag_ArchiveItems_ArchiveItemId_TenantId",
+                        name: "FK_ArchiveItemAndTag_ArchiveItem_ArchiveItemId_TenantId",
                         columns: x => new { x.ArchiveItemId, x.TenantId },
-                        principalTable: "ArchiveItems",
+                        principalTable: "ArchiveItem",
                         principalColumns: new[] { "Id", "TenantId" },
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -158,12 +159,13 @@ namespace Backend.DbModel.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     PathInStore = table.Column<string>(type: "TEXT", nullable: false),
                     StoreRoot = table.Column<string>(type: "TEXT", nullable: false),
-                    UploadedByUsername = table.Column<string>(type: "TEXT", nullable: true),
+                    UploadedByUsername = table.Column<string>(type: "TEXT", nullable: false),
                     UploadedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    Metadata_OriginalFilename = table.Column<string>(type: "TEXT", nullable: true),
-                    Metadata_MimeType = table.Column<string>(type: "TEXT", nullable: true),
-                    Metadata_FileSize = table.Column<long>(type: "INTEGER", nullable: false),
-                    Metadata_Hash = table.Column<byte[]>(type: "BLOB", maxLength: 32, nullable: false),
+                    OriginalFilename = table.Column<string>(type: "TEXT", nullable: true),
+                    MimeType = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
+                    PageCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    FileHash = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    FileSize = table.Column<long>(type: "INTEGER", nullable: false),
                     ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: true),
                     ArchiveItemTenantId = table.Column<int>(type: "INTEGER", nullable: true),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
@@ -173,15 +175,16 @@ namespace Backend.DbModel.Migrations
                     table.PrimaryKey("PK_Blob", x => x.Id);
                     table.UniqueConstraint("AK_Blob_Id_TenantId", x => new { x.Id, x.TenantId });
                     table.ForeignKey(
-                        name: "FK_Blob_ArchiveItems_ArchiveItemId_ArchiveItemTenantId",
+                        name: "FK_Blob_ArchiveItem_ArchiveItemId_ArchiveItemTenantId",
                         columns: x => new { x.ArchiveItemId, x.ArchiveItemTenantId },
-                        principalTable: "ArchiveItems",
+                        principalTable: "ArchiveItem",
                         principalColumns: new[] { "Id", "TenantId" });
                     table.ForeignKey(
                         name: "FK_Blob_User_UploadedByUsername",
                         column: x => x.UploadedByUsername,
                         principalTable: "User",
-                        principalColumn: "Username");
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
@@ -200,6 +203,11 @@ namespace Backend.DbModel.Migrations
                 values: new object[] { -1, 1 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ArchiveItem_CreatedByUsername",
+                table: "ArchiveItem",
+                column: "CreatedByUsername");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ArchiveItemAndTag_ArchiveItemId_TagId",
                 table: "ArchiveItemAndTag",
                 columns: new[] { "ArchiveItemId", "TagId" },
@@ -216,12 +224,6 @@ namespace Backend.DbModel.Migrations
                 columns: new[] { "TagId", "TenantId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ArchiveItems_CreatedByUsername",
-                table: "ArchiveItems",
-                column: "CreatedByUsername",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Blob_ArchiveItemId_ArchiveItemTenantId",
                 table: "Blob",
                 columns: new[] { "ArchiveItemId", "ArchiveItemTenantId" });
@@ -229,8 +231,7 @@ namespace Backend.DbModel.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Blob_UploadedByUsername",
                 table: "Blob",
-                column: "UploadedByUsername",
-                unique: true);
+                column: "UploadedByUsername");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tag_Title_TenantId",
@@ -280,7 +281,7 @@ namespace Backend.DbModel.Migrations
                 name: "Tag");
 
             migrationBuilder.DropTable(
-                name: "ArchiveItems");
+                name: "ArchiveItem");
 
             migrationBuilder.DropTable(
                 name: "Tenant");

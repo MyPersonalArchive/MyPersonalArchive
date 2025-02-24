@@ -27,6 +27,7 @@ namespace Backend.DbModel.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedByUsername")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TenantId")
@@ -39,10 +40,9 @@ namespace Backend.DbModel.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByUsername")
-                        .IsUnique();
+                    b.HasIndex("CreatedByUsername");
 
-                    b.ToTable("ArchiveItems");
+                    b.ToTable("ArchiveItem");
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItemAndTag", b =>
@@ -84,6 +84,23 @@ namespace Backend.DbModel.Migrations
                     b.Property<int?>("ArchiveItemTenantId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte[]>("FileHash")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MimeType")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalFilename")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PageCount")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("PathInStore")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -99,14 +116,14 @@ namespace Backend.DbModel.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UploadedByUsername")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasAlternateKey("Id", "TenantId");
 
-                    b.HasIndex("UploadedByUsername")
-                        .IsUnique();
+                    b.HasIndex("UploadedByUsername");
 
                     b.HasIndex("ArchiveItemId", "ArchiveItemTenantId");
 
@@ -256,9 +273,11 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
                 {
                     b.HasOne("Backend.DbModel.Database.EntityModels.User", "CreatedBy")
-                        .WithOne()
-                        .HasForeignKey("Backend.DbModel.Database.EntityModels.ArchiveItem", "CreatedByUsername")
-                        .HasPrincipalKey("Backend.DbModel.Database.EntityModels.User", "Username");
+                        .WithMany()
+                        .HasForeignKey("CreatedByUsername")
+                        .HasPrincipalKey("Username")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("CreatedBy");
                 });
@@ -283,46 +302,18 @@ namespace Backend.DbModel.Migrations
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.Blob", b =>
                 {
                     b.HasOne("Backend.DbModel.Database.EntityModels.User", "UploadedBy")
-                        .WithOne()
-                        .HasForeignKey("Backend.DbModel.Database.EntityModels.Blob", "UploadedByUsername")
-                        .HasPrincipalKey("Backend.DbModel.Database.EntityModels.User", "Username");
+                        .WithMany()
+                        .HasForeignKey("UploadedByUsername")
+                        .HasPrincipalKey("Username")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Backend.DbModel.Database.EntityModels.ArchiveItem", "ArchiveItem")
                         .WithMany("Blobs")
                         .HasForeignKey("ArchiveItemId", "ArchiveItemTenantId")
                         .HasPrincipalKey("Id", "TenantId");
 
-                    b.OwnsOne("Backend.DbModel.Database.EntityModels.Metadata", "Metadata", b1 =>
-                        {
-                            b1.Property<int>("BlobId")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<long>("FileSize")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<byte[]>("Hash")
-                                .IsRequired()
-                                .HasMaxLength(32)
-                                .HasColumnType("BLOB");
-
-                            b1.Property<string>("MimeType")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("OriginalFilename")
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("BlobId");
-
-                            b1.ToTable("Blob");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BlobId");
-                        });
-
                     b.Navigation("ArchiveItem");
-
-                    b.Navigation("Metadata")
-                        .IsRequired();
 
                     b.Navigation("UploadedBy");
                 });

@@ -152,13 +152,16 @@ public static class Program
             // Seed the development database with some initial data
 
             var timezoneOffset = TimeSpan.FromHours(-2);
+            var username = "admin@localhost";
+            // var user = dbContext.Users.First(u => u.Username == username);
             var archiveItemsToEnsure = new List<ArchiveItem>{
                     new ArchiveItem {
                         Id = 1,
                         Title = "First demo item",
                         Tags = Tags.Ensure(dbContext, "Disco", "Pop", "Metal", "Rock"),
                         Blobs = [],
-                        // CreatedByUsername = "admin",
+                        CreatedByUsername = username,
+                        // CreatedBy = user,
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 0, 0, timezoneOffset)
                     },
                     new ArchiveItem {
@@ -166,7 +169,8 @@ public static class Program
                         Title = "Second demo item",
                         Tags = Tags.Ensure(dbContext, "Techno", "Rave"),
                         Blobs = [],
-                        // CreatedByUsername = "admin",
+                        CreatedByUsername = username,
+                        // CreatedBy = user,
                         CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
                     },
                     new ArchiveItem {
@@ -174,7 +178,8 @@ public static class Program
                         Title = "Third demo item",
                         Tags = Tags.Ensure(dbContext, "House", "EDM", "Hiphop"),
                         Blobs = [],
-                        // CreatedByUsername = "admin",
+                        CreatedByUsername = username,
+                        // CreatedBy = user,
                         CreatedAt = new DateTimeOffset(2025, 2, 9, 15, 20, 0, timezoneOffset)
                     }
             };
