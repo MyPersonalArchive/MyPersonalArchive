@@ -25,8 +25,6 @@ export const ArchiveItemNewPage = () => {
 
         apiClient.post<CreateResponse>("/api/archive/create", archiveItem, {})
             .then(response => {
-                console.log(response, fileBlobs)
-
                 //We could also upload files in chunks to handle larger files better.
                 const formData = new FormData()
                 fileBlobs.forEach(blob => {

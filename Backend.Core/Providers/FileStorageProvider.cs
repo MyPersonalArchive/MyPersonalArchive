@@ -13,11 +13,11 @@ namespace Backend.Core.Providers;
 //can handle cloud, local etc... Currently, we only have local file storage
 public interface IFileStorageProvider
 {
-    Task<string> Store(string fileName, string mimeType, byte[] data);
+    Task<string> Store(string fileName, string mimeType, Stream stream);
     Stream GetFile(string filePath, out FileMetadata metadata);
     // Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
     void DeleteFile(string fileName);
-    byte[] ComputeSha256Hash(byte[] data);
+    byte[] ComputeSha256Hash(Stream data);
 }
 
 public class FileStorageProvider : IFileStorageProvider
@@ -34,7 +34,7 @@ public class FileStorageProvider : IFileStorageProvider
     }
 
 
-    public async Task<string> Store(string fileName, string mimeType, byte[] data)
+    public async Task<string> Store(string fileName, string mimeType, Stream stream)
     {
         //TODO: If PDF, store the number of pages in the metadata
         var username = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
@@ -51,13 +51,16 @@ public class FileStorageProvider : IFileStorageProvider
         await File.WriteAllTextAsync(Path.ChangeExtension(filePath, MetadataExtension), JsonConvert.SerializeObject(new FileMetadata
         {
             MimeType = mimeType,
-            Size = data.Length,
+            Size = stream.Length,
             OriginalFilename = fileName,
-            Hash = ComputeSha256HashToString(data),
+            Hash = ComputeSha256HashToString(stream),
             UploadedAt = DateTimeOffset.Now,
             UploadedBy = username
         }));
-        await File.WriteAllBytesAsync(filePath, data);
+
+        stream.Seek(0, SeekOrigin.Begin);
+        using var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        await stream.CopyToAsync(fileStream);
 
         return filePath;
     }
@@ -86,29 +89,16 @@ public class FileStorageProvider : IFileStorageProvider
 
     private string GetFolderPath(string uniqueFileName) => Path.Combine(_baseFolder, uniqueFileName[..2], uniqueFileName[..4], uniqueFileName[..6]);
 
-    private string GetMimeTypeFromBase64(string value) => Regex.Split(value, @"(?<=[,])")[0].Trim(); //Because ',' is an invalid base64 character we can safely split on this
-
-    private byte[] StripBase64AndConvertToByteArray(string value)
+    public string ComputeSha256HashToString(Stream stream)
     {
-        var temp = value;
-        var split = value.Split("base64,");
-        if (split.Length > 0)
-        {
-            temp = split[1];
-        }
-
-        return Base64.IsValid(temp) ? Convert.FromBase64String(temp) : Encoding.UTF8.GetBytes(temp);
+        return Convert.ToHexString(ComputeSha256Hash(stream));
     }
 
-    public string ComputeSha256HashToString(byte[] data)
+    public byte[] ComputeSha256Hash(Stream stream)
     {
-        return Convert.ToHexString(ComputeSha256Hash(data));
-    }
-
-    public byte[] ComputeSha256Hash(byte[] data)
-    {
+        stream.Seek(0, SeekOrigin.Begin);
         using var sha256Hash = SHA256.Create();
-        return sha256Hash.ComputeHash(data);
+        return sha256Hash.ComputeHash(stream);
     }
 }
 

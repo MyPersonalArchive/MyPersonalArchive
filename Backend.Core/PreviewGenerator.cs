@@ -42,17 +42,19 @@ public static class PreviewGenerator
         return previewStream;
     }
 
-    public static int GetDocumentPageCount(string mimeType, byte[] data) 
+    public static int GetDocumentPageCount(string mimeType, Stream stream) 
     {
-         switch(mimeType)
-         {
-            case "application/pdf":
-            {
-                using var image = Image.NewFromBuffer(data);
-                return (int)image.Get("n-pages");
-            }
-            default:
-                return 1;
+        stream.Seek(0, SeekOrigin.Begin);
+
+        switch(mimeType)
+        {
+        case "application/pdf":
+        {
+            using var image = Image.NewFromStream(stream);
+            return (int)image.Get("n-pages");
         }
+        default:
+            return 1;
+    }
     }
 }
