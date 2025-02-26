@@ -5,10 +5,14 @@ import { useApiClient } from "../Utils/useApiClient"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 
+type CreateResponse = {
+    id: number
+}
+
 export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
-    const [fileBlobs, setFileBlobs] = useState<({ fileName: string, fileData: string }[])>([])
+    const [fileBlobs, setFileBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const navigate = useNavigate()
     const apiClient = useApiClient()
 
@@ -16,10 +20,21 @@ export const ArchiveItemNewPage = () => {
         event.preventDefault()
         
         const archiveItem = {
-            title, tags, blobs: fileBlobs
+            title, tags
         }
 
-        apiClient.post("/api/archive/create", archiveItem, {})
+        apiClient.post<CreateResponse>("/api/archive/create", archiveItem, {})
+            .then(response => {
+                console.log(response, fileBlobs)
+
+                //We could also upload files in chunks to handle larger files better.
+                fileBlobs.forEach(blob => {
+                    const formData = new FormData()
+                    formData.append("file", blob.fileData, blob.fileName)
+
+                    apiClient.postFormData(`/api/blob/upload?archiveItemId=${response.id}`, formData, {})
+                })
+            })
 
         navigate(-1)
     }
@@ -28,7 +43,7 @@ export const ArchiveItemNewPage = () => {
         navigate(-1)
     }
 
-    const addFileBlobs = (blobs: { fileName: string, fileData: string }[]) => {
+    const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
         setFileBlobs([...fileBlobs, ...blobs])
     }
 
@@ -69,7 +84,7 @@ export const ArchiveItemNewPage = () => {
                                 key={blob.fileName} 
                                 removeBlob={removeBlob} 
                                 fileName={blob.fileName}
-                                fileData={blob.fileData}>
+                                fileData={""}>
                             </LocalFilePreview>
                         </div>
                         

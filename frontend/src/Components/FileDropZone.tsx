@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef } from "react"
 
 type FileDropZoneProps = {
-    setFileBlobs: ([]: { fileName: string, fileData: string }[]) => void
+    setFileBlobs: ([]: { fileName: string, fileData: Blob }[]) => void
 }
 
 
@@ -37,11 +37,11 @@ export const FileDropZone = ({setFileBlobs: setFileBlobs}: FileDropZoneProps) =>
         for (let i = 0; i < files.length; i++) {
             const reader = new FileReader()
     
-            const filePromise = new Promise<{ fileName: string, fileData: string }>((resolve, reject) => {
+            const filePromise = new Promise<{ fileName: string, fileData: Blob }>((resolve, reject) => {
                 reader.onload = () => {
                     resolve({
                         fileName: files[i].name,
-                        fileData: reader.result as string
+                        fileData: new Blob([files[i]], { type: files[i].type })
                     })
                 }
     

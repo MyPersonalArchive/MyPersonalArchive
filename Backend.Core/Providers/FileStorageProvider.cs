@@ -13,10 +13,11 @@ namespace Backend.Core.Providers;
 //can handle cloud, local etc... Currently, we only have local file storage
 public interface IFileStorageProvider
 {
-    Task<string> StoreFile(string fileName, string data);
+    Task<string> Store(string fileName, string mimeType, byte[] data);
     Stream GetFile(string filePath, out FileMetadata metadata);
     // Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
     void DeleteFile(string fileName);
+    byte[] ComputeSha256Hash(byte[] data);
 }
 
 public class FileStorageProvider : IFileStorageProvider
@@ -33,15 +34,12 @@ public class FileStorageProvider : IFileStorageProvider
     }
 
 
-    public async Task<string> StoreFile(string fileName, string data)
+    public async Task<string> Store(string fileName, string mimeType, byte[] data)
     {
         //TODO: If PDF, store the number of pages in the metadata
         var username = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
 
-        if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(data)) return null;
-
         var uniqueFileId = Guid.NewGuid().ToString();
-
         var folderPath = GetFolderPath(uniqueFileId);
         if (!Directory.Exists(folderPath))
         {
@@ -49,23 +47,20 @@ public class FileStorageProvider : IFileStorageProvider
         }
 
         var filePath = Path.Combine(folderPath, uniqueFileId) + Path.GetExtension(fileName);
-        var dataBytes = StripBase64AndConvertToByteArray(data);
 
         await File.WriteAllTextAsync(Path.ChangeExtension(filePath, MetadataExtension), JsonConvert.SerializeObject(new FileMetadata
         {
-            MimeType = GetMimeTypeFromBase64(data),
-            Size = dataBytes.Length,
+            MimeType = mimeType,
+            Size = data.Length,
             OriginalFilename = fileName,
-            Hash = ComputeSha256Hash(data),
+            Hash = ComputeSha256HashToString(data),
             UploadedAt = DateTimeOffset.Now,
             UploadedBy = username
         }));
-        await File.WriteAllBytesAsync(filePath, dataBytes);
+        await File.WriteAllBytesAsync(filePath, data);
 
         return filePath;
     }
-
-
 
     public Stream GetFile(string filePath, out FileMetadata metadata)
     {
@@ -105,12 +100,15 @@ public class FileStorageProvider : IFileStorageProvider
         return Base64.IsValid(temp) ? Convert.FromBase64String(temp) : Encoding.UTF8.GetBytes(temp);
     }
 
-    private string ComputeSha256Hash(string input)
+    public string ComputeSha256HashToString(byte[] data)
+    {
+        return Convert.ToHexString(ComputeSha256Hash(data));
+    }
+
+    public byte[] ComputeSha256Hash(byte[] data)
     {
         using var sha256Hash = SHA256.Create();
-        var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-        return Convert.ToHexString(bytes);
+        return sha256Hash.ComputeHash(data);
     }
 }
 

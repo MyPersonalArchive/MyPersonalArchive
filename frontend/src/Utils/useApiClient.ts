@@ -89,6 +89,16 @@ export const useApiClient = () => {
             return interceptedFetch(url, options)
                 .then(response => response?.json() as T)
         },
+        postFormData: async <T>(url: string, payload: FormData, incomingOptions: RequestInit) => {
+            const options = {
+                ...incomingOptions,
+                method: "POST",
+                body: payload
+            }
+
+            return interceptedFetch(url, options)
+                .then(response => response?.json() as T)
+        },
 
         put: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
             const options = {
