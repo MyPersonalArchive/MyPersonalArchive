@@ -70,14 +70,13 @@ public class BlobController : ControllerBase
         }
 
         var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
-        string mimeType = metadata.MimeType.Replace("data:", "").Replace(";base64,", "");
-        var previewStream = PreviewGenerator.GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
+        var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, pageNumber);
         return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
     }
  
 
     [HttpPost]
-    public async Task<ActionResult> Upload([FromQuery]int archiveItemId, IFormFile file)
+    public async Task<ActionResult> Upload([FromQuery]int archiveItemId, IFormFileCollection files)
     {
         var archiveItem = await _dbContext.ArchiveItems.FindAsync(archiveItemId);
         if (archiveItem == null)
@@ -85,25 +84,29 @@ public class BlobController : ControllerBase
             return NotFound();
         }
 
-        var data = new byte[file.Length];
-        await file.OpenReadStream().ReadExactlyAsync(data);
-        
-        var blob = new Blob
+        foreach (var file in files)
         {
-            TenantId = archiveItem.TenantId,
-            ArchiveItem = archiveItem,
-            FileHash = _fileProvider.ComputeSha256Hash(data),
-            MimeType = file.ContentType,
-            OriginalFilename = file.FileName,
-            PageCount = 1, //TODO: How to get the page number if pdf?
-            FileSize = file.Length,
-            UploadedAt = DateTimeOffset.Now,
-            UploadedByUsername = _resolver.GetCurrentUsername(),
-            StoreRoot = StoreRoot.FileStorage.ToString(),
-            PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, data)
-        };
+            var data = new byte[file.Length];
+            await file.OpenReadStream().ReadExactlyAsync(data);
+            
+            var blob = new Blob
+            {
+                TenantId = archiveItem.TenantId,
+                ArchiveItem = archiveItem,
+                FileHash = _fileProvider.ComputeSha256Hash(data),
+                MimeType = file.ContentType,
+                OriginalFilename = file.FileName,
+                PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, data),
+                FileSize = file.Length,
+                UploadedAt = DateTimeOffset.Now,
+                UploadedByUsername = _resolver.GetCurrentUsername(),
+                StoreRoot = StoreRoot.FileStorage.ToString(),
+                PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, data)
+            };
 
-        _dbContext.Blobs.Add(blob);
+            _dbContext.Blobs.Add(blob);
+        }
+        
         await _dbContext.SaveChangesAsync();
 
         return Ok();
@@ -115,5 +118,4 @@ public class BlobController : ControllerBase
         Medium,
         Large
     }
-
 }

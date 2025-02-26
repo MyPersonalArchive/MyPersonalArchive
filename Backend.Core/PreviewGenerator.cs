@@ -7,7 +7,8 @@ public static class PreviewGenerator
 {
     public static Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
     {
-        switch(mimeType){
+        switch(mimeType)
+        {
             case "application/pdf":
                 return GeneratePreviewOfPDF(originalStream, maxX, maxY, pageNumber);
 
@@ -39,5 +40,19 @@ public static class PreviewGenerator
         //TODO: cache in filesystem?
         previewStream.Position = 0;
         return previewStream;
+    }
+
+    public static int GetDocumentPageCount(string mimeType, byte[] data) 
+    {
+         switch(mimeType)
+         {
+            case "application/pdf":
+            {
+                using var image = Image.NewFromBuffer(data);
+                return (int)image.Get("n-pages");
+            }
+            default:
+                return 1;
+        }
     }
 }

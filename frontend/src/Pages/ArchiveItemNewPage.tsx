@@ -28,12 +28,11 @@ export const ArchiveItemNewPage = () => {
                 console.log(response, fileBlobs)
 
                 //We could also upload files in chunks to handle larger files better.
+                const formData = new FormData()
                 fileBlobs.forEach(blob => {
-                    const formData = new FormData()
-                    formData.append("file", blob.fileData, blob.fileName)
-
-                    apiClient.postFormData(`/api/blob/upload?archiveItemId=${response.id}`, formData, {})
+                    formData.append("files", blob.fileData, blob.fileName)
                 })
+                apiClient.postFormData(`/api/blob/upload?archiveItemId=${response.id}`, formData, {})
             })
 
         navigate(-1)

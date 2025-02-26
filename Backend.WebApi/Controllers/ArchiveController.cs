@@ -117,7 +117,7 @@ public class ArchiveController : ControllerBase
             Id = archiveItem.Id,
             Title = archiveItem.Title,
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
-            BlobIds = [.. archiveItem.Blobs.Select(blob => blob.Id)],
+            BlobIds = [.. archiveItem.Blobs?.Select(blob => blob.Id) ?? [],],
             CreatedAt = archiveItem.CreatedAt,
             // ArchiveBlobs = [.. archiveBlobs]
         };
