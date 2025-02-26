@@ -86,22 +86,21 @@ public class BlobController : ControllerBase
 
         foreach (var file in files)
         {
-            var data = new byte[file.Length];
-            await file.OpenReadStream().ReadExactlyAsync(data);
+            var stream = file.OpenReadStream();
             
             var blob = new Blob
             {
                 TenantId = archiveItem.TenantId,
                 ArchiveItem = archiveItem,
-                FileHash = _fileProvider.ComputeSha256Hash(data),
+                FileHash = _fileProvider.ComputeSha256Hash(stream),
                 MimeType = file.ContentType,
                 OriginalFilename = file.FileName,
-                PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, data),
+                PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
                 FileSize = file.Length,
                 UploadedAt = DateTimeOffset.Now,
                 UploadedByUsername = _resolver.GetCurrentUsername(),
                 StoreRoot = StoreRoot.FileStorage.ToString(),
-                PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, data)
+                PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
             };
 
             _dbContext.Blobs.Add(blob);
