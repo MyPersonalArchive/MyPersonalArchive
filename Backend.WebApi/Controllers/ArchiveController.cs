@@ -41,36 +41,24 @@ public class ArchiveController : ControllerBase
 
 
     [HttpPost]
-    public async Task<ActionResult> Create(CreateRequest request /*, [FromForm] List<IFormFile> files*/)
+    public ActionResult<CreateResponse> Create(CreateRequest request /*, [FromForm] List<IFormFile> files*/)
     {
-        var username = _resolver.GetCurrentUsername();
-
-        var tasks = request.Blobs.Select(blob => _fileProvider.StoreFile(blob.FileName, blob.FileData));
-        var filenames = await Task.WhenAll(tasks);
-        var blobs = filenames.Select((filename, index) => new Blob
-        {
-            PathInStore = filename,
-            StoreRoot = StoreRoot.FileStorage.ToString(),
-            UploadedByUsername = username,
-            UploadedAt = DateTimeOffset.Now,
-            OriginalFilename = request.Blobs[index].FileName,
-            MimeType = null,    //TODO: Determine MIME type
-            PageCount = 1,      //TODO: Determine page count
-            FileSize = request.Blobs[index].FileData.Length,
-            FileHash = new byte[32]
-        });
-
-        _dbContext.ArchiveItems.Add(new ArchiveItem
+        var newArchiveItem = new ArchiveItem
         {
             Title = request.Title,
-            CreatedByUsername = username,
+            CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
             Tags = [.. Tags.Ensure(_dbContext, request.Tags)],
-            Blobs = [.. blobs]
-        });
+            //Blobs = [.. blobs]
+        };
+
+        _dbContext.ArchiveItems.Add(newArchiveItem);
         _dbContext.SaveChanges();
 
-        return Ok();
+        return new CreateResponse
+        {
+            Id = newArchiveItem.Id
+        };
     }
 
 
@@ -182,13 +170,18 @@ public class ArchiveController : ControllerBase
     {
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
-        public required List<Blob> Blobs { get; set; }
+        // public List<Blob>? Blobs { get; set; }
 
-        public class Blob
-        {
-            public required string FileName { get; set; }
-            public required string FileData { get; set; }
-        }
+        // public class Blob
+        // {
+        //     public required string FileName { get; set; }
+        //     public required string FileData { get; set; }
+        // }
+    }
+
+    public class CreateResponse 
+    {
+        public required int Id { get; set; }
     }
 
     public class UpdateRequest

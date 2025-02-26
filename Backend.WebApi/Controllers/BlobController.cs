@@ -16,11 +16,13 @@ public class BlobController : ControllerBase
 {
     private readonly MpaDbContext _dbContext;
     private IFileStorageProvider _fileProvider;
+    private readonly AmbientDataResolver _resolver;
 
-    public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider)
+    public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
     {
         _dbContext = dbContext;
         _fileProvider = fileProvider;
+        _resolver = resolver;
     }
 
 
@@ -72,7 +74,40 @@ public class BlobController : ControllerBase
         var previewStream = PreviewGenerator.GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
         return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
     }
+ 
 
+    [HttpPost]
+    public async Task<ActionResult> Upload([FromQuery]int archiveItemId, IFormFile file)
+    {
+        var archiveItem = await _dbContext.ArchiveItems.FindAsync(archiveItemId);
+        if (archiveItem == null)
+        {
+            return NotFound();
+        }
+
+        var data = new byte[file.Length];
+        await file.OpenReadStream().ReadExactlyAsync(data);
+        
+        var blob = new Blob
+        {
+            TenantId = archiveItem.TenantId,
+            ArchiveItem = archiveItem,
+            FileHash = _fileProvider.ComputeSha256Hash(data),
+            MimeType = file.ContentType,
+            OriginalFilename = file.FileName,
+            PageCount = 1, //TODO: How to get the page number if pdf?
+            FileSize = file.Length,
+            UploadedAt = DateTimeOffset.Now,
+            UploadedByUsername = _resolver.GetCurrentUsername(),
+            StoreRoot = StoreRoot.FileStorage.ToString(),
+            PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, data)
+        };
+
+        _dbContext.Blobs.Add(blob);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok();
+    }
 
     public enum DimensionEnum
     {
