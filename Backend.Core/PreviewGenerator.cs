@@ -7,7 +7,7 @@ public static class PreviewGenerator
 {
     public static Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
     {
-        switch(mimeType)
+        switch (mimeType)
         {
             case "application/pdf":
                 return GeneratePreviewOfPDF(originalStream, maxX, maxY, pageNumber);
@@ -19,7 +19,7 @@ public static class PreviewGenerator
 
 
     public static Stream GeneratePreviewOfImage(Stream originalStream, int maxX, int maxY)
-    {        
+    {
         var previewStream = new MemoryStream(); //This stream will be returned to the caller, and should NOT be disposed here
         Image.NewFromStream(originalStream)
             .ThumbnailImage(maxX, maxY)
@@ -42,19 +42,19 @@ public static class PreviewGenerator
         return previewStream;
     }
 
-    public static int GetDocumentPageCount(string mimeType, Stream stream) 
+    public static int GetDocumentPageCount(string mimeType, Stream stream)
     {
         stream.Seek(0, SeekOrigin.Begin);
 
-        switch(mimeType)
+        switch (mimeType)
         {
-        case "application/pdf":
-        {
-            using var image = Image.NewFromStream(stream);
-            return (int)image.Get("n-pages");
+            case "application/pdf":
+                {
+                    using var image = Image.NewFromStream(stream);
+                    return (int)image.Get("n-pages");
+                }
+            default:
+                return 1;
         }
-        default:
-            return 1;
-    }
     }
 }

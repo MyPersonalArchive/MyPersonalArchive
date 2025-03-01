@@ -87,7 +87,7 @@ public static class Program
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtOptions.JwtIssuer,
-                    ValidAudience = jwtOptions.JwtIssuer,   //TODO: Is this correct?
+                    ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.JwtSecret))
                 };
             });
@@ -149,8 +149,7 @@ public static class Program
 
         if (app.Environment.IsDevelopment())
         {
-            // Seed the development database with some initial data
-
+            #region Seed the development database with some initial data
             var timezoneOffset = TimeSpan.FromHours(-2);
             var username = "admin@localhost";
             // var user = dbContext.Users.First(u => u.Username == username);
@@ -192,6 +191,7 @@ public static class Program
             }
 
             dbContext.SaveChanges();
+            #endregion
         }
     }
 

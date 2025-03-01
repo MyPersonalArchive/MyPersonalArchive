@@ -31,7 +31,7 @@ public class MpaDbContext : DbContext
         string databaseFullFilename = Path.Combine(_dbConfig.DatabaseFolder, "MyPersonalArchive.db");
         optionsBuilder.UseSqlite($"Data Source={databaseFullFilename};foreign keys=true");
         optionsBuilder.EnableSensitiveDataLogging(true);
-        optionsBuilder.LogTo(Console.WriteLine, [DbLoggerCategory.Database.Command.Name], LogLevel.Information);
+        // optionsBuilder.LogTo(Console.WriteLine, [DbLoggerCategory.Database.Command.Name], LogLevel.Information);
 
         // This is required to support switching tenants at runtime, since OnModelCreating is only called once and then cached by EF Core
         optionsBuilder.ReplaceService<IModelCacheKeyFactory, MpaDbModelCacheKeyFactoryDesignTimeSupport>();

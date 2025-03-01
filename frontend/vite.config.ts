@@ -23,6 +23,11 @@ export default defineConfig({
         //     console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
         //   });
         // },
+      },
+      '/notificationHub': {
+        target: 'http://localhost:5054',
+        changeOrigin: true,
+        ws: true,
       }
     }
   }
