@@ -117,9 +117,12 @@ public class ArchiveController : ControllerBase
             Id = archiveItem.Id,
             Title = archiveItem.Title,
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
-            BlobIds = [.. archiveItem.Blobs?.Select(blob => blob.Id) ?? [],],
             CreatedAt = archiveItem.CreatedAt,
-            // ArchiveBlobs = [.. archiveBlobs]
+            Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
+            {
+                BlobId = blob.Id,
+                NumberOfPages = blob.PageCount
+            }).ToList() ?? [],],
         };
     }
 
@@ -213,16 +216,13 @@ public class ArchiveController : ControllerBase
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public required List<string> Tags { get; set; }
-        public required List<int> BlobIds { get; set; }
+        public required List<Blob> Blobs { get; set; }
 
-        // public class Blob
-        // {
-        //     public required string FileName { get; set; }
-        //     public DateTimeOffset Uploaded { get; set; }
-        //     public required string UploadedBy { get; set; }
-        //     public required string Data { get; set; }
-        //     public long Size { get; set; }
-        // }
+        public class Blob 
+        {
+            public int BlobId { get; set; }
+            public int NumberOfPages { get; set; }
+        }
     }
     #endregion
 }

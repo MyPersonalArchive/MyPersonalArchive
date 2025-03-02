@@ -1,4 +1,4 @@
-import { faSquareCaretLeft, faSquareCaretRight, faMinimize, faMaximize, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faSquareCaretLeft, faSquareCaretRight, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import React, { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
@@ -63,7 +63,7 @@ const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: numbe
 
     useEffect(() => {
         if (imgRef.current !== null) {
-            apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber })
+            apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1})
                 .then(blob => {
                     const url = URL.createObjectURL(blob)
                     imgRef.current!.src = url
