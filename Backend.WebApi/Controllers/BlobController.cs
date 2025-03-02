@@ -44,7 +44,7 @@ public class BlobController : ControllerBase
     public async Task<ActionResult<byte[]>> Preview(
         [FromQuery] int blobId,
         [FromQuery] DimensionEnum dimension,
-        [FromQuery] int pageNumber = 1
+        [FromQuery] int pageNumber = 0
     )
     {
         var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);

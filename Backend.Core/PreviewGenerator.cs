@@ -30,7 +30,7 @@ public static class PreviewGenerator
         return previewStream;
     }
 
-    public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 1)
+    public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 0)
     {
         var previewStream = new MemoryStream(); //This stream will be returned to the caller, and should NOT be disposed here
         Image.PdfloadStream(originalStream, pageNumber)
