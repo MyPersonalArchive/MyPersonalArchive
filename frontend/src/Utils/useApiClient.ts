@@ -63,10 +63,23 @@ export const useApiClient = () => {
         get: async <T>(url: string, payload: any = {}, incomingOptions?: RequestInit) => {
             let queryString
             if (payload != undefined) {
-                queryString = new URLSearchParams(payload).toString()
-                if (queryString != "") {
-                    queryString = "?" + queryString
-                }
+                const params = new URLSearchParams();
+
+                Object.keys(payload).forEach(key => {
+                    const value = payload[key]
+                
+                    if (Array.isArray(value)) {
+                        value.forEach(val => {
+                            params.append(key, val)
+                      });
+                    } else if (value !== null && value !== undefined) {
+                        params.append(key, value)
+                    } else {
+                        params.append(key, '')
+                    }
+                  })
+                queryString = params.toString()
+                queryString = "?" + queryString
             }
             const options = {
                 ...incomingOptions,

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
+import { Search } from "../Components/Search"
 
-type ListResponse = {
+export type ListResponse = {
     id: number
     title: string
     tags: string[]
@@ -27,11 +28,19 @@ export const ArchiveItemListPage = () => {
     // })
 
     useEffect(() => {
+        getList()
+    }, [])
+
+    const getList = () => {
         apiClient.get<ListResponse[]>("/api/archive/List")
             .then(response => {
-                setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
+                setArchiveItems(mapArchiveItems(response))
             })
-    }, [])
+    }
+
+    const mapArchiveItems = (items: ListResponse[]) => {
+        return items.map(item => ({ ...item, createdAt: new Date(item.createdAt) }))
+    }
 
     const newArchiveItem = () => {
         navigate("/archive/new")
@@ -40,6 +49,7 @@ export const ArchiveItemListPage = () => {
     return (
         <>
             <h1>Archive</h1>
+            <Search searchResult={result => setArchiveItems(mapArchiveItems(result))} resetResult={() => getList()}></Search>
             <table style={{ width: "100%" }}>
                 <thead>
                     <tr>
