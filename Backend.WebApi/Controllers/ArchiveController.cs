@@ -3,6 +3,7 @@ using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -126,6 +127,40 @@ public class ArchiveController : ControllerBase
         };
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetResponse>>> Search([FromQuery]SearchRequest searchRequest)
+    {
+        var searchQuery = _dbContext.ArchiveItems
+            .Include(archiveItem => archiveItem.Blobs)
+            .Include(archiveItem => archiveItem.Tags)
+            .AsQueryable();
+
+        if(!string.IsNullOrEmpty(searchRequest.Title)) 
+        {
+            searchQuery = searchQuery.Where(archiveItem => archiveItem.Title.ToLower().Contains(searchRequest.Title.ToLower()));
+        }
+
+        if(searchRequest.Tags?.Length > 0)
+        {
+            searchQuery = searchQuery.Where(archiveItem => archiveItem.Tags.Any(tag => searchRequest.Tags.Contains(tag.Title)));
+        }
+
+        var archiveItem = await searchQuery.ToListAsync();
+
+        return archiveItem.Select(archiveItem => new GetResponse
+        {
+            Id = archiveItem.Id,
+            Title = archiveItem.Title,
+            Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
+            CreatedAt = archiveItem.CreatedAt,
+            Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
+            {
+                BlobId = blob.Id,
+                NumberOfPages = blob.PageCount
+            }).ToList() ?? [],]
+        }).ToList();
+    }
+
 
     [HttpDelete]
     public async Task<ActionResult> Delete([FromQuery] int id)
@@ -223,6 +258,12 @@ public class ArchiveController : ControllerBase
             public int BlobId { get; set; }
             public int NumberOfPages { get; set; }
         }
+    }
+
+    public class SearchRequest 
+    {
+        public string? Title { get; set; }
+        public string[]? Tags { get; set; }
     }
     #endregion
 }
