@@ -10,6 +10,10 @@ export type ListResponse = {
     createdAt: string
 }
 
+export type TagsResponse = {
+    title: string
+}
+
 type ArchiveItem = {
     id: number
     title: string
