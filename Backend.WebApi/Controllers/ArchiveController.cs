@@ -142,7 +142,7 @@ public class ArchiveController : ControllerBase
 
         if(searchRequest.Tags?.Length > 0)
         {
-            searchQuery = searchQuery.Where(archiveItem => archiveItem.Tags.Any(tag => searchRequest.Tags.Contains(tag.Title)));
+            searchQuery = searchQuery.Where(archiveItem => searchRequest.Tags.All(tag => archiveItem.Tags.Any(t => t.Title == tag)));
         }
 
         var archiveItem = await searchQuery.ToListAsync();

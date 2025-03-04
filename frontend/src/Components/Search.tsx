@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 import { TagsInput } from "./TagsInput"
-import { ListResponse } from "../Pages/ArchiveItemListPage"
+import { ListResponse, TagsResponse } from "../Pages/ArchiveItemListPage"
 
 type SearchProps = {
     searchResult: (result: ListResponse[]) => void
     resetResult: () => void
 }
 
-type TagsResponse = {
-    title: string
-}
 
 export const Search = ({searchResult, resetResult}: SearchProps) => {
     const apiClient = useApiClient()
