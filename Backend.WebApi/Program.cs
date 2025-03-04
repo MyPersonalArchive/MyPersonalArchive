@@ -10,6 +10,7 @@ using Backend.Core.Providers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Backend.DbModel.Database.EntityModels;
+using Microsoft.IdentityModel.Logging;
 
 namespace Backend.WebApi;
 
@@ -62,7 +63,7 @@ public static class Program
             hubOptions.EnableDetailedErrors = true;
             hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
         }));
-        // services.AddScoped<ISignalRService, SignalRService>();
+        services.AddScoped<SignalRService>();
     }
 
 
@@ -90,7 +91,34 @@ public static class Program
                     ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.JwtSecret))
                 };
+
+                options.Audience = jwtOptions.Audience;
+                // options.Authority = jwtOptions.???;
+
+                // Enable SignalR authentication via access token query string
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        Console.WriteLine($"**** {context.Request.Path} OnMessageReceived: ");
+
+                        // If the request is for the SignalR hub, read the token from the query string
+                        var path = context.HttpContext.Request.Path;
+                        if (path.StartsWithSegments("/notificationHub"))
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                context.Token = accessToken;
+                            }
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
+
+        builder.Services.AddAuthorization();
     }
 
     private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
@@ -209,7 +237,7 @@ public static class Program
         app.UseAuthorization();
 
         app.UseWebSockets();
-        // app.MapHub<NotificationHub>("/notificationHub");
+        app.MapHub<NotificationHub>("/notificationHub");
 
         // app.MapGet("/testUserChannel", async (IHubContext<NotificationHub> hub, string message) =>
         //     await hub.Clients.All.SendAsync("userChannel", $"Message: {message}"));

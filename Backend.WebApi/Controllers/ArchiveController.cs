@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
@@ -17,12 +18,14 @@ public class ArchiveController : ControllerBase
 {
     private readonly MpaDbContext _dbContext;
     private readonly IFileStorageProvider _fileProvider;
+    private readonly SignalRService _signalRService;
     private readonly AmbientDataResolver _resolver;
 
-    public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
+    public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, SignalRService signalRService, AmbientDataResolver resolver)
     {
         _dbContext = dbContext;
         _fileProvider = fileProvider;
+        _signalRService = signalRService;
         _resolver = resolver;
     }
 
@@ -42,7 +45,7 @@ public class ArchiveController : ControllerBase
 
 
     [HttpPost]
-    public ActionResult<CreateResponse> Create(CreateRequest request /*, [FromForm] List<IFormFile> files*/)
+    public async Task<ActionResult<CreateResponse>> Create(CreateRequest request /*, [FromForm] List<IFormFile> files*/)
     {
         var newArchiveItem = new ArchiveItem
         {
@@ -55,6 +58,9 @@ public class ArchiveController : ControllerBase
 
         _dbContext.ArchiveItems.Add(newArchiveItem);
         _dbContext.SaveChanges();
+
+        var message = new Message("ArchiveItemCreated", newArchiveItem.Id);
+        await _signalRService.PublishToTenantChannel(message);
 
         return new CreateResponse
         {
@@ -81,6 +87,9 @@ public class ArchiveController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
+        var message = new Message("ArchiveItemUpdated", archiveItem.Id);
+        await _signalRService.PublishToTenantChannel(message);
+
         return Ok();
     }
 
@@ -97,21 +106,6 @@ public class ArchiveController : ControllerBase
         {
             return NotFound();
         }
-
-        // var archiveBlobTasks = archiveItem.Blobs!.Select(async blob =>
-        // {
-        //     var file = await _fileProvider.GetFile(blob.PathInStore);
-        //     return new GetResponse.Blob
-        //     {
-        //         FileName = file.Metadata.OriginalFilename,
-        //         Uploaded = file.Metadata.UploadedAt,
-        //         Data = file.Data,
-        //         Size = file.Metadata.Size,
-        //         UploadedBy = file.Metadata.UploadedBy
-        //     };
-        // });
-
-        // var archiveBlobs = await Task.WhenAll(archiveBlobTasks);
 
         return new GetResponse
         {
@@ -186,6 +180,9 @@ public class ArchiveController : ControllerBase
         _dbContext.ArchiveItems.Remove(archiveItem);
         await _dbContext.SaveChangesAsync();
 
+        var message = new Message("ArchiveItemDeleted", archiveItem.Id);
+        await _signalRService.PublishToUserChannel(message);
+        
         return Ok();
     }
 
@@ -208,16 +205,9 @@ public class ArchiveController : ControllerBase
     {
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
-        // public List<Blob>? Blobs { get; set; }
-
-        // public class Blob
-        // {
-        //     public required string FileName { get; set; }
-        //     public required string FileData { get; set; }
-        // }
     }
 
-    public class CreateResponse 
+    public class CreateResponse
     {
         public required int Id { get; set; }
     }
@@ -227,22 +217,6 @@ public class ArchiveController : ControllerBase
         public int Id { get; set; }
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
-        // public required List<Blob> Blobs { get; set; }
-
-        // public class Blob
-        // {
-        //     public ArchiveUpdateActionType Type { get; set; }
-        //     public int Id { get; set; }
-        //     public string? FileName { get; set; }
-        //     public string? Data { get; set; }
-        // }
-
-        // public enum ArchiveUpdateActionType
-        // {
-        //     NoChanges = 0,
-        //     Added = 1,
-        //     Deleted = 2
-        // }
     }
 
     public class GetResponse
@@ -251,7 +225,7 @@ public class ArchiveController : ControllerBase
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public required List<string> Tags { get; set; }
-        public required List<Blob> Blobs { get; set; }
+       public required List<Blob> Blobs { get; set; }
 
         public class Blob 
         {

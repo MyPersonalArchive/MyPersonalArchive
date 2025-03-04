@@ -8,10 +8,10 @@ type GetResponse = {
     id: number
     title: string
     tags: string[]
-    blobs: BlobIdAndPageNumber[]
+    blobs: Blob[]
 }
 
-type BlobIdAndPageNumber = {
+type Blob = {
     blobId: number
     numberOfPages: number
 }
@@ -20,7 +20,7 @@ type UpdateRequest = {
     id: number
     title: string
     tags: string[]
-    blobIds: number[]
+    blobs: number[]
 }
 
 
@@ -28,19 +28,19 @@ export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
     const [title, setTitle] = useState<string | null>(null)
     const [tags, setTags] = useState<string[]>([])
-    const [blobIdAndPageNumbers, setBlobIdAndPageNumbers] = useState<BlobIdAndPageNumber[]>([])
+    const [blob, setBlob] = useState<Blob[]>([])
 
     const params = useParams()
     const navigate = useNavigate()
     const apiClient = useApiClient()
 
     useEffect(() => {
-        apiClient.get<GetResponse>("/api/archive/Get", { id: params.receiptId })
+        apiClient.get<GetResponse>("/api/archive/Get", { id: params.id })
             .then(item => {
                 setId(item.id)
                 setTitle(item.title)
                 setTags(item.tags)
-                setBlobIdAndPageNumbers(item.blobs)
+                setBlob(item.blobs)
             })
     }, [])
 
@@ -50,7 +50,7 @@ export const ArchiveItemEditPage = () => {
         //TODO: Tags is not updated from UI!
 
         const requestData: UpdateRequest = {
-            id: id!, title: title!, tags, blobIds: blobIdAndPageNumbers.map(x => x.blobId)
+            id: id!, title: title!, tags, blobIds: blob.map(x => x.blobId)
         }
         apiClient.put("/api/archive/Update", requestData, {})
 
@@ -85,7 +85,7 @@ export const ArchiveItemEditPage = () => {
                 </div>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                     {
-                        blobIdAndPageNumbers.map((blob, ix) => <Preview key={ix} blobId={blob.blobId} numberOfPages={blob.numberOfPages} />)
+                        blob.map((blob, ix) => <Preview key={ix} blobId={blob.blobId} numberOfPages={blob.numberOfPages} />)
                     }
                 </div>
                 <div>
