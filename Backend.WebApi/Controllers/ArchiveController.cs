@@ -147,7 +147,7 @@ public class ArchiveController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetResponse>>> Filter([FromQuery] FilterRequest searchRequest)
+    public async Task<ActionResult<IEnumerable<GetResponse>>> Filter([FromQuery]FilterRequest searchRequest)
     {
         var searchQuery = _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
