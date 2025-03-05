@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { Search } from "../Components/Search"
+import { SignalRMessage, useSignalR } from "../Utils/useSignalR"
 
 export type ListResponse = {
     id: number
@@ -27,10 +28,6 @@ export const ArchiveItemListPage = () => {
 
     const apiClient = useApiClient()
 
-    // useSignalR("archiveItemUpdated", (message) => {
-    //     console.log("SignalR - archiveItemUpdated", message)
-    // })
-
     useEffect(() => {
         getList()
     }, [])
@@ -45,6 +42,23 @@ export const ArchiveItemListPage = () => {
     const mapArchiveItems = (items: ListResponse[]) => {
         return items.map(item => ({ ...item, createdAt: new Date(item.createdAt) }))
     }
+
+    useSignalR((message: SignalRMessage) => {
+        console.log("*** MESSAGE RECEIVED", message)
+        switch (message.messageType) {
+            case "ArchiveItemCreated":
+            case "ArchiveItemUpdated":
+            case "ArchiveItemDeleted": {
+                console.log("*** BBB 1")
+                apiClient.get<ListResponse[]>("/api/archive/List")
+                    .then(response => {
+                        setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
+                    })
+                break
+            }
+        }
+    })
+
 
     const newArchiveItem = () => {
         navigate("/archive/new")

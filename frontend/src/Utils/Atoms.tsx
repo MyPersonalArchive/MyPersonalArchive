@@ -11,17 +11,3 @@ export const accessTokenAtom = atom<string | undefined>(undefined)
 export const selectedTenantIdAtom = atom<number | undefined>(-1)    //TODO:
 
 export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLoggedInUsername", null, undefined, { getOnInit: true })
-
-
-export type SignalRMessage = {
-    type: string
-    text: string
-    body: string
-}
-type SignalRCallbacks = Map<
-    string,
-    (message: SignalRMessage) => void   // single subscription pr message type
-    // [(message: SignalRMessage) => void]  // multiple subscriptions pr message type
->
-export const signalRCallbacksAtom = atom<SignalRCallbacks>(new Map())
-

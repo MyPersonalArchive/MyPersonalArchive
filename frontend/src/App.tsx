@@ -9,7 +9,6 @@ import { IndexPage } from "./Pages/IndexPage"
 import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { Layout } from "./Components/Layout"
-import { SignalRProvider } from "./Frames/SignalRProvider"
 
 
 const routers = createBrowserRouter([
@@ -28,24 +27,20 @@ const routers = createBrowserRouter([
                 element: <RequireAuthentication />,
                 children: [
                     {
-                        element: <SignalRProvider />,
-                        children: [
-                            {
-                                path: RoutePaths.SignOut,
-                                element: <SignOutPage />
-                            },
-                            {
-                                path: RoutePaths.Archive,
-                                element: <ArchiveItemListPage />
-                            }, {
-                                path: "archive/edit/:receiptId",
-                                element: <ArchiveItemEditPage />
-                            },
-                            {
-                                path: "archive/new",
-                                element: <ArchiveItemNewPage />
-                            }
-                        ]
+                        path: RoutePaths.SignOut,
+                        element: <SignOutPage />
+                    },
+                    {
+                        path: RoutePaths.Archive,
+                        element: <ArchiveItemListPage />
+                    },
+                    {
+                        path: "archive/edit/:id",
+                        element: <ArchiveItemEditPage />
+                    },
+                    {
+                        path: "archive/new",
+                        element: <ArchiveItemNewPage />
                     }
                 ]
             }

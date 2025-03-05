@@ -19,7 +19,7 @@ export const FileDropZone = ({setFileBlobs: setFileBlobs}: FileDropZoneProps) =>
         }
     }
 
-    const onChangeFile = (event: any) => {
+    const onChangeFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.stopPropagation()
         event.preventDefault()
 

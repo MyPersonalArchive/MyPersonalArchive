@@ -13,7 +13,7 @@ export const useApiClient = () => {
     const currentPath = window.location.pathname
 
     const commonHeaders: any = {}
-    if (accessToken !== null) {
+    if (accessToken !== undefined) {
         commonHeaders.Authorization = `Bearer ${accessToken}`
     }
     if (selectedTenantId !== null) {
