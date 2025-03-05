@@ -1,13 +1,33 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 type PreviewProps = {
     fileName: string,
-    fileData: string,
+    blob: Blob,
     removeBlob: (fileName: string) => void
 }
 
-export const LocalFilePreview = ({fileName, fileData, removeBlob}: PreviewProps) => {
+export const LocalFilePreview = ({fileName, blob, removeBlob}: PreviewProps) => {
     const [expand, setExpand] = useState(false)
+    const [fileData, setFileData] = useState("")
+
+    useEffect(() => {
+        blobToBase64(blob).then(data => {
+            console.log(data)
+            setFileData(data as string)
+        })
+    }, [blob])
+
+    const blobToBase64 = async (blob: Blob) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader()
+    
+            reader.onloadend = () => {
+                const base64String = reader.result?.toString()!
+                resolve(base64String)
+            }
+            reader.readAsDataURL(blob)
+        })
+    }
 
     return (
         <div>
