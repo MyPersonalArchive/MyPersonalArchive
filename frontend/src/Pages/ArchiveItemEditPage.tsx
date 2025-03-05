@@ -8,7 +8,7 @@ type GetResponse = {
     id: number
     title: string
     tags: string[]
-    blobs: Blob[]
+    blobIds: Blob[]
 }
 
 type Blob = {

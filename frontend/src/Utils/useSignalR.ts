@@ -1,7 +1,7 @@
-import { HttpTransportType, HubConnection, HubConnectionBuilder } from "@microsoft/signalr"
-import { useEffect, useState } from "react"
-import { accessTokenAtom, selectedTenantIdAtom } from "../Utils/Atoms"
-import { useAtomValue } from "jotai"
+import { HttpTransportType, HubConnectionBuilder } from "@microsoft/signalr"
+import { useEffect, useRef } from "react"
+import { accessTokenAtom, selectedTenantIdAtom, signalRConnectionAtom } from "../Utils/Atoms"
+import { useAtom, useAtomValue } from "jotai"
 
 
 export type SignalRMessage = {
@@ -12,7 +12,8 @@ export type SignalRMessage = {
 export const useSignalR = (
     callback: (message: SignalRMessage) => void
 ) => {
-    const [connection, setConnection] = useState<HubConnection>(); // SignalR connection
+    const [signalRConnection, setSignalRConnection] = useAtom(signalRConnectionAtom)
+    const callbacksRef = useRef<Array<(message: SignalRMessage) => void>>([])
 
     const tenantId = useAtomValue(selectedTenantIdAtom)
     const accessToken = useAtomValue(accessTokenAtom)
@@ -22,40 +23,59 @@ export const useSignalR = (
             return
         }
 
-        const connectToHub = async () => {
-            const newConnection = new HubConnectionBuilder()
-                .withUrl(`/notificationHub?tenantId=${tenantId}`, {
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets,
-                    accessTokenFactory: () => accessToken,
-                    withCredentials: true
-                })
-                .withAutomaticReconnect()
-                .build();
+        (async () => {
+            if (signalRConnection === undefined) {
+                const newConnection = new HubConnectionBuilder()
+                    .withUrl(`/notificationHub?tenantId=${tenantId}`, {
+                        skipNegotiation: true,
+                        transport: HttpTransportType.WebSockets,
+                        accessTokenFactory: () => accessToken,
+                        withCredentials: true
+                    })
+                    .withAutomaticReconnect()
+                    .build()
 
-            try {
-                await newConnection.start();
-                console.log("Connected to SignalR hub");
+                try {
+                    await newConnection.start()
+                    // console.log("Connected to SignalR hub")
 
-                // Listen for messages from the server
-                newConnection.on("ReceiveMessage", (message) => {
-                    callback(message);
-                });
+                    // Listen for messages from the server
+                    newConnection.on("ReceiveMessage", (message) => {
+                        callbacksRef.current.forEach(cb => cb(message))
+                    });
 
-                setConnection(newConnection);
-            } catch (err) {
-                console.error("Error connecting to SignalR hub:", err);
+                    setSignalRConnection(newConnection)
+                } catch (err) {
+                    console.error("Error connecting to SignalR hub:", err)
+                }
             }
-        };
-
-
-        connectToHub();
+        })();
 
         // Cleanup connection on component unmount
         return () => {
-            if (connection) {
-                connection.stop();
+            if (callbacksRef.current.length === 0) {
+                setSignalRConnection(current => {
+                    // console.log("Disconnecting from SignalR hub - cleaning up")
+                    current?.stop()
+                    return undefined
+                })
             }
-        };
-    }, [accessToken]);
+        }
+    }, [accessToken, tenantId])
+
+
+    // console.log("*** X", callbacksRef.current)
+
+    
+    useEffect(() => {
+        if (callbacksRef.current.indexOf(callback) === -1) {
+            callbacksRef.current.push(callback)
+        }
+
+        // Cleanup connection on component unmount
+        return () => {
+            // callbackRef.current = callbackRef.current.filter(entry => entry === callback)
+            callbacksRef.current.splice(callbacksRef.current.indexOf(callback), 1)
+        }
+    }, [])
 }

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
-import { Search } from "../Components/Search"
 import { SignalRMessage, useSignalR } from "../Utils/useSignalR"
+import { TagsInput } from "../Components/TagsInput"
 
 export type ListResponse = {
     id: number
@@ -44,12 +44,12 @@ export const ArchiveItemListPage = () => {
     }
 
     useSignalR((message: SignalRMessage) => {
-        console.log("*** MESSAGE RECEIVED", message)
+        // console.log("*** MESSAGE RECEIVED", message)
+
         switch (message.messageType) {
             case "ArchiveItemCreated":
             case "ArchiveItemUpdated":
             case "ArchiveItemDeleted": {
-                console.log("*** BBB 1")
                 apiClient.get<ListResponse[]>("/api/archive/List")
                     .then(response => {
                         setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
@@ -58,7 +58,6 @@ export const ArchiveItemListPage = () => {
             }
         }
     })
-
 
     const newArchiveItem = () => {
         navigate("/archive/new")
@@ -108,5 +107,59 @@ const Row = ({ archiveItem }: RowProps) => {
                 }
             </td>
         </tr>
+    )
+}
+
+
+
+type SearchProps = {
+    searchResult: (result: ListResponse[]) => void
+    resetResult: () => void
+}
+const Search = ({ searchResult, resetResult }: SearchProps) => {
+    const apiClient = useApiClient()
+
+    const [searchTerm, setSearchTerm] = useState<string>("")
+    const [tags, setTags] = useState<string[]>([])
+    const [tagsAutoCompleteList, setTagsAutoCompleteList] = useState<string[]>([])
+
+    useEffect(() => {
+        apiClient.get<TagsResponse[]>("/api/tag/list")
+            .then(result => {
+                const mappedTags = result.map(tag => tag.title)
+                setTagsAutoCompleteList(mappedTags)
+            })
+    }, []);
+
+    const search = () => {
+        let payload: { title: string | undefined, tags?: string[] } = {
+            title: searchTerm,
+            tags: tags.map(tag => tag.replace(" ", ""))
+        }
+
+        apiClient.get<ListResponse[]>("/api/archive/filter", payload).then(response => {
+            searchResult(response)
+        })
+    }
+
+    const reset = () => {
+        setSearchTerm("")
+        setTags([])
+        resetResult()
+    }
+
+    return (
+        <>
+            <input type="text"
+                placeholder="Search by title"
+                value={searchTerm}
+                onChange={event => setSearchTerm(event.target.value)}
+                onKeyDown={event => event.key === "Enter" ? search() : null} />
+
+            <TagsInput tags={tags} setTags={setTags} autocompleteList={tagsAutoCompleteList} htmlId={""}></TagsInput>
+
+            <button onClick={search}>Search</button>
+            <button onClick={reset}>Reset</button>
+        </>
     )
 }
