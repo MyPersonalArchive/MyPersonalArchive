@@ -29,21 +29,20 @@ export const ArchiveItemNewPage = () => {
 
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-        
-        const archiveItem = {
-            title, tags
+
+        const formData = new FormData()
+        const createRequest = {
+            title, 
+            tags
         }
 
-        apiClient.post<CreateResponse>("/api/archive/create", archiveItem, {})
-            .then(response => {
-                //We could also upload files in chunks to handle larger files better.
-                const formData = new FormData()
-                fileBlobs.forEach(blob => {
-                    formData.append("files", blob.fileData, blob.fileName)
-                })
-                apiClient.postFormData(`/api/blob/upload?archiveItemId=${response.id}`, formData, {})
-            })
+        formData.append("rawRequest", JSON.stringify(createRequest))
 
+        fileBlobs.forEach(blob => {
+            formData.append("files", blob.fileData, blob.fileName)
+        })
+
+        apiClient.postFormData<CreateResponse>("/api/archive/create", formData, {})
         navigate(-1)
     }
 
@@ -92,7 +91,7 @@ export const ArchiveItemNewPage = () => {
                                 key={blob.fileName} 
                                 removeBlob={removeBlob} 
                                 fileName={blob.fileName}
-                                fileData={""}>
+                                blob={blob.fileData}>
                             </LocalFilePreview>
                         </div>
                         

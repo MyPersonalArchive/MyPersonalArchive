@@ -76,7 +76,7 @@ public class BlobController : ControllerBase
  
 
     [HttpPost]
-    public async Task<ActionResult> Upload([FromQuery]int archiveItemId, IFormFileCollection files)
+    public async Task<ActionResult> Upload([FromQuery] int archiveItemId, IFormFileCollection files)
     {
         var archiveItem = await _dbContext.ArchiveItems.FindAsync(archiveItemId);
         if (archiveItem == null)

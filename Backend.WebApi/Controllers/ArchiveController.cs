@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using SQLitePCL;
 
 namespace Backend.WebApi.Controllers;
 
@@ -45,19 +47,42 @@ public class ArchiveController : ControllerBase
 
 
     [HttpPost]
-    public async Task<ActionResult<CreateResponse>> Create(CreateRequest request /*, [FromForm] List<IFormFile> files*/)
+    public async Task<ActionResult<CreateResponse>> Create([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
     {
+        var request = JsonConvert.DeserializeObject<CreateRequest>(rawRequest);
+        if(request == null) 
+        {
+            return BadRequest();
+        }
+
         var newArchiveItem = new ArchiveItem
         {
             Title = request.Title,
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
             Tags = [.. Tags.Ensure(_dbContext, request.Tags)],
-            //Blobs = [.. blobs]
+            Blobs = await Task.WhenAll(files.Select(async file => //Same as in BlobController.Upload, not sure where to generalize this...
+            {
+                var stream = file.OpenReadStream();
+                
+                return new Blob
+                {
+                    FileHash = _fileProvider.ComputeSha256Hash(stream),
+                    MimeType = file.ContentType,
+                    OriginalFilename = file.FileName,
+                    PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
+                    FileSize = file.Length,
+                    UploadedAt = DateTimeOffset.Now,
+                    UploadedByUsername = _resolver.GetCurrentUsername(),
+                    StoreRoot = StoreRoot.FileStorage.ToString(),
+                    PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
+                };
+            }))
         };
 
         _dbContext.ArchiveItems.Add(newArchiveItem);
-        _dbContext.SaveChanges();
+
+        await _dbContext.SaveChangesAsync();
 
         var message = new Message("ArchiveItemCreated", newArchiveItem.Id);
         await _signalRService.PublishToTenantChannel(message);
@@ -122,7 +147,7 @@ public class ArchiveController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetResponse>>> Filter([FromQuery]FilterRequest searchRequest)
+    public async Task<ActionResult<IEnumerable<GetResponse>>> Filter([FromQuery] FilterRequest searchRequest)
     {
         var searchQuery = _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
