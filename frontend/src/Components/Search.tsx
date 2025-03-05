@@ -26,19 +26,11 @@ export const Search = ({searchResult, resetResult}: SearchProps) => {
 
     const search = () => {
         let payload: { title: string | undefined, tags?: string[] } = {
-            title: searchTerm
+            title: searchTerm,
+            tags: tags.map(tag => tag.replace(" ", ""))
         }
 
-        if(tags.length > 0) {
-            payload = {
-                ...payload,
-                tags: tags.map(tag => tag.replace(" ", ""))
-            }
-        }
-
-        console.log(payload)
-
-        apiClient.get<ListResponse[]>("/api/archive/search", payload).then(response => {
+        apiClient.get<ListResponse[]>("/api/archive/filter", payload).then(response => {
             searchResult(response)
         })
     }

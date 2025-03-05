@@ -128,24 +128,17 @@ public class ArchiveController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetResponse>>> Search([FromQuery]SearchRequest searchRequest)
+    public async Task<ActionResult<IEnumerable<GetResponse>>> Filter([FromQuery]FilterRequest searchRequest)
     {
         var searchQuery = _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
             .Include(archiveItem => archiveItem.Tags)
+            .ConditionalWhere(!string.IsNullOrEmpty(searchRequest.Title), archiveItem => archiveItem.Title.ToLower().Contains(searchRequest.Title != null ? searchRequest.Title.ToLower() : ""))
+            .ConditionalWhere(searchRequest.Tags?.Length > 0, archiveItem => searchRequest.Tags != null && searchRequest.Tags.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
             .AsQueryable();
 
-        if(!string.IsNullOrEmpty(searchRequest.Title)) 
-        {
-            searchQuery = searchQuery.Where(archiveItem => archiveItem.Title.ToLower().Contains(searchRequest.Title.ToLower()));
-        }
-
-        if(searchRequest.Tags?.Length > 0)
-        {
-            searchQuery = searchQuery.Where(archiveItem => searchRequest.Tags.All(tag => archiveItem.Tags.Any(t => t.Title == tag)));
-        }
-
-        var archiveItem = await searchQuery.ToListAsync();
+        var archiveItem = (await searchQuery.ToListAsync())
+                            .OrderBy(archiveItem => archiveItem, new ArchiveItemTitleIndexOfComparer(searchRequest.Title));
 
         return archiveItem.Select(archiveItem => new GetResponse
         {
@@ -260,11 +253,55 @@ public class ArchiveController : ControllerBase
         }
     }
 
-    public class SearchRequest 
+    public class FilterRequest 
     {
         public string? Title { get; set; }
-        public string[]? Tags { get; set; }
+        public string[]? Tags { get; set; } = [];
     }
     #endregion
+
+    public class ArchiveItemTitleIndexOfComparer : IComparer<ArchiveItem>
+    {
+        private readonly string _searchTerm;
+
+        public ArchiveItemTitleIndexOfComparer(string? searchTerm)
+        {
+            _searchTerm = string.IsNullOrEmpty(searchTerm) ? "" : searchTerm.ToLower();
+        }
+
+        public int Compare(ArchiveItem? x, ArchiveItem? y)
+        {
+            //All this code just to handle nullables, uuuughhhh.... Could do one liners though
+            if (x is null && y is null)
+            {
+                return 0;
+            } 
+
+            if (x is null)
+            {
+                return -1;
+            }
+
+            if (y is null)
+            {
+                 return 1;
+            }
+
+            var indexX = x.Title.IndexOf(_searchTerm, StringComparison.OrdinalIgnoreCase);
+            var indexY = y.Title.IndexOf(_searchTerm, StringComparison.OrdinalIgnoreCase);
+
+            if(indexX == - 1) 
+            {
+                return 1;
+            }
+
+            if(indexY == - 1)
+            {
+                return -1;
+            }
+
+            return indexX.CompareTo(indexY);
+        }
+    }
 }
 
