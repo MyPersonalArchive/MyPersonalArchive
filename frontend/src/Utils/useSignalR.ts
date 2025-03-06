@@ -1,4 +1,4 @@
-import { HttpTransportType, HubConnectionBuilder } from "@microsoft/signalr"
+import { HttpTransportType, HubConnectionBuilder, LogLevel } from "@microsoft/signalr"
 import { useEffect, useRef } from "react"
 import { accessTokenAtom, selectedTenantIdAtom, signalRConnectionAtom } from "../Utils/Atoms"
 import { useAtom, useAtomValue } from "jotai"
@@ -24,38 +24,21 @@ export const useSignalR = (
         }
 
         (async () => {
-            if (signalRConnection === undefined) {
-                const newConnection = new HubConnectionBuilder()
-                    .withUrl(`/notificationHub?tenantId=${tenantId}`, {
-                        skipNegotiation: true,
-                        transport: HttpTransportType.WebSockets,
-                        accessTokenFactory: () => accessToken,
-                        withCredentials: true
-                    })
-                    .withAutomaticReconnect()
-                    .build()
+            const url = `/notificationHub?tenantId=${tenantId}`
+            const connection = signalRConnection ?? await ensureSignalRConnection(url, accessToken)
 
-                try {
-                    await newConnection.start()
-                    // console.log("Connected to SignalR hub")
+            connection.on("ReceiveMessage", (message) => {
+                callbacksRef.current.forEach(cb => cb(message))
+            });
 
-                    // Listen for messages from the server
-                    newConnection.on("ReceiveMessage", (message) => {
-                        callbacksRef.current.forEach(cb => cb(message))
-                    });
-
-                    setSignalRConnection(newConnection)
-                } catch (err) {
-                    console.error("Error connecting to SignalR hub:", err)
-                }
-            }
+            setSignalRConnection(connection)
         })();
 
         // Cleanup connection on component unmount
         return () => {
             if (callbacksRef.current.length === 0) {
                 setSignalRConnection(current => {
-                    // console.log("Disconnecting from SignalR hub - cleaning up")
+                    console.log("Disconnecting from SignalR hub")
                     current?.stop()
                     return undefined
                 })
@@ -64,9 +47,6 @@ export const useSignalR = (
     }, [accessToken, tenantId])
 
 
-    // console.log("*** X", callbacksRef.current)
-
-    
     useEffect(() => {
         if (callbacksRef.current.indexOf(callback) === -1) {
             callbacksRef.current.push(callback)
@@ -74,8 +54,24 @@ export const useSignalR = (
 
         // Cleanup connection on component unmount
         return () => {
-            // callbackRef.current = callbackRef.current.filter(entry => entry === callback)
             callbacksRef.current.splice(callbacksRef.current.indexOf(callback), 1)
         }
     }, [])
+}
+
+const ensureSignalRConnection = async (url: string, accessToken: string) => {
+    const connection = new HubConnectionBuilder()
+        .withUrl(url, {
+            skipNegotiation: true,
+            transport: HttpTransportType.WebSockets,
+            accessTokenFactory: () => accessToken,
+            withCredentials: true
+        })
+        .configureLogging(LogLevel.Warning)
+        .withAutomaticReconnect()
+        .build()
+
+    await connection.start()
+
+    return connection
 }
