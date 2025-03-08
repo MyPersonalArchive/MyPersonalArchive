@@ -4,6 +4,13 @@ import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 
 
+type RefreshResponse = {
+    username: string
+    fullname: string
+    accessToken: string
+}
+
+
 export const useApiClient = () => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
     const selectedTenantId = useAtomValue(selectedTenantIdAtom)
@@ -39,7 +46,7 @@ export const useApiClient = () => {
                         credentials: "include", // needed so that http-only cookies are sent with this request (Should it be "include" or "same-origin"?)
                         headers: { "Content-Type": "application/json" }
                     })
-                    if(response.status === 403) {
+                    if (response.status === 403) {
                         navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
                         return response
                     }
@@ -61,26 +68,7 @@ export const useApiClient = () => {
 
     return {
         get: async <T>(url: string, payload: any = {}, incomingOptions?: RequestInit) => {
-            let queryString
-            if (payload != undefined) {
-                const params = new URLSearchParams();
-
-                Object.keys(payload).forEach(key => {
-                    const value = payload[key]
-                
-                    if (Array.isArray(value)) {
-                        value.forEach(val => {
-                            params.append(key, val)
-                      });
-                    } else if (value !== null && value !== undefined) {
-                        params.append(key, value)
-                    } else {
-                        params.append(key, '')
-                    }
-                  })
-                queryString = params.toString()
-                queryString = "?" + queryString
-            }
+            const queryString = createQueryString(payload)
             const options = {
                 ...incomingOptions,
                 method: "GET",
@@ -126,13 +114,7 @@ export const useApiClient = () => {
         },
 
         delete: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
-            let queryString
-            if (payload != undefined) {
-                queryString = new URLSearchParams(payload).toString()
-                if (queryString != "") {
-                    queryString = "?" + queryString
-                }
-            }
+            const queryString = createQueryString(payload)
             const options = {
                 ...incomingOptions,
                 method: "DELETE"
@@ -143,13 +125,7 @@ export const useApiClient = () => {
         },
 
         getBlob: async (url: string, payload: any = {}, incomingOptions?: RequestInit) => {
-            let queryString
-            if (payload != undefined) {
-                queryString = new URLSearchParams(payload).toString()
-                if (queryString != "") {
-                    queryString = "?" + queryString
-                }
-            }
+            const queryString = createQueryString(payload)
             const options = {
                 ...incomingOptions,
                 method: "GET",
@@ -161,12 +137,23 @@ export const useApiClient = () => {
         }
 
     }
-
 }
 
 
-type RefreshResponse = {
-    username: string
-    fullname: string
-    accessToken: string
+function createQueryString(payload: any) {
+    if (payload != undefined) {
+        const params = new URLSearchParams()
+
+        Object.entries(payload).forEach(([key, value]: [string, any]) => {
+            if (Array.isArray(value)) {
+                value.forEach(val => { params.append(key, val) })
+            } else if (value === null) {
+                params.append(key, "")
+            } else if (value !== undefined) {
+                params.append(key, value)
+            }
+        })
+        return `?${params}`
+    }
+    return undefined
 }
