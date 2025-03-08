@@ -115,6 +115,10 @@ public class ArchiveController : ControllerBase
         var message = new Message("ArchiveItemUpdated", archiveItem.Id);
         await _signalRService.PublishToTenantChannel(message);
 
+// //TODO: remove, debug only
+//         var m2 = new Message("TagsAdded", new[]{"pepsi", "max"});
+//         await _signalRService.PublishToTenantChannel(m2);
+        
         return Ok();
     }
 
@@ -140,7 +144,7 @@ public class ArchiveController : ControllerBase
             CreatedAt = archiveItem.CreatedAt,
             Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
             {
-                BlobId = blob.Id,
+                Id = blob.Id,
                 NumberOfPages = blob.PageCount
             }).ToList() ?? [],],
         };
@@ -167,7 +171,7 @@ public class ArchiveController : ControllerBase
             CreatedAt = archiveItem.CreatedAt,
             Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
             {
-                BlobId = blob.Id,
+                Id = blob.Id,
                 NumberOfPages = blob.PageCount
             }).ToList() ?? [],]
         }).ToList();
@@ -247,7 +251,7 @@ public class ArchiveController : ControllerBase
 
         public class Blob 
         {
-            public int BlobId { get; set; }
+            public int Id { get; set; }
             public int NumberOfPages { get; set; }
         }
     }

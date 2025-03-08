@@ -10,19 +10,19 @@ type GetResponse = {
     id: number
     title: string
     tags: string[]
-    blobIds: Blob[]
+    blobs: Blob[]
 }
 
 type Blob = {
-    blobId: number
-    numberOfPages: number
+    id: number
+    pageCount: number
 }
 
 type UpdateRequest = {
     id: number
     title: string
     tags: string[]
-    blobs: number[]
+    blobs: Blob[]
 }
 
 
@@ -30,7 +30,7 @@ export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
     const [title, setTitle] = useState<string | null>(null)
     const [tags, setTags] = useState<string[]>([])
-    const [blob, setBlob] = useState<Blob[]>([])
+    const [blobs, setBlobs] = useState<Blob[]>([])
 
     const params = useParams()
 
@@ -44,7 +44,7 @@ export const ArchiveItemEditPage = () => {
                 setId(item.id)
                 setTitle(item.title)
                 setTags(item.tags)
-                setBlob(item.blobs)
+                setBlobs(item.blobs)
             })
     }, [])
 
@@ -54,7 +54,7 @@ export const ArchiveItemEditPage = () => {
         //TODO: Tags is not updated from UI!
 
         const requestData: UpdateRequest = {
-            id: id!, title: title!, tags, blobIds: blob.map(x => x.blobId)
+            id: id!, title: title!, tags, blobs
         }
         apiClient.put("/api/archive/Update", requestData, {})
 
@@ -90,7 +90,7 @@ export const ArchiveItemEditPage = () => {
                 </div>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                     {
-                        blob.map((blob, ix) => <Preview key={ix} blobId={blob.blobId} numberOfPages={blob.numberOfPages} />)
+                        blobs.map((blob, ix) => <Preview key={ix} blobId={blob.id} numberOfPages={blob.pageCount} />)
                     }
                 </div>
                 <div>
