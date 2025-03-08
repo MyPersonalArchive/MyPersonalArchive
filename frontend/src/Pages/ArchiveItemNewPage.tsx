@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
-import { useApiClient } from "../Utils/useApiClient"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
-import { TagsResponse } from "./ArchiveItemListPage"
+import { useApiClient } from "../Utils/useApiClient"
+import { tagsAtom } from "../Utils/Atoms"
 
 type CreateResponse = {
     id: number
@@ -14,18 +15,10 @@ export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [fileBlobs, setFileBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
-    const [tagsAutoCompleteList, setTagsAutoCompleteList] = useState<string[]>([])
+    const allTags = useAtomValue(tagsAtom)
 
     const navigate = useNavigate()
     const apiClient = useApiClient()
-
-    useEffect(() => {
-        apiClient.get<TagsResponse[]>("/api/tag/list")
-            .then(result => {
-                const mappedTags = result.map(tag => tag.title)
-                setTagsAutoCompleteList(mappedTags)
-            })
-    }, []);
 
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -59,7 +52,7 @@ export const ArchiveItemNewPage = () => {
     }
 
     return (
-        <div>
+        <>
             <h1>
                 New archive item {title}
             </h1>
@@ -79,7 +72,7 @@ export const ArchiveItemNewPage = () => {
                 </div>
                 <div>
                     <label htmlFor="tags">Tags</label>
-                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={tagsAutoCompleteList} />
+                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
                 </div>
                 
                 <FileDropZone setFileBlobs={addFileBlobs}></FileDropZone>
@@ -107,6 +100,6 @@ export const ArchiveItemNewPage = () => {
                     </button>
                 </div>
             </form>
-        </div >
+        </>
     )
 }

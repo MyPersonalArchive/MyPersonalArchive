@@ -14,3 +14,5 @@ export const selectedTenantIdAtom = atom<number | undefined>(-1)    //TODO: get 
 export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLoggedInUsername", null, undefined, { getOnInit: true })
 
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
+
+export const tagsAtom = atom<string[]>([])

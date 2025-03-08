@@ -18,16 +18,8 @@ public class TagController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TagResponse>>> List()
+    public async Task<ActionResult<IList<string>>> List()
     {
-        return await _dbContext.Tags.Select(tag => new TagResponse
-        {
-            Title = tag.Title
-        }).ToListAsync();
-    }
-
-    public class TagResponse
-    {
-        public required string Title { get; set; }
+        return await _dbContext.Tags.Select(tag =>  tag.Title).ToListAsync();
     }
 }

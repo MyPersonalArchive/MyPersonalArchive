@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom"
 import { SignInPage } from "./Pages/SignInPage"
 import { useEffect } from "react"
 import { RoutePaths } from "./RoutePaths"
@@ -9,11 +9,16 @@ import { IndexPage } from "./Pages/IndexPage"
 import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { Layout } from "./Components/Layout"
+import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 
 
 const routers = createBrowserRouter([
     {
-        element: <Layout />,
+        element: (
+            <Layout>
+                <Outlet />
+            </Layout>
+        ),
         children: [
             {
                 path: RoutePaths.Index,
@@ -24,7 +29,13 @@ const routers = createBrowserRouter([
                 element: <SignInPage />
             },
             {
-                element: <RequireAuthentication />,
+                element: (
+                    <RequireAuthentication>
+                        <PrefetchDataFrame>
+                            <Outlet />
+                        </PrefetchDataFrame>
+                    </RequireAuthentication>
+                ),
                 children: [
                     {
                         path: RoutePaths.SignOut,

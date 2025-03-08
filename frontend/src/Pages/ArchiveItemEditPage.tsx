@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
 import { Preview } from "../Components/Preview"
+import { tagsAtom } from "../Utils/Atoms"
+import { useAtomValue } from "jotai"
 
 type GetResponse = {
     id: number
@@ -31,6 +33,8 @@ export const ArchiveItemEditPage = () => {
     const [blob, setBlob] = useState<Blob[]>([])
 
     const params = useParams()
+
+    const allTags = useAtomValue(tagsAtom)
     const navigate = useNavigate()
     const apiClient = useApiClient()
 
@@ -62,7 +66,8 @@ export const ArchiveItemEditPage = () => {
     }
 
     return (
-        <div>
+        <>
+
             <h1>
                 Edit item
             </h1>
@@ -97,6 +102,6 @@ export const ArchiveItemEditPage = () => {
                     </button>
                 </div>
             </form>
-        </div>
+        </>
     )
 }

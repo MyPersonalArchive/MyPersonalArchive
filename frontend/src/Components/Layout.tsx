@@ -1,13 +1,14 @@
-import { Link, Outlet } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { loggedInUserAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
+import { PropsWithChildren } from "react"
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 // import { faBars } from '@fortawesome/free-solid-svg-icons'
 
 
 
-export const Layout = () => {
+export const Layout = ({ children }: PropsWithChildren) => {
     const loggedInUser = useAtomValue(loggedInUserAtom)
 
     return (
@@ -31,7 +32,7 @@ export const Layout = () => {
                 </header>
 
                 <main className="main">
-                    <Outlet />
+                    {children}
                 </main>
 
                 <footer className="footer">
