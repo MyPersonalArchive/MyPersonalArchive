@@ -4,7 +4,7 @@ type TagsProps = {
     tags: string[]
     setTags: (tags: string[]) => void
     autocompleteList?: string[]
-    htmlId: string
+    htmlId?: string
 }
 export const TagsInput = ({ tags, setTags, autocompleteList, htmlId }: TagsProps) => {
     const [tagsInput, setTagsInput] = useState<string>("")

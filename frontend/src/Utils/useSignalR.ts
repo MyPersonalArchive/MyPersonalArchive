@@ -38,7 +38,6 @@ export const useSignalR = (
         return () => {
             if (callbacksRef.current.length === 0) {
                 setSignalRConnection(current => {
-                    console.log("Disconnecting from SignalR hub")
                     current?.stop()
                     return undefined
                 })

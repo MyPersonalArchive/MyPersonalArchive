@@ -2,6 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { accessTokenAtom, loggedInUserAtom, selectedTenantIdAtom } from "./Atoms"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
+import { createQueryString } from "./createQueryString"
 
 
 type RefreshResponse = {
@@ -11,7 +12,7 @@ type RefreshResponse = {
 }
 
 
-export const useApiClient = ({skipAuthentication = false} = {}) => {
+export const useApiClient = ({ skipAuthentication = false } = {}) => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
     const selectedTenantId = useAtomValue(selectedTenantIdAtom)
     const [accessToken, setAccessToken] = useAtom(accessTokenAtom)
@@ -137,23 +138,4 @@ export const useApiClient = ({skipAuthentication = false} = {}) => {
         }
 
     }
-}
-
-
-function createQueryString(payload: any) {
-    if (payload != undefined) {
-        const params = new URLSearchParams()
-
-        Object.entries(payload).forEach(([key, value]: [string, any]) => {
-            if (Array.isArray(value)) {
-                value.forEach(val => { params.append(key, val) })
-            } else if (value === null) {
-                params.append(key, "")
-            } else if (value !== undefined) {
-                params.append(key, value)
-            }
-        })
-        return `?${params}`
-    }
-    return undefined
 }

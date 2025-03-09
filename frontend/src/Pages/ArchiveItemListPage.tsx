@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { SignalRMessage, useSignalR } from "../Utils/useSignalR"
 import { TagsInput } from "../Components/TagsInput"
 import { useAtomValue } from "jotai"
 import { tagsAtom } from "../Utils/Atoms"
+import { createQueryString } from "../Utils/createQueryString"
 
-export type ListResponse = {
+type ListResponse = {
     id: number
     title: string
     tags: string[]
     createdAt: string
 }
-
 
 type ArchiveItem = {
     id: number
@@ -23,30 +23,22 @@ type ArchiveItem = {
 
 export const ArchiveItemListPage = () => {
     const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>()
+    const [searchParams] = useSearchParams()
+
     const navigate = useNavigate()
-
-    const allTags = useAtomValue(tagsAtom)
-
     const apiClient = useApiClient()
 
     useEffect(() => {
-        getList()
-    }, [])
+        const payload = {
+            title: searchParams.get("title"),
+            tags: searchParams.getAll("tags")
+        }
+        apiClient.get<ListResponse[]>("/api/archive/list", payload)
+            .then(response => setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) }))))
+    }, [searchParams])
 
-    const getList = () => {
-        apiClient.get<ListResponse[]>("/api/archive/list")
-            .then(response => {
-                setArchiveItems(mapArchiveItems(response))
-            })
-    }
-
-    const mapArchiveItems = (items: ListResponse[]) => {
-        return items.map(item => ({ ...item, createdAt: new Date(item.createdAt) }))
-    }
 
     useSignalR((message: SignalRMessage) => {
-        // console.log("*** MESSAGE RECEIVED", message)
-
         switch (message.messageType) {
             case "ArchiveItemCreated":
             case "ArchiveItemUpdated":
@@ -67,7 +59,7 @@ export const ArchiveItemListPage = () => {
     return (
         <>
             <h1>Archive</h1>
-            <Search searchResult={result => setArchiveItems(mapArchiveItems(result))} resetResult={() => getList()}></Search>
+            <Filter />
             <table style={{ width: "100%" }}>
                 <thead>
                     <tr>
@@ -112,48 +104,42 @@ const Row = ({ archiveItem }: RowProps) => {
 }
 
 
-
-type SearchProps = {
-    searchResult: (result: ListResponse[]) => void
-    resetResult: () => void
-}
-const Search = ({ searchResult, resetResult }: SearchProps) => {
-    const apiClient = useApiClient()
-
-    const [searchTerm, setSearchTerm] = useState<string>("")
-    const [filterTags, setFilterTags] = useState<string[]>([])
+const Filter = () => {
+    const [title, setTitle] = useState<string>("")
+    const [tags, setTags] = useState<string[]>([])
     const allTags = useAtomValue(tagsAtom)
+    const [searchParams] = useSearchParams()
+
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        setTitle(searchParams.get("title") ?? "")
+        setTags(searchParams.getAll("tags"))        
+    }, [])
 
     const search = () => {
-        let payload: { title: string | undefined, tags?: string[] } = {
-            title: searchTerm,
-            tags: filterTags.map(tag => tag.trim())
-        }
-
-        apiClient.get<ListResponse[]>("/api/archive/filter", payload)
-            .then(response => {
-                searchResult(response)
-            })
+        navigate({
+            search: createQueryString({ title, tags: tags.map(tag => tag.trim()) }, { skipEmptyStrings: true })
+        })
     }
 
     const reset = () => {
-        setSearchTerm("")
-        setFilterTags([])
-        resetResult()
+        setTitle("")
+        setTags([])
     }
 
     return (
-        <>
+        <div>
             <input type="text"
                 placeholder="Search by title"
-                value={searchTerm}
-                onChange={event => setSearchTerm(event.target.value)}
+                value={title}
+                onChange={event => setTitle(event.target.value)}
                 onKeyDown={event => event.key === "Enter" ? search() : null} />
 
-            <TagsInput tags={filterTags} setTags={setFilterTags} autocompleteList={allTags} htmlId={""}></TagsInput>
+            <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} />
 
             <button onClick={search}>Search</button>
             <button onClick={reset}>Reset</button>
-        </>
+        </div>
     )
 }

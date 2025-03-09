@@ -1,14 +1,11 @@
-using System.Threading.Tasks;
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using SQLitePCL;
 
 namespace Backend.WebApi.Controllers;
 
