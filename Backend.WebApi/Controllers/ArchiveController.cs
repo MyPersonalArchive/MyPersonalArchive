@@ -31,20 +31,6 @@ public class ArchiveController : ControllerBase
         _resolver = resolver;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<ListResponse>>> List(/*ListRequest request*/)
-    {
-        return await _dbContext.ArchiveItems
-            .Select(item => new ListResponse
-            {
-                Id = item.Id,
-                Title = item.Title,
-                Tags = item.Tags.Select(tag => tag.Title).ToList(),
-                CreatedAt = item.CreatedAt
-            })
-            .ToListAsync();
-    }
-
 
     [HttpPost]
     public async Task<ActionResult<CreateResponse>> Create([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
@@ -115,10 +101,6 @@ public class ArchiveController : ControllerBase
         var message = new Message("ArchiveItemUpdated", archiveItem.Id);
         await _signalRService.PublishToTenantChannel(message);
 
-// //TODO: remove, debug only
-//         var m2 = new Message("TagsAdded", new[]{"pepsi", "max"});
-//         await _signalRService.PublishToTenantChannel(m2);
-        
         return Ok();
     }
 
@@ -151,30 +133,25 @@ public class ArchiveController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetResponse>>> Filter([FromQuery] FilterRequest searchRequest)
+    public async Task<ActionResult<IEnumerable<ListResponse>>> List([FromQuery] FilterRequest filterRequest)
     {
-        var searchQuery = _dbContext.ArchiveItems
-            .Include(archiveItem => archiveItem.Blobs)
+        var titleFilter = filterRequest.Title?.ToLowerInvariant() ?? "";
+        var tagsFilter = filterRequest.Tags ?? [];
+
+        return await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Tags)
-            .ConditionalWhere(!string.IsNullOrEmpty(searchRequest.Title), archiveItem => archiveItem.Title.ToLower().Contains(searchRequest.Title != null ? searchRequest.Title.ToLower() : ""))
-            .ConditionalWhere(searchRequest.Tags?.Length > 0, archiveItem => searchRequest.Tags != null && searchRequest.Tags.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
-            .AsQueryable();
-
-        var archiveItem = (await searchQuery.ToListAsync())
-                            .OrderBy(archiveItem => archiveItem, new ArchiveItemTitleIndexOfComparer(searchRequest.Title));
-
-        return archiveItem.Select(archiveItem => new GetResponse
-        {
-            Id = archiveItem.Id,
-            Title = archiveItem.Title,
-            Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
-            CreatedAt = archiveItem.CreatedAt,
-            Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
+            .ConditionalWhere(!string.IsNullOrEmpty(filterRequest.Title), archiveItem => archiveItem.Title.ToLower().Contains(titleFilter))
+            .Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
+            .Select(archiveItem => new ListResponse
             {
-                Id = blob.Id,
-                NumberOfPages = blob.PageCount
-            }).ToList() ?? [],]
-        }).ToList();
+                Id = archiveItem.Id,
+                Title = archiveItem.Title,
+                Tags = archiveItem.Tags.Select(tag => tag.Title),
+                CreatedAt = archiveItem.CreatedAt,
+            })
+            .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.ToLower().IndexOf(titleFilter))
+            .ThenBy(archItem => archItem.Title == null ? null : archItem.Title.ToLower())
+            .ToListAsync();
     }
 
 
@@ -204,7 +181,7 @@ public class ArchiveController : ControllerBase
 
         var message = new Message("ArchiveItemDeleted", archiveItem.Id);
         await _signalRService.PublishToUserChannel(message);
-        
+
         return Ok();
     }
 
@@ -219,7 +196,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
-        public required ICollection<string> Tags { get; set; }
+        public required IEnumerable<string> Tags { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
     }
 
@@ -247,64 +224,20 @@ public class ArchiveController : ControllerBase
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public required List<string> Tags { get; set; }
-       public required List<Blob> Blobs { get; set; }
+        public required List<Blob> Blobs { get; set; }
 
-        public class Blob 
+        public class Blob
         {
             public int Id { get; set; }
             public int NumberOfPages { get; set; }
         }
     }
 
-    public class FilterRequest 
+    public class FilterRequest
     {
         public string? Title { get; set; }
         public string[]? Tags { get; set; } = [];
     }
     #endregion
-
-    public class ArchiveItemTitleIndexOfComparer : IComparer<ArchiveItem>
-    {
-        private readonly string _searchTerm;
-
-        public ArchiveItemTitleIndexOfComparer(string? searchTerm)
-        {
-            _searchTerm = string.IsNullOrEmpty(searchTerm) ? "" : searchTerm.ToLower();
-        }
-
-        public int Compare(ArchiveItem? x, ArchiveItem? y)
-        {
-            //All this code just to handle nullables, uuuughhhh.... Could do one liners though
-            if (x is null && y is null)
-            {
-                return 0;
-            } 
-
-            if (x is null)
-            {
-                return -1;
-            }
-
-            if (y is null)
-            {
-                 return 1;
-            }
-
-            var indexX = x.Title.IndexOf(_searchTerm, StringComparison.OrdinalIgnoreCase);
-            var indexY = y.Title.IndexOf(_searchTerm, StringComparison.OrdinalIgnoreCase);
-
-            if(indexX == - 1) 
-            {
-                return 1;
-            }
-
-            if(indexY == - 1)
-            {
-                return -1;
-            }
-
-            return indexX.CompareTo(indexY);
-        }
-    }
 }
 
