@@ -11,7 +11,7 @@ type RefreshResponse = {
 }
 
 
-export const useApiClient = () => {
+export const useApiClient = ({skipAuthentication = false} = {}) => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
     const selectedTenantId = useAtomValue(selectedTenantIdAtom)
     const [accessToken, setAccessToken] = useAtom(accessTokenAtom)
@@ -20,10 +20,10 @@ export const useApiClient = () => {
     const currentPath = window.location.pathname
 
     const commonHeaders: any = {}
-    if (accessToken !== undefined) {
+    if (accessToken !== undefined && !skipAuthentication) {
         commonHeaders.Authorization = `Bearer ${accessToken}`
     }
-    if (selectedTenantId !== null) {
+    if (selectedTenantId !== null && !skipAuthentication) {
         commonHeaders["X-Tenant-Id"] = selectedTenantId
     }
 
@@ -38,7 +38,7 @@ export const useApiClient = () => {
         }
         return fetch(url, options)
             .then(async response => {
-                if (response.status === 401 && retryAfterRefreshingToken) {
+                if (response.status === 401 && retryAfterRefreshingToken && !skipAuthentication) {
                     // 401 error - attempting to use refresh token
                     //TODO: Use Token issuer for the refresh url
                     const response = await fetch("/api/authentication/refresh", {
@@ -79,7 +79,19 @@ export const useApiClient = () => {
                 .then(response => response?.json() as T)
         },
 
-        post: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
+        getBlob: async (url: string, payload: any = {}, incomingOptions?: RequestInit) => {
+            const queryString = createQueryString(payload)
+            const options = {
+                ...incomingOptions,
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            }
+
+            return interceptedFetch(url + queryString, options)
+                .then(response => response?.blob())
+        },
+
+        post: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {
             const options = {
                 ...incomingOptions,
                 method: "POST",
@@ -90,7 +102,7 @@ export const useApiClient = () => {
             return interceptedFetch(url, options)
                 .then(response => response?.json() as T)
         },
-        postFormData: async <T>(url: string, payload: FormData, incomingOptions: RequestInit) => {
+        postFormData: async <T>(url: string, payload: FormData, incomingOptions?: RequestInit) => {
             const options = {
                 ...incomingOptions,
                 method: "POST",
@@ -101,7 +113,7 @@ export const useApiClient = () => {
                 .then(response => response?.json() as T)
         },
 
-        put: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
+        put: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {
             const options = {
                 ...incomingOptions,
                 method: "PUT",
@@ -113,7 +125,7 @@ export const useApiClient = () => {
                 .then(response => response?.json() as T)
         },
 
-        delete: async <T>(url: string, payload: any, incomingOptions: RequestInit) => {
+        delete: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {
             const queryString = createQueryString(payload)
             const options = {
                 ...incomingOptions,
@@ -122,18 +134,6 @@ export const useApiClient = () => {
 
             return interceptedFetch(url + queryString, options)
                 .then(response => response?.json() as T)
-        },
-
-        getBlob: async (url: string, payload: any = {}, incomingOptions?: RequestInit) => {
-            const queryString = createQueryString(payload)
-            const options = {
-                ...incomingOptions,
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            }
-
-            return interceptedFetch(url + queryString, options)
-                .then(response => response?.blob())
         }
 
     }

@@ -4,6 +4,7 @@ import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png";
 import { useAtom, useSetAtom } from "jotai"
 import { accessTokenAtom, lastLoggedInUsernameAtom, loggedInUserAtom } from "../Utils/Atoms"
+import { useApiClient } from "../Utils/useApiClient";
 
 
 export const SignInPage = () => {
@@ -20,6 +21,7 @@ export const SignInPage = () => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
 
     const navigate = useNavigate()
+    const apiClient = useApiClient({skipAuthentication: true})
 
     useEffect(() => {
         if(username === "" && userNameInputRef.current) {
@@ -36,7 +38,6 @@ export const SignInPage = () => {
 
         const success = await loginAction(username, password)
         if (success) {
-            
             var redirect = new URLSearchParams(window.location.search).get("redirect")
             navigate(redirect ?? RoutePaths.Archive)
         } else {
@@ -50,27 +51,18 @@ export const SignInPage = () => {
 
     const loginAction = async (email: string, password: string) => {
         try {
-            const response = await fetch("/api/authentication/signin", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username: email,
-                    password: password,
-                }),
-            })
-            if (response.status !== 200) {
-                return false
+            const payload = {
+                username: email,
+                password: password
             }
+            const response = await apiClient.post<SignInResponse>("/api/authentication/signin", payload, {credentials: "include"})
 
-            const json = await response.json() as SignInResponse
             const user = {
-                username: json.username,
-                fullname: json.fullname
+                username: response.username,
+                fullname: response.fullname
             }
             setLoggedInUser(user)
-            setAccessToken(json.accessToken)
+            setAccessToken(response.accessToken)
 
             return true
         } catch {

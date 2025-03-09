@@ -5,7 +5,6 @@ import { RoutePaths } from "../RoutePaths"
 import { useAtom, useSetAtom } from "jotai"
 import { accessTokenAtom, loggedInUserAtom } from "../Utils/Atoms"
 import { useApiClient } from "../Utils/useApiClient"
-import { RESET } from "jotai/utils"
 
 
 export const SignOutPage = () => {

@@ -35,7 +35,7 @@ export const ArchiveItemNewPage = () => {
             formData.append("files", blob.fileData, blob.fileName)
         })
 
-        apiClient.postFormData<CreateResponse>("/api/archive/create", formData, {})
+        apiClient.postFormData<CreateResponse>("/api/archive/create", formData)
         navigate(-1)
     }
 

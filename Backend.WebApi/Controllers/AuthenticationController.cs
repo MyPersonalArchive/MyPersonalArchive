@@ -22,7 +22,7 @@ public class AuthenticationController : ControllerBase
         Secure = false, //TODO: Set to true in production
         SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
         Expires = DateTime.UtcNow.AddDays(7), // Cookie expiration
-        Path = "/api/Authentication/Refresh" // Only allow the refresh endpoint to access the cookie
+        Path = "/api/authentication/refresh" // Only allow the refresh endpoint to access the cookie
     };
 
 

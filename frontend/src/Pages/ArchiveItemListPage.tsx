@@ -34,7 +34,7 @@ export const ArchiveItemListPage = () => {
     }, [])
 
     const getList = () => {
-        apiClient.get<ListResponse[]>("/api/archive/List")
+        apiClient.get<ListResponse[]>("/api/archive/list")
             .then(response => {
                 setArchiveItems(mapArchiveItems(response))
             })
@@ -51,7 +51,7 @@ export const ArchiveItemListPage = () => {
             case "ArchiveItemCreated":
             case "ArchiveItemUpdated":
             case "ArchiveItemDeleted": {
-                apiClient.get<ListResponse[]>("/api/archive/List")
+                apiClient.get<ListResponse[]>("/api/archive/list")
                     .then(response => {
                         setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
                     })
