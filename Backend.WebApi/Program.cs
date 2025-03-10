@@ -174,7 +174,7 @@ public static class Program
 
         if (app.Environment.IsDevelopment())
         {
-            DemoDataGenerator.Seed(dbContext);
+            DemoDataGenerator.Seed(dbConfig);
         }
     }
 

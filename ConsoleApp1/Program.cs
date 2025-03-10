@@ -4,39 +4,45 @@ using System;
 using Backend.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Backend.DbModel.Database.EntityModels;
 
 
 internal class Program
 {
     private static void Main(string[] args)
     {
-        Console.WriteLine("Hello!");
+        var (hashedPassword, salt ) = PasswordHasher.HashPassword("some-password");
+        Console.WriteLine("hashedPassword: " + Convert.ToBase64String(hashedPassword));
+        Console.WriteLine("salt: " + Convert.ToBase64String(salt));
+        
 
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        // Console.WriteLine("Hello!");
 
-        var config = new ConfigurationBuilder()
-            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // Set the base path
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from JSON
-            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true) // Load from JSON
-            .AddEnvironmentVariables() // Load from Environment Variables
-            .AddCommandLine(args) // Load from Command-Line Arguments
-            .Build();
+        // var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-
-        var serviceProvider = new ServiceCollection()
-            .Configure<DbConfig>(config.GetSection("AppConfig"))
-            .Configure<JwtConfig>(options => JwtConfig.Mapper(options, config))
-            .AddTransient<AmbientDataResolver, DummyAmbientDataResolver>()
-            .AddTransient<PasswordHasher>()
-            .AddDbContext<MpaDbContext>()
-            .BuildServiceProvider();
-
-        serviceProvider.GetRequiredService<MpaDbContext>();
-
-        serviceProvider.GetRequiredService<PasswordHasher>();
+        // var config = new ConfigurationBuilder()
+        //     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // Set the base path
+        //     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from JSON
+        //     .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true) // Load from JSON
+        //     .AddEnvironmentVariables() // Load from Environment Variables
+        //     .AddCommandLine(args) // Load from Command-Line Arguments
+        //     .Build();
 
 
-        Console.WriteLine("Goodbye!");
+        // var serviceProvider = new ServiceCollection()
+        //     .Configure<DbConfig>(config.GetSection("AppConfig"))
+        //     .Configure<JwtConfig>(options => JwtConfig.Mapper(options, config))
+        //     .AddTransient<AmbientDataResolver, DummyAmbientDataResolver>()
+        //     .AddTransient<PasswordHasher>()
+        //     .AddDbContext<MpaDbContext>()
+        //     .BuildServiceProvider();
+
+        // serviceProvider.GetRequiredService<MpaDbContext>();
+
+        // serviceProvider.GetRequiredService<PasswordHasher>();
+
+
+        // Console.WriteLine("Goodbye!");
 
         #region db stuff
         // using var db = new MpaDbContext();
@@ -76,25 +82,28 @@ internal class Program
     //     }
     // }
 
-    // private static void CreateUser(MpaDbContext db)
-    // {
-    //     var jwtConfig = new JwtConfig{
-    //         // JwtBearer = "",
-    //         JwtIssuer = "",
-    //         JwtSecret = "",
-    //         // Audience = ""
-    //     };
+    private static void CreateUser(MpaDbContext db)
+    {
+        // var jwtConfig = new JwtConfig{
+        //     // JwtBearer = "",
+        //     JwtIssuer = "",
+        //     JwtSecret = "",
+        //     Audience = ""
+        // };
 
-    //     var passwordHasher = new PasswordHasher(jwtConfig);
-    //     var user = new User
-    //     {
-    //         Username = "admin",
-    //         HashedPassword = passwordHasher.HashPassword("admin").hashedPassword,
-    //         Salt = passwordHasher.HashPassword("Pa$$w0rd").salt,
-    //         Tenants = [db.Tenants.Find(-1)!, new Tenant { Id = 2, Title = "Other tenant" }]
-    //     };
-    //     db.Users.Add(user);
-    // }
+        // var passwordHasher = new PasswordHasher(jwtConfig);
+
+        // var user = new User
+        // {
+        //     Id = 1,
+        //     Username = "admin@localhost",
+        //     Fullname = "Administrator",
+        //     HashedPassword = passwordHasher.HashPassword("pass").hashedPassword,
+        //     Salt = passwordHasher.HashPassword("Pa$$w0rd").salt,
+        //     Tenants = [db.Tenants.Find(-1)!, new Tenant { Id = 2, Title = "Other tenant" }]
+        // };
+        // db.Users.Add(user);
+    }
 }
 
 internal class DummyAmbientDataResolver : AmbientDataResolver

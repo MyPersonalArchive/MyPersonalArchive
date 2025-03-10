@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Backend.DbModel.Migrations
 {
     /// <inheritdoc />
@@ -190,17 +192,36 @@ namespace Backend.DbModel.Migrations
             migrationBuilder.InsertData(
                 table: "Tenant",
                 columns: new[] { "Id", "Title" },
-                values: new object[] { -1, "Demo tenant" });
+                values: new object[,]
+                {
+                    { -1, "Demo tenant" },
+                    { 1, "Bergen tenant" },
+                    { 2, "Göteborg tenant" },
+                    { 3, "Odense tenant" }
+                });
 
             migrationBuilder.InsertData(
                 table: "User",
                 columns: new[] { "Id", "Fullname", "HashedPassword", "Salt", "Username" },
-                values: new object[] { 1, "administrator", new byte[] { 66, 97, 132, 170, 246, 16, 68, 68, 72, 145, 44, 35, 199, 50, 35, 84, 112, 60, 127, 205, 114, 113, 188, 167, 150, 243, 56, 250, 120, 177, 230, 211 }, new byte[] { 1, 213, 129, 249, 180, 144, 52, 198, 48, 36, 202, 218, 185, 111, 72, 110 }, "admin@localhost" });
+                values: new object[,]
+                {
+                    { 1, "administrator", new byte[] { 66, 97, 132, 170, 246, 16, 68, 68, 72, 145, 44, 35, 199, 50, 35, 84, 112, 60, 127, 205, 114, 113, 188, 167, 150, 243, 56, 250, 120, 177, 230, 211 }, new byte[] { 1, 213, 129, 249, 180, 144, 52, 198, 48, 36, 202, 218, 185, 111, 72, 110 }, "admin@localhost" },
+                    { 2, "administrator", new byte[] { 26, 203, 209, 61, 159, 191, 54, 248, 121, 147, 163, 133, 248, 108, 33, 6, 125, 123, 218, 97, 67, 209, 211, 124, 171, 0, 109, 3, 158, 2, 168, 130 }, new byte[] { 75, 244, 49, 87, 44, 141, 140, 88, 163, 169, 251, 113, 180, 222, 189, 35 }, "arjan@localhost" },
+                    { 3, "administrator", new byte[] { 159, 5, 247, 59, 216, 19, 68, 8, 124, 63, 68, 167, 30, 143, 239, 125, 95, 99, 196, 80, 246, 239, 99, 31, 150, 41, 2, 1, 77, 164, 34, 236 }, new byte[] { 100, 0, 28, 185, 149, 198, 43, 203, 245, 177, 4, 21, 188, 183, 172, 125 }, "stian@localhost" }
+                });
 
             migrationBuilder.InsertData(
                 table: "UserTenant",
                 columns: new[] { "TenantId", "UserId" },
-                values: new object[] { -1, 1 });
+                values: new object[,]
+                {
+                    { -1, 1 },
+                    { 1, 1 },
+                    { 1, 2 },
+                    { 2, 1 },
+                    { 2, 3 },
+                    { 3, 2 }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ArchiveItem_CreatedByUsername",

@@ -150,21 +150,31 @@ public class MpaDbContext : DbContext
         modelBuilder.Entity<Tenant>(tenants =>
         {
             tenants.HasData(
-                new Tenant { Id = -1, Title = "Demo tenant" }
+                new Tenant { Id = -1, Title = "Demo tenant" },
+                new Tenant { Id = 1, Title = "Bergen tenant" },
+                new Tenant { Id = 2, Title = "Göteborg tenant" },
+                new Tenant { Id = 3, Title = "Odense tenant" }
             );
         });
 
         modelBuilder.Entity<User>(users =>
         {
             users.HasData(
-                new User { Id = 1, Username = "admin@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") }
+                new User { Id = 1, Username = "admin@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") },
+                new User { Id = 2, Username = "arjan@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("GsvRPZ+/Nvh5k6OF+GwhBn172mFD0dN8qwBtA54CqII="), Salt = Convert.FromBase64String("S/QxVyyNjFijqftxtN69Iw==") },
+                new User { Id = 3, Username = "stian@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("nwX3O9gTRAh8P0SnHo/vfV9jxFD272MflikCAU2kIuw="), Salt = Convert.FromBase64String("ZAAcuZXGK8v1sQQVvLesfQ==") }
             );
         });
 
         modelBuilder.Entity<UserTenant>(ut =>
         {
             ut.HasData(
-                new UserTenant { UserId = 1, TenantId = -1 }
+                new UserTenant { UserId = 1, TenantId = -1 },
+                new UserTenant { UserId = 1, TenantId = 1 },
+                new UserTenant { UserId = 1, TenantId = 2 },
+                new UserTenant { UserId = 2, TenantId = 1 },
+                new UserTenant { UserId = 2, TenantId = 3 },
+                new UserTenant { UserId = 3, TenantId = 2 }
             );
         });
 

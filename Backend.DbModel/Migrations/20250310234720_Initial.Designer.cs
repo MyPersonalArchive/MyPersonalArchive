@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    [Migration("20250224232631_Initial")]
+    [Migration("20250310234720_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -175,6 +175,21 @@ namespace Backend.DbModel.Migrations
                         {
                             Id = -1,
                             Title = "Demo tenant"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Title = "Bergen tenant"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Title = "Göteborg tenant"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Title = "Odense tenant"
                         });
                 });
 
@@ -245,6 +260,22 @@ namespace Backend.DbModel.Migrations
                             HashedPassword = new byte[] { 66, 97, 132, 170, 246, 16, 68, 68, 72, 145, 44, 35, 199, 50, 35, 84, 112, 60, 127, 205, 114, 113, 188, 167, 150, 243, 56, 250, 120, 177, 230, 211 },
                             Salt = new byte[] { 1, 213, 129, 249, 180, 144, 52, 198, 48, 36, 202, 218, 185, 111, 72, 110 },
                             Username = "admin@localhost"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Fullname = "administrator",
+                            HashedPassword = new byte[] { 26, 203, 209, 61, 159, 191, 54, 248, 121, 147, 163, 133, 248, 108, 33, 6, 125, 123, 218, 97, 67, 209, 211, 124, 171, 0, 109, 3, 158, 2, 168, 130 },
+                            Salt = new byte[] { 75, 244, 49, 87, 44, 141, 140, 88, 163, 169, 251, 113, 180, 222, 189, 35 },
+                            Username = "arjan@localhost"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Fullname = "administrator",
+                            HashedPassword = new byte[] { 159, 5, 247, 59, 216, 19, 68, 8, 124, 63, 68, 167, 30, 143, 239, 125, 95, 99, 196, 80, 246, 239, 99, 31, 150, 41, 2, 1, 77, 164, 34, 236 },
+                            Salt = new byte[] { 100, 0, 28, 185, 149, 198, 43, 203, 245, 177, 4, 21, 188, 183, 172, 125 },
+                            Username = "stian@localhost"
                         });
                 });
 
@@ -270,6 +301,31 @@ namespace Backend.DbModel.Migrations
                         {
                             TenantId = -1,
                             UserId = 1
+                        },
+                        new
+                        {
+                            TenantId = 1,
+                            UserId = 1
+                        },
+                        new
+                        {
+                            TenantId = 2,
+                            UserId = 1
+                        },
+                        new
+                        {
+                            TenantId = 1,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            TenantId = 3,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            TenantId = 2,
+                            UserId = 3
                         });
                 });
 
