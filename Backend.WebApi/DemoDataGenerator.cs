@@ -5,48 +5,42 @@ namespace Backend.WebApi;
 
 public class DemoDataGenerator
 {
+    private static readonly IList<string> _firstPart = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"];
+    private static readonly IList<string> _secondPart = ["demo", "test", "example", "sample", "trial", "pilot"];
+    private static readonly IList<string> _thirdPart = ["item", "entry", "record", "piece", "object"];
+    private static readonly IList<string> _genres = ["Disco", "Pop", "Metal", "Rock", "Techno", "Rave", "House", "EDM", "Hiphop", "Jazz", "Blues", "Classical", "Opera", "Reggae", "Ska", "Country", "Folk", "HipHop", "Rap", "Electronic", "Dance", "Ambient", "Chillout"];
+
     public static void Seed(MpaDbContext dbContext)
     {
-        var timezoneOffset = TimeSpan.FromHours(-2);
-        var username = "admin@localhost";
-        // var user = dbContext.Users.First(u => u.Username == username);
-        var archiveItemsToEnsure = new List<ArchiveItem>{
-                    new ArchiveItem {
-                        Id = 1,
-                        Title = "First demo item",
-                        Tags = Tags.Ensure(dbContext, "Disco", "Pop", "Metal", "Rock"),
-                        Blobs = [],
-                        CreatedByUsername = username,
-                        // CreatedBy = user,
-                        CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 0, 0, timezoneOffset)
-                    },
-                    new ArchiveItem {
-                        Id = 2,
-                        Title = "Second demo item",
-                        Tags = Tags.Ensure(dbContext, "Techno", "Rave"),
-                        Blobs = [],
-                        CreatedByUsername = username,
-                        // CreatedBy = user,
-                        CreatedAt = new DateTimeOffset(2025, 2, 5, 12, 15, 0, timezoneOffset)
-                    },
-                    new ArchiveItem {
-                        Id = 3,
-                        Title = "Third demo item",
-                        Tags = Tags.Ensure(dbContext, "House", "EDM", "Hiphop"),
-                        Blobs = [],
-                        CreatedByUsername = username,
-                        // CreatedBy = user,
-                        CreatedAt = new DateTimeOffset(2025, 2, 9, 15, 20, 0, timezoneOffset)
-                    }
-            };
-        foreach (var item in archiveItemsToEnsure)
+        if (dbContext.ArchiveItems.Any())
         {
-            if (dbContext.ArchiveItems.All(ai => ai.Id != item.Id))
+            return;
+        }
+
+        var rnd = new Random(1);
+        var username = "admin@localhost";
+
+        foreach (var first in _firstPart)
+        {
+            foreach (var second in _secondPart)
             {
-                dbContext.ArchiveItems.Add(item);
+                foreach (var third in _thirdPart)
+                {
+                    var title = $"{first} {second} {third}";
+                    var tags = _genres.OrderBy(x => rnd.Next()).Take(rnd.Next(0, 7)).ToList();
+                    var item = new ArchiveItem
+                    {
+                        Title = title,
+                        Tags = Tags.Ensure(dbContext, tags),
+                        Blobs = [],
+                        CreatedByUsername = username,
+                        CreatedAt = DateTimeOffset.Now.Date.AddDays(-rnd.Next(0, 365)).AddMinutes(-rnd.Next(0, 1440))
+                    };
+                    dbContext.ArchiveItems.Add(item);
+                    dbContext.SaveChanges();
+                }
             }
         }
 
-        dbContext.SaveChanges();
     }
 }
