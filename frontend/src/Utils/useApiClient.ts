@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { accessTokenAtom, loggedInUserAtom, selectedTenantIdAtom } from "./Atoms"
+import { accessTokenAtom, loggedInUserAtom, currentTenantIdAtom } from "./Atoms"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { createQueryString } from "./createQueryString"
@@ -15,7 +15,7 @@ type RefreshResponse = {
 
 export const useApiClient = ({ skipAuthentication = false } = {}) => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
-    const selectedTenantId = useAtomValue(selectedTenantIdAtom)
+    const currentTenantId = useAtomValue(currentTenantIdAtom)
     const [accessToken, setAccessToken] = useAtom(accessTokenAtom)
     const navigate = useNavigate()
 
@@ -25,8 +25,8 @@ export const useApiClient = ({ skipAuthentication = false } = {}) => {
     if (accessToken !== undefined && !skipAuthentication) {
         commonHeaders.Authorization = `Bearer ${accessToken}`
     }
-    if (selectedTenantId !== null && !skipAuthentication) {
-        commonHeaders["X-Tenant-Id"] = selectedTenantId
+    if (currentTenantId !== null && !skipAuthentication) {
+        commonHeaders["X-Tenant-Id"] = currentTenantId
     }
 
     const interceptedFetch = (url: string, options: RequestInit, retryAfterRefreshingToken = true): Promise<Response> => {

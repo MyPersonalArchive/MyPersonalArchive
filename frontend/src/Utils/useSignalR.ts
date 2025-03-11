@@ -1,6 +1,6 @@
 import { HttpTransportType, HubConnectionBuilder, LogLevel } from "@microsoft/signalr"
 import { useEffect, useRef } from "react"
-import { accessTokenAtom, selectedTenantIdAtom, signalRConnectionAtom } from "../Utils/Atoms"
+import { accessTokenAtom, currentTenantIdAtom, signalRConnectionAtom } from "../Utils/Atoms"
 import { useAtom, useAtomValue } from "jotai"
 
 
@@ -15,7 +15,7 @@ export const useSignalR = (
     const [signalRConnection, setSignalRConnection] = useAtom(signalRConnectionAtom)
     const callbacksRef = useRef<Array<(message: SignalRMessage) => void>>([])
 
-    const tenantId = useAtomValue(selectedTenantIdAtom)
+    const tenantId = useAtomValue(currentTenantIdAtom)
     const accessToken = useAtomValue(accessTokenAtom)
 
     useEffect(() => {
