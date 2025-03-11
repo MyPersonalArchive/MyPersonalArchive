@@ -29,7 +29,7 @@ export const SignInPage = () => {
         } else if(password === "" && passwordInputRef.current) {
             passwordInputRef.current.focus()
         }
-    })
+    }, [])
 
     const login = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -59,7 +59,8 @@ export const SignInPage = () => {
 
             const user = {
                 username: response.username,
-                fullname: response.fullname
+                fullname: response.fullname,
+                availableTenantIds: response.availableTenantIds
             }
             setLoggedInUser(user)
             setAccessToken(response.accessToken)
@@ -133,5 +134,6 @@ export const SignInPage = () => {
 type SignInResponse = {
     username: string
     fullname: string
+    availableTenantIds: number[]
     accessToken: string
 }
