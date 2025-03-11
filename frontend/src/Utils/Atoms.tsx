@@ -7,11 +7,13 @@ export type User = {
     fullname: string,
 }
 export const loggedInUserAtom = atom<User>()
+export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLoggedInUsername", null, undefined, { getOnInit: true })
 
 export const accessTokenAtom = atom<string | undefined>(undefined)
-export const selectedTenantIdAtom = atom<number | undefined>(-1)    //TODO: get tenantId from user
 
-export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLoggedInUsername", null, undefined, { getOnInit: true })
+export const availableTenantsAtom = atom<number[]>([])
+export const currentTenantIdAtom = atom<number | undefined>(-1)
+export const lastSelectedTenantIdAtom = atomWithStorage<string | null>("lastSelectedTenantId", null, undefined, { getOnInit: true })
 
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
