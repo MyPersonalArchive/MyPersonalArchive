@@ -8,6 +8,7 @@ import { createQueryString } from "./createQueryString"
 type RefreshResponse = {
     username: string
     fullname: string
+    availableTenantIds: number[]
     accessToken: string
 }
 
@@ -55,7 +56,7 @@ export const useApiClient = ({ skipAuthentication = false } = {}) => {
                     const json = await response.json() as RefreshResponse
 
                     setAccessToken(json.accessToken)
-                    const user = { username: json.username, fullname: json.fullname }
+                    const user = { username: json.username, fullname: json.fullname, availableTenantIds: json.availableTenantIds }
                     setLoggedInUser(user)
 
                     commonHeaders.Authorization = `Bearer ${json.accessToken}`

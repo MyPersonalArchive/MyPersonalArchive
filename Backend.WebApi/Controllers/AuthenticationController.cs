@@ -41,7 +41,9 @@ public class AuthenticationController : ControllerBase
             return BadRequest("Unable to login");
         }
 
-        var user = await _dbContext.Users.SingleOrDefaultAsync(user => user.Username == request.Username);
+        var user = await _dbContext.Users
+            .Include(user => user.Tenants)
+            .SingleOrDefaultAsync(user => user.Username == request.Username);
         if (user == null)
         {
             return Unauthorized("Unable to login");
@@ -67,6 +69,7 @@ public class AuthenticationController : ControllerBase
         {
             Username = user.Username,
             Fullname = user.Fullname,
+            AvailableTenantIds = user.Tenants.Select(tenant => tenant.Id).ToList(),
             AccessToken = accessToken
         };
         return Ok(response);
@@ -150,6 +153,7 @@ public class AuthenticationController : ControllerBase
     {
         public required string Username { get; set; }
         public required string Fullname { get; set; }
+        public required IList<int> AvailableTenantIds { get; set; }
         public required string AccessToken { get; set; }
     }
 
@@ -158,6 +162,7 @@ public class AuthenticationController : ControllerBase
     {
         public required string Username { get; set; }
         public required string Fullname { get; set; }
+        public required IList<int> AvailableTenantIds { get; set; }
         public required string AccessToken { get; set; }
     }
 }

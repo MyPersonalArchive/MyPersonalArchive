@@ -26,5 +26,5 @@ public class User : SharedEntity
 
     public ICollection<Token>? Tokens { get; set; }
 
-    public ICollection<Tenant>? Tenants { get; set; }
+    public ICollection<Tenant> Tenants { get; set; } = [];
 }
