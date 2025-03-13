@@ -4,7 +4,6 @@ import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png";
 import { useAtom, useSetAtom } from "jotai"
 import { accessTokenAtom, lastLoggedInUsernameAtom, loggedInUserAtom } from "../Utils/Atoms"
-import { useApiClient } from "../Utils/useApiClient";
 
 
 export const SignInPage = () => {
@@ -13,15 +12,14 @@ export const SignInPage = () => {
 
     const [lastLoggedInUsername, setLastLoggedInUsername] = useAtom(lastLoggedInUsernameAtom)
     const setAccessToken = useSetAtom(accessTokenAtom)
+    const setLoggedInUser = useSetAtom(loggedInUserAtom)
 
     const [loginFailed, setLoginError] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [username, setUsername] = useState(lastLoggedInUsername ?? "")
     const [password, setPassword] = useState("")
-    const setLoggedInUser = useSetAtom(loggedInUserAtom)
 
     const navigate = useNavigate()
-    const apiClient = useApiClient({skipAuthentication: true})
 
     useEffect(() => {
         if(username === "" && userNameInputRef.current) {
@@ -55,7 +53,22 @@ export const SignInPage = () => {
                 username: email,
                 password: password
             }
-            const response = await apiClient.post<SignInResponse>("/api/authentication/signin", payload, {credentials: "include"})
+            // We're using the fetch API instead of apiClient here because we don't have an access token nor tenantId yet
+            const httpResponse = await fetch("/api/authentication/signin", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload),
+                credentials: "include"
+            })
+
+            if (httpResponse.status !== 200) {
+                // Invalid credentials
+                return false
+            }
+
+            const response = await httpResponse.json() as SignInResponse
 
             const user = {
                 username: response.username,

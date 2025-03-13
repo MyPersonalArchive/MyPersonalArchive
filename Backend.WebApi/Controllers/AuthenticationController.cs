@@ -22,7 +22,7 @@ public class AuthenticationController : ControllerBase
         Secure = false, //TODO: Set to true in production
         SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
         Expires = DateTime.UtcNow.AddDays(7), // Cookie expiration
-        Path = "/api/authentication/refresh" // Only allow the refresh endpoint to access the cookie
+        Path = "/api/authentication/" // Only allow the authentication controller access the cookie
     };
 
 
@@ -82,7 +82,7 @@ public class AuthenticationController : ControllerBase
         var incomingRefreshToken = Request.Cookies[RefreshTokenKey];
 
         var tokens = await _dbContext.Tokens
-            .Include(token => token.User)
+            .Include(token => token.User!.Tenants)
             .Where(token => token.RefreshToken == incomingRefreshToken)
             .ToListAsync();
 
@@ -113,6 +113,7 @@ public class AuthenticationController : ControllerBase
         {
             Username = user.Username,
             Fullname = user.Fullname,
+            AvailableTenantIds = user.Tenants.Select(tenant => tenant.Id).ToList(),
             AccessToken = accessToken
         };
         return Ok(response);
