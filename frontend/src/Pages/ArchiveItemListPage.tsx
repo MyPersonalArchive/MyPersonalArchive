@@ -59,6 +59,7 @@ export const ArchiveItemListPage = () => {
     return (
         <>
             <h1>Archive</h1>
+            <button onClick={() => newArchiveItem()}>Add item</button>
             <Filter />
             <table style={{ width: "100%" }}>
                 <thead>
