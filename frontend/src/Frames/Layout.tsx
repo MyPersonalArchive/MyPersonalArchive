@@ -1,3 +1,4 @@
+import './Layout.css'
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { loggedInUserAtom } from "../Utils/Atoms"

@@ -8,9 +8,9 @@ import { RequireAuthentication } from "./Frames/RequireAuthentication"
 import { IndexPage } from "./Pages/IndexPage"
 import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
-import { Layout } from "./Components/Layout"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 import { RequireTenant } from "./Frames/RequireTenant"
+import { Layout } from "./Frames/Layout"
 
 
 const routers = createBrowserRouter([
