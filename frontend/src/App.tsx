@@ -10,6 +10,7 @@ import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { Layout } from "./Components/Layout"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
+import { RequireTenant } from "./Frames/RequireTenant"
 
 
 const routers = createBrowserRouter([
@@ -31,9 +32,11 @@ const routers = createBrowserRouter([
             {
                 element: (
                     <RequireAuthentication>
-                        <PrefetchDataFrame>
-                            <Outlet />
-                        </PrefetchDataFrame>
+                        <RequireTenant>
+                            <PrefetchDataFrame>
+                                <Outlet />
+                            </PrefetchDataFrame>
+                        </RequireTenant>
                     </RequireAuthentication>
                 ),
                 children: [

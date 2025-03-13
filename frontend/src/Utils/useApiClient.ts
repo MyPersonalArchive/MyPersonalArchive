@@ -1,5 +1,5 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { accessTokenAtom, loggedInUserAtom, currentTenantIdAtom } from "./Atoms"
+import { useAtomValue, useSetAtom } from "jotai"
+import { accessTokenAtom, loggedInUserAtom, currentTenantIdAtom, lastSelectedTenantIdAtom } from "./Atoms"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { createQueryString } from "./createQueryString"
@@ -12,20 +12,50 @@ type RefreshResponse = {
     accessToken: string
 }
 
-
-export const useApiClient = ({ skipAuthentication = false } = {}) => {
+export const useRefresh = () => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
-    const currentTenantId = useAtomValue(currentTenantIdAtom)
-    const [accessToken, setAccessToken] = useAtom(accessTokenAtom)
+    const setCurrentTenantId = useSetAtom(currentTenantIdAtom)
+    const setAccessToken = useSetAtom(accessTokenAtom)
+    const lastUsedTenantId = useAtomValue(lastSelectedTenantIdAtom)
     const navigate = useNavigate()
 
-    const currentPath = window.location.pathname
+    return async () => {
+        // 401 error - attempting to use refresh token
+        //TODO: Use Token issuer for the refresh url
+        const response = await fetch("/api/authentication/refresh", {
+            method: "POST",
+            credentials: "include", // needed so that http-only cookies are sent with this request (Should it be "include" or "same-origin"?)
+            headers: { "Content-Type": "application/json" }
+        })
+        if (response.status === 403) {
+            const currentPath = window.location.pathname
+
+            navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
+            return undefined
+        }
+
+        const json = await response.json() as RefreshResponse
+
+        setAccessToken(json.accessToken)
+        const user = { username: json.username, fullname: json.fullname, availableTenantIds: json.availableTenantIds }
+        setLoggedInUser(user)
+        setCurrentTenantId(lastUsedTenantId!)
+
+        return json
+    }
+}
+
+
+export const useApiClient = () => {
+    const currentTenantId = useAtomValue(currentTenantIdAtom)
+    const accessToken = useAtomValue(accessTokenAtom)
+    const refresh = useRefresh()
 
     const commonHeaders: any = {}
-    if (accessToken !== undefined && !skipAuthentication) {
+    if (accessToken !== undefined) {
         commonHeaders.Authorization = `Bearer ${accessToken}`
     }
-    if (currentTenantId !== null && !skipAuthentication) {
+    if (currentTenantId !== undefined) {
         commonHeaders["X-Tenant-Id"] = currentTenantId
     }
 
@@ -40,26 +70,10 @@ export const useApiClient = ({ skipAuthentication = false } = {}) => {
         }
         return fetch(url, options)
             .then(async response => {
-                if (response.status === 401 && retryAfterRefreshingToken && !skipAuthentication) {
-                    // 401 error - attempting to use refresh token
-                    //TODO: Use Token issuer for the refresh url
-                    const response = await fetch("/api/authentication/refresh", {
-                        method: "POST",
-                        credentials: "include", // needed so that http-only cookies are sent with this request (Should it be "include" or "same-origin"?)
-                        headers: { "Content-Type": "application/json" }
-                    })
-                    if (response.status === 403) {
-                        navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
-                        return response
-                    }
+                if (response.status === 401 && retryAfterRefreshingToken) {
+                    var json = await refresh()
 
-                    const json = await response.json() as RefreshResponse
-
-                    setAccessToken(json.accessToken)
-                    const user = { username: json.username, fullname: json.fullname, availableTenantIds: json.availableTenantIds }
-                    setLoggedInUser(user)
-
-                    commonHeaders.Authorization = `Bearer ${json.accessToken}`
+                    commonHeaders.Authorization = `Bearer ${json!.accessToken}`
                     return interceptedFetch(url, options, false)
                 }
 
