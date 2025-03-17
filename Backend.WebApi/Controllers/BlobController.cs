@@ -96,6 +96,7 @@ public class BlobController : ControllerBase
                 Id = blob.Id,
                 FileName = blob.OriginalFilename,
                 FileSize = blob.FileSize,
+                PageCount = blob.PageCount,
                 UploadedAt = blob.UploadedAt,
                 UploadedByUser = blob.UploadedBy!.Fullname
             })
@@ -178,6 +179,7 @@ public class BlobController : ControllerBase
         public long FileSize { get; set; }
         public DateTimeOffset UploadedAt { get; set; }
         public required string UploadedByUser { get; set; }
+        public int PageCount { get; set; }
     }
 
     public enum DimensionEnum

@@ -14,10 +14,11 @@ import { useApiClient } from "../Utils/useApiClient"
 type PreviewProps = {
     blobId: number
     numberOfPages?: number
+    showPageNavigationOnMinized?: boolean
     maximizedDimension: DimensionEnum
     minimizedDimension: DimensionEnum
 }
-export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension }: PreviewProps) => {
+export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinized }: PreviewProps) => {
     const [pageNumber, setPageNumber] = useState<number>(1)
     const [isMaximized, setIsMaximized] = useState<boolean>(false)
 
@@ -50,6 +51,7 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
         : <InlinePreview
             blobId={blobId}
             pageNumber={pageNumber}
+            showPageNavigationOnMinized={showPageNavigationOnMinized}
             setPageNumber={setPageNumber}
             numberOfPages={numberOfPages ?? 1}
             dimension={minimizedDimension}
@@ -97,17 +99,18 @@ type InlinePreviewProps = {
     pageNumber: number
     setPageNumber: (x: number) => void
     numberOfPages: number
+    showPageNavigationOnMinized?: boolean
     dimension: DimensionEnum
     children?: React.ReactNode
 }
-const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimension, children }: InlinePreviewProps) => {
+const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimension, showPageNavigationOnMinized = true, children }: InlinePreviewProps) => {
     const imgRef = useRef<HTMLImageElement>(null)
     const { showPreviousPage, showNextPage } = usePreview(blobId, pageNumber, setPageNumber, dimension, imgRef)
 
     return <>
         <div className="preview">
             {
-                pageNumber > 1 && <button
+                (showPageNavigationOnMinized && pageNumber > 1) && <button
                     className="previous"
                     type="button"
                     disabled={pageNumber == 1}
@@ -121,7 +124,7 @@ const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimen
                 alt="Preview image"
             />
             {
-                pageNumber < numberOfPages && <button
+                (showPageNavigationOnMinized && pageNumber < numberOfPages) && <button
                     className="next"
                     type="button"
                     onClick={() => showNextPage()}
