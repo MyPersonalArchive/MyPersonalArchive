@@ -1,3 +1,4 @@
+using System.Formats.Asn1;
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
@@ -17,12 +18,14 @@ public class BlobController : ControllerBase
     private readonly MpaDbContext _dbContext;
     private IFileStorageProvider _fileProvider;
     private readonly AmbientDataResolver _resolver;
+    private readonly SignalRService _signalRService;
 
-    public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
+    public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver, SignalRService signalRService)
     {
         _dbContext = dbContext;
         _fileProvider = fileProvider;
         _resolver = resolver;
+        _signalRService = signalRService;
     }
 
 
@@ -56,6 +59,9 @@ public class BlobController : ControllerBase
         int maxX, maxY;
         switch (dimension)
         {
+            case DimensionEnum.XSmall:
+                maxX = maxY = 95;
+                break;
             case DimensionEnum.Small:
                 maxX = maxY = 150;
                 break;
@@ -73,25 +79,53 @@ public class BlobController : ControllerBase
         var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, pageNumber);
         return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
     }
+
+    [HttpGet]
+    public async Task<ActionResult<OrphanHeapResponse>> OrphanHeap(int? limit)
+    {
+        var total = await _dbContext.Blobs
+                            .Where(blob => blob.ArchiveItem == null)
+                            .CountAsync();
+
+        
+        IEnumerable<OrphanBlob>  orphanBlobs = (await _dbContext.Blobs
+            .Include(blob => blob.UploadedBy)
+            .Where(blob => blob.ArchiveItem == null)
+            .Select(blob => new OrphanBlob
+            {
+                Id = blob.Id,
+                FileName = blob.OriginalFilename,
+                FileSize = blob.FileSize,
+                UploadedAt = blob.UploadedAt,
+                UploadedByUser = blob.UploadedBy!.Fullname
+            })
+            .ToListAsync()) // Cannot orderBy dateTimeOffset without ToListing first
+            .OrderByDescending(blob => blob.UploadedAt);
+
+        if (limit.HasValue)
+        {
+            orphanBlobs = orphanBlobs.Take(limit.Value);
+        }
+
+        return new OrphanHeapResponse
+        {
+            Total = total,
+            Blobs = orphanBlobs
+        };
+    }
  
 
     [HttpPost]
-    public async Task<ActionResult> Upload([FromQuery] int archiveItemId, IFormFileCollection files)
+    public async Task<ActionResult> Upload(IFormFileCollection files)
     {
-        var archiveItem = await _dbContext.ArchiveItems.FindAsync(archiveItemId);
-        if (archiveItem == null)
-        {
-            return NotFound();
-        }
-
         foreach (var file in files)
         {
             var stream = file.OpenReadStream();
             
             var blob = new Blob
             {
-                TenantId = archiveItem.TenantId,
-                ArchiveItem = archiveItem,
+                TenantId = _resolver.GetCurrentTenantId()!.Value,
+                ArchiveItem = null,
                 FileHash = _fileProvider.ComputeSha256Hash(stream),
                 MimeType = file.ContentType,
                 OriginalFilename = file.FileName,
@@ -108,13 +142,49 @@ public class BlobController : ControllerBase
         
         await _dbContext.SaveChangesAsync();
 
+        var message = new Message("OrphanHeapUpdated");
+        await _signalRService.PublishToTenantChannel(message);
+
         return Ok();
+    }
+
+    [HttpDelete]
+    public async Task<ActionResult<int>> Delete([FromQuery] int id)
+    {
+        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(x => x.Id == id);
+        if (blob == null)
+        {
+            return NotFound();
+        }
+
+        _fileProvider.DeleteFile(blob.PathInStore);
+        _dbContext.Blobs.Remove(blob);
+
+        await _dbContext.SaveChangesAsync();
+
+        return id;
+    }
+
+    public class OrphanHeapResponse
+    {
+        public int Total { get; set; }
+        public required IEnumerable<OrphanBlob> Blobs { get; set; }
+    }
+
+    public class OrphanBlob
+    {
+        public int Id { get; set; }
+        public string? FileName { get; set; }
+        public long FileSize { get; set; }
+        public DateTimeOffset UploadedAt { get; set; }
+        public required string UploadedByUser { get; set; }
     }
 
     public enum DimensionEnum
     {
-        Small,
-        Medium,
-        Large
+        XSmall = 1,
+        Small = 2,
+        Medium = 3,
+        Large = 4
     }
 }

@@ -4,11 +4,20 @@ import React, { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 
 
+ export enum DimensionEnum {
+    xsmall = 1,
+    small = 2,
+    medium = 3,
+    large = 4
+}
+
 type PreviewProps = {
     blobId: number
     numberOfPages?: number
+    maximizedDimension: DimensionEnum
+    minimizedDimension: DimensionEnum
 }
-export const Preview = ({ blobId, numberOfPages }: PreviewProps) => {
+export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension }: PreviewProps) => {
     const [pageNumber, setPageNumber] = useState<number>(1)
     const [isMaximized, setIsMaximized] = useState<boolean>(false)
 
@@ -20,7 +29,7 @@ export const Preview = ({ blobId, numberOfPages }: PreviewProps) => {
                     pageNumber={pageNumber}
                     setPageNumber={setPageNumber}
                     numberOfPages={numberOfPages ?? 1}
-                    dimension={2}
+                    dimension={maximizedDimension}
                 >
                     <button
                         className="minimize"
@@ -43,7 +52,7 @@ export const Preview = ({ blobId, numberOfPages }: PreviewProps) => {
             pageNumber={pageNumber}
             setPageNumber={setPageNumber}
             numberOfPages={numberOfPages ?? 1}
-            dimension={1}
+            dimension={minimizedDimension}
         >
             <button
                 className="maximize"
@@ -58,7 +67,7 @@ export const Preview = ({ blobId, numberOfPages }: PreviewProps) => {
 
 
 
-const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: number) => void, dimension: number, imgRef: React.RefObject<HTMLImageElement>) => {
+const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: number) => void, dimension: DimensionEnum, imgRef: React.RefObject<HTMLImageElement>) => {
     const apiClient = useApiClient()
 
     useEffect(() => {
@@ -83,11 +92,12 @@ const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: numbe
 }
 
 
-type InlinePreviewProps = PreviewProps & {
+type InlinePreviewProps = {
+    blobId: number
     pageNumber: number
     setPageNumber: (x: number) => void
     numberOfPages: number
-    dimension: 1 | 2 | 3
+    dimension: DimensionEnum
     children?: React.ReactNode
 }
 const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimension, children }: InlinePreviewProps) => {

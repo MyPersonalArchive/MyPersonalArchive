@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
-import { Preview } from "../Components/Preview"
+import { DimensionEnum, Preview } from "../Components/Preview"
 import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 
@@ -89,7 +89,7 @@ export const ArchiveItemEditPage = () => {
                 </div>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                     {
-                        blobs.map((blob, ix) => <Preview key={ix} blobId={blob.id} numberOfPages={blob.pageCount} />)
+                        blobs.map((blob, ix) => <Preview key={ix} blobId={blob.id} numberOfPages={blob.pageCount} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small}/>)
                     }
                 </div>
                 <div>

@@ -3,5 +3,6 @@ export const RoutePaths = {
     InitialSetup: "/initial-setup",
     SignIn: "/sign-in",
     SignOut: "/sign-out",
-    Archive: "/archive/list"
+    Archive: "/archive/list",
+    Unallocated: "/archive/unallocated",
   }
