@@ -1,6 +1,6 @@
 import { Preview, DimensionEnum } from "../Components/Preview"
 import { faTrashCan, IconDefinition } from "@fortawesome/free-regular-svg-icons"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { useSignalR, SignalRMessage } from "../Utils/useSignalR"
@@ -17,6 +17,7 @@ type UnallocatedBlob = {
     id: number
     fileName: string
     fileSize: number
+    pageCount: number
     uploadedAt: Date
     uploadedByUser: string
 }
@@ -24,7 +25,8 @@ type UnallocatedBlob = {
 export const AssignUnallocatedBlobsPage = () => {
     const apiClient = useApiClient()
     const navigate = useNavigate()
-
+    const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
+    
     const [unallocatedHeap, setUnallocatedHeap] = useState<UnallocatedBlob[]>([])
     const [assignedHeap, setAssignedHeap] = useState<number[]>([])
 
@@ -39,6 +41,12 @@ export const AssignUnallocatedBlobsPage = () => {
             }
         }
     })
+
+    useEffect(() => {
+        if (selectAllCheckboxRef.current) {
+            selectAllCheckboxRef.current.indeterminate = assignedHeap.length > 0 && assignedHeap.length < unallocatedHeap.length
+        }
+    }, [assignedHeap])
 
     useEffect(() => {
         apiClient.get<UnallocatedBlobResponse>("/api/blob/orphanHeap")
@@ -100,14 +108,19 @@ export const AssignUnallocatedBlobsPage = () => {
             <div>
                 <button onClick={() => navigate("/archive/list")}>Back</button>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
-                    <input type="checkbox" onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}></input>
+                    <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}></input>
                     <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
                     <DropdownButton options={options} disabled={assignedHeap.length === 0}></DropdownButton>
                 </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column",  }}>
             {
-                unallocatedHeap?.map(blob => <UnallocatedBlobItem key={blob.id} {...blob} setSelectedUnallocated={selectedUnallocated} onDelete={deleteBlob} />)
+                unallocatedHeap?.map(blob => <UnallocatedBlobItem 
+                    key={blob.id} 
+                    {...blob} 
+                    setSelectedUnallocated={selectedUnallocated} 
+                    isSelected={assignedHeap.includes(blob.id)}
+                    onDelete={deleteBlob} />)
             }
             {
                 unallocatedHeap?.length === 0 && <div>No unallocated blobs</div>
@@ -120,9 +133,10 @@ export const AssignUnallocatedBlobsPage = () => {
 type UnallocatedBlobItemProps = UnallocatedBlob & {
     setSelectedUnallocated: (blobId: number, added: boolean) => void
     onDelete: (blobId: number) => void
+    isSelected?: boolean
 }
 
-const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser, setSelectedUnallocated, onDelete}: UnallocatedBlobItemProps) => {
+const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser, isSelected, pageCount, setSelectedUnallocated, onDelete}: UnallocatedBlobItemProps) => {
     const uploadedAtDate = new Date(uploadedAt)
     const navigate = useNavigate()
     const apiClient = useApiClient()
@@ -175,7 +189,8 @@ const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser
             <div style={{gridArea: "image", background: "#f5f5f5"}}>
                 <Preview 
                     blobId={id} 
-                    numberOfPages={1} 
+                    numberOfPages={pageCount} 
+                    showPageNavigationOnMinized={false}
                     maximizedDimension={DimensionEnum.large} 
                     minimizedDimension={DimensionEnum.xsmall}>
                 </Preview>
@@ -194,6 +209,7 @@ const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser
                     <input 
                     style={{alignSelf: "end"}}
                     type="checkbox" 
+                    checked={isSelected}
                     onChange={(e) => setSelectedUnallocated(id, e.currentTarget.checked)}></input>
                     <div style={{ display: "flex", alignSelf: "end" }}>
                         <DropdownButton options={options}></DropdownButton>

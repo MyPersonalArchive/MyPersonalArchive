@@ -47,7 +47,7 @@ export const DropdownButton = ({ options, disabled }: DropdownButtonProps) => {
   
     return (
       <div className="dropdown">
-        <button className="dropdown-button" 
+        <button className={`dropdown-button ${disabled ? "disabled" : ""}`} 
         disabled={disabled}
         ref={dropdownToggleRef}
         onClick={handleToggle}>
