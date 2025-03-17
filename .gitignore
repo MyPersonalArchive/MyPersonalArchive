@@ -10,3 +10,4 @@ Backend.Api/wwwroot/*
 *.user
 
 data
+node_modules/

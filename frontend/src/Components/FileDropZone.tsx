@@ -95,7 +95,12 @@ export const FileDropZone = ({setFileBlobs: setFileBlobs}: FileDropZoneProps) =>
                 <div style={{
                     display: "flex",
                     justifyContent: "center"}}>
-                    <div onClick={() => inputFile?.current?.click()} style={{cursor: "pointer", textDecoration: "underline", color: "blue"}}>Select file</div>
+                    <div onClick={() => inputFile?.current?.click()} 
+                    style={{
+                        cursor: "pointer", 
+                        textDecoration: "underline", 
+                        color: "blue",
+                        alignContent: "center"}}>Select file</div>
                     <p style={{
                         textAlign: "center",
                         fontSize: "14px",

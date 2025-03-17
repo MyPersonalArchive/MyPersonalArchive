@@ -11,6 +11,7 @@ import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 import { RequireTenant } from "./Frames/RequireTenant"
 import { Layout } from "./Frames/Layout"
+import { AssignUnallocatedBlobsPage } from "./Pages/AssignUnallocatedBlobsPage"
 
 
 const routers = createBrowserRouter([
@@ -55,6 +56,10 @@ const routers = createBrowserRouter([
                     {
                         path: "archive/new",
                         element: <ArchiveItemNewPage />
+                    },
+                    {
+                        path: RoutePaths.Unallocated,
+                        element: <AssignUnallocatedBlobsPage />
                     }
                 ]
             }

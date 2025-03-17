@@ -76,6 +76,36 @@ public class ArchiveController : ControllerBase
         };
     }
 
+    [HttpGet]
+    public async Task<ActionResult<int>> CreateAndAttachBlobs([FromQuery] List<int> blobIds) 
+    {
+        var blobs = await _dbContext.Blobs
+                            .Where(blob => blobIds.Contains(blob.Id))
+                            .ToListAsync();
+
+        if(!blobs.Any()) 
+        {
+            return NotFound();
+        }
+
+        var archiveItem = new ArchiveItem
+        {
+            Title = "New archive item",
+            CreatedByUsername = _resolver.GetCurrentUsername(),
+            CreatedAt = DateTimeOffset.Now,
+            Tags = new List<Tag>(),
+            Blobs = blobs
+        };
+
+        _dbContext.ArchiveItems.Add(archiveItem);
+
+        await _dbContext.SaveChangesAsync();
+
+        var message = new Message("ArchiveItemCreated", archiveItem.Id);
+        await _signalRService.PublishToTenantChannel(message);
+
+        return archiveItem.Id;
+    }
 
     [HttpPut]
     public async Task<ActionResult> Update(UpdateRequest updateRequest)
