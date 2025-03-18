@@ -13,7 +13,6 @@ export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLogg
 
 export const accessTokenAtom = atom<string | undefined>(undefined)
 
-export const currentTenantIdAtom = atom<number | undefined>(undefined)
 export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSelectedTenantId", null, undefined, { getOnInit: false })
 
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
