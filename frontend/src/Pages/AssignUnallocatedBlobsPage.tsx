@@ -63,14 +63,16 @@ export const AssignUnallocatedBlobsPage = () => {
     }
 
     const deleteAllSelected = () => {
-        assignedHeap.forEach(id => deleteBlob(id))
+        if (assignedHeap.length === 0) return
+
+        deleteBlobs(assignedHeap)
         setAssignedHeap([])
     }
 
-    const deleteBlob = (blobId: number) => {
-        apiClient.delete(`/api/blob/delete`, { id: blobId }).then(() => {
-            setUnallocatedHeap(unallocatedHeap.filter(blob => blob.id !== blobId))
-            console.log("deleted")
+    const deleteBlobs = (blobIds: number[]) => {
+        apiClient.delete("/api/blob/delete", { blobIds }).then(() => {
+            console.log("Deleted", blobIds)
+            setUnallocatedHeap(unallocatedHeap.filter(blob => !blobIds.includes(blob.id)))
         })
     }
 
@@ -120,7 +122,7 @@ export const AssignUnallocatedBlobsPage = () => {
                     {...blob} 
                     setSelectedUnallocated={selectedUnallocated} 
                     isSelected={assignedHeap.includes(blob.id)}
-                    onDelete={deleteBlob} />)
+                    onDelete={(blobId) => deleteBlobs([blobId])} />)
             }
             {
                 unallocatedHeap?.length === 0 && <div>No unallocated blobs</div>

@@ -75,7 +75,7 @@ export const ArchiveItemNewPage = () => {
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
                 </div>
                 
-                <FileDropZone setFileBlobs={addFileBlobs}></FileDropZone>
+                <FileDropZone onBlobAdded={addFileBlobs} />
 
                 <div style={{display: "flex", flexWrap: "wrap"}}>
                     {fileBlobs?.map((blob, ix) => (
