@@ -1,15 +1,28 @@
 import { faFileArrowUp } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef } from "react"
+import { useApiClient } from "../Utils/useApiClient"
 
-type FileDropZoneProps = {
-    setFileBlobs: ([]: { fileName: string, fileData: Blob }[]) => void
+export type FileDropZoneProps = {
+    onBlobAdded?: (files: { fileName: string; fileData: Blob }[]) => void
 }
 
-
-export const FileDropZone = ({setFileBlobs: setFileBlobs}: FileDropZoneProps) => {
-
+export const FileDropZone = ({ onBlobAdded }: FileDropZoneProps) => {
+    const apiClient = useApiClient()
     const inputFile = useRef<HTMLInputElement | null>(null)
+
+    const uploadBlobs = (blobs: { fileName: string; fileData: Blob }[]): void => {
+        if(onBlobAdded) {
+            onBlobAdded(blobs)
+            return
+        }
+        const formData = new FormData()
+        blobs.forEach(blob => {
+            formData.append("files", blob.fileData, blob.fileName)
+        })
+
+        apiClient.postFormData("/api/blob/upload", formData)
+    }
 
     const handleDrop = (event: any) => {
         event.preventDefault()
@@ -23,7 +36,7 @@ export const FileDropZone = ({setFileBlobs: setFileBlobs}: FileDropZoneProps) =>
         event.stopPropagation()
         event.preventDefault()
 
-        const file = event.target.files[0]
+        const file = event.target.files![0]
         handleFileChange([file])
     }
 
@@ -57,7 +70,7 @@ export const FileDropZone = ({setFileBlobs: setFileBlobs}: FileDropZoneProps) =>
     
         Promise.all(filePromises)
             .then((fileDataArray) => {
-                setFileBlobs(fileDataArray)
+                uploadBlobs(fileDataArray)
             })
             .catch((error) => {
                 console.error('Error reading files:', error)

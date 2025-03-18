@@ -150,20 +150,20 @@ public class BlobController : ControllerBase
     }
 
     [HttpDelete]
-    public async Task<ActionResult<int>> Delete([FromQuery] int id)
+    public async Task<ActionResult> Delete([FromQuery] int[] blobIds)
     {
-        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(x => x.Id == id);
-        if (blob == null)
+        var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
+        if (!blobs.Any())
         {
             return NotFound();
         }
 
-        _fileProvider.DeleteFile(blob.PathInStore);
-        _dbContext.Blobs.Remove(blob);
+        blobs.ForEach(blob => _fileProvider.DeleteFile(blob.PathInStore));
+        _dbContext.Blobs.RemoveRange(blobs);
 
         await _dbContext.SaveChangesAsync();
 
-        return id;
+        return Ok();
     }
 
     public class OrphanHeapResponse
