@@ -87,10 +87,10 @@ export const ArchiveItemEditPage = () => {
             </h1>
             <form onSubmit={save}>
                 <div>
-                    <label htmlFor="name">Name</label>
+                    <label htmlFor="title">Title</label>
                     <input
                         type="text"
-                        id="name"
+                        id="title"
                         placeholder=""
                         autoFocus
                         value={title ?? ""}
@@ -100,7 +100,7 @@ export const ArchiveItemEditPage = () => {
                 </div>
                 <div>
                     <label htmlFor="tags">Tags</label>
-                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" />
+                    <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
                     <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>

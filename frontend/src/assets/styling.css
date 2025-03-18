@@ -170,3 +170,21 @@ span.tag {
         max-height: 90%;
     }
 }
+
+.dimmed {
+    color: hsla(from currentColor h s l / 50%)!important;
+}
+
+span.spacer-1ex {
+    display: inline-block;
+    width: 1ex;
+}
+span.spacer-1em {
+    display: inline-block;
+    width: 1ex;
+}
+
+.horizontal-line {
+    height: 0;
+    border-bottom: thin solid hsl(0deg, 0%, 80%);
+}

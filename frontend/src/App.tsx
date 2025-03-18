@@ -12,14 +12,19 @@ import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 import { RequireTenant } from "./Frames/RequireTenant"
 import { Layout } from "./Frames/Layout"
 import { AssignUnallocatedBlobsPage } from "./Pages/AssignUnallocatedBlobsPage"
+import { BlobListPage } from "./Pages/BlobListPage"
+import { UserProfilePage } from "./Pages/UserProfilePage"
+import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 
 
 const routers = createBrowserRouter([
     {
         element: (
-            <Layout>
-                <Outlet />
-            </Layout>
+            <CurrentTenantIdFrame>
+                <Layout>
+                    <Outlet />
+                </Layout>
+            </CurrentTenantIdFrame>
         ),
         children: [
             {
@@ -46,8 +51,16 @@ const routers = createBrowserRouter([
                         element: <SignOutPage />
                     },
                     {
+                        path: RoutePaths.Profile,
+                        element: <UserProfilePage />
+                    },
+                    {
                         path: RoutePaths.Archive,
                         element: <ArchiveItemListPage />
+                    },
+                    {
+                        path: RoutePaths.Blobs,
+                        element: <BlobListPage />
                     },
                     {
                         path: "archive/edit/:id",

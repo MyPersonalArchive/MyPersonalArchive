@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useSetAtom } from "jotai"
-import { accessTokenAtom, currentTenantIdAtom, loggedInUserAtom } from "../Utils/Atoms"
+import { accessTokenAtom, loggedInUserAtom } from "../Utils/Atoms"
 import { useApiClient } from "../Utils/useApiClient"
 
 
 export const SignOutPage = () => {
     const [loggedInUser, setLoggedInUser] = useAtom(loggedInUserAtom)
-    const setCurrentTenantId = useSetAtom(currentTenantIdAtom)
     const setAccessToken = useSetAtom(accessTokenAtom)
     const navigate = useNavigate()
     const apiClient = useApiClient()
@@ -28,7 +27,6 @@ export const SignOutPage = () => {
         } finally {
             setLoggedInUser(undefined)
             setAccessToken(undefined)
-            setCurrentTenantId(undefined)
             navigate(RoutePaths.Index)
         }
     }

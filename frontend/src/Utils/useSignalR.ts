@@ -1,7 +1,8 @@
 import { HttpTransportType, HubConnectionBuilder, LogLevel } from "@microsoft/signalr"
-import { useEffect, useRef } from "react"
-import { accessTokenAtom, currentTenantIdAtom, signalRConnectionAtom } from "../Utils/Atoms"
+import { useContext, useEffect, useRef } from "react"
+import { accessTokenAtom, signalRConnectionAtom } from "../Utils/Atoms"
 import { useAtom, useAtomValue } from "jotai"
+import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdFrame"
 
 
 export type SignalRMessage = {
@@ -15,16 +16,16 @@ export const useSignalR = (
     const [signalRConnection, setSignalRConnection] = useAtom(signalRConnectionAtom)
     const callbacksRef = useRef<Array<(message: SignalRMessage) => void>>([])
 
-    const tenantId = useAtomValue(currentTenantIdAtom)
+    const { currentTenantId } = useContext(CurrentTenantIdContext)
     const accessToken = useAtomValue(accessTokenAtom)
 
     useEffect(() => {
-        if (accessToken === undefined || tenantId === undefined) {
+        if (accessToken === undefined || currentTenantId === undefined) {
             return
         }
 
         (async () => {
-            const url = `/notificationHub?tenantId=${tenantId}`
+            const url = `/notificationHub?tenantId=${currentTenantId}`
             const connection = signalRConnection ?? await ensureSignalRConnection(url, accessToken)
 
             connection.on("ReceiveMessage", (message) => {
@@ -43,7 +44,7 @@ export const useSignalR = (
                 })
             }
         }
-    }, [accessToken, tenantId])
+    }, [accessToken, currentTenantId])
 
 
     useEffect(() => {

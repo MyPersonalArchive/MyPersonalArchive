@@ -1,8 +1,10 @@
 import { useAtomValue, useSetAtom } from "jotai"
-import { accessTokenAtom, loggedInUserAtom, currentTenantIdAtom, lastSelectedTenantIdAtom } from "./Atoms"
+import { accessTokenAtom, loggedInUserAtom, lastSelectedTenantIdAtom } from "./Atoms"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { createQueryString } from "./createQueryString"
+import { useContext } from "react"
+import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdFrame"
 
 
 type RefreshResponse = {
@@ -14,7 +16,7 @@ type RefreshResponse = {
 
 export const useRefresh = () => {
     const setLoggedInUser = useSetAtom(loggedInUserAtom)
-    const setCurrentTenantId = useSetAtom(currentTenantIdAtom)
+    const { switchToTenantId } = useContext(CurrentTenantIdContext)
     const setAccessToken = useSetAtom(accessTokenAtom)
     const lastUsedTenantId = useAtomValue(lastSelectedTenantIdAtom)
     const navigate = useNavigate()
@@ -39,7 +41,7 @@ export const useRefresh = () => {
         setAccessToken(json.accessToken)
         const user = { username: json.username, fullname: json.fullname, availableTenantIds: json.availableTenantIds }
         setLoggedInUser(user)
-        setCurrentTenantId(lastUsedTenantId!)
+        switchToTenantId(lastUsedTenantId!)
 
         return json
     }
@@ -47,7 +49,7 @@ export const useRefresh = () => {
 
 
 export const useApiClient = () => {
-    const currentTenantId = useAtomValue(currentTenantIdAtom)
+    const { currentTenantId } = useContext(CurrentTenantIdContext)
     const accessToken = useAtomValue(accessTokenAtom)
     const refresh = useRefresh()
 
@@ -55,7 +57,7 @@ export const useApiClient = () => {
     if (accessToken !== undefined) {
         commonHeaders.Authorization = `Bearer ${accessToken}`
     }
-    if (currentTenantId !== undefined) {
+    if (currentTenantId !== null) {
         commonHeaders["X-Tenant-Id"] = currentTenantId
     }
 
