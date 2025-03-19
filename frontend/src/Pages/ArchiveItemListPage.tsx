@@ -64,7 +64,7 @@ export const ArchiveItemListPage = () => {
             <button onClick={() => newArchiveItem()}>Add item</button>
             <button onClick={() => navigate("/archive/unallocated")}>Unallocated</button>
             <Filter />
-            <FileDropZone/>
+            <FileDropZone onBlobAttached={() => {}}/>
             <table style={{ width: "100%" }}>
                 <thead>
                     <tr>
