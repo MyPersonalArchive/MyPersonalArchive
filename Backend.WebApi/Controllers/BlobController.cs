@@ -81,17 +81,17 @@ public class BlobController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<OrphanHeapResponse>> OrphanHeap(int? limit)
+    public async Task<ActionResult<UnallocatedBlobHeapResponse>> UnallocatedBlobs(int? limit)
     {
         var total = await _dbContext.Blobs
                             .Where(blob => blob.ArchiveItem == null)
                             .CountAsync();
 
         
-        IEnumerable<OrphanBlob>  orphanBlobs = (await _dbContext.Blobs
+        IEnumerable<UnallocatedBlob>  orphanBlobs = (await _dbContext.Blobs
             .Include(blob => blob.UploadedBy)
             .Where(blob => blob.ArchiveItem == null)
-            .Select(blob => new OrphanBlob
+            .Select(blob => new UnallocatedBlob
             {
                 Id = blob.Id,
                 FileName = blob.OriginalFilename,
@@ -108,13 +108,35 @@ public class BlobController : ControllerBase
             orphanBlobs = orphanBlobs.Take(limit.Value);
         }
 
-        return new OrphanHeapResponse
+        return new UnallocatedBlobHeapResponse
         {
             Total = total,
             Blobs = orphanBlobs
         };
     }
  
+
+    [HttpPut]
+    public async Task<ActionResult> Allocate([FromQuery] int[] blobIds, [FromQuery] int archiveItemId)
+    {
+        var archiveItem = _dbContext.ArchiveItems
+                                .Include(archiveItem => archiveItem.Blobs)
+                                .SingleOrDefault(archiveItem => archiveItem.Id == archiveItemId);
+        if (archiveItem == null)
+        {
+            return BadRequest();
+        }
+
+        var blobs = _dbContext.Blobs.Where(blob => blobIds.Contains(blob.Id)).ToList();
+        foreach (var blob in blobs)
+        {
+            archiveItem.Blobs!.Add(blob);
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok();
+    }
 
     [HttpPost]
     public async Task<ActionResult> Upload(IFormFileCollection files)
@@ -143,7 +165,7 @@ public class BlobController : ControllerBase
         
         await _dbContext.SaveChangesAsync();
 
-        var message = new Message("OrphanHeapUpdated");
+        var message = new Message("NewUnallocatedBlob");
         await _signalRService.PublishToTenantChannel(message);
 
         return Ok();
@@ -163,16 +185,16 @@ public class BlobController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
-        return Ok();
+        return NoContent();
     }
 
-    public class OrphanHeapResponse
+    public class UnallocatedBlobHeapResponse
     {
         public int Total { get; set; }
-        public required IEnumerable<OrphanBlob> Blobs { get; set; }
+        public required IEnumerable<UnallocatedBlob> Blobs { get; set; }
     }
 
-    public class OrphanBlob
+    public class UnallocatedBlob
     {
         public int Id { get; set; }
         public string? FileName { get; set; }
