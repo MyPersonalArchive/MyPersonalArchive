@@ -5,11 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 export type DropdownButtonProps = {
-    options: {name: string, callback: () => void, icon: IconDefinition}[]
+    id?: number
+    options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[]
     disabled?: boolean
 }
 
-export const DropdownButton = ({ options, disabled }: DropdownButtonProps) => {
+export const DropdownButton = ({ id, options, disabled }: DropdownButtonProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownMenuRef = useRef<HTMLUListElement>(null)
     const dropdownToggleRef = useRef<HTMLButtonElement>(null)
@@ -32,7 +33,8 @@ export const DropdownButton = ({ options, disabled }: DropdownButtonProps) => {
           }
       }, [])
 
-    const handleToggle = () => {
+    const handleToggle = (event: any) => {
+      event.preventDefault()
       setIsOpen(!isOpen)
     }
 
@@ -40,9 +42,9 @@ export const DropdownButton = ({ options, disabled }: DropdownButtonProps) => {
         setIsOpen(false)
       }
 
-    const onCallback = (callback: () => void) => {
+    const onCallback = (callback: (id?: number) => void) => {
         setIsOpen(false)
-        callback()
+        callback(id)
     }
   
     return (

@@ -152,16 +152,10 @@ export const useApiClient = () => {
                 .then(response => {
                     //Should we have this as a common part of the response parsing? 
                     //We are not always returning json... If we are not json we crash
-                    if (response.ok) {
-                        const contentType = response.headers.get('Content-Type')
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json() as T
-                        } else {
-                            return response.text() as T
-                        }
-                    } else {
-                        throw new Error(response.statusText)
-                    }
+                    if(response.status === 200) {
+                        return response.json() as T
+                    } 
+                    return undefined
                 })
         }
 

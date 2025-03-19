@@ -43,28 +43,41 @@ public class ArchiveController : ControllerBase
             Title = request.Title,
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
-            Tags = [.. Tags.Ensure(_dbContext, request.Tags)],
-            Blobs = await Task.WhenAll(files.Select(async file => //Same as in BlobController.Upload, not sure where to generalize this...
-            {
-                var stream = file.OpenReadStream();
-                
-                return new Blob
-                {
-                    FileHash = _fileProvider.ComputeSha256Hash(stream),
-                    MimeType = file.ContentType,
-                    OriginalFilename = file.FileName,
-                    PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
-                    FileSize = file.Length,
-                    UploadedAt = DateTimeOffset.Now,
-                    UploadedByUsername = _resolver.GetCurrentUsername(),
-                    StoreRoot = StoreRoot.FileStorage.ToString(),
-                    PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
-                };
-            }))
+            Tags = [.. Tags.Ensure(_dbContext, request.Tags)]
         };
 
-        _dbContext.ArchiveItems.Add(newArchiveItem);
+        var blobs = (await Task.WhenAll(files.Select(async file => //Same as in BlobController.Upload, not sure where to generalize this...
+        {
+            var stream = file.OpenReadStream();
+            
+            return new Blob
+            {
+                FileHash = _fileProvider.ComputeSha256Hash(stream),
+                MimeType = file.ContentType,
+                OriginalFilename = file.FileName,
+                PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
+                FileSize = file.Length,
+                UploadedAt = DateTimeOffset.Now,
+                UploadedByUsername = _resolver.GetCurrentUsername(),
+                StoreRoot = StoreRoot.FileStorage.ToString(),
+                PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
+            };
+        }))).ToList();
+        
+        if(request.BlobsFromUnallocated != null) 
+        {
+            var unallocatedBlobs = await _dbContext.Blobs
+                                                    .Where(blob => blob.ArchiveItem == null)
+                                                    .Where(blob => request.BlobsFromUnallocated.Contains(blob.Id))
+                                                    .ToListAsync();
+            foreach (var blob in unallocatedBlobs)
+            {
+                blobs.Add(blob);
+            }
+        }
 
+        newArchiveItem.Blobs = blobs;
+        _dbContext.ArchiveItems.Add(newArchiveItem);
         await _dbContext.SaveChangesAsync();
 
         var message = new Message("ArchiveItemCreated", newArchiveItem.Id);
@@ -118,6 +131,15 @@ public class ArchiveController : ControllerBase
         if (archiveItem == null)
         {
             return NotFound();
+        }
+
+        if(updateRequest.BlobsFromUnallocated != null) 
+        {
+            var unallocatedBlobs = _dbContext.Blobs.Where(blob => blob.ArchiveItem == null && updateRequest.BlobsFromUnallocated.Contains(blob.Id)).ToList();
+            foreach (var blob in unallocatedBlobs)
+            {
+                archiveItem.Blobs!.Add(blob);
+            }
         }
 
         archiveItem.Title = updateRequest.Title;
@@ -231,6 +253,7 @@ public class ArchiveController : ControllerBase
     {
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
+        public int[]? BlobsFromUnallocated { get; set; }
     }
 
     public class CreateResponse
@@ -243,6 +266,7 @@ public class ArchiveController : ControllerBase
         public int Id { get; set; }
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
+        public int[]? BlobsFromUnallocated { get; set; }
     }
 
     public class GetResponse

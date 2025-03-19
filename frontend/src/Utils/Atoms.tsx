@@ -1,6 +1,7 @@
 import { HubConnection } from "@microsoft/signalr"
 import { atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
+import { UnallocatedBlob } from "./useUnallocatedBlobsPrefetching"
 
 export type User = {
     username: string
@@ -18,3 +19,5 @@ export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSele
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 export const tagsAtom = atom<string[]>([])
+
+export const unallocatedBlobsAtom = atom<UnallocatedBlob[]>([])

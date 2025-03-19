@@ -6,6 +6,7 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
 import { tagsAtom } from "../Utils/Atoms"
+import { DimensionEnum, Preview } from "../Components/Preview"
 
 type CreateResponse = {
     id: number
@@ -14,7 +15,8 @@ type CreateResponse = {
 export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
-    const [fileBlobs, setFileBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
+    const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
+    const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<number[]>([])
     const allTags = useAtomValue(tagsAtom)
 
     const navigate = useNavigate()
@@ -26,12 +28,13 @@ export const ArchiveItemNewPage = () => {
         const formData = new FormData()
         const createRequest = {
             title, 
-            tags
+            tags,
+            blobsFromUnallocated
         }
 
         formData.append("rawRequest", JSON.stringify(createRequest))
 
-        fileBlobs.forEach(blob => {
+        localBlobs.forEach(blob => {
             formData.append("files", blob.fileData, blob.fileName)
         })
 
@@ -44,11 +47,15 @@ export const ArchiveItemNewPage = () => {
     }
 
     const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
-        setFileBlobs([...fileBlobs, ...blobs])
+        setLocalBlobs([...localBlobs, ...blobs])
     }
 
     const removeBlob = (fileName: string) => {
-        setFileBlobs(fileBlobs.filter(blob => blob.fileName !== fileName))
+        setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
+    }
+
+    const attachUnallocatedBlobs = (blobId: number) => {
+        setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, blobId])
     }
 
     return (
@@ -75,10 +82,13 @@ export const ArchiveItemNewPage = () => {
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
                 </div>
                 
-                <FileDropZone onBlobAdded={addFileBlobs} />
+                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true}/>
 
                 <div style={{display: "flex", flexWrap: "wrap"}}>
-                    {fileBlobs?.map((blob, ix) => (
+                    {blobsFromUnallocated.map((blobId) => (
+                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />
+                    ))}
+                    {localBlobs?.map((blob, ix) => (
                         <div key={ix} style={{margin: "5px"}}>
                             <LocalFilePreview 
                                 key={blob.fileName} 
