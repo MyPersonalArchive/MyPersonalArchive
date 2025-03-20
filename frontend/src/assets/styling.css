@@ -1,3 +1,4 @@
+
 :root {
     --complementary-background-color: hsla(197, 68%, 37%, 10);
     --complementary-text-color: whitesmoke;
@@ -10,66 +11,30 @@ body {
     margin: 0;
 }
 
-.layout-container {
 
-    header,
-    footer {
-        background: var(--complementary-background-color);
-        color: var(--complementary-text-color);
-
-        & a {
-            color: currentColor;
-            text-decoration: none;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
-    }
-
-    header {
-        background: url(../assets/receiptly_logo.png) no-repeat 27px/27px;
-        background-position: .6em .3em;
-        background-color: var(--complementary-background-color);
-
-        &>*:first-child {
-            margin-left: 1.5em;
-        }
-    }
-}
+/**/
 
 
-label {
-    /* display: inline-block; */
-    /* width: 10ex; */
-}
-
-
-input,
-span.input,
-button {
-    margin: .5em 0;
-    padding: .3em .6em;
-    border-radius: .5em;
+.filedropzone {
     border: thin solid lightgray;
-    font-size: 1em;
-}
+    border-radius: .5em;
+    padding: 1em;
 
-button {
-    /* margin-top: 1em; */
-    background: var(--primary-button-background-color);
-    color: var(--primary-button-text-color);
+    & .link-button {
+        outline: none;
+    }
 
-    &+button {
-        margin-left: 1em;
+    &:has(:focus) {
+        outline: medium auto currentColor;
+        outline: medium auto invert;
+        outline: 5px auto -webkit-focus-ring-color;
+        outline-offset: -4px;
+        /* border-style: solid; */
     }
 }
 
-*+input,
-*+span.input {
-    margin-left: 1em;
-}
 
+/**/
 .message {
     border-radius: .5em;
     padding: .7em 1.4em;
@@ -83,18 +48,24 @@ button {
     }
 }
 
-
+/**/
 table {
-    border-spacing: 0;
-    border-collapse: collapse;
+    &:has(.visible-cell-dividers) {
+        border-collapse: collapse;
+    }
 
-    &>tbody td {
+    &>*.visible-cell-dividers>tr>* {
         border: thin solid hsla(0deg, 0%, 75%, 1);
-        padding: .5em;
     }
 }
 
+td {
+    padding: .3em;
+}
 
+
+
+/**/
 span.tag {
     background: hsl(0, 0%, 90%);
     border-radius: .7em;
@@ -110,6 +81,8 @@ span.tag {
 }
 
 
+
+/**/
 .preview {
     position: relative;
 
@@ -140,10 +113,9 @@ span.tag {
         top: 0;
         right: 2.2em;
     }
-
 }
 
-.pageNumber{
+.pageNumber {
     text-align: center;
     font-size: .8em;
     color: hsl(from black h s l / 50%);
@@ -171,20 +143,3 @@ span.tag {
     }
 }
 
-.dimmed {
-    color: hsla(from currentColor h s l / 50%)!important;
-}
-
-span.spacer-1ex {
-    display: inline-block;
-    width: 1ex;
-}
-span.spacer-1em {
-    display: inline-block;
-    width: 1ex;
-}
-
-.horizontal-line {
-    height: 0;
-    border-bottom: thin solid hsl(0deg, 0%, 80%);
-}

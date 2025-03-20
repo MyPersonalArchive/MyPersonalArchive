@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { SignalRMessage, useSignalR } from "../Utils/useSignalR"
@@ -61,25 +61,29 @@ export const ArchiveItemListPage = () => {
     return (
         <>
             <h1>Archive</h1>
-            <button onClick={() => newArchiveItem()}>Add item</button>
-            <button onClick={() => navigate("/archive/unallocated")}>Unallocated</button>
+            <div className="form">
+                <button onClick={() => newArchiveItem()}>Add item</button>
+                <button onClick={() => navigate("/archive/unallocated")}>Unallocated</button>
+            </div>
             <Filter />
             <FileDropZone onBlobAttached={() => {}}/>
             <table style={{ width: "100%" }}>
                 <thead>
                     <tr>
-                        <td>Title</td>
-                        <td>Tags</td>
-                        <td>Created</td>
+                        <th>Title</th>
+                        <th>Tags</th>
+                        <th>Created</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="visible-cell-dividers">
                     {
                         archiveItems?.map(item => <Row key={item.id} archiveItem={item} />)
                     }
                 </tbody>
             </table>
-            <button onClick={() => newArchiveItem()}>Add item</button>
+            <div className="form">
+                <button onClick={() => newArchiveItem()}>Add item</button>
+            </div>
         </>
     )
 }
@@ -118,10 +122,11 @@ const Filter = () => {
 
     useEffect(() => {
         setTitle(searchParams.get("title") ?? "")
-        setTags(searchParams.getAll("tags"))        
+        setTags(searchParams.getAll("tags"))
     }, [])
 
-    const search = () => {
+    const search = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
         navigate({
             search: createQueryString({ title, tags: tags.map(tag => tag.trim()) }, { skipEmptyStrings: true })
         })
@@ -133,17 +138,17 @@ const Filter = () => {
     }
 
     return (
-        <div>
+        <form onSubmit={search} onReset={reset}>
             <input type="text"
                 placeholder="Search by title"
                 value={title}
                 onChange={event => setTitle(event.target.value)}
-                onKeyDown={event => event.key === "Enter" ? search() : null} />
+            />
 
             <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} />
 
-            <button onClick={search}>Search</button>
-            <button onClick={reset}>Reset</button>
-        </div>
+            <button type="submit">Search</button>
+            <button type="reset">Reset</button>
+        </form>
     )
 }

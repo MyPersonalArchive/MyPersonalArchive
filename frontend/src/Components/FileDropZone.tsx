@@ -13,14 +13,17 @@ export type FileDropZoneProps = {
     showUnallocatedBlobs?: boolean
 }
 
+
+// export const FileDropZone = ({ setFileBlobs: setFileBlobs }: FileDropZoneProps) => {
 export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs }: FileDropZoneProps) => {
     const apiClient = useApiClient()
+
     const inputFile = useRef<HTMLInputElement | null>(null)
     const [openUnallocatedBlobs, setOpenUnallocatedBlobs] = useState(false)
     const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
-    
+
     const uploadBlobs = (blobs: { fileName: string; fileData: Blob }[]): void => {
-        if(onBlobAdded) {
+        if (onBlobAdded) {
             onBlobAdded(blobs)
             return
         }
@@ -52,12 +55,12 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
         if (!files) {
             return;
         }
-    
+
         const filePromises = [];
-    
+
         for (let i = 0; i < files.length; i++) {
             const reader = new FileReader()
-    
+
             const filePromise = new Promise<{ fileName: string, fileData: Blob }>((resolve, reject) => {
                 reader.onload = () => {
                     resolve({
@@ -65,17 +68,17 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                         fileData: new Blob([files[i]], { type: files[i].type })
                     })
                 }
-    
+
                 reader.onerror = () => {
                     reject(new Error('Error reading file'));
                 }
 
                 reader.readAsDataURL(files[i])
             });
-    
+
             filePromises.push(filePromise)
         }
-    
+
         Promise.all(filePromises)
             .then((fileDataArray) => {
                 uploadBlobs(fileDataArray)
@@ -94,7 +97,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
         event.dataTransfer.setData("text/plain", event.target.id)
     }
 
-    const options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
+    const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
         {
             name: "Attach to this archive item",
             callback: (id) => onBlobAttached(id!),
@@ -103,59 +106,46 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
     ]
 
     return (
-        <div style={{
-            border: "solid 1px",
-            borderColor: "lightgray",
-            borderRadius: "5px",
-            marginBottom: "10px",
-            width: "100%"}}>
+        <div className="filedropzone">
             <input
                 type='file'
                 id='file'
                 ref={inputFile}
-                style={{display: "none"}}
-                onChange={onChangeFile}/>
-            <div style={{margin: "10px"}}
-                draggable = "true"
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}>
-                <FontAwesomeIcon icon={faFileArrowUp} color="gray" size="2x" width="100%" style={{marginBottom: "5px"}} />
-                <div style={{
-                    display: "flex",
-                    justifyContent: "center"}}>
-                    <div onClick={() => inputFile?.current?.click()} 
-                    style={{
-                        cursor: "pointer", 
-                        textDecoration: "underline", 
-                        color: "blue",
-                        alignContent: "center"}}>Select file</div>
+                style={{ display: "none" }}
+                onChange={onChangeFile} />
+            <div draggable="true" onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}>
+                <FontAwesomeIcon icon={faFileArrowUp} color="gray" size="2x" style={{ width: "100%", marginBottom: ".5em" }} />
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                    <button onClick={() => inputFile?.current?.click()} className="link-button">Select file</button>
                     <p style={{
-                        textAlign: "center",
                         fontSize: "14px",
-                        marginLeft: "5px"}}>
+                        marginLeft: "5px"
+                    }}>
                         or drag and drop a file here.</p>
-                    
-                    
                 </div>
-                {showUnallocatedBlobs &&
-                        <div onClick={() => setOpenUnallocatedBlobs(!openUnallocatedBlobs)} 
-                            style={{
-                                cursor: "pointer", 
-                                textDecoration: "underline", 
-                                color: "blue",
-                                textAlign: "center",
-                                alignContent: "center"}}>Choose from unallocted heap.</div>}
+                {
+                    showUnallocatedBlobs &&
+                    <div onClick={() => setOpenUnallocatedBlobs(!openUnallocatedBlobs)}
+                        style={{
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                            color: "blue",
+                            textAlign: "center",
+                            alignContent: "center"
+                        }}>Choose from unallocted heap.</div>
+                }
             </div>
-            
-                <div className={`animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
-                    {unallocatedHeap.length === 0 && <p style={{textAlign: "center"}}>No unallocated blobs</p>}
-                    {unallocatedHeap.map(blob => (
-                        <UnallocatedBlobItem {...blob} options={options} isSelected={false} setSelectedUnallocated={() => {}} key={blob.id} />
-                    ))}
-                    
-                </div>
-            
+
+            <div className={`animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
+                {
+                    unallocatedHeap.length === 0
+                        ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
+                        : unallocatedHeap.map(blob => (
+                            <UnallocatedBlobItem {...blob} options={options} isSelected={false} setSelectedUnallocated={() => { }} key={blob.id} />
+                        ))
+                }
+            </div>
+
         </div>
     )
 }

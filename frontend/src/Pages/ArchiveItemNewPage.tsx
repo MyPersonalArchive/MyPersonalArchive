@@ -64,51 +64,65 @@ export const ArchiveItemNewPage = () => {
                 New archive item {title}
             </h1>
             <form onSubmit={save}>
-                <div>
-                    <label htmlFor="title">Title</label>
-                    <input
-                        type="text"
-                        id="title"
-                        placeholder=""
-                        autoFocus
-                        required
-                        value={title}
-                        data-1p-ignore
-                        onChange={event => setTitle(event.target.value)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="tags">Tags</label>
-                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
-                </div>
-                
-                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true}/>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label htmlFor="title">Title</label>
+                            </td>
+                            <td>
+                                <input type="text" id="title" placeholder="" autoFocus required value={title} data-1p-ignore onChange={event => setTitle(event.target.value)}
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label htmlFor="tags">Tags</label>
+                            </td>
+                            <td>
+                                <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td >
+                                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true}/>
 
-                <div style={{display: "flex", flexWrap: "wrap"}}>
-                    {blobsFromUnallocated.map((blobId) => (
-                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />
-                    ))}
-                    {localBlobs?.map((blob, ix) => (
-                        <div key={ix} style={{margin: "5px"}}>
-                            <LocalFilePreview 
-                                key={blob.fileName} 
-                                removeBlob={removeBlob} 
-                                fileName={blob.fileName}
-                                blob={blob.fileData}>
-                            </LocalFilePreview>
-                        </div>
-                        
-                    ))}
-                </div>
+                                {/* <div style={{ display: "flex", flexWrap: "wrap" }}>
+                                    {fileBlobs?.map((blob, ix) => (
+                                        <div key={ix} style={{ margin: "5px" }}>
+                                            <LocalFilePreview key={blob.fileName} removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData}>
+                                            </LocalFilePreview>
+                                        </div>
+                                    ))}
+                                </div> */}
 
-                <div>
-                    <button type="button" onClick={back}>
-                        Back
-                    </button>
-                    <button type="submit">
-                        Save
-                    </button>
-                </div>
+                                <div style={{display: "flex", flexWrap: "wrap"}}>
+                                    {blobsFromUnallocated.map((blobId) => (
+                                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />
+                                    ))}
+                                    {localBlobs?.map((blob, ix) => (
+                                        <div key={ix} style={{margin: "5px"}}>
+                                            <LocalFilePreview  key={blob.fileName}  removeBlob={removeBlob}  fileName={blob.fileName} blob={blob.fileData}>
+                                            </LocalFilePreview>
+                                        </div> 
+                                    ))}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button type="button" onClick={back}>
+                                    Back
+                                </button>
+                                <button type="submit">
+                                    Save
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </form>
         </>
     )

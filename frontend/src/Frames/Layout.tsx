@@ -1,5 +1,3 @@
-import './Layout.css'
-import '../assets/navbar.css'
 import { Link, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { loggedInUserAtom, User } from "../Utils/Atoms"
@@ -66,13 +64,13 @@ const Navbar = () => {
                             {
                                 loggedInUser.availableTenantIds.length > 1 &&
                                 <>
-                                    <a className="dimmed">Switch tenant:</a>
+                                    <p>Switch tenant:</p>
                                     {
                                         loggedInUser.availableTenantIds
                                             .map(tenantId => (
                                                 tenantId === currentTenantId
-                                                    ? <a key={tenantId} className="dimmed">{tenantId}</a>
-                                                    : <a key={tenantId} onClick={() => switchTenant(tenantId)} href="">{tenantId}</a>
+                                                    ? <p key={tenantId} >{tenantId}</p>
+                                                    : <button key={tenantId} onClick={() => switchTenant(tenantId)}>{tenantId}</button>
                                             ))
                                     }
                                     <div className="horizontal-line"></div>
@@ -100,5 +98,4 @@ const UserProfileHeader = ({user} : {user: User}) => {
         <span className="spacer-1ex" />
 
     </>
-
 }
