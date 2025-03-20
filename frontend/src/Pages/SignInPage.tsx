@@ -22,9 +22,9 @@ export const SignInPage = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if(username === "" && userNameInputRef.current) {
+        if (username === "" && userNameInputRef.current) {
             userNameInputRef.current.focus()
-        } else if(password === "" && passwordInputRef.current) {
+        } else if (password === "" && passwordInputRef.current) {
             passwordInputRef.current.focus()
         }
     }, [])
@@ -96,45 +96,60 @@ export const SignInPage = () => {
                     ? <>Loading data...</>
                     : <>
                         {loginFailed && <p className="message error">Username or password is incorrect</p>}
-                        <form onSubmit={login} className="vertical-stacked-down-flex">
-                            <div>
-                                <label htmlFor="username">Email</label>
-                                &nbsp;
-                                <input
-                                    type="email"
-                                    id="username"
-                                    ref={userNameInputRef}
-                                    autoComplete="username"
-                                    placeholder=""
-                                    required
-                                    value={username}
-                                    onChange={event => setUsername(event.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="password">Password</label>
-                                &nbsp;
-                                <input
-                                    type="password"
-                                    id="password"
-                                    ref={passwordInputRef}
-                                    autoComplete="current-password"
-                                    placeholder=""
-                                    required
-                                    value={password}
-                                    onChange={event => setPassword(event.target.value)}
-                                />
-                            </div>
-                            {/* <div>
-                                    <input type="checkbox" id="rememberMe" />
-                                    &nbsp;
-                                    <label htmlFor="rememberMe">Remember me</label>
-                                </div> */}
-                            <div>
-                                <button type="submit">
-                                    Log in
-                                </button>
-                            </div>
+                        <form onSubmit={login}>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <label htmlFor="username">Email</label>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="email"
+                                                id="username"
+                                                ref={userNameInputRef}
+                                                autoComplete="username"
+                                                placeholder=""
+                                                required
+                                                value={username}
+                                                onChange={event => setUsername(event.target.value)}
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label htmlFor="password">Password</label>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="password"
+                                                id="password"
+                                                ref={passwordInputRef}
+                                                autoComplete="current-password"
+                                                placeholder=""
+                                                required
+                                                value={password}
+                                                onChange={event => setPassword(event.target.value)}
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <input type="checkbox" id="rememberMe" />
+                                            <label htmlFor="rememberMe">Remember me</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <button type="submit" className="primary">
+                                                Log in
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </form>
                     </>
                 }

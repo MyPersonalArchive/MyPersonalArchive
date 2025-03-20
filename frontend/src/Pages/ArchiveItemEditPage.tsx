@@ -68,9 +68,9 @@ export const ArchiveItemEditPage = () => {
         setFileBlobs([...fileBlobs, ...blobs])
     }
 
-    const removeBlob = (fileName: string) => {
-        setFileBlobs(fileBlobs.filter(blob => blob.fileName !== fileName))
-    }
+    // const removeBlob = (fileName: string) => {
+    //     setFileBlobs(fileBlobs.filter(blob => blob.fileName !== fileName))
+    // }
 
     const back = () => {
         navigate(-1)
@@ -86,37 +86,61 @@ export const ArchiveItemEditPage = () => {
                 Edit item
             </h1>
             <form onSubmit={save}>
-                <div>
-                    <label htmlFor="title">Title</label>
-                    <input
-                        type="text"
-                        id="title"
-                        placeholder=""
-                        autoFocus
-                        value={title ?? ""}
-                        data-1p-ignore
-                        onChange={event => setTitle(event.target.value)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="tags">Tags</label>
-                    <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
-                    <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-                    {
-                        blobs.map((blob, ix) => <Preview key={ix} blobId={blob.id} numberOfPages={blob.pageCount} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small}/>)
-                    }
-                </div>
-                
-                <div>
-                    <button type="button" onClick={back}>
-                        Back
-                    </button>
-                    <button type="submit">
-                        Save
-                    </button>
-                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label htmlFor="title">Title</label>
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    id="title"
+                                    placeholder=""
+                                    autoFocus
+                                    value={title ?? ""}
+                                    data-1p-ignore
+                                    onChange={event => setTitle(event.target.value)}
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label htmlFor="tags">Tags</label>
+                            </td>
+                            <td>
+                                <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+                                    {
+                                        blobs.map((blob, ix) => <Preview key={ix} blobId={blob.id} numberOfPages={blob.pageCount} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />)
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button type="button" onClick={back}>
+                                    Back
+                                </button>
+                                <button type="submit" className="primary">
+                                    Save
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </form>
         </>
     )

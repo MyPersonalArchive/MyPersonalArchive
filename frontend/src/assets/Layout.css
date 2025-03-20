@@ -9,7 +9,19 @@
     }
 
     &>header,
-    &>footer {}
+    &>footer {
+        background: var(--complementary-background-color);
+        color: var(--complementary-text-color);
+
+        & a {
+            color: currentColor;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
 
     &>main {
         align-self: top;
@@ -18,6 +30,15 @@
 
 }
 
+.layout-container {
+
+    header {
+        background: url(../assets/receiptly_logo.png) no-repeat 27px/27px;
+        background-position: .6em .3em;
+        background-color: var(--complementary-background-color);
+
+    }
+}
 
 .indexpage {
     background: whitesmoke;
@@ -41,7 +62,7 @@
 
  @media (min-width: 955px) {
     main {
-        width: 900px;
+        width: 940px;
         margin-left: auto;
         margin-right: auto;
     }
@@ -61,9 +82,9 @@
     justify-content: space-between;
 }
 
-.vertical-stacked-down-flex {
+/* .vertical-stacked-down-flex {
     display: flex;
     flex-direction: column;
-}
+} */
 
 
