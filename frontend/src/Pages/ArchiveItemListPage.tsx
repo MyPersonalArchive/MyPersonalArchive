@@ -7,6 +7,7 @@ import { useAtomValue } from "jotai"
 import { tagsAtom } from "../Utils/Atoms"
 import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
+import { RoutePaths } from "../RoutePaths"
 
 type ListResponse = {
     id: number
@@ -56,17 +57,19 @@ export const ArchiveItemListPage = () => {
     const newArchiveItem = () => {
         navigate("/archive/new")
     }
-    
+
 
     return (
         <>
             <h1>Archive</h1>
             <div className="form">
                 <button onClick={() => newArchiveItem()}>Add item</button>
-                <button onClick={() => navigate("/archive/unallocated")}>Unallocated</button>
+                <button onClick={() => navigate(RoutePaths.Blobs)}>Unallocated</button>
             </div>
             <Filter />
-            <FileDropZone onBlobAttached={() => {}}/>
+            <div className="form">
+                <FileDropZone onBlobAttached={() => { }} />
+            </div>
             <table style={{ width: "100%" }}>
                 <thead>
                     <tr>

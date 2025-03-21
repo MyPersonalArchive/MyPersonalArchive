@@ -45,6 +45,7 @@ h6 {
 }
 
 p {
+    text-wrap: wrap;    /* fallback for browser that dont support 'pretty' */
     text-wrap: pretty;
 }
 

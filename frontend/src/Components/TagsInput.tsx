@@ -46,7 +46,7 @@ export const TagsInput = ({ tags, setTags, autocompleteList, htmlId }: TagsProps
 
     return (
         <>
-            <span className="input" >
+            <span className="tags-input input" >
                 {
                     tags?.map((tag, ix) => <span key={ix} className="tag">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
                 }

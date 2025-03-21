@@ -3,9 +3,9 @@
     color: hsla(from currentColor h s l / 50%) !important;
 }
 
-.rounded {
+/* .rounded {
     border-radius: .5em;
-}
+} */
 
 span.spacer-1ex {
     display: inline-block;
@@ -21,3 +21,15 @@ span.spacer-1em {
     height: 0;
     border-bottom: thin solid hsl(0deg, 0%, 80%);
 }
+
+
+.horizontal-evenly-spaced-flex {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+/* .vertical-stacked-down-flex {
+    display: flex;
+    flex-direction: column;
+} */

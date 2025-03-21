@@ -51,7 +51,6 @@ export const ArchiveItemEditPage = () => {
     }, [])
 
     const save = (event: React.FormEvent<HTMLFormElement>) => {
-        console.log("save")
         event.preventDefault()
 
         //TODO: Tags is not updated from UI!
@@ -116,6 +115,18 @@ export const ArchiveItemEditPage = () => {
                             <td></td>
                             <td>
                                 <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
+
+                                {/* <div style={{display: "flex", flexWrap: "wrap"}}>
+                                    {blobsFromUnallocated.map((blobId) => (
+                                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />
+                                    ))}
+                                    {localBlobs?.map((blob, ix) => (
+                                        <div key={ix} style={{margin: "5px"}}>
+                                            <LocalFilePreview  key={blob.fileName}  removeBlob={removeBlob}  fileName={blob.fileName} blob={blob.fileData}>
+                                            </LocalFilePreview>
+                                        </div> 
+                                    ))} 
+                                </div> */}
                             </td>
                         </tr>
                         <tr>

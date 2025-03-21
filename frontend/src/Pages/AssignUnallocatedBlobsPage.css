@@ -1,5 +1,0 @@
-.grid {
-    display: grid;
-    grid-template-areas: "image information actions";
-    grid-template-columns: 140px 2fr 1fr;
-}

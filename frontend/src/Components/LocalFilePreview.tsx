@@ -12,7 +12,6 @@ export const LocalFilePreview = ({fileName, blob, removeBlob}: PreviewProps) => 
 
     useEffect(() => {
         blobToBase64(blob).then(data => {
-            console.log(data)
             setFileData(data as string)
         })
     }, [blob])
