@@ -40,6 +40,17 @@ const Navbar = () => {
         navigate(RoutePaths.Index)
     }
 
+
+    //TODO:
+    // - Tenant names instead of IDs?
+    // - Close dropdown after clicking a link/button
+    // - Left menu items as items when there is space, and as a dropdown when there is not
+    // - Change switch tenant to use button that look like links, instead of links
+    //   - On RequireTenantFrame, make buttons look like links
+
+    // - Consider if/when there is space for a sidebare
+
+
     return (
         <nav className="navbar horizontal-evenly-spaced-flex">
             <div className="dropdown dropdown-left-aligned">

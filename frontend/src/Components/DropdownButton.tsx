@@ -6,7 +6,7 @@ import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 export type DropdownButtonProps = {
     id?: number
-    options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[]
+    options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[]
     disabled?: boolean
 }
 
@@ -22,51 +22,51 @@ export const DropdownButton = ({ id, options, disabled }: DropdownButtonProps) =
                 !dropdownMenuRef.current.contains(event.target) &&
                 !dropdownToggleRef.current?.contains(event.target) // Use optional chaining operator
             ) {
-              handleClose()
+                handleClose()
             }
-          }
-      
-          document.addEventListener("click", handleDocumentClick)
-      
-          return () => {
+        }
+
+        document.addEventListener("click", handleDocumentClick)
+
+        return () => {
             document.removeEventListener("click", handleDocumentClick)
-          }
-      }, [])
+        }
+    }, [])
 
     const handleToggle = (event: any) => {
-      event.preventDefault()
-      setIsOpen(!isOpen)
+        event.preventDefault()
+        setIsOpen(!isOpen)
     }
 
     const handleClose = () => {
         setIsOpen(false)
-      }
+    }
 
     const onCallback = (callback: (id?: number) => void) => {
         setIsOpen(false)
         callback(id)
     }
-  
+
     return (
-      <div className="dropdown">
-        <button className={`dropdown-button ${disabled ? "disabled" : ""}`} 
-        disabled={disabled}
-        ref={dropdownToggleRef}
-        onClick={handleToggle}>
-          <FontAwesomeIcon icon={faChevronDown} size="1x" />
-        </button>
-        
-        {isOpen && (
-          <ul className="dropdown-menu dropdown-menu-right"
-          ref={dropdownMenuRef}>
-            {options.map((option, index) => (
-            <li key={index} onClick={() => onCallback(option.callback)}>
-              <span style={{marginRight: "10px"}}><FontAwesomeIcon icon={option.icon} size="1x" /></span>
-              {option.name}
-            </li>
-          ))}
-          </ul>
-        )}
-      </div>
+        <div className="dropdownbutton-container">
+            <button className={`dropdown-button ${disabled ? "disabled" : ""}`}
+                disabled={disabled}
+                ref={dropdownToggleRef}
+                onClick={handleToggle}>
+                <FontAwesomeIcon icon={faChevronDown} size="1x" />
+            </button>
+
+            {isOpen && (
+                <ul className="dropdown-menu dropdown-menu-right"
+                    ref={dropdownMenuRef}>
+                    {options.map((option, index) => (
+                        <li key={index} onClick={() => onCallback(option.callback)}>
+                            <span style={{ marginRight: "10px" }}><FontAwesomeIcon icon={option.icon} size="1x" /></span>
+                            {option.name}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     )
-  }
+}

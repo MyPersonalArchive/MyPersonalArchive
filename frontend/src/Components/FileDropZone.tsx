@@ -1,11 +1,11 @@
-import { faFileArrowUp, faPlus, IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faFileArrowUp, faFileImport, faPlus, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
-import "./FileDropZone.css"
 import { UnallocatedBlobItem } from "./UnallocatedBlobs"
 import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
+
 
 export type FileDropZoneProps = {
     onBlobAdded?: (files: { fileName: string; fileData: Blob }[]) => void
@@ -13,12 +13,11 @@ export type FileDropZoneProps = {
     showUnallocatedBlobs?: boolean
 }
 
-
 // export const FileDropZone = ({ setFileBlobs: setFileBlobs }: FileDropZoneProps) => {
 export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs }: FileDropZoneProps) => {
     const apiClient = useApiClient()
 
-    const inputFile = useRef<HTMLInputElement | null>(null)
+    const inputFileRef = useRef<HTMLInputElement | null>(null)
     const [openUnallocatedBlobs, setOpenUnallocatedBlobs] = useState(false)
     const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
 
@@ -47,8 +46,8 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
         event.stopPropagation()
         event.preventDefault()
 
-        const file = event.target.files![0]
-        handleFileChange([file])
+        const files = event.target.files ?? []
+        handleFileChange([...files])
     }
 
     const handleFileChange = (files: File[]) => {
@@ -110,30 +109,42 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
             <input
                 type='file'
                 id='file'
-                ref={inputFile}
+                ref={inputFileRef}
                 style={{ display: "none" }}
                 onChange={onChangeFile} />
-            <div draggable="true" onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}>
-                <FontAwesomeIcon icon={faFileArrowUp} color="gray" size="2x" style={{ width: "100%", marginBottom: ".5em" }} />
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                    <button onClick={() => inputFile?.current?.click()} className="link-button">Select file</button>
-                    <p style={{
-                        fontSize: "14px",
-                        marginLeft: "5px"
-                    }}>
-                        or drag and drop a file here.</p>
+            <div draggable="true" onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}
+                style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}
+            >
+                <div style={{
+                    height: showUnallocatedBlobs ? "7.5em" : "4.5em",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center"
+                }}>
+                    <FontAwesomeIcon icon={faFileImport} color="gray" size="5x" />
                 </div>
-                {
-                    showUnallocatedBlobs &&
-                    <div onClick={() => setOpenUnallocatedBlobs(!openUnallocatedBlobs)}
-                        style={{
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                            color: "blue",
-                            textAlign: "center",
-                            alignContent: "center"
-                        }}>Choose from unallocted heap.</div>
-                }
+                <div style={{ textAlign: "center", flexGrow: 1 }}>
+                    <p>
+                        Drag and drop a file here
+                    </p>
+                    <i>or</i>
+                    <p>
+                        <button onClick={() => inputFileRef?.current?.click()} className="link-button">
+                            Select a file to upload
+                        </button>
+                    </p>
+                    {
+                        showUnallocatedBlobs &&
+                        <>
+                            <i>or</i>
+                            <p>
+                                <button type="button" onClick={() => {setOpenUnallocatedBlobs(!openUnallocatedBlobs)}} className="link-button">
+                                    Choose from unallocted heap.
+                                </button>
+                            </p>
+                        </>
+                    }
+                </div>
             </div>
 
             <div className={`animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
@@ -145,7 +156,6 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                         ))
                 }
             </div>
-
         </div>
     )
 }

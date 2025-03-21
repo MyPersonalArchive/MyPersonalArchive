@@ -104,13 +104,10 @@ export const SignInPage = () => {
                                             <label htmlFor="username">Email</label>
                                         </td>
                                         <td>
-                                            <input
-                                                type="email"
-                                                id="username"
-                                                ref={userNameInputRef}
-                                                autoComplete="username"
-                                                placeholder=""
+                                            <input type="email"
+                                                id="username" autoComplete="username" placeholder=""
                                                 required
+                                                ref={userNameInputRef}
                                                 value={username}
                                                 onChange={event => setUsername(event.target.value)}
                                             />
@@ -121,13 +118,10 @@ export const SignInPage = () => {
                                             <label htmlFor="password">Password</label>
                                         </td>
                                         <td>
-                                            <input
-                                                type="password"
-                                                id="password"
-                                                ref={passwordInputRef}
-                                                autoComplete="current-password"
-                                                placeholder=""
+                                            <input type="password"
+                                                id="password" autoComplete="current-password" placeholder=""
                                                 required
+                                                ref={passwordInputRef}
                                                 value={password}
                                                 onChange={event => setPassword(event.target.value)}
                                             />
