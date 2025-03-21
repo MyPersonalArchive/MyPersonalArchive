@@ -2,7 +2,7 @@ import { faFileArrowUp, faPlus, IconDefinition } from "@fortawesome/free-solid-s
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
-import "./FileDropZone.scss"
+import "./FileDropZone.css"
 import { UnallocatedBlobItem } from "./UnallocatedBlobs"
 import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"

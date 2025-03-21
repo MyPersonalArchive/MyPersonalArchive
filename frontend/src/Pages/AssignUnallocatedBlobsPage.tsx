@@ -1,4 +1,4 @@
-import "./AssignUnallocatedBlobsPage.scss"
+import "./AssignUnallocatedBlobsPage.css"
 import { UnallocatedBlobItem } from "../Components/UnallocatedBlobs"
 import { IconDefinition, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { useRef, useState, useEffect } from "react"

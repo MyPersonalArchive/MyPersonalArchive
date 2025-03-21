@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "./DropdownButton.scss";
+import "./DropdownButton.css";
 import { IconDefinition } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
