@@ -91,6 +91,20 @@ export const ArchiveItemEditPage = () => {
         setRemovedBlobs(removedBlobs => [...removedBlobs, blobId])
     }
 
+    const download = (event: any) => {
+        event.preventDefault()
+
+        blobs.map(blob => {
+            apiClient.getBlob("/api/blob/download", { blobId: blob.id }).then(respone => {
+                const url = URL.createObjectURL(respone.blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = respone.filename
+                a.click()
+            })
+        })
+    }
+
     return (
         <>
             <h1>
@@ -154,6 +168,9 @@ export const ArchiveItemEditPage = () => {
                                 </button>
                                 <button type="submit" className="primary">
                                     Save
+                                </button>
+                                <button type="button" onClick={download} className="primary">
+                                    Download documents
                                 </button>
                             </td>
                         </tr>
