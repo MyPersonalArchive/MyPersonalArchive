@@ -33,9 +33,13 @@ export const useUnallocatedBlobsPrefetching = () => {
         console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
         
         switch(message.messageType) {
-            case "NewUnallocatedBlob": {
-                //setUnallocatedBlobs(unallocatedBlobs => [...unallocatedBlobs, message.data])
-                //TODO: Update unallocated from signalR when blobs are uploaded.
+            case "AddedBlobs": {
+                setUnallocatedBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as UnallocatedBlob[])])
+                break
+            }
+            case "BlobsAllocated":
+            case "BlobDeleted": {
+                setUnallocatedBlobs(unallocatedBlobs => unallocatedBlobs.filter(blob => !message.data.includes(blob.id)))
                 break
             }
         }

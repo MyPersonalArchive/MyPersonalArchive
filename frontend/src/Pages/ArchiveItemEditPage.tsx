@@ -6,6 +6,8 @@ import { DimensionEnum, Preview } from "../Components/Preview"
 import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
+import { LocalFilePreview } from "../Components/LocalFilePreview"
+import { RoutePaths } from "../RoutePaths"
 
 type GetResponse = {
     id: number
@@ -16,14 +18,7 @@ type GetResponse = {
 
 type BlobResponse = {
     id: number
-    pageCount: number
-}
-
-type UpdateRequest = {
-    id: number
-    title: string
-    tags: string[]
-    blobsFromUnallocated: number[]
+    numberOfPages: number
 }
 
 
@@ -32,7 +27,8 @@ export const ArchiveItemEditPage = () => {
     const [title, setTitle] = useState<string | null>(null)
     const [tags, setTags] = useState<string[]>([])
     const [blobs, setBlobs] = useState<BlobResponse[]>([])
-    const [fileBlobs, setFileBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
+    const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
+    const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
 
     const params = useParams()
 
@@ -53,30 +49,46 @@ export const ArchiveItemEditPage = () => {
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        //TODO: Tags is not updated from UI!
-
-        const requestData: UpdateRequest = {
-            id: id!, title: title!, tags, blobsFromUnallocated: blobs.map(blob => blob.id)
+        const formData = new FormData()
+        const updateRequest = {
+            id: id!, 
+            title: title!, 
+            tags, 
+            blobsFromUnallocated: blobs.map(blob => blob.id),
+            removedBlobs
         }
-        apiClient.put("/api/archive/Update", requestData, {})
 
-        navigate(-1)
+        formData.append("rawRequest", JSON.stringify(updateRequest))
+
+        localBlobs.forEach(blob => {
+            formData.append("files", blob.fileData, blob.fileName)
+        })
+        
+        apiClient.putFormData("/api/archive/Update", formData)
+
+        navigate(RoutePaths.Archive)
     }
 
     const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
-        setFileBlobs([...fileBlobs, ...blobs])
+        setLocalBlobs([...localBlobs, ...blobs])
     }
 
-    // const removeBlob = (fileName: string) => {
-    //     setFileBlobs(fileBlobs.filter(blob => blob.fileName !== fileName))
-    // }
+    const removeBlob = (fileName: string) => {
+        setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
+    }
 
     const back = () => {
         navigate(-1)
     }
 
     const attachUnallocatedBlobs = (blobId: number) => {
-        setBlobs(blobs => [...blobs, { id: blobId, pageCount: 1 }])
+        setBlobs(blobs => [...blobs, { id: blobId, numberOfPages: 1 }])
+        setRemovedBlobs(removedBlobs => removedBlobs.filter(id => id !== blobId))
+    }
+
+    const removeUnallocatedBlob = (blobId: number) => {
+        setBlobs(blobs => blobs.filter(blob => blob.id !== blobId))
+        setRemovedBlobs(removedBlobs => [...removedBlobs, blobId])
     }
 
     return (
@@ -115,18 +127,6 @@ export const ArchiveItemEditPage = () => {
                             <td></td>
                             <td>
                                 <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
-
-                                {/* <div style={{display: "flex", flexWrap: "wrap"}}>
-                                    {blobsFromUnallocated.map((blobId) => (
-                                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />
-                                    ))}
-                                    {localBlobs?.map((blob, ix) => (
-                                        <div key={ix} style={{margin: "5px"}}>
-                                            <LocalFilePreview  key={blob.fileName}  removeBlob={removeBlob}  fileName={blob.fileName} blob={blob.fileData}>
-                                            </LocalFilePreview>
-                                        </div> 
-                                    ))} 
-                                </div> */}
                             </td>
                         </tr>
                         <tr>
@@ -134,8 +134,15 @@ export const ArchiveItemEditPage = () => {
                             <td>
                                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                                     {
-                                        blobs.map((blob, ix) => <Preview key={ix} blobId={blob.id} numberOfPages={blob.pageCount} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />)
+                                        blobs.map((blob) => <Preview key={blob.id} blobId={blob.id} numberOfPages={blob.numberOfPages} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob} />)
                                     }
+                                    {
+                                    localBlobs.map((blob) => (
+                                        <div key={blob.fileName} style={{marginLeft: "5px"}}>
+                                            <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData}/>
+                                        </div> 
+                                    ))
+                                }
                                 </div>
                             </td>
                         </tr>

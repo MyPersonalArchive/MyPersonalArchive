@@ -1,3 +1,5 @@
+import { faUpRightAndDownLeftFromCenter, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState } from "react"
 
 type PreviewProps = {
@@ -30,31 +32,44 @@ export const LocalFilePreview = ({fileName, blob, removeBlob}: PreviewProps) => 
 
     return (
         <div>
-            <div style={{display: "flex", justifyContent: "space-between"}}>
-                <div style={{alignContent: "center", fontSize: "16px"}}>{fileName}</div>
-
-                <div style={{display: "flex"}}>
-                <button onClick={() => setExpand(!expand)}>[ ]</button>
-                <button onClick={() => removeBlob(fileName)}>X</button>
-                </div>
-            </div>
-
             <div style={{
-                width: "250px",
-                height: "300px",
+                width: "106px",
+                height: "150px",
                 // overflowY: "auto",
                 // overflowX: "auto",
                 resize: "both",
                 position: "relative",
                 zIndex: "2",
-            }}>
-                <iframe
+            }} className="preview">
+                <iframe 
                         src={fileData}
                         style={{
                             width: "100%",
-                            height: "99%",
                             border: "none",
+                            overflow: "hidden"
                             }}></iframe>
+
+                    <button
+                        style={{
+                            top: "0",
+                            left: "0"
+                        }}
+                        type="button"
+                        onClick={() => removeBlob(fileName)}
+                    >                
+                        <FontAwesomeIcon icon={faTrash} size="1x" />
+                    </button>
+                    <button
+                        style={{
+                            top: "0",
+                            right: "0"
+                        }}
+                        type="button"
+                        onClick={() => setExpand(true)}
+                    >                
+                        <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+                    </button>
+                    
             </div>
 
             {expand ? (

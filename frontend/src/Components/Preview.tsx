@@ -2,6 +2,7 @@ import { faSquareCaretLeft, faSquareCaretRight, faDownLeftAndUpRightToCenter, fa
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import React, { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 
 
  export enum DimensionEnum {
@@ -17,8 +18,9 @@ type PreviewProps = {
     showPageNavigationOnMinized?: boolean
     maximizedDimension: DimensionEnum
     minimizedDimension: DimensionEnum
+    onRemove(blobId: number): void
 }
-export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinized }: PreviewProps) => {
+export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinized, onRemove }: PreviewProps) => {
     const [pageNumber, setPageNumber] = useState<number>(1)
     const [isMaximized, setIsMaximized] = useState<boolean>(false)
 
@@ -60,8 +62,15 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
                 className="maximize"
                 type="button"
                 onClick={() => setIsMaximized(true)}
-            >
+            >                
                 <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+            </button>
+            <button
+                className="delete"
+                type="button"
+                onClick={() => onRemove(blobId)}
+            >                
+                <FontAwesomeIcon icon={faTrash} size="1x" />
             </button>
         </InlinePreview>
 }

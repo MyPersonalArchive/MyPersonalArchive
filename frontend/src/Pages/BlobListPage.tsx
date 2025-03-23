@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { DropdownButton } from "../Components/DropdownButton"
 import { useApiClient } from "../Utils/useApiClient"
-import { useAtom } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
 
 export const BlobListPage = () => {
@@ -13,7 +13,7 @@ export const BlobListPage = () => {
     const navigate = useNavigate()
     const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
     
-    const [unallocatedHeap, setUnallocatedHeap] = useAtom(unallocatedBlobsAtom);
+    const unallocatedHeap = useAtomValue(unallocatedBlobsAtom);
 
     const [assignedHeap, setAssignedHeap] = useState<number[]>([])
 
@@ -40,9 +40,7 @@ export const BlobListPage = () => {
     }
 
     const deleteBlobs = (blobIds: number[]) => {
-        apiClient.delete("/api/blob/delete", { blobIds }).then(() => {
-            setUnallocatedHeap(unallocatedHeap.filter(blob => !blobIds.includes(blob.id!)))
-        })
+        apiClient.delete("/api/blob/delete", { blobIds })
     }
 
     const createArchiveItemFromSelected = () => {

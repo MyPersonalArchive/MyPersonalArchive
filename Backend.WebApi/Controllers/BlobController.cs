@@ -135,12 +135,17 @@ public class BlobController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
+        //Need signalR even to say that this is now allocated
+        var message = new Message("BlobsAllocated", blobIds);
+        await _signalRService.PublishToTenantChannel(message);
+
         return Ok();
     }
 
     [HttpPost]
     public async Task<ActionResult> Upload(IFormFileCollection files)
     {
+        var blobs = new List<Blob>();
         foreach (var file in files)
         {
             var stream = file.OpenReadStream();
@@ -159,13 +164,13 @@ public class BlobController : ControllerBase
                 StoreRoot = StoreRoot.FileStorage.ToString(),
                 PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
             };
-
-            _dbContext.Blobs.Add(blob);
+            blobs.Add(blob);
         }
-        
+
+        await _dbContext.Blobs.AddRangeAsync(blobs);
         await _dbContext.SaveChangesAsync();
 
-        var message = new Message("NewUnallocatedBlob");
+        var message = new Message("AddedBlobs", ToUnallocatedBlob(blobs));
         await _signalRService.PublishToTenantChannel(message);
 
         return Ok();
@@ -185,7 +190,24 @@ public class BlobController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
+        var message = new Message("BlobsDeleted", blobIds);
+        await _signalRService.PublishToTenantChannel(message);
+
         return NoContent();
+    }
+
+    public static List<UnallocatedBlob> ToUnallocatedBlob(List<Blob> blobs) 
+    {
+        return blobs.Select(blob => new UnallocatedBlob
+            {
+                Id = blob.Id,
+                FileName = blob.OriginalFilename,
+                FileSize = blob.FileSize,
+                PageCount = blob.PageCount,
+                UploadedAt = blob.UploadedAt,
+                UploadedByUser = blob.UploadedByUsername
+            }
+        ).ToList();
     }
 
     public class UnallocatedBlobHeapResponse

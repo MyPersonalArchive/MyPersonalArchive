@@ -46,23 +46,7 @@ public class ArchiveController : ControllerBase
             Tags = [.. Tags.Ensure(_dbContext, request.Tags)]
         };
 
-        var blobs = (await Task.WhenAll(files.Select(async file => //Same as in BlobController.Upload, not sure where to generalize this...
-        {
-            var stream = file.OpenReadStream();
-            
-            return new Blob
-            {
-                FileHash = _fileProvider.ComputeSha256Hash(stream),
-                MimeType = file.ContentType,
-                OriginalFilename = file.FileName,
-                PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
-                FileSize = file.Length,
-                UploadedAt = DateTimeOffset.Now,
-                UploadedByUsername = _resolver.GetCurrentUsername(),
-                StoreRoot = StoreRoot.FileStorage.ToString(),
-                PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
-            };
-        }))).ToList();
+        var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
         
         if(request.BlobsFromUnallocated != null) 
         {
@@ -114,15 +98,21 @@ public class ArchiveController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
-        var message = new Message("ArchiveItemCreated", archiveItem.Id);
-        await _signalRService.PublishToTenantChannel(message);
+        await _signalRService.PublishToTenantChannel(new Message("ArchiveItemCreated", archiveItem.Id));
+        await _signalRService.PublishToTenantChannel(new Message("BlobsAllocated", blobIds));
 
         return archiveItem.Id;
     }
 
     [HttpPut]
-    public async Task<ActionResult> Update(UpdateRequest updateRequest)
+    public async Task<ActionResult> Update([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
     {
+        var updateRequest = JsonConvert.DeserializeObject<UpdateRequest>(rawRequest);
+        if(updateRequest == null) 
+        {
+            return BadRequest();
+        }
+
         var archiveItem = await _dbContext.ArchiveItems
             .Include(item => item.Blobs)
             .Include(item => item.Tags)
@@ -133,15 +123,37 @@ public class ArchiveController : ControllerBase
             return NotFound();
         }
 
+        var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
+
         if(updateRequest.BlobsFromUnallocated != null) 
         {
             var unallocatedBlobs = _dbContext.Blobs.Where(blob => blob.ArchiveItem == null && updateRequest.BlobsFromUnallocated.Contains(blob.Id)).ToList();
             foreach (var blob in unallocatedBlobs)
             {
-                archiveItem.Blobs!.Add(blob);
+                blobs.Add(blob);
             }
+
+            //Same as doing a blob allocate in BlobsController
+            await _signalRService.PublishToTenantChannel(new Message("BlobsAllocated", updateRequest.BlobsFromUnallocated));
         }
 
+        if(updateRequest.RemovedBlobs != null && archiveItem.Blobs != null) 
+        {
+            var removedBlobs = archiveItem.Blobs.Where(blob => updateRequest.RemovedBlobs.Contains(blob.Id)).ToList();
+            foreach (var blob in removedBlobs)
+            {
+                archiveItem.Blobs.Remove(blob);
+            }
+
+            //Same as doing unallocate, which puts them back as unallocated blobs
+            await _signalRService.PublishToTenantChannel(new Message("AddedBlobs", BlobController.ToUnallocatedBlob(removedBlobs)));
+        }
+
+        foreach (var blob in blobs)
+        {
+            archiveItem.Blobs!.Add(blob);
+        }
+        
         archiveItem.Title = updateRequest.Title;
         archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
 
@@ -235,6 +247,25 @@ public class ArchiveController : ControllerBase
     }
 
 
+    private async Task<Blob> CreateBlobFromUploadedFile(IFormFile file)
+    {
+        var stream = file.OpenReadStream();
+            
+        return new Blob
+        {
+            FileHash = _fileProvider.ComputeSha256Hash(stream),
+            MimeType = file.ContentType,
+            OriginalFilename = file.FileName,
+            PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
+            FileSize = file.Length,
+            UploadedAt = DateTimeOffset.Now,
+            UploadedByUsername = _resolver.GetCurrentUsername(),
+            StoreRoot = StoreRoot.FileStorage.ToString(),
+            PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
+        };
+    }
+
+
     #region Request and response models
     public class ListRequest
     {
@@ -267,6 +298,7 @@ public class ArchiveController : ControllerBase
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
+        public int[]? RemovedBlobs { get; set; }
     }
 
     public class GetResponse
