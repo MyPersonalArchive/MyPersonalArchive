@@ -7,6 +7,7 @@ import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
 import { tagsAtom } from "../Utils/Atoms"
 import { DimensionEnum, Preview } from "../Components/Preview"
+import { RoutePaths } from "../RoutePaths"
 
 type CreateResponse = {
     id: number
@@ -39,11 +40,11 @@ export const ArchiveItemNewPage = () => {
         })
 
         apiClient.postFormData<CreateResponse>("/api/archive/create", formData)
-        navigate(-1)
+        navigate(RoutePaths.Archive)
     }
 
     const back = () => {
-        navigate(-1)
+        navigate(RoutePaths.Archive)
     }
 
     const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
@@ -56,6 +57,10 @@ export const ArchiveItemNewPage = () => {
 
     const attachUnallocatedBlobs = (blobId: number) => {
         setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, blobId])
+    }
+
+    const removeUnallocatedBlob = (blobId: number) => {
+        setBlobsFromUnallocated(blobsFromUnallocated => blobsFromUnallocated.filter(id => id !== blobId))
     }
 
     return (
@@ -88,23 +93,13 @@ export const ArchiveItemNewPage = () => {
                             <td >
                                 <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true}/>
 
-                                {/* <div style={{ display: "flex", flexWrap: "wrap" }}>
-                                    {fileBlobs?.map((blob, ix) => (
-                                        <div key={ix} style={{ margin: "5px" }}>
-                                            <LocalFilePreview key={blob.fileName} removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData}>
-                                            </LocalFilePreview>
-                                        </div>
-                                    ))}
-                                </div> */}
-
                                 <div style={{display: "flex", flexWrap: "wrap"}}>
                                     {blobsFromUnallocated.map((blobId) => (
-                                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} />
+                                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob}/>
                                     ))}
-                                    {localBlobs?.map((blob, ix) => (
-                                        <div key={ix} style={{margin: "5px"}}>
-                                            <LocalFilePreview  key={blob.fileName}  removeBlob={removeBlob}  fileName={blob.fileName} blob={blob.fileData}>
-                                            </LocalFilePreview>
+                                    {localBlobs?.map((blob) => (
+                                        <div key={blob.fileName} style={{marginLeft: "5px"}}>
+                                            <LocalFilePreview removeBlob={removeBlob}  fileName={blob.fileName} blob={blob.fileData}/>
                                         </div> 
                                     ))}
                                 </div>

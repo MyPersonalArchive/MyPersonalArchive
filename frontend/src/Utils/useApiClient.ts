@@ -143,6 +143,17 @@ export const useApiClient = () => {
                 .then(response => response?.json() as T)
         },
 
+        putFormData: async <T>(url: string, payload: FormData, incomingOptions?: RequestInit) => {
+            const options = {
+                ...incomingOptions,
+                method: "PUT",
+                body: payload
+            }
+
+            return interceptedFetch(url, options)
+                .then(response => response?.json() as T)
+        },
+
         delete: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {
             const queryString = createQueryString(payload)
             const options = {

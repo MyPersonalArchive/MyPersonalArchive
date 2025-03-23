@@ -89,6 +89,11 @@ span.tag {
         top: 0;
         right: 2.2em;
     }
+
+    &>button.delete {
+        top: 0;
+        left: 1.2em;
+    }
 }
 
 .pageNumber {

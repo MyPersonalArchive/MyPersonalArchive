@@ -129,7 +129,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                     </p>
                     <i>or</i>
                     <p>
-                        <button onClick={() => inputFileRef?.current?.click()} className="link-button">
+                        <button type="button" onClick={() => inputFileRef?.current?.click()} className="link-button">
                             Select a file to upload
                         </button>
                     </p>
@@ -147,12 +147,12 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                 </div>
             </div>
 
-            <div className={`animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
+            <div className={`bloblistpage animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
                 {
                     unallocatedHeap.length === 0
                         ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
                         : unallocatedHeap.map(blob => (
-                            <UnallocatedBlobItem {...blob} options={options} isSelected={false} setSelectedUnallocated={() => { }} key={blob.id} />
+                            <UnallocatedBlobItem {...blob} options={options} setSelectedUnallocated={() => { }} key={blob.id} />
                         ))
                 }
             </div>

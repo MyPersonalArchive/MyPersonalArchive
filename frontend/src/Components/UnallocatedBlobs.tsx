@@ -40,11 +40,12 @@ export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploade
             className="grid">
             <div style={{gridArea: "image", background: "#f5f5f5"}}>
                 <Preview 
-                    blobId={id!} 
-                    numberOfPages={pageCount} 
+                    blobId={id!}
+                    numberOfPages={pageCount}
                     showPageNavigationOnMinized={false}
-                    maximizedDimension={DimensionEnum.large} 
-                    minimizedDimension={DimensionEnum.xsmall}>
+                    maximizedDimension={DimensionEnum.large}
+                    minimizedDimension={DimensionEnum.xsmall} 
+                    onRemove={() => {}}>
                 </Preview>
             </div>
             <div style={{ display: "flex", margin: "5px", gridArea: "information" }}>
@@ -58,11 +59,15 @@ export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploade
                 </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gridArea: "actions", padding: "10px" }}>
-                    <input 
-                    style={{alignSelf: "end"}}
-                    type="checkbox" 
-                    checked={isSelected}
-                    onChange={(e) => setSelectedUnallocated(id!, e.currentTarget.checked)}></input>
+                {
+                    isSelected !== undefined && 
+                        <input 
+                        style={{alignSelf: "end"}}
+                        type="checkbox" 
+                        checked={isSelected}
+                        onChange={(e) => setSelectedUnallocated(id!, e.currentTarget.checked)}></input>
+                }
+                    
                     <div style={{ display: "flex", alignSelf: "end" }}>
                         <DropdownButton id={id} options={options}></DropdownButton>
                     </div>

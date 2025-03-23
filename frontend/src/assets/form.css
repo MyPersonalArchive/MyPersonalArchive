@@ -86,6 +86,10 @@ form,
         color: var(--primary-button-text-color);
     }
 
+    & button {
+        cursor: pointer;
+    }
+
     .filedropzone {
         border: thin solid lightgray;
     }
