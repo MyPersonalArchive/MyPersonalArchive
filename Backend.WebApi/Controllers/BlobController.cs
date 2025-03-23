@@ -30,7 +30,7 @@ public class BlobController : ControllerBase
 
 
     [HttpGet]
-    public async Task<ActionResult<FileContentResult>> Download([FromQuery] int blobId)
+    public async Task<ActionResult> Download([FromQuery] int blobId)
     {
         var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
         if (blob == null)

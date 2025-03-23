@@ -106,7 +106,24 @@ export const useApiClient = () => {
             }
 
             return interceptedFetch(url + queryString, options)
-                .then(response => response?.blob())
+                .then(async response => {
+
+                    let filename = ""
+                    const contentDisposition = response.headers.get("Content-Disposition")
+
+                    if (contentDisposition) {
+                        const regex = /filename="([^"]+)"|filename\*=UTF-8''([^;]+)/
+                        const matches = contentDisposition.match(regex)
+                        if (matches && (matches[1] || matches[2])) {
+                            filename = matches[1] || matches[2] || ''
+                        }
+                      }
+                    
+                    return {
+                        blob: await response?.blob(),
+                        filename: filename
+                    }
+                })
         },
 
         post: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {

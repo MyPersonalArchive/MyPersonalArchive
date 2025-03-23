@@ -85,7 +85,7 @@ const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: numbe
         if (imgRef.current !== null) {
             apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1})
                 .then(blob => {
-                    const url = URL.createObjectURL(blob)
+                    const url = URL.createObjectURL(blob.blob)
                     imgRef.current!.src = url
                 })
         }
