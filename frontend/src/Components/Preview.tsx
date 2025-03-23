@@ -5,7 +5,7 @@ import { useApiClient } from "../Utils/useApiClient"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 
 
- export enum DimensionEnum {
+export enum DimensionEnum {
     xsmall = 1,
     small = 2,
     medium = 3,
@@ -24,55 +24,50 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
     const [pageNumber, setPageNumber] = useState<number>(1)
     const [isMaximized, setIsMaximized] = useState<boolean>(false)
 
-    return isMaximized
-        ? <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
-            <div className="overlay" onClick={event => event.stopPropagation()}>
-                <InlinePreview
-                    blobId={blobId}
-                    pageNumber={pageNumber}
-                    setPageNumber={setPageNumber}
-                    numberOfPages={numberOfPages ?? 1}
-                    dimension={maximizedDimension}
-                >
-                    <button
-                        className="minimize"
-                        type="button"
-                        onClick={() => setIsMaximized(false)}
-                    >
-                        <FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="2x" />
-                    </button>
-                </InlinePreview>
-                {
-                    numberOfPages &&
-                    numberOfPages > 1 && <div className="pageNumber">
-                        {pageNumber} / {numberOfPages}
+    return (
+        <>
+            <InlinePreview
+                blobId={blobId}
+                pageNumber={pageNumber}
+                showPageNavigationOnMinized={showPageNavigationOnMinized}
+                setPageNumber={setPageNumber}
+                numberOfPages={numberOfPages ?? 1}
+                dimension={minimizedDimension}
+            >
+                <button className="maximize" type="button" onClick={() => setIsMaximized(true)}>
+                    <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+                </button>
+                <button className="delete" type="button" onClick={() => onRemove(blobId)}>
+                    <FontAwesomeIcon icon={faTrash} size="1x" />
+                </button>
+            </InlinePreview>
+            {
+                isMaximized &&
+                <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
+                    <div className="overlay" onClick={event => event.stopPropagation()}>
+                        <InlinePreview
+                            blobId={blobId}
+                            pageNumber={pageNumber}
+                            setPageNumber={setPageNumber}
+                            numberOfPages={numberOfPages ?? 1}
+                            dimension={maximizedDimension}
+                        >
+                            <button className="minimize" type="button" onClick={() => setIsMaximized(false)}>
+                                <FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="2x" />
+                            </button>
+                        </InlinePreview>
+                        {
+                            numberOfPages &&
+                            numberOfPages > 1 &&
+                            <div className="pageNumber">
+                                {pageNumber} / {numberOfPages}
+                            </div>
+                        }
                     </div>
-                }
-            </div>
-        </div>
-        : <InlinePreview
-            blobId={blobId}
-            pageNumber={pageNumber}
-            showPageNavigationOnMinized={showPageNavigationOnMinized}
-            setPageNumber={setPageNumber}
-            numberOfPages={numberOfPages ?? 1}
-            dimension={minimizedDimension}
-        >
-            <button
-                className="maximize"
-                type="button"
-                onClick={() => setIsMaximized(true)}
-            >                
-                <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-            </button>
-            <button
-                className="delete"
-                type="button"
-                onClick={() => onRemove(blobId)}
-            >                
-                <FontAwesomeIcon icon={faTrash} size="1x" />
-            </button>
-        </InlinePreview>
+                </div>
+            }
+        </>
+    )
 }
 
 
@@ -83,7 +78,7 @@ const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: numbe
 
     useEffect(() => {
         if (imgRef.current !== null) {
-            apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1})
+            apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1 })
                 .then(blob => {
                     const url = URL.createObjectURL(blob)
                     imgRef.current!.src = url
