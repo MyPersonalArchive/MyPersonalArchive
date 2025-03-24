@@ -1,10 +1,10 @@
-import { faFileArrowUp, faFileImport, faPlus, IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faFileImport, /*faFileArrowUp, faPlus, IconDefinition*/ } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
-import { UnallocatedBlobItem } from "./UnallocatedBlobs"
-import { useAtomValue } from "jotai"
-import { unallocatedBlobsAtom } from "../Utils/Atoms"
+// import { UnallocatedBlobItem } from "./UnallocatedBlobs"
+// import { useAtomValue } from "jotai"
+// import { unallocatedBlobsAtom } from "../Utils/Atoms"
 
 
 export type FileDropZoneProps = {
@@ -13,13 +13,12 @@ export type FileDropZoneProps = {
     showUnallocatedBlobs?: boolean
 }
 
-// export const FileDropZone = ({ setFileBlobs: setFileBlobs }: FileDropZoneProps) => {
-export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs }: FileDropZoneProps) => {
+export const FileDropZone = ({ onBlobAdded, /*onBlobAttached,*/ showUnallocatedBlobs }: FileDropZoneProps) => {
     const apiClient = useApiClient()
 
     const inputFileRef = useRef<HTMLInputElement | null>(null)
     const [openUnallocatedBlobs, setOpenUnallocatedBlobs] = useState(false)
-    const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
+    // const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
 
     const uploadBlobs = (blobs: { fileName: string; fileData: Blob }[]): void => {
         if (onBlobAdded) {
@@ -89,20 +88,19 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
     const handleDragOver = (event: any) => {
         event.preventDefault()
-
     }
 
     const handleDragStart = (event: any) => {
         event.dataTransfer.setData("text/plain", event.target.id)
     }
 
-    const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
-        {
-            name: "Attach to this archive item",
-            callback: (id) => onBlobAttached(id!),
-            icon: faPlus
-        }
-    ]
+    // const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
+    //     {
+    //         name: "Attach to this archive item",
+    //         callback: (id) => onBlobAttached(id!),
+    //         icon: faPlus
+    //     }
+    // ]
 
     return (
         <div className="filedropzone">
@@ -138,7 +136,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                         <>
                             <i>or</i>
                             <p>
-                                <button type="button" onClick={() => {setOpenUnallocatedBlobs(!openUnallocatedBlobs)}} className="link-button">
+                                <button type="button" onClick={() => { setOpenUnallocatedBlobs(!openUnallocatedBlobs) }} className="link-button">
                                     Choose from unallocted heap.
                                 </button>
                             </p>
@@ -147,7 +145,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                 </div>
             </div>
 
-            <div className={`bloblistpage animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
+            {/* <div className={`bloblistpage animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
                 {
                     unallocatedHeap.length === 0
                         ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
@@ -155,7 +153,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                             <UnallocatedBlobItem {...blob} options={options} setSelectedUnallocated={() => { }} key={blob.id} />
                         ))
                 }
-            </div>
+            </div> */}
         </div>
     )
 }
