@@ -5,14 +5,16 @@ import { useRef, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { DropdownButton } from "../Components/DropdownButton"
 import { useApiClient } from "../Utils/useApiClient"
-import { useAtom, useAtomValue } from "jotai"
+import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
+import { DimensionEnum, Preview, PreviewList } from "../Components/Preview"
+import { formatDate, formatFileSize } from "../Utils/formatUtils"
 
 export const BlobListPage = () => {
     const apiClient = useApiClient()
     const navigate = useNavigate()
     const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
-    
+
     const unallocatedHeap = useAtomValue(unallocatedBlobsAtom);
 
     const [assignedHeap, setAssignedHeap] = useState<number[]>([])
@@ -26,7 +28,7 @@ export const BlobListPage = () => {
     const selectedUnallocated = (blobId: number, added: boolean) => {
         if (added) {
             setAssignedHeap([...assignedHeap, blobId])
-            
+
         } else {
             setAssignedHeap(assignedHeap.filter(id => id !== blobId))
         }
@@ -64,7 +66,7 @@ export const BlobListPage = () => {
         }
     }
 
-    const selectAllOptions: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
+    const selectAllOptions: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
         {
             name: "Create from all selected",
             callback: () => createArchiveItemFromSelected(),
@@ -77,7 +79,7 @@ export const BlobListPage = () => {
         }
     ]
 
-    const options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
+    const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
         {
             name: "Create new archive item",
             callback: (id) => attachBlob(id!),
@@ -94,24 +96,47 @@ export const BlobListPage = () => {
         <div className="bloblistpage form">
             <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
-                    <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}></input>
+                    <input ref={selectAllCheckboxRef} type="checkbox" onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}></input>
                     <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
                     <DropdownButton options={selectAllOptions} disabled={assignedHeap.length === 0}></DropdownButton>
                 </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column",  }}>
-            {
-                unallocatedHeap?.map(blob => <UnallocatedBlobItem 
-                    key={blob.id} 
-                    {...blob} 
-                    setSelectedUnallocated={selectedUnallocated} 
-                    isSelected={assignedHeap.includes(blob.id!)}
-                    options={options} />)
-            }
-            {
-                unallocatedHeap?.length === 0 && <div>No unallocated blobs</div>
-            }
+
+            <div style={{ display: "flex", flexDirection: "column", }}>
+                <PreviewList blobs={unallocatedHeap} containerStyle={{ display: "flex", flexDirection: "column", justifyContent: "start" }}
+                    thumbnailPreviewTemplate={(blob, maximize) =>
+                        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 2em", gridTemplateAreas: "'image information actions'", margin: ".5em 0" }}>
+                            <div style={{ gridArea: "image" }}>
+                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} onMaximize={maximize} />
+                            </div>
+                            <div style={{ gridArea: "information" }} className="vertical-stacked-down-flex">
+                                <div><strong>{blob.fileName}</strong></div>
+                                <div>{formatDate(new Date(blob.uploadedAt))}</div>
+                                <div>{blob.uploadedByUser}</div>
+                                <div>{formatFileSize(blob.fileSize)}</div>
+                            </div>
+                            <div style={{ gridArea: "actions" }}>
+                                actions
+                            </div>
+                        </div>
+                    }
+                    maximizedPreviewTemplate={(blob, minimize) =>
+                        <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large} onMinimize={minimize} />
+                    }
+                />
+                {
+                    // unallocatedHeap?.map(blob => <UnallocatedBlobItem 
+                    //     key={blob.id} 
+                    //     {...blob} 
+                    //     setSelectedUnallocated={selectedUnallocated} 
+                    //     isSelected={assignedHeap.includes(blob.id!)}
+                    //     options={options} />)
+                }
+                {
+                    unallocatedHeap?.length === 0 && <div>No unallocated blobs</div>
+                }
             </div>
         </div>
     )
 }
+
