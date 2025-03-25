@@ -53,6 +53,7 @@ span.tag {
         padding-left: .2em;
         color: hsl(0, 0%, 70%);
         border-left: thin solid currentColor;
+        cursor: pointer;
     }
 }
 

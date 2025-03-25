@@ -1,8 +1,8 @@
-import { faSquareCaretLeft, faSquareCaretRight, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faSquareCaretLeft, faSquareCaretRight, faDownLeftAndUpRightToCenter, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import React, { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
-import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
+import { faSave, faTrashAlt } from "@fortawesome/free-regular-svg-icons"
 
 
  export enum DimensionEnum {
@@ -15,14 +15,27 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 type PreviewProps = {
     blobId: number
     numberOfPages?: number
-    showPageNavigationOnMinized?: boolean
+    showPageNavigationOnMinimized?: boolean
+    showActions?: boolean
     maximizedDimension: DimensionEnum
     minimizedDimension: DimensionEnum
     onRemove(blobId: number): void
 }
-export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinized, onRemove }: PreviewProps) => {
+export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinimized, showActions = true, onRemove }: PreviewProps) => {
+    const apiClient = useApiClient()
     const [pageNumber, setPageNumber] = useState<number>(1)
     const [isMaximized, setIsMaximized] = useState<boolean>(false)
+
+    const downloadBlob = () => {
+        apiClient.getBlob("/api/blob/Download", { blobId })
+            .then(blob => {
+                const url = URL.createObjectURL(blob.blob)
+                const link = document.createElement("a")
+                link.href = url
+                link.download = blob.filename
+                link.click()
+            })
+    }
 
     return isMaximized
         ? <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
@@ -50,35 +63,44 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
                 }
             </div>
         </div>
-        : <InlinePreview
-            blobId={blobId}
-            pageNumber={pageNumber}
-            showPageNavigationOnMinized={showPageNavigationOnMinized}
-            setPageNumber={setPageNumber}
-            numberOfPages={numberOfPages ?? 1}
-            dimension={minimizedDimension}
-        >
-            <button
-                className="maximize"
-                type="button"
-                onClick={() => setIsMaximized(true)}
-            >                
-                <FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-            </button>
-            <button
-                className="delete"
-                type="button"
-                onClick={() => onRemove(blobId)}
-            >                
-                <FontAwesomeIcon icon={faTrash} size="1x" />
-            </button>
-        </InlinePreview>
+        : (
+            <div>
+                {
+                    showActions && 
+                        <div style={{textAlign: "center"}}>
+                            <button
+                                type="button"
+                                onClick={() => onRemove(blobId)}
+                            >                
+                                <FontAwesomeIcon icon={faTrashAlt} size="1x" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => downloadBlob()}
+                            >                
+                                <FontAwesomeIcon icon={faSave} size="1x" />
+                            </button>
+                            
+                        </div>
+                }
+                <div onClick={() => setIsMaximized(true)}>
+                    <InlinePreview
+                        blobId={blobId}
+                        pageNumber={pageNumber}
+                        showPageNavigationOnMinimized={showPageNavigationOnMinimized}
+                        setPageNumber={setPageNumber}
+                        numberOfPages={numberOfPages ?? 1}
+                        dimension={minimizedDimension}>
+                    </InlinePreview>
+                </div>
+            </div>
+        )
 }
 
 
 
 
-const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: number) => void, dimension: DimensionEnum, imgRef: React.RefObject<HTMLImageElement>) => {
+const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: number) => void, setIsLoading: (x: boolean) => void, dimension: DimensionEnum, imgRef: React.RefObject<HTMLImageElement>) => {
     const apiClient = useApiClient()
 
     useEffect(() => {
@@ -87,15 +109,18 @@ const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: numbe
                 .then(blob => {
                     const url = URL.createObjectURL(blob.blob)
                     imgRef.current!.src = url
+                    setIsLoading(false)
                 })
         }
     }, [pageNumber])
 
-    const showPreviousPage = () => {
+    const showPreviousPage = (event: any) => {
+        event.preventDefault()
         setPageNumber(pageNumber - 1)
     }
 
-    const showNextPage = () => {
+    const showNextPage = (event: any) => {
+        event.preventDefault()
         setPageNumber(pageNumber + 1)
     }
 
@@ -108,35 +133,46 @@ type InlinePreviewProps = {
     pageNumber: number
     setPageNumber: (x: number) => void
     numberOfPages: number
-    showPageNavigationOnMinized?: boolean
+    showPageNavigationOnMinimized?: boolean
     dimension: DimensionEnum
     children?: React.ReactNode
 }
-const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimension, showPageNavigationOnMinized = true, children }: InlinePreviewProps) => {
+const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimension, showPageNavigationOnMinimized = true, children }: InlinePreviewProps) => {
     const imgRef = useRef<HTMLImageElement>(null)
-    const { showPreviousPage, showNextPage } = usePreview(blobId, pageNumber, setPageNumber, dimension, imgRef)
+    const [isLoading, setIsLoading] = useState(true)
+    const { showPreviousPage, showNextPage } = usePreview(blobId, pageNumber, setPageNumber, setIsLoading, dimension, imgRef)
 
     return <>
         <div className="preview">
             {
-                (showPageNavigationOnMinized && pageNumber > 1) && <button
+                (showPageNavigationOnMinimized && pageNumber > 1) && <button
                     className="previous"
                     type="button"
                     disabled={pageNumber == 1}
-                    onClick={() => showPreviousPage()}
+                    onClick={(event) => showPreviousPage(event)}
                 >
                     <FontAwesomeIcon icon={faSquareCaretLeft} size="2x" />
                 </button>
             }
-            <img
-                ref={imgRef}
-                alt="Preview image"
-            />
             {
-                (showPageNavigationOnMinized && pageNumber < numberOfPages) && <button
+                isLoading 
+                    &&  ( <div style={{
+                            display: "flex", 
+                            justifyContent: "center", 
+                            alignItems: "center", 
+                            height: "90px",
+                            textAlign: "center"
+                            }}>
+                                <FontAwesomeIcon icon={faSpinner} size="2x" className="fa-spin"/> 
+                        </div>)
+            }
+            <img ref={imgRef} alt="Preview image" style={{ visibility: isLoading ? "hidden" : "visible", height: isLoading ? "0px" : "auto" }}/>
+            
+            {
+                (showPageNavigationOnMinimized && pageNumber < numberOfPages) && <button
                     className="next"
                     type="button"
-                    onClick={() => showNextPage()}
+                    onClick={(event) => showNextPage(event)}
                 >
                     <FontAwesomeIcon icon={faSquareCaretRight} size="2x" />
                 </button>
