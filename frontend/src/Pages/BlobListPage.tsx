@@ -104,6 +104,7 @@ export const BlobListPage = () => {
                 unallocatedHeap?.map(blob => <UnallocatedBlobItem 
                     key={blob.id} 
                     {...blob} 
+                    showActions={false}
                     setSelectedUnallocated={selectedUnallocated} 
                     isSelected={assignedHeap.includes(blob.id!)}
                     options={options} />)

@@ -135,9 +135,14 @@ const Filter = () => {
         })
     }
 
-    const reset = () => {
+    const reset = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+
         setTitle("")
         setTags([])
+        navigate({
+            search: createQueryString({ title: "", tags: [] }, { skipEmptyStrings: false })
+        })
     }
 
     return (

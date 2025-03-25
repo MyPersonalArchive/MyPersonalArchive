@@ -6,10 +6,11 @@ import { UnallocatedBlob } from "../Utils/useUnallocatedBlobsPrefetching"
 type UnallocatedBlobItemProps = UnallocatedBlob & {
     setSelectedUnallocated: (blobId: number, added: boolean) => void
     options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[]
+    showActions?: boolean
     isSelected?: boolean
 }
 
-export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser, options, isSelected, pageCount, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
+export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser, options, isSelected, pageCount, showActions, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
     const uploadedAtDate = new Date(uploadedAt)
 
     const sizeToHumanReadable = (size: number): string => {
@@ -42,7 +43,8 @@ export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploade
                 <Preview 
                     blobId={id!}
                     numberOfPages={pageCount}
-                    showPageNavigationOnMinized={false}
+                    showActions={showActions}
+                    showPageNavigationOnMinimized={false}
                     maximizedDimension={DimensionEnum.large}
                     minimizedDimension={DimensionEnum.xsmall} 
                     onRemove={() => {}}>

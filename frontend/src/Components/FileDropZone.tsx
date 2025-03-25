@@ -152,7 +152,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                     unallocatedHeap.length === 0
                         ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
                         : unallocatedHeap.map(blob => (
-                            <UnallocatedBlobItem {...blob} options={options} setSelectedUnallocated={() => { }} key={blob.id} />
+                            <UnallocatedBlobItem {...blob} options={options} setSelectedUnallocated={() => { }} key={blob.id} showActions={false} />
                         ))
                 }
             </div>
