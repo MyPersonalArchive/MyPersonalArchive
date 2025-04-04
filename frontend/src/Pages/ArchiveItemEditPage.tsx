@@ -81,9 +81,11 @@ export const ArchiveItemEditPage = () => {
         navigate(-1)
     }
 
-    const attachUnallocatedBlobs = (blobId: number) => {
-        setBlobs(blobs => [...blobs, { id: blobId, numberOfPages: 1 }])
-        setRemovedBlobs(removedBlobs => removedBlobs.filter(id => id !== blobId))
+    const attachUnallocatedBlobs = (blobIds: number[]) => {
+        blobIds.map(blobId => {
+            setBlobs(blobs => [...blobs, { id: blobId, numberOfPages: 1 }])
+            setRemovedBlobs(removedBlobs => removedBlobs.filter(id => id !== blobId))
+        })
     }
 
     const removeUnallocatedBlob = (blobId: number) => {

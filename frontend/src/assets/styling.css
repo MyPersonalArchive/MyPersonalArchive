@@ -122,5 +122,6 @@ span.tag {
         padding: 2em 0;
         max-width: 90%;
         max-height: 90%;
+        overflow: auto;
     }
 }
