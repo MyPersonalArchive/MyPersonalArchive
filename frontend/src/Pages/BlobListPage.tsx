@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { DropdownButton } from "../Components/DropdownButton"
 import { useApiClient } from "../Utils/useApiClient"
-import { useAtom, useAtomValue } from "jotai"
+import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
 
 export const BlobListPage = () => {

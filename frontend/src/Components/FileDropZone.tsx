@@ -1,15 +1,16 @@
-import { faFileArrowUp, faFileImport, faPlus, IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faFileImport, faPlus, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 import { UnallocatedBlobItem } from "./UnallocatedBlobs"
 import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
+import { DropdownButton } from "./DropdownButton"
 
 
 export type FileDropZoneProps = {
     onBlobAdded?: (files: { fileName: string; fileData: Blob }[]) => void
-    onBlobAttached: (blobId: number) => void
+    onBlobAttached: (blobId: number[]) => void
     showUnallocatedBlobs?: boolean
 }
 
@@ -19,7 +20,6 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
     const inputFileRef = useRef<HTMLInputElement | null>(null)
     const [openUnallocatedBlobs, setOpenUnallocatedBlobs] = useState(false)
-    const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
 
     const uploadBlobs = (blobs: { fileName: string; fileData: Blob }[]): void => {
         if (onBlobAdded) {
@@ -96,14 +96,6 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
         event.dataTransfer.setData("text/plain", event.target.id)
     }
 
-    const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
-        {
-            name: "Attach to this archive item",
-            callback: (id) => onBlobAttached(id!),
-            icon: faPlus
-        }
-    ]
-
     return (
         <div className="filedropzone">
             <input
@@ -146,15 +138,90 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                     }
                 </div>
             </div>
+            <UnallocatedBlobsDialog openDialog={openUnallocatedBlobs} onBlobAttached={onBlobAttached} onCloseDialog={() => setOpenUnallocatedBlobs(false)} />
+        </div>
+    )
+}
 
-            <div className={`bloblistpage animate-height ${openUnallocatedBlobs ? 'open' : 'closed'}`}>
-                {
-                    unallocatedHeap.length === 0
-                        ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
-                        : unallocatedHeap.map(blob => (
-                            <UnallocatedBlobItem {...blob} options={options} setSelectedUnallocated={() => { }} key={blob.id} showActions={false} />
-                        ))
-                }
+type UnallocatedBlobsDialogProps = {
+    openDialog: boolean,
+    onCloseDialog: () => void
+    onBlobAttached: (blobId: number[]) => void
+}
+
+const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
+    if(!openDialog) return null
+
+    const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
+    const [selectedBlobIds, setSelectedBlobIds] = useState<number[]>([])
+    const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+            if (selectAllCheckboxRef.current) {
+                selectAllCheckboxRef.current.indeterminate = selectedBlobIds.length > 0 && selectedBlobIds.length < unallocatedHeap.length
+            }
+        }, [selectedBlobIds])
+
+    const blobSelected = (blobId: number[]) => {
+        onBlobAttached(blobId)
+        onCloseDialog()
+    }
+
+    const selectAllBlobIds = (checked: boolean) => {
+        if (checked) {
+            setSelectedBlobIds(unallocatedHeap.map(blob => blob.id!))
+        } else {
+            setSelectedBlobIds([])
+        }
+    }
+
+    const selectBlobId = (blobId: number, added: boolean) => {
+        if (added) {
+            setSelectedBlobIds([...selectedBlobIds, blobId])
+            
+        } else {
+            setSelectedBlobIds(selectedBlobIds.filter(id => id !== blobId))
+        }
+    }
+
+    const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
+        {
+            name: "Add blob",
+            callback: (id) => blobSelected([id!]),
+            icon: faPlus
+        }
+    ]
+
+        const selectAllOptions: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
+            {
+                name: "Add selected blobs",
+                callback: () => blobSelected(selectedBlobIds),
+                icon: faPlus
+            }
+        ]
+
+    return (
+        <div className="dimmedBackground" onClick={onCloseDialog}>
+            <div className="overlay bloblistpage" onClick={event => event.stopPropagation()}>
+                <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
+                        <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllBlobIds(e.currentTarget.checked)}></input>
+                        <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
+                        <DropdownButton options={selectAllOptions} disabled={selectedBlobIds.length === 0}></DropdownButton>
+                    </div>
+                </div>
+                    {
+                        unallocatedHeap.length === 0
+                            ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
+                            : unallocatedHeap.map(blob => (
+                                <UnallocatedBlobItem {...blob} 
+                                options={options} 
+                                setSelectedUnallocated={selectBlobId} 
+                                key={blob.id} 
+                                isSelected={selectedBlobIds.includes(blob.id!)}
+                                showActions={false} />
+                            ))
+                    }
             </div>
         </div>
     )

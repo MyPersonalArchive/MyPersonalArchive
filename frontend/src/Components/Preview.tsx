@@ -37,33 +37,34 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
             })
     }
 
-    return isMaximized
-        ? <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
-            <div className="overlay" onClick={event => event.stopPropagation()}>
-                <InlinePreview
-                    blobId={blobId}
-                    pageNumber={pageNumber}
-                    setPageNumber={setPageNumber}
-                    numberOfPages={numberOfPages ?? 1}
-                    dimension={maximizedDimension}
-                >
-                    <button
-                        className="minimize"
-                        type="button"
-                        onClick={() => setIsMaximized(false)}
+    return <>
+        {isMaximized
+            && <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
+                <div className="overlay" onClick={event => event.stopPropagation()}>
+                    <InlinePreview
+                        blobId={blobId}
+                        pageNumber={pageNumber}
+                        setPageNumber={setPageNumber}
+                        numberOfPages={numberOfPages ?? 1}
+                        dimension={maximizedDimension}
                     >
-                        <FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="2x" />
-                    </button>
-                </InlinePreview>
-                {
-                    numberOfPages &&
-                    numberOfPages > 1 && <div className="pageNumber">
-                        {pageNumber} / {numberOfPages}
-                    </div>
-                }
-            </div>
-        </div>
-        : (
+                        <button
+                            className="minimize"
+                            type="button"
+                            onClick={() => setIsMaximized(false)}
+                        >
+                            <FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="2x" />
+                        </button>
+                    </InlinePreview>
+                    {
+                        numberOfPages &&
+                        numberOfPages > 1 && <div className="pageNumber">
+                            {pageNumber} / {numberOfPages}
+                        </div>
+                    }
+                </div>
+            </div>}
+            
             <div>
                 {
                     showActions && 
@@ -94,7 +95,7 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
                     </InlinePreview>
                 </div>
             </div>
-        )
+        </>
 }
 
 
@@ -102,14 +103,21 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
 
 const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: number) => void, setIsLoading: (x: boolean) => void, dimension: DimensionEnum, imgRef: React.RefObject<HTMLImageElement>) => {
     const apiClient = useApiClient()
+    const [cache, setCache] = useState<Map<number, string>>(new Map())
 
     useEffect(() => {
         if (imgRef.current !== null) {
+            if(cache.has(pageNumber)) {
+                imgRef.current.src = cache.get(pageNumber)!
+                return
+            } 
+
             apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1})
                 .then(blob => {
                     const url = URL.createObjectURL(blob.blob)
                     imgRef.current!.src = url
                     setIsLoading(false)
+                    setCache(cache.set(pageNumber, url))
                 })
         }
     }, [pageNumber])

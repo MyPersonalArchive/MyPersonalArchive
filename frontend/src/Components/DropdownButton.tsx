@@ -20,7 +20,7 @@ export const DropdownButton = ({ id, options, disabled }: DropdownButtonProps) =
             if (
                 dropdownMenuRef.current &&
                 !dropdownMenuRef.current.contains(event.target) &&
-                !dropdownToggleRef.current?.contains(event.target) // Use optional chaining operator
+                !dropdownToggleRef.current?.contains(event.target)
             ) {
                 handleClose()
             }
