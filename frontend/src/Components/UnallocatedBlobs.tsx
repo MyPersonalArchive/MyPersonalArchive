@@ -1,16 +1,16 @@
-import { IconDefinition} from "@fortawesome/free-solid-svg-icons"
+import { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { DropdownButton } from "./DropdownButton"
 import { Preview, DimensionEnum } from "./Preview"
 import { UnallocatedBlob } from "../Utils/useUnallocatedBlobsPrefetching"
 
 type UnallocatedBlobItemProps = UnallocatedBlob & {
     setSelectedUnallocated: (blobId: number, added: boolean) => void
-    options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[]
+    options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[]
     showActions?: boolean
     isSelected?: boolean
 }
 
-export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploadedByUser, options, isSelected, pageCount, showActions, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
+export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, uploadedByUser, options, isSelected, pageCount, showActions, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
     const uploadedAtDate = new Date(uploadedAt)
 
     const sizeToHumanReadable = (size: number): string => {
@@ -25,29 +25,30 @@ export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploade
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-          }).format(uploadedAtDate);
+        }).format(uploadedAtDate);
 
-          return formattedDate
+        return formattedDate
     }
 
     return (
-        <div style={{  
-            minHeight: "100px", 
-            width: "95%", 
-            margin: "5px", 
+        <div style={{
+            minHeight: "100px",
+            width: "95%",
+            margin: "5px",
             boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.1), 1px 2px 2px rgba(0, 0, 0, 0.1)",
             borderRadius: "5px",
-            border: "1px solid lightgray" }} 
+            border: "1px solid lightgray"
+        }}
             className="grid">
-            <div style={{gridArea: "image", background: "#f5f5f5"}}>
-                <Preview 
+            <div style={{ gridArea: "image", background: "#f5f5f5" }}>
+                <Preview
                     blobId={id!}
                     numberOfPages={pageCount}
                     showActions={showActions}
                     showPageNavigationOnMinimized={false}
                     maximizedDimension={DimensionEnum.large}
-                    minimizedDimension={DimensionEnum.xsmall} 
-                    onRemove={() => {}}>
+                    minimizedDimension={DimensionEnum.xsmall}
+                    onRemove={() => { }}>
                 </Preview>
             </div>
             <div style={{ display: "flex", margin: "5px", gridArea: "information" }}>
@@ -62,19 +63,19 @@ export const UnallocatedBlobItem = ({id, fileName, fileSize, uploadedAt, uploade
             </div>
             <div style={{ display: "flex", flexDirection: "column", gridArea: "actions", padding: "10px" }}>
                 {
-                    isSelected !== undefined && 
-                        <input 
-                        style={{alignSelf: "end"}}
-                        type="checkbox" 
+                    isSelected !== undefined &&
+                    <input className="input" type="checkbox"
+                        style={{ alignSelf: "end" }}
                         checked={isSelected}
-                        onChange={(e) => setSelectedUnallocated(id!, e.currentTarget.checked)}></input>
+                        onChange={(e) => setSelectedUnallocated(id!, e.currentTarget.checked)}
+                    />
                 }
-                    
-                    <div style={{ display: "flex", alignSelf: "end" }}>
-                        <DropdownButton id={id} options={options}></DropdownButton>
-                    </div>
-                    
+
+                <div style={{ display: "flex", alignSelf: "end" }}>
+                    <DropdownButton id={id} options={options}></DropdownButton>
                 </div>
+
+            </div>
         </div>
     )
 }

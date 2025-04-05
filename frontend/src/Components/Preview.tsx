@@ -5,7 +5,7 @@ import { useApiClient } from "../Utils/useApiClient"
 import { faSave, faTrashAlt } from "@fortawesome/free-regular-svg-icons"
 
 
- export enum DimensionEnum {
+export enum DimensionEnum {
     xsmall = 1,
     small = 2,
     medium = 3,
@@ -48,9 +48,7 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
                         numberOfPages={numberOfPages ?? 1}
                         dimension={maximizedDimension}
                     >
-                        <button
-                            className="minimize"
-                            type="button"
+                        <button className="button minimize" type="button"
                             onClick={() => setIsMaximized(false)}
                         >
                             <FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="2x" />
@@ -64,38 +62,36 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
                     }
                 </div>
             </div>}
-            
-            <div>
-                {
-                    showActions && 
-                        <div style={{textAlign: "center"}}>
-                            <button
-                                type="button"
-                                onClick={() => onRemove(blobId)}
-                            >                
-                                <FontAwesomeIcon icon={faTrashAlt} size="1x" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => downloadBlob()}
-                            >                
-                                <FontAwesomeIcon icon={faSave} size="1x" />
-                            </button>
-                            
-                        </div>
-                }
-                <div onClick={() => setIsMaximized(true)}>
-                    <InlinePreview
-                        blobId={blobId}
-                        pageNumber={pageNumber}
-                        showPageNavigationOnMinimized={showPageNavigationOnMinimized}
-                        setPageNumber={setPageNumber}
-                        numberOfPages={numberOfPages ?? 1}
-                        dimension={minimizedDimension}>
-                    </InlinePreview>
+
+        <div>
+            {
+                showActions &&
+                <div style={{ textAlign: "center" }} className="form">
+                    <button className="button" type="button"
+                        onClick={() => onRemove(blobId)}
+                    >
+                        <FontAwesomeIcon icon={faTrashAlt} size="1x" />
+                    </button>
+                    <button className="button" type="button"
+                        onClick={() => downloadBlob()}
+                    >
+                        <FontAwesomeIcon icon={faSave} size="1x" />
+                    </button>
+
                 </div>
+            }
+            <div onClick={() => setIsMaximized(true)}>
+                <InlinePreview
+                    blobId={blobId}
+                    pageNumber={pageNumber}
+                    showPageNavigationOnMinimized={showPageNavigationOnMinimized}
+                    setPageNumber={setPageNumber}
+                    numberOfPages={numberOfPages ?? 1}
+                    dimension={minimizedDimension}>
+                </InlinePreview>
             </div>
-        </>
+        </div>
+    </>
 }
 
 
@@ -107,12 +103,12 @@ const usePreview = (blobId: number, pageNumber: number, setPageNumber: (x: numbe
 
     useEffect(() => {
         if (imgRef.current !== null) {
-            if(cache.has(pageNumber)) {
+            if (cache.has(pageNumber)) {
                 imgRef.current.src = cache.get(pageNumber)!
                 return
-            } 
+            }
 
-            apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1})
+            apiClient.getBlob("/api/blob/Preview", { blobId, dimension, pageNumber: pageNumber - 1 })
                 .then(blob => {
                     const url = URL.createObjectURL(blob.blob)
                     imgRef.current!.src = url
@@ -153,9 +149,8 @@ const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimen
     return <>
         <div className="preview">
             {
-                (showPageNavigationOnMinimized && pageNumber > 1) && <button
-                    className="previous"
-                    type="button"
+                (showPageNavigationOnMinimized && pageNumber > 1) &&
+                <button className="button previous" type="button"
                     disabled={pageNumber == 1}
                     onClick={(event) => showPreviousPage(event)}
                 >
@@ -163,23 +158,22 @@ const InlinePreview = ({ blobId, pageNumber, setPageNumber, numberOfPages, dimen
                 </button>
             }
             {
-                isLoading 
-                    &&  ( <div style={{
-                            display: "flex", 
-                            justifyContent: "center", 
-                            alignItems: "center", 
-                            height: "90px",
-                            textAlign: "center"
-                            }}>
-                                <FontAwesomeIcon icon={faSpinner} size="2x" className="fa-spin"/> 
-                        </div>)
+                isLoading &&
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "90px",
+                    textAlign: "center"
+                }}>
+                    <FontAwesomeIcon icon={faSpinner} size="2x" className="fa-spin" />
+                </div>
             }
-            <img ref={imgRef} alt="Preview image" style={{ visibility: isLoading ? "hidden" : "visible", height: isLoading ? "0px" : "auto" }}/>
-            
+            <img ref={imgRef} alt="Preview image" style={{ visibility: isLoading ? "hidden" : "visible", height: isLoading ? "0px" : "auto" }} />
+
             {
-                (showPageNavigationOnMinimized && pageNumber < numberOfPages) && <button
-                    className="next"
-                    type="button"
+                (showPageNavigationOnMinimized && pageNumber < numberOfPages) &&
+                <button className="button next" type="button"
                     onClick={(event) => showNextPage(event)}
                 >
                     <FontAwesomeIcon icon={faSquareCaretRight} size="2x" />

@@ -1,0 +1,47 @@
+
+/* layout and spacing */
+form,
+.form {
+    & table {
+        width: 100%;
+
+        td:first-child {
+            width: 5em;
+        }
+
+        td+td {
+            padding-left: 1em;
+        }
+    }
+
+    & input,
+    & select,
+    & textarea,
+    & button,
+    & .button,
+    & label,
+    & .filedropzone {
+        margin: .5em 0;
+    }
+
+    & input,
+    & span.input,
+    & button,
+    & .button
+    {
+        &+input,
+        &+span.input,
+        &+button,
+        &+.button {
+            margin-left: 1em;
+        }
+    }
+
+    & input[type="checkbox"] {
+        transform: scale(1.4) translate(.14em, -.08em);
+
+        &+label {
+            margin-left: 1em;
+        }
+    }
+}

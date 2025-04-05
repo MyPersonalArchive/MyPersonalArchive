@@ -98,8 +98,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
     return (
         <div className="filedropzone">
-            <input
-                type='file'
+            <input type='file'
                 id='file'
                 ref={inputFileRef}
                 style={{ display: "none" }}
@@ -121,7 +120,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                     </p>
                     <i>or</i>
                     <p>
-                        <button type="button" onClick={() => inputFileRef?.current?.click()} className="link-button">
+                        <button className="link" type="button" onClick={() => inputFileRef?.current?.click()}>
                             Select a file to upload
                         </button>
                     </p>
@@ -130,7 +129,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                         <>
                             <i>or</i>
                             <p>
-                                <button type="button" onClick={() => {setOpenUnallocatedBlobs(!openUnallocatedBlobs)}} className="link-button">
+                                <button className="link" type="button" onClick={() => { setOpenUnallocatedBlobs(!openUnallocatedBlobs) }}>
                                     Choose from unallocted heap.
                                 </button>
                             </p>
@@ -150,17 +149,17 @@ type UnallocatedBlobsDialogProps = {
 }
 
 const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
-    if(!openDialog) return null
+    if (!openDialog) return null
 
     const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
     const [selectedBlobIds, setSelectedBlobIds] = useState<number[]>([])
     const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-            if (selectAllCheckboxRef.current) {
-                selectAllCheckboxRef.current.indeterminate = selectedBlobIds.length > 0 && selectedBlobIds.length < unallocatedHeap.length
-            }
-        }, [selectedBlobIds])
+        if (selectAllCheckboxRef.current) {
+            selectAllCheckboxRef.current.indeterminate = selectedBlobIds.length > 0 && selectedBlobIds.length < unallocatedHeap.length
+        }
+    }, [selectedBlobIds])
 
     const blobSelected = (blobId: number[]) => {
         onBlobAttached(blobId)
@@ -178,7 +177,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
     const selectBlobId = (blobId: number, added: boolean) => {
         if (added) {
             setSelectedBlobIds([...selectedBlobIds, blobId])
-            
+
         } else {
             setSelectedBlobIds(selectedBlobIds.filter(id => id !== blobId))
         }
@@ -192,36 +191,36 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
         }
     ]
 
-        const selectAllOptions: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
-            {
-                name: "Add selected blobs",
-                callback: () => blobSelected(selectedBlobIds),
-                icon: faPlus
-            }
-        ]
+    const selectAllOptions: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
+        {
+            name: "Add selected blobs",
+            callback: () => blobSelected(selectedBlobIds),
+            icon: faPlus
+        }
+    ]
 
     return (
         <div className="dimmedBackground" onClick={onCloseDialog}>
             <div className="overlay bloblistpage" onClick={event => event.stopPropagation()}>
                 <div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
-                        <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllBlobIds(e.currentTarget.checked)}></input>
+                        <input ref={selectAllCheckboxRef} type="checkbox" onChange={(e) => selectAllBlobIds(e.currentTarget.checked)}/>
                         <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
                         <DropdownButton options={selectAllOptions} disabled={selectedBlobIds.length === 0}></DropdownButton>
                     </div>
                 </div>
-                    {
-                        unallocatedHeap.length === 0
-                            ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
-                            : unallocatedHeap.map(blob => (
-                                <UnallocatedBlobItem {...blob} 
-                                options={options} 
-                                setSelectedUnallocated={selectBlobId} 
-                                key={blob.id} 
+                {
+                    unallocatedHeap.length === 0
+                        ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
+                        : unallocatedHeap.map(blob => (
+                            <UnallocatedBlobItem {...blob}
+                                options={options}
+                                setSelectedUnallocated={selectBlobId}
+                                key={blob.id}
                                 isSelected={selectedBlobIds.includes(blob.id!)}
                                 showActions={false} />
-                            ))
-                    }
+                        ))
+                }
             </div>
         </div>
     )

@@ -106,13 +106,10 @@ export const ArchiveItemEditPage = () => {
                                 <label htmlFor="title">Title</label>
                             </td>
                             <td>
-                                <input
-                                    type="text"
-                                    id="title"
-                                    placeholder=""
-                                    autoFocus
+                                <input className="input" type="text"
+                                    id="title" placeholder=""
+                                    autoFocus data-1p-ignore
                                     value={title ?? ""}
-                                    data-1p-ignore
                                     onChange={event => setTitle(event.target.value)}
                                 />
                             </td>
@@ -151,10 +148,10 @@ export const ArchiveItemEditPage = () => {
                         <tr>
                             <td></td>
                             <td>
-                                <button type="button" onClick={back}>
+                                <button className="button" type="button" onClick={back}>
                                     Back
                                 </button>
-                                <button type="submit" className="primary">
+                                <button className="button primary" type="submit">
                                     Save
                                 </button>
                             </td>

@@ -54,9 +54,9 @@ const Navbar = () => {
     return (
         <nav className="navbar horizontal-evenly-spaced-flex">
             <div className="dropdown dropdown-left-aligned">
-                <a>
+                <div className="dropdown-header">
                     <FontAwesomeIcon icon={faBars} />
-                </a>
+                </div>
                 <div className="dropdown-content">
                     <Link to={RoutePaths.Archive}>Archive</Link>
                     <Link to={RoutePaths.Blobs}>Blobs</Link>
@@ -65,10 +65,10 @@ const Navbar = () => {
             {
                 loggedInUser
                     ? <div className="dropdown dropdown-right-aligned">
-                        <a className="dropbtn">
+                        <div className="dropdown-header">
                             <UserProfileHeader user={loggedInUser} />
                             <FontAwesomeIcon icon={faCaretDown} className="dimmed" />
-                        </a>
+                        </div>
                         <div className="dropdown-content">
                             <Link to={RoutePaths.Profile}>Profile</Link>
                             <div className="horizontal-line"></div>

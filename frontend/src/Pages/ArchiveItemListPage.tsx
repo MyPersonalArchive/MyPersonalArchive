@@ -63,8 +63,8 @@ export const ArchiveItemListPage = () => {
         <>
             <h1>Archive</h1>
             <div className="form">
-                <button onClick={() => newArchiveItem()}>Add item</button>
-                <button onClick={() => navigate(RoutePaths.Blobs)}>Unallocated</button>
+                <button className="button" onClick={() => newArchiveItem()}>Add item</button>
+                <button className="button" onClick={() => navigate(RoutePaths.Blobs)}>Unallocated</button>
             </div>
             <Filter />
             <div className="form">
@@ -85,7 +85,7 @@ export const ArchiveItemListPage = () => {
                 </tbody>
             </table>
             <div className="form">
-                <button onClick={() => newArchiveItem()}>Add item</button>
+                <button className="button" onClick={() => newArchiveItem()}>Add item</button>
             </div>
         </>
     )
@@ -147,7 +147,7 @@ const Filter = () => {
 
     return (
         <form onSubmit={search} onReset={reset}>
-            <input type="text"
+            <input className="input" type="text"
                 placeholder="Search by title"
                 value={title}
                 onChange={event => setTitle(event.target.value)}
@@ -155,8 +155,8 @@ const Filter = () => {
 
             <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} />
 
-            <button type="submit">Search</button>
-            <button type="reset">Reset</button>
+            <button className="button primary" type="submit">Search</button>
+            <button className="button" type="reset">Reset</button>
         </form>
     )
 }

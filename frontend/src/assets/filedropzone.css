@@ -4,16 +4,11 @@
     border-radius: .5em;
     padding: 1em;
 
-    & .link-button {
-        outline: none;
-    }
-
     &:has(:focus) {
         outline: medium auto currentColor;
         outline: medium auto invert;
         outline: 5px auto -webkit-focus-ring-color;
         outline-offset: -4px;
-        /* border-style: solid; */
     }
 
     .animate-height {

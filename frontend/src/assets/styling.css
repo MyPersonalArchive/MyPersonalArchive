@@ -1,8 +1,12 @@
 :root {
     --complementary-background-color: hsla(197, 68%, 37%, 10);
     --complementary-text-color: whitesmoke;
+
     --primary-button-background-color: var(--complementary-background-color);
     --primary-button-text-color: var(--complementary-text-color);
+
+    --default-button-background-color: hsl(from var(--complementary-background-color) h 0 50%);
+    --default-button-text-color: var(--complementary-text-color);
 }
 
 body {

@@ -1,7 +1,7 @@
 .dropdownbutton-container {
 
-        position: relative;
-∑
+    position: relative;
+
     & .dropdown-button {
         background-color: whitesmoke;
         color: black;

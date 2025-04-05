@@ -104,7 +104,7 @@ export const SignInPage = () => {
                                             <label htmlFor="username">Email</label>
                                         </td>
                                         <td>
-                                            <input type="email"
+                                            <input className="input" type="email"
                                                 id="username" autoComplete="username" placeholder=""
                                                 required
                                                 ref={userNameInputRef}
@@ -118,7 +118,7 @@ export const SignInPage = () => {
                                             <label htmlFor="password">Password</label>
                                         </td>
                                         <td>
-                                            <input type="password"
+                                            <input className="input" type="password"
                                                 id="password" autoComplete="current-password" placeholder=""
                                                 required
                                                 ref={passwordInputRef}
@@ -130,14 +130,14 @@ export const SignInPage = () => {
                                     <tr>
                                         <td></td>
                                         <td>
-                                            <input type="checkbox" id="rememberMe" />
+                                            <input className="input" type="checkbox" id="rememberMe" />
                                             <label htmlFor="rememberMe">Remember me</label>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td></td>
                                         <td>
-                                            <button type="submit" className="primary">
+                                            <button className="button primary" type="submit">
                                                 Log in
                                             </button>
                                         </td>

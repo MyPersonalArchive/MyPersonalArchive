@@ -3,5 +3,8 @@
 @import url("Layout.css");
 @import url("styling.css");
 @import url("filedropzone.css");
-@import url("form.css");
+
+@import url("form.layout.css");
+
+@import url("input.styling.css");
 @import url("navbar.css");

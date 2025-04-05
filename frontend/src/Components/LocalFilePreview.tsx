@@ -49,7 +49,7 @@ export const LocalFilePreview = ({fileName, blob, removeBlob}: PreviewProps) => 
                             overflow: "hidden"
                             }}></iframe>
 
-                    <button
+                    <button className="button"
                         style={{
                             top: "0",
                             left: "0"
@@ -59,7 +59,7 @@ export const LocalFilePreview = ({fileName, blob, removeBlob}: PreviewProps) => 
                     >                
                         <FontAwesomeIcon icon={faTrash} size="1x" />
                     </button>
-                    <button
+                    <button className="button"
                         style={{
                             top: "0",
                             right: "0"
@@ -85,7 +85,7 @@ export const LocalFilePreview = ({fileName, blob, removeBlob}: PreviewProps) => 
                     }}>
                         <div style={{textAlign: "center"}}>{fileName}</div>
                     <div style={{display: "flex", justifyContent: "flex-end", margin: "10px"}}>
-                        <button onClick={() => setExpand(false)}>X</button>
+                        <button className="button" onClick={() => setExpand(false)}>&time;</button>
                     </div>
                     <div style={{
                         width: "100%",

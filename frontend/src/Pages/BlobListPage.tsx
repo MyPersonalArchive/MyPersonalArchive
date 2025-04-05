@@ -94,7 +94,7 @@ export const BlobListPage = () => {
         <div className="bloblistpage form">
             <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
-                    <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}></input>
+                    <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}/>
                     <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
                     <DropdownButton options={selectAllOptions} disabled={assignedHeap.length === 0}></DropdownButton>
                 </div>
