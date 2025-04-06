@@ -3,6 +3,7 @@ import "./DropdownButton.css";
 import { IconDefinition } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import classNames from "classnames";
 
 export type DropdownButtonProps = {
     id?: number
@@ -49,7 +50,7 @@ export const DropdownButton = ({ id, options, disabled }: DropdownButtonProps) =
 
     return (
         <div className="dropdownbutton-container">
-            <button className={`dropdown-button ${disabled ? "disabled" : ""}`}
+            <button className={classNames("dropdown-button", {"disabled": disabled})}
                 disabled={disabled}
                 ref={dropdownToggleRef}
                 onClick={handleToggle}>
