@@ -38,8 +38,9 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
     }
 
     return <>
-        {isMaximized
-            && <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
+        {
+            isMaximized &&
+            <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
                 <div className="overlay" onClick={event => event.stopPropagation()}>
                     <InlinePreview
                         blobId={blobId}
@@ -61,8 +62,8 @@ export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDi
                         </div>
                     }
                 </div>
-            </div>}
-
+            </div>
+        }
         <div>
             {
                 showActions &&

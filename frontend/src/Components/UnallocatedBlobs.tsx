@@ -2,6 +2,7 @@ import { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { DropdownButton } from "./DropdownButton"
 import { Preview, DimensionEnum } from "./Preview"
 import { UnallocatedBlob } from "../Utils/useUnallocatedBlobsPrefetching"
+import { formatDate, formatFileSize } from "../Utils/formatUtils"
 
 type UnallocatedBlobItemProps = UnallocatedBlob & {
     setSelectedUnallocated: (blobId: number, added: boolean) => void
@@ -12,23 +13,6 @@ type UnallocatedBlobItemProps = UnallocatedBlob & {
 
 export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, uploadedByUser, options, isSelected, pageCount, showActions, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
     const uploadedAtDate = new Date(uploadedAt)
-
-    const sizeToHumanReadable = (size: number): string => {
-        const units = ['B', 'KB', 'MB', 'GB'];
-        const index = Math.floor(Math.log(size) / Math.log(1024));
-        const value = size / Math.pow(1024, index);
-        return `${value.toFixed(2)} ${units[index]}`;
-    }
-
-    const getDateString = (): string => {
-        const formattedDate = new Intl.DateTimeFormat('no-NB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        }).format(uploadedAtDate);
-
-        return formattedDate
-    }
 
     return (
         <div style={{
@@ -55,9 +39,9 @@ export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, upload
                 <div style={{ marginLeft: "5px" }}>
                     <div style={{ fontSize: "12px", fontWeight: "bold" }}>{fileName}</div>
                     <div style={{ display: "block", fontSize: "12px", color: "gray", marginTop: "5px", width: "100%" }}>
-                        <div>{getDateString()}</div>
+                        <div>{formatDate(uploadedAtDate)}</div>
                         <div>{uploadedByUser}</div>
-                        <div >{sizeToHumanReadable(fileSize)}</div>
+                        <div >{formatFileSize(fileSize)}</div>
                     </div>
                 </div>
             </div>

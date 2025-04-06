@@ -13,8 +13,6 @@ export type FileDropZoneProps = {
     onBlobAttached: (blobId: number[]) => void
     showUnallocatedBlobs?: boolean
 }
-
-// export const FileDropZone = ({ setFileBlobs: setFileBlobs }: FileDropZoneProps) => {
 export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs }: FileDropZoneProps) => {
     const apiClient = useApiClient()
 
@@ -142,12 +140,12 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
     )
 }
 
+
 type UnallocatedBlobsDialogProps = {
     openDialog: boolean,
     onCloseDialog: () => void
     onBlobAttached: (blobId: number[]) => void
 }
-
 const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
     if (!openDialog) return null
 
