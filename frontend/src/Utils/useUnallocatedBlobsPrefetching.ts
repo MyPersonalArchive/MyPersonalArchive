@@ -10,7 +10,7 @@ export type UnallocatedBlobResponse = {
 }
 
 export type UnallocatedBlob = {
-    id?: number
+    id: number
     fileName: string
     fileSize: number
     pageCount: number
