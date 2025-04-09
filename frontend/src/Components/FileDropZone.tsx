@@ -1,11 +1,10 @@
-import { faFileImport, faPlus, IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faFileImport } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 import { UnallocatedBlobItem } from "./UnallocatedBlobs"
 import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
-import { DropdownButton } from "./DropdownButton"
 
 
 export type FileDropZoneProps = {
@@ -181,22 +180,6 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
         }
     }
 
-    const options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
-        {
-            name: "Add blob",
-            callback: (id) => blobSelected([id!]),
-            icon: faPlus
-        }
-    ]
-
-    const selectAllOptions: { name: string, callback: (id?: number) => void, icon: IconDefinition }[] = [
-        {
-            name: "Add selected blobs",
-            callback: () => blobSelected(selectedBlobIds),
-            icon: faPlus
-        }
-    ]
-
     return (
         <div className="dimmedBackground" onClick={onCloseDialog}>
             <div className="overlay bloblistpage" onClick={event => event.stopPropagation()}>
@@ -204,7 +187,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
                         <input ref={selectAllCheckboxRef} type="checkbox" onChange={(e) => selectAllBlobIds(e.currentTarget.checked)}/>
                         <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
-                        <DropdownButton options={selectAllOptions} disabled={selectedBlobIds.length === 0}></DropdownButton>
+                        <button className="button secondary" disabled={selectedBlobIds.length === 0} onClick={() => blobSelected(selectedBlobIds)}>Add selected blobs</button>
                     </div>
                 </div>
                 {
@@ -212,11 +195,14 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
                         ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
                         : unallocatedHeap.map(blob => (
                             <UnallocatedBlobItem {...blob}
-                                options={options}
                                 setSelectedUnallocated={selectBlobId}
                                 key={blob.id}
                                 isSelected={selectedBlobIds.includes(blob.id!)}
-                                showActions={false} />
+                                showActions={false} >
+                                    <div>
+                                        <button className="button secondary" onClick={() => blobSelected([blob.id!])}>Add blob</button>
+                                    </div>
+                                </UnallocatedBlobItem>
                         ))
                 }
             </div>

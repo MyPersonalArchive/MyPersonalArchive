@@ -1,9 +1,7 @@
 import "./BlobListPage.css"
 import { UnallocatedBlobItem } from "../Components/UnallocatedBlobs"
-import { IconDefinition, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { useRef, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { DropdownButton } from "../Components/DropdownButton"
 import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { unallocatedBlobsAtom } from "../Utils/Atoms"
@@ -64,39 +62,14 @@ export const BlobListPage = () => {
         }
     }
 
-    const selectAllOptions: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
-        {
-            name: "Create from all selected",
-            callback: () => createArchiveItemFromSelected(),
-            icon: faPlus
-        },
-        {
-            name: "Delete all selected",
-            callback: () => deleteAllSelected(),
-            icon: faTrashCan
-        }
-    ]
-
-    const options: {name: string, callback: (id?: number) => void, icon: IconDefinition}[] = [
-        {
-            name: "Create new archive item",
-            callback: (id) => attachBlob(id!),
-            icon: faPlus
-        },
-        {
-            name: "Delete",
-            callback: (id) => deleteBlobs([id!]),
-            icon: faTrashCan
-        }
-    ]
-
     return (
         <div className="bloblistpage form">
             <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
                     <input ref={selectAllCheckboxRef} type="checkbox"  onChange={(e) => selectAllUnallocated(e.currentTarget.checked)}/>
                     <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
-                    <DropdownButton options={selectAllOptions} disabled={assignedHeap.length === 0}></DropdownButton>
+                    <button className="button secondary" disabled={assignedHeap.length === 0} onClick={createArchiveItemFromSelected}>Create from all selected</button>
+                    <button className="button secondary" disabled={assignedHeap.length === 0} onClick={deleteAllSelected}>Delete all selected</button>
                 </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column",  }}>
@@ -106,8 +79,12 @@ export const BlobListPage = () => {
                     {...blob} 
                     showActions={false}
                     setSelectedUnallocated={selectedUnallocated} 
-                    isSelected={assignedHeap.includes(blob.id!)}
-                    options={options} />)
+                    isSelected={assignedHeap.includes(blob.id!)}>
+                        <div>
+                            <button className="button secondary" onClick={() => attachBlob(blob.id!)}>Add</button>
+                            <button className="button secondary" onClick={() => deleteBlobs([blob.id!])}>Delete</button>
+                        </div>
+                    </UnallocatedBlobItem>)
             }
             {
                 unallocatedHeap?.length === 0 && <div>No unallocated blobs</div>
