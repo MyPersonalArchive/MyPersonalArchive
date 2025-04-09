@@ -55,8 +55,8 @@ export const ArchiveItemNewPage = () => {
         setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
     }
 
-    const attachUnallocatedBlobs = (blobId: number) => {
-        setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, blobId])
+    const attachUnallocatedBlobs = (blobIds: number[]) => {
+        setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, ...blobIds])
     }
 
     const removeUnallocatedBlob = (blobId: number) => {

@@ -5,6 +5,9 @@
     --primary-button-background-color: var(--complementary-background-color);
     --primary-button-text-color: var(--complementary-text-color);
 
+    --secondary-button-background-color: white;
+    --secondary-button-text-color: black;
+
     --default-button-background-color: hsl(from var(--complementary-background-color) h 0 50%);
     --default-button-text-color: var(--complementary-text-color);
 }
@@ -66,7 +69,7 @@ span.tag {
 /**/
 .preview {
     position: relative;
-
+    cursor: pointer ;
     &>img {
         margin: 0 2em;
         border: thin dashed hsl(from black h s l / 50%);

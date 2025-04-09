@@ -1,17 +1,15 @@
-import { IconDefinition } from "@fortawesome/free-solid-svg-icons"
-import { DropdownButton } from "./DropdownButton"
 import { Preview, DimensionEnum } from "./Preview"
 import { UnallocatedBlob } from "../Utils/useUnallocatedBlobsPrefetching"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
 
 type UnallocatedBlobItemProps = UnallocatedBlob & {
     setSelectedUnallocated: (blobId: number, added: boolean) => void
-    options: { name: string, callback: (id?: number) => void, icon: IconDefinition }[]
     showActions?: boolean
     isSelected?: boolean
+    children?: React.ReactNode
 }
 
-export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, uploadedByUser, options, isSelected, pageCount, showActions, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
+export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, uploadedByUser, children, isSelected, pageCount, showActions, setSelectedUnallocated, }: UnallocatedBlobItemProps) => {
     const uploadedAtDate = new Date(uploadedAt)
 
     return (
@@ -56,7 +54,7 @@ export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, upload
                 }
 
                 <div style={{ display: "flex", alignSelf: "end" }}>
-                    <DropdownButton id={id} options={options}></DropdownButton>
+                    {children}
                 </div>
 
             </div>
