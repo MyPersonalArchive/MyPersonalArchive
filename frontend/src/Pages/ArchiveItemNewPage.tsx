@@ -6,7 +6,7 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
 import { tagsAtom } from "../Utils/Atoms"
-import { DimensionEnum, Preview } from "../Components/Preview"
+import { DimensionEnum, LegacyPreview } from "../Components/LegacyPreview"
 import { RoutePaths } from "../RoutePaths"
 
 type CreateResponse = {
@@ -98,7 +98,7 @@ export const ArchiveItemNewPage = () => {
 
                                 <div style={{display: "flex", flexWrap: "wrap"}}>
                                     {blobsFromUnallocated.map((blobId) => (
-                                        <Preview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob}/>
+                                        <LegacyPreview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob}/>
                                     ))}
                                     {localBlobs?.map((blob) => (
                                         <div key={blob.fileName} style={{marginLeft: "5px"}}>
@@ -111,10 +111,10 @@ export const ArchiveItemNewPage = () => {
                         <tr>
                             <td></td>
                             <td>
-                                <button className="button" type="button" onClick={back}>
+                                <button className="button secondary" type="button" onClick={back}>
                                     Back
                                 </button>
-                                <button className="button" type="submit">
+                                <button className="button primary" type="submit">
                                     Save
                                 </button>
                             </td>

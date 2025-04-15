@@ -21,7 +21,7 @@ type PreviewProps = {
     minimizedDimension: DimensionEnum
     onRemove(blobId: number): void
 }
-export const Preview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinimized, showActions = true, onRemove }: PreviewProps) => {
+export const LegacyPreview = ({ blobId, numberOfPages, maximizedDimension, minimizedDimension, showPageNavigationOnMinimized, showActions = true, onRemove }: PreviewProps) => {
     const apiClient = useApiClient()
     const [pageNumber, setPageNumber] = useState<number>(1)
     const [isMaximized, setIsMaximized] = useState<boolean>(false)

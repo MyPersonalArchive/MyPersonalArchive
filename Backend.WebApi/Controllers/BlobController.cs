@@ -44,7 +44,7 @@ public class BlobController : ControllerBase
 
 
     [HttpGet]
-    public async Task<ActionResult<byte[]>> Preview(
+    public async Task<ActionResult> Preview(
         [FromQuery] int blobId,
         [FromQuery] DimensionEnum dimension,
         [FromQuery] int pageNumber = 0

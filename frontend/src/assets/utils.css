@@ -29,7 +29,8 @@ span.spacer-1em {
     justify-content: space-between;
 }
 
-/* .vertical-stacked-down-flex {
+
+.vertical-stacked-down-flex {
     display: flex;
     flex-direction: column;
-} */
+}

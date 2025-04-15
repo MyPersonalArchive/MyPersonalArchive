@@ -1,4 +1,7 @@
-import { Preview, DimensionEnum } from "./Preview"
+// import { Preview, DimensionEnum } from "./Preview"
+// import { IconDefinition } from "@fortawesome/free-solid-svg-icons"
+// import { DropdownButton } from "./DropdownButton"
+import { LegacyPreview, DimensionEnum } from "./LegacyPreview"
 import { UnallocatedBlob } from "../Utils/useUnallocatedBlobsPrefetching"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
 
@@ -23,7 +26,7 @@ export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, upload
         }}
             className="grid">
             <div style={{ gridArea: "image", background: "#f5f5f5" }}>
-                <Preview
+                <LegacyPreview
                     blobId={id!}
                     numberOfPages={pageCount}
                     showActions={showActions}
@@ -31,7 +34,7 @@ export const UnallocatedBlobItem = ({ id, fileName, fileSize, uploadedAt, upload
                     maximizedDimension={DimensionEnum.large}
                     minimizedDimension={DimensionEnum.xsmall}
                     onRemove={() => { }}>
-                </Preview>
+                </LegacyPreview>
             </div>
             <div style={{ display: "flex", margin: "5px", gridArea: "information" }}>
                 <div style={{ marginLeft: "5px" }}>

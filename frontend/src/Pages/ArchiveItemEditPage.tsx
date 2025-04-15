@@ -2,7 +2,8 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
-import { DimensionEnum, Preview } from "../Components/Preview"
+import { LegacyPreview } from "../Components/LegacyPreview"
+import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
@@ -24,7 +25,7 @@ type BlobResponse = {
 
 export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
-    const [title, setTitle] = useState<string | null>(null)
+    const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [blobs, setBlobs] = useState<BlobResponse[]>([])
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
@@ -51,9 +52,9 @@ export const ArchiveItemEditPage = () => {
 
         const formData = new FormData()
         const updateRequest = {
-            id: id!, 
-            title: title!, 
-            tags, 
+            id: id!,
+            title: title!,
+            tags,
             blobsFromUnallocated: blobs.map(blob => blob.id),
             removedBlobs
         }
@@ -63,7 +64,7 @@ export const ArchiveItemEditPage = () => {
         localBlobs.forEach(blob => {
             formData.append("files", blob.fileData, blob.fileName)
         })
-        
+
         apiClient.putFormData("/api/archive/Update", formData)
 
         navigate(RoutePaths.Archive)
@@ -88,9 +89,9 @@ export const ArchiveItemEditPage = () => {
         })
     }
 
-    const removeUnallocatedBlob = (blobId: number) => {
-        setBlobs(blobs => blobs.filter(blob => blob.id !== blobId))
-        setRemovedBlobs(removedBlobs => [...removedBlobs, blobId])
+    const removeUnallocatedBlob = (blob: BlobResponse) => {
+        setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
+        setRemovedBlobs(removedBlobs => [...removedBlobs, blob.id])
     }
 
     return (
@@ -107,9 +108,8 @@ export const ArchiveItemEditPage = () => {
                             </td>
                             <td>
                                 <input className="input" type="text"
-                                    id="title" placeholder=""
-                                    autoFocus data-1p-ignore
-                                    value={title ?? ""}
+                                    id="title" placeholder="" autoFocus data-1p-ignore
+                                    value={title}
                                     onChange={event => setTitle(event.target.value)}
                                 />
                             </td>
@@ -132,23 +132,36 @@ export const ArchiveItemEditPage = () => {
                             <td></td>
                             <td>
                                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+                                    <PreviewList<BlobResponse> blobs={blobs}
+                                        containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
+                                        thumbnailPreviewTemplate={
+                                            (blob, maximize) =>
+                                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
+                                                    onRemove={removeUnallocatedBlob}
+                                                    onMaximize={() => maximize(blob)} />
+                                        }
+                                        maximizedPreviewTemplate={
+                                            (blob, minimize) =>
+                                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
+                                                    onRemove={removeUnallocatedBlob}
+                                                    onMinimize={() => minimize()} />
+                                        }
+                                    />
+
                                     {
-                                        blobs.map((blob) => <Preview key={blob.id} blobId={blob.id} numberOfPages={blob.numberOfPages} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob} />)
+                                        localBlobs.map((blob) => (
+                                            <div key={blob.fileName} style={{ marginLeft: "5px" }}>
+                                                <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
+                                            </div>
+                                        ))
                                     }
-                                    {
-                                    localBlobs.map((blob) => (
-                                        <div key={blob.fileName} style={{marginLeft: "5px"}}>
-                                            <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData}/>
-                                        </div> 
-                                    ))
-                                }
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
-                                <button className="button" type="button" onClick={back}>
+                                <button className="button secondary" type="button" onClick={back}>
                                     Back
                                 </button>
                                 <button className="button primary" type="submit">
