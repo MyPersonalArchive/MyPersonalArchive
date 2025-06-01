@@ -20,3 +20,12 @@ export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 export const tagsAtom = atom<string[]>([])
 
 export const unallocatedBlobsAtom = atom<UnallocatedBlob[]>([])
+export type UnallocatedBlob = {     //TODO: This should be defined elsewhere. Suggestion: in ./Atoms.tsx
+    id: number
+    fileName: string
+    fileSize: number
+    pageCount: number
+    uploadedAt: Date
+    uploadedByUser: string
+}
+

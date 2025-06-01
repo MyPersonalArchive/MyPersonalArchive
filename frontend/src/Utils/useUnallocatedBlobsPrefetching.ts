@@ -1,21 +1,12 @@
 import { useSetAtom } from "jotai"
 import { useSignalR } from "./useSignalR"
-import { unallocatedBlobsAtom } from "./Atoms"
+import { UnallocatedBlob, unallocatedBlobsAtom } from "./Atoms"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
 
 export type UnallocatedBlobResponse = {
-    total: number
+    total: number   //TODO: Why number? It isnt used anywhere
     blobs: UnallocatedBlob[]
-}
-
-export type UnallocatedBlob = {
-    id: number
-    fileName: string
-    fileSize: number
-    pageCount: number
-    uploadedAt: Date
-    uploadedByUser: string
 }
 
 export const useUnallocatedBlobsPrefetching = () => {
