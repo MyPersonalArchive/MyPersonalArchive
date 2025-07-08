@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react"
+import { useEffect, useReducer, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
-import { LegacyPreview } from "../Components/LegacyPreview"
 import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
+import { combinedReducer, metadataComponents } from "../Components/Metadata/metadataComponents"
+import React from "react"
 
 type GetResponse = {
     id: number
@@ -31,9 +32,12 @@ export const ArchiveItemEditPage = () => {
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
 
-    const params = useParams()
-
     const allTags = useAtomValue(tagsAtom)
+
+    const [metadata, setMetadata] = useState(metadataComponents.map(({ name, component }) => ({ name, component, isVisible: false})))
+    const [metadataState, metadataDispatch] = useReducer(combinedReducer(metadataComponents), {})
+
+    const params = useParams()
     const navigate = useNavigate()
     const apiClient = useApiClient()
 
@@ -56,7 +60,8 @@ export const ArchiveItemEditPage = () => {
             title: title!,
             tags,
             blobsFromUnallocated: blobs.map(blob => blob.id),
-            removedBlobs
+            removedBlobs,
+            metadata: metadataState
         }
 
         formData.append("rawRequest", JSON.stringify(updateRequest))
@@ -123,14 +128,40 @@ export const ArchiveItemEditPage = () => {
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td>
+                            <td colSpan={2}>
+                                Include metadata for:
+                                {
+                                    metadata.map(({ name, isVisible }) => (
+                                        <label key={name}>
+                                            <input type="checkbox" id={name} checked={isVisible} onChange={() => { setMetadata(metadata => metadata.map(item => item.name === name ? { ...item, isVisible: !item.isVisible } : item)) }} />
+                                            &nbsp;&nbsp;{name}&nbsp;&nbsp;
+                                        </label>
+                                    ))
+                                }
+                            </td>
+                        </tr>
+                        {
+                            metadata.filter(({ isVisible }) => isVisible).map(({ name, component }) => (
+                                <tr key={name}>
+                                    <td>
+                                        {name}
+                                    </td>
+                                    <td>
+                                        {
+                                            //TODO: Ensure that the component receives the correct initial state
+                                            React.createElement(component, { state: metadataState, dispatch: metadataDispatch })
+                                        }
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                        <tr>
+                            <td colSpan={2}>
                                 <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td>
+                            <td colSpan={2}>
                                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                                     <PreviewList<BlobResponse> blobs={blobs}
                                         containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
