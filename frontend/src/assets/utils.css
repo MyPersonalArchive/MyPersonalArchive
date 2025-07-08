@@ -29,6 +29,12 @@ span.spacer-1em {
     justify-content: space-between;
 }
 
+.horizontal-stacked-flex {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+}
+
 
 .vertical-stacked-down-flex {
     display: flex;

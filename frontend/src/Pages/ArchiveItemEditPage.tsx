@@ -8,7 +8,8 @@ import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
-import { combinedReducer, metadataComponents } from "../Components/Metadata/metadataComponents"
+import { availableMetadataTypes } from "../Components/Metadata/availableMetadataTypes"
+import { metadataTypesReducer } from '../Components/Metadata/metadataTypesReducer'
 import React from "react"
 
 type GetResponse = {
@@ -34,8 +35,8 @@ export const ArchiveItemEditPage = () => {
 
     const allTags = useAtomValue(tagsAtom)
 
-    const [metadata, setMetadata] = useState(metadataComponents.map(({ name, component }) => ({ name, component, isVisible: false})))
-    const [metadataState, metadataDispatch] = useReducer(combinedReducer(metadataComponents), {})
+    const [metadataTypes, setMetadataTypes] = useState(availableMetadataTypes.map(({ name, path, component }) => ({ name, path, component, isVisible: false})))
+    const [metadataRootState, metadataStateDispatch] = useReducer(metadataTypesReducer(availableMetadataTypes), {})
 
     const params = useParams()
     const navigate = useNavigate()
@@ -54,6 +55,8 @@ export const ArchiveItemEditPage = () => {
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
+        const metadataStateToSave = prepareMetadataForSave(metadataRootState, metadataTypes)
+
         const formData = new FormData()
         const updateRequest = {
             id: id!,
@@ -61,7 +64,7 @@ export const ArchiveItemEditPage = () => {
             tags,
             blobsFromUnallocated: blobs.map(blob => blob.id),
             removedBlobs,
-            metadata: metadataState
+            metadata: metadataStateToSave
         }
 
         formData.append("rawRequest", JSON.stringify(updateRequest))
@@ -73,6 +76,14 @@ export const ArchiveItemEditPage = () => {
         apiClient.putFormData("/api/archive/Update", formData)
 
         navigate(RoutePaths.Archive)
+    }
+
+    const prepareMetadataForSave = (metadataState: any, metadata: { path: string, isVisible: boolean }[]) => {
+        const metadataStateToSave = { ...metadataState }
+        metadata
+            .filter(({ isVisible }) => !isVisible)
+            .forEach(({ path }) => { delete metadataStateToSave[path] })
+        return metadataStateToSave
     }
 
     const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
@@ -129,11 +140,12 @@ export const ArchiveItemEditPage = () => {
                         </tr>
                         <tr>
                             <td colSpan={2}>
-                                Include metadata for:
+                                Include metadata for
+                                &nbsp;
                                 {
-                                    metadata.map(({ name, isVisible }) => (
+                                    metadataTypes.map(({ name, isVisible }) => (
                                         <label key={name}>
-                                            <input type="checkbox" id={name} checked={isVisible} onChange={() => { setMetadata(metadata => metadata.map(item => item.name === name ? { ...item, isVisible: !item.isVisible } : item)) }} />
+                                            <input type="checkbox" id={name} checked={isVisible} onChange={() => { setMetadataTypes(metadata => metadata.map(item => item.name === name ? { ...item, isVisible: !item.isVisible } : item)) }} />
                                             &nbsp;&nbsp;{name}&nbsp;&nbsp;
                                         </label>
                                     ))
@@ -141,15 +153,14 @@ export const ArchiveItemEditPage = () => {
                             </td>
                         </tr>
                         {
-                            metadata.filter(({ isVisible }) => isVisible).map(({ name, component }) => (
+                            metadataTypes.filter(({ isVisible }) => isVisible).map(({ name, component, path }) => (
                                 <tr key={name}>
                                     <td>
                                         {name}
                                     </td>
                                     <td>
                                         {
-                                            //TODO: Ensure that the component receives the correct initial state
-                                            React.createElement(component, { state: metadataState, dispatch: metadataDispatch })
+                                            React.createElement(component, { state: metadataRootState[path], dispatch: metadataStateDispatch })
                                         }
                                     </td>
                                 </tr>
@@ -206,3 +217,4 @@ export const ArchiveItemEditPage = () => {
         </>
     )
 }
+
