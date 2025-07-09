@@ -7,8 +7,13 @@ export type metadataComponentProps = {
     dispatch: Dispatch<unknown>
 }
 
-export type MetadataType = { name: string, path: string, reducer: reducer, component: React.FC<metadataComponentProps> }
-// export type MetadataType = { name: string, path: string, reducer: reducer, component: React.FC<{ state: unknown, dispatch: (action: unknown) => unknown }> }
+export type MetadataType = {
+    name: string,
+    path: string,
+    empty: any,
+    reducer: reducer,
+    component: React.FC<metadataComponentProps>
+}
 
 interface IMetadataCommand {
     path: string,
@@ -17,7 +22,8 @@ interface IMetadataCommand {
 export const metadataTypesReducer = (metadataTypes: Array<MetadataType>) => (stateRoot: any, command: IMetadataCommand): unknown => {
     //TODO:
     // - stateRoot or states - object? new Map? array?
-    // - command has a target path, which is the component path
+    // - command has a target path, which is the component path.
+    // - the path is the identifier for the component
     // - send only to the component that matches the path
     // - no need to call all the reducers, only the one that matches the path
     // - can have a INIT command specific for each component
@@ -30,7 +36,7 @@ export const metadataTypesReducer = (metadataTypes: Array<MetadataType>) => (sta
         console.warn(`No metadata type found for path: ${command.path}`)
         return stateRoot
     }
-    
+
     const componentState = metadataType.reducer(stateRoot[metadataType.path], command)
 
     return {

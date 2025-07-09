@@ -35,8 +35,8 @@ export const ArchiveItemEditPage = () => {
 
     const allTags = useAtomValue(tagsAtom)
 
-    const [metadataTypes, setMetadataTypes] = useState(availableMetadataTypes.map(({ name, path, component }) => ({ name, path, component, isVisible: false})))
-    const [metadataRootState, metadataStateDispatch] = useReducer(metadataTypesReducer(availableMetadataTypes), {})
+    const [metadataTypes, setMetadataTypes] = useState(availableMetadataTypes.map(({ name, path, component }) => ({ name, path, component, isVisible: false })))
+    const [metadataRootState, metadataStateDispatch] = useReducer(metadataTypesReducer(availableMetadataTypes), availableMetadataTypes.reduce((acc, { path, empty }) => ({ [path]: {...empty}, ...acc }), {} /* TODO: load initial state here */))
 
     const params = useParams()
     const navigate = useNavigate()
@@ -79,10 +79,10 @@ export const ArchiveItemEditPage = () => {
     }
 
     const prepareMetadataForSave = (metadataState: any, metadata: { path: string, isVisible: boolean }[]) => {
-        const metadataStateToSave = { ...metadataState }
+        const metadataStateToSave = {} as any
         metadata
-            .filter(({ isVisible }) => !isVisible)
-            .forEach(({ path }) => { delete metadataStateToSave[path] })
+            .filter(({ isVisible }) => isVisible)
+            .forEach(({ path }) => { metadataStateToSave[path] = metadataState[path] })
         return metadataStateToSave
     }
 

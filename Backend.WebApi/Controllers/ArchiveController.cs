@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
@@ -5,7 +7,6 @@ using Backend.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Backend.WebApi.Controllers;
 
@@ -15,6 +16,11 @@ namespace Backend.WebApi.Controllers;
 [Authorize]
 public class ArchiveController : ControllerBase
 {
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     private readonly MpaDbContext _dbContext;
     private readonly IFileStorageProvider _fileProvider;
     private readonly SignalRService _signalRService;
@@ -32,27 +38,27 @@ public class ArchiveController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CreateResponse>> Create([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
     {
-        var request = JsonConvert.DeserializeObject<CreateRequest>(rawRequest);
-        if(request == null) 
+        var createRequest = JsonSerializer.Deserialize<CreateRequest>(rawRequest, _jsonSerializerOptions);
+        if (createRequest == null)
         {
             return BadRequest();
         }
 
         var newArchiveItem = new ArchiveItem
         {
-            Title = request.Title,
+            Title = createRequest.Title,
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
-            Tags = [.. Tags.Ensure(_dbContext, request.Tags)]
+            Tags = [.. Tags.Ensure(_dbContext, createRequest.Tags)],
         };
 
         var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
         
-        if(request.BlobsFromUnallocated != null) 
+        if (createRequest.BlobsFromUnallocated != null)
         {
             var unallocatedBlobs = await _dbContext.Blobs
                                                     .Where(blob => blob.ArchiveItem == null)
-                                                    .Where(blob => request.BlobsFromUnallocated.Contains(blob.Id))
+                                                    .Where(blob => createRequest.BlobsFromUnallocated.Contains(blob.Id))
                                                     .ToListAsync();
             foreach (var blob in unallocatedBlobs)
             {
@@ -80,7 +86,7 @@ public class ArchiveController : ControllerBase
                             .Where(blob => blobIds.Contains(blob.Id))
                             .ToListAsync();
 
-        if(!blobs.Any()) 
+        if (!blobs.Any())
         {
             return NotFound();
         }
@@ -90,8 +96,8 @@ public class ArchiveController : ControllerBase
             Title = "New archive item",
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
-            Tags = new List<Tag>(),
-            Blobs = blobs
+            Blobs = blobs,
+            Tags = new List<Tag>()
         };
 
         _dbContext.ArchiveItems.Add(archiveItem);
@@ -107,8 +113,8 @@ public class ArchiveController : ControllerBase
     [HttpPut]
     public async Task<ActionResult> Update([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
     {
-        var updateRequest = JsonConvert.DeserializeObject<UpdateRequest>(rawRequest);
-        if(updateRequest == null) 
+        var updateRequest = JsonSerializer.Deserialize<UpdateRequest>(rawRequest, _jsonSerializerOptions);
+        if (updateRequest == null)
         {
             return BadRequest();
         }
@@ -125,7 +131,7 @@ public class ArchiveController : ControllerBase
 
         var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
 
-        if(updateRequest.BlobsFromUnallocated != null) 
+        if (updateRequest.BlobsFromUnallocated != null)
         {
             var unallocatedBlobs = _dbContext.Blobs.Where(blob => blob.ArchiveItem == null && updateRequest.BlobsFromUnallocated.Contains(blob.Id)).ToList();
             foreach (var blob in unallocatedBlobs)
@@ -137,7 +143,7 @@ public class ArchiveController : ControllerBase
             await _signalRService.PublishToTenantChannel(new Message("BlobsAllocated", updateRequest.BlobsFromUnallocated));
         }
 
-        if(updateRequest.RemovedBlobs != null && archiveItem.Blobs != null) 
+        if (updateRequest.RemovedBlobs != null && archiveItem.Blobs != null)
         {
             var removedBlobs = archiveItem.Blobs.Where(blob => updateRequest.RemovedBlobs.Contains(blob.Id)).ToList();
             foreach (var blob in removedBlobs)
@@ -284,6 +290,7 @@ public class ArchiveController : ControllerBase
     {
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
+        public JsonObject? Metadata { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
     }
 
@@ -297,6 +304,7 @@ public class ArchiveController : ControllerBase
         public int Id { get; set; }
         public required string Title { get; set; }
         public required List<string> Tags { get; set; }
+        public JsonObject? Metadata { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
         public int[]? RemovedBlobs { get; set; }
     }
