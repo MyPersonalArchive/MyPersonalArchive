@@ -181,7 +181,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
     }
 
     return (
-        <div className="dimmedBackground" onClick={onCloseDialog}>
+        <div className="dimmedBackground" style={{zIndex: 1}} onClick={onCloseDialog}>
             <div className="overlay bloblistpage" onClick={event => event.stopPropagation()}>
                 <div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>

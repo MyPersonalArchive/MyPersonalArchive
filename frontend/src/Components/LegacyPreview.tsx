@@ -40,7 +40,7 @@ export const LegacyPreview = ({ blobId, numberOfPages, maximizedDimension, minim
     return <>
         {
             isMaximized &&
-            <div className="dimmedBackground" onClick={() => setIsMaximized(false)}>
+            <div className="dimmedBackground" style={{zIndex: 1}} onClick={() => setIsMaximized(false)}>
                 <div className="overlay" onClick={event => event.stopPropagation()}>
                     <InlinePreview
                         blobId={blobId}

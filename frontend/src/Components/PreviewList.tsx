@@ -38,8 +38,8 @@ export const PreviewList = <T extends Blob,>({ blobs, containerStyle, containerC
             </div>
             {
                 maximizedBlob !== undefined && <>
-                    <div className="dimmedBackground" onClick={() => setMaximizedBlob(undefined)}>
-                        <div onClick={event => event.stopPropagation()}>
+                    <div className="dimmedBackground" style={{zIndex: 1}} onClick={() => setMaximizedBlob(undefined)}>
+                        <div className="overlay" onClick={event => event.stopPropagation()}>
                             {
                                 maximizedPreviewTemplate(maximizedBlob, () => setMaximizedBlob(undefined))
                             }
