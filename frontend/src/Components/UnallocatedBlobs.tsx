@@ -2,8 +2,9 @@
 // import { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 // import { DropdownButton } from "./DropdownButton"
 import { LegacyPreview, DimensionEnum } from "./LegacyPreview"
-import { UnallocatedBlob } from "../Utils/useUnallocatedBlobsPrefetching"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
+import { UnallocatedBlob } from "../Utils/Atoms"
+
 
 type UnallocatedBlobItemProps = UnallocatedBlob & {
     setSelectedUnallocated: (blobId: number, added: boolean) => void
