@@ -63,13 +63,12 @@ export const ArchiveItemListPage = () => {
         <>
             <h1>Archive</h1>
             <div className="form">
+                <FileDropZone onBlobAttached={() => { }} />
                 <button className="button" onClick={() => newArchiveItem()}>Add item</button>
                 <button className="button" onClick={() => navigate(RoutePaths.Blobs)}>Unallocated</button>
             </div>
             <Filter />
-            <div className="form">
-                <FileDropZone onBlobAttached={() => { }} />
-            </div>
+
             <table style={{ width: "100%" }}>
                 <thead>
                     <tr>
