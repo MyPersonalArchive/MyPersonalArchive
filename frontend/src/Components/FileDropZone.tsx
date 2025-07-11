@@ -2,9 +2,13 @@ import { faFileImport } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
-import { UnallocatedBlobItem } from "./UnallocatedBlobs"
 import { useAtomValue } from "jotai"
-import { unallocatedBlobsAtom } from "../Utils/Atoms"
+import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
+import { DimensionEnum, Preview, PreviewList } from "./PreviewList"
+import { ActionPanel } from "../Components/ActionPanel"
+import { InfoPanel } from "../Components/InfoPanel"
+import { useSelection } from "../Pages/useSelection"
+
 
 
 export type FileDropZoneProps = {
@@ -149,62 +153,75 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
     if (!openDialog) return null
 
     const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
-    const [selectedBlobIds, setSelectedBlobIds] = useState<number[]>([])
-    const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 
+    const selectionOfBlobs = useSelection<number>(new Set(unallocatedHeap.map(blob => blob.id)))
+    const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
     useEffect(() => {
-        if (selectAllCheckboxRef.current) {
-            selectAllCheckboxRef.current.indeterminate = selectedBlobIds.length > 0 && selectedBlobIds.length < unallocatedHeap.length
+        if (selectAllCheckboxRef.current !== null) {
+            selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.areOnlySomeItemsSelected
+            selectAllCheckboxRef.current.checked = selectionOfBlobs.areAllItemsSelected
         }
-    }, [selectedBlobIds])
+    }, [selectionOfBlobs.selectedItems, unallocatedHeap])
 
     const blobSelected = (blobId: number[]) => {
         onBlobAttached(blobId)
         onCloseDialog()
     }
 
-    const selectAllBlobIds = (checked: boolean) => {
-        if (checked) {
-            setSelectedBlobIds(unallocatedHeap.map(blob => blob.id!))
-        } else {
-            setSelectedBlobIds([])
-        }
-    }
-
-    const selectBlobId = (blobId: number, added: boolean) => {
-        if (added) {
-            setSelectedBlobIds([...selectedBlobIds, blobId])
-
-        } else {
-            setSelectedBlobIds(selectedBlobIds.filter(id => id !== blobId))
-        }
-    }
-
     return (
-        <div className="dimmedBackground" style={{zIndex: 1}} onClick={onCloseDialog}>
+        <div className="dimmedBackground" style={{ zIndex: 1 }} onClick={onCloseDialog}>
             <div className="overlay bloblistpage" onClick={event => event.stopPropagation()}>
                 <div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
-                        <input ref={selectAllCheckboxRef} type="checkbox" onChange={(e) => selectAllBlobIds(e.currentTarget.checked)}/>
-                        <span style={{ marginLeft: "10px", marginRight: "10px" }}>Select all</span>
-                        <button className="button secondary" disabled={selectedBlobIds.length === 0} onClick={() => blobSelected(selectedBlobIds)}>Add selected blobs</button>
+
+                        <label>
+                            <input ref={selectAllCheckboxRef} type="checkbox"
+                                checked={selectionOfBlobs.areAllItemsSelected}
+                                onChange={() => selectionOfBlobs.areAllItemsSelected
+                                    ? selectionOfBlobs.clearSelection()
+                                    : selectionOfBlobs.selectAllItems()
+                                } />
+                            <span className="spacer-1ex" />
+                            Select all
+                        </label>
+                        <span className="spacer-1em" />
+                        <button className="button secondary"
+                            disabled={selectionOfBlobs.areNoItemsSelected}
+                            onClick={() => blobSelected(Array.from(selectionOfBlobs.selectedItems))}
+                        >
+                            Add selected blobs
+                        </button>
                     </div>
                 </div>
-                {
-                    unallocatedHeap.length === 0
-                        ? <p style={{ textAlign: "center" }}>No unallocated blobs</p>
-                        : unallocatedHeap.map(blob => (
-                            <UnallocatedBlobItem {...blob}
-                                setSelectedUnallocated={selectBlobId}
-                                key={blob.id}
-                                isSelected={selectedBlobIds.includes(blob.id!)}
-                                showActions={false} >
-                                    <div>
+
+                <PreviewList<UnallocatedBlob> blobs={unallocatedHeap}
+                    containerStyle={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
+                    thumbnailPreviewTemplate={
+                        (blob, maximize) =>
+                            <div key={blob.id} className="box grid">
+                                <div style={{ gridArea: "image", background: "whitesmoke", padding: "5px" }}>
+                                    <Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
+                                        onMaximize={maximize} />
+                                </div>
+
+                                <div style={{ gridArea: "information" }}>
+                                    <InfoPanel blob={blob} />
+                                </div>
+
+                                <div style={{ gridArea: "actions" }}>
+                                    <ActionPanel blob={blob} selection={selectionOfBlobs}>
                                         <button className="button secondary" onClick={() => blobSelected([blob.id!])}>Add blob</button>
-                                    </div>
-                                </UnallocatedBlobItem>
-                        ))
-                }
+                                    </ActionPanel>
+                                </div>
+                            </div>
+
+                    }
+                    maximizedPreviewTemplate={
+                        (blob, minimize) =>
+                            <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
+                                onMinimize={minimize} />
+                    }
+                />
             </div>
         </div>
     )

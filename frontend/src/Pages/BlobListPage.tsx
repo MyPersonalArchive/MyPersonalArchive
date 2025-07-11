@@ -5,9 +5,10 @@ import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
 import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
-import { formatDate, formatFileSize } from "../Utils/formatUtils"
 import { FileDropZone } from "../Components/FileDropZone"
-import { useSelection, Selection, SelectCheckbox } from "./useSelection"
+import { useSelection } from "./useSelection"
+import { ActionPanel } from "../Components/ActionPanel"
+import { InfoPanel } from "../Components/InfoPanel"
 
 
 export const BlobListPage = () => {
@@ -65,7 +66,7 @@ export const BlobListPage = () => {
                                 onChange={() => selectionOfBlobs.areAllItemsSelected
                                     ? selectionOfBlobs.clearSelection()
                                     : selectionOfBlobs.selectAllItems()
-                            }/>
+                                } />
                             <span className="spacer-1ex" />
                             Select all
                         </label>
@@ -120,38 +121,3 @@ export const BlobListPage = () => {
         </>
     )
 }
-
-
-type InfoPanelProps = {
-    blob: UnallocatedBlob
-}
-const InfoPanel = ({ blob }: InfoPanelProps) => {
-    return (
-        <div style={{ display: "flex", flexDirection: "column", padding: "5px 10px" }}>
-            <div style={{ fontSize: "12px", fontWeight: "bold" }}>{blob.fileName}</div>
-            <div style={{ display: "block", fontSize: "12px", color: "gray", marginTop: "5px" }}>
-                <div>{formatDate(new Date(blob.uploadedAt))}</div>
-                <div>{blob.uploadedByUser}</div>
-                <div>{formatFileSize(blob.fileSize)}</div>
-            </div>
-        </div>
-    )
-}
-
-type ActionPanelProps = React.PropsWithChildren & {
-    blob: UnallocatedBlob
-    selection: Selection<number>
-}
-const ActionPanel = ({ blob, selection, children }: ActionPanelProps) => {
-    return (
-        <div style={{ display: "flex", flexDirection: "column", padding: "0 10px", justifyContent: "space-between", height: "100%" }}>
-            <SelectCheckbox selection={selection} item={blob.id} />
-            <div>
-                {children}
-            </div>
-        </div>
-    )
-}
-
-
-
