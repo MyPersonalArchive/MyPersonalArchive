@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 
@@ -86,7 +87,8 @@ public class DemoDataGenerator
                         Tags = Tags.Ensure(dbContext, tags),
                         Blobs = [],
                         CreatedByUsername = data.Usernames.OrderBy(x => rng.Next()).First(),
-                        CreatedAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440))
+                        CreatedAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440)),
+                        Metadata = []
                     };
 
                     dbContext.ArchiveItems.Add(item);
