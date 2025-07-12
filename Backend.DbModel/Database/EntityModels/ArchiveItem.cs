@@ -1,6 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Nodes;
 
 namespace Backend.DbModel.Database.EntityModels;
 
@@ -21,4 +22,6 @@ public class ArchiveItem : TenantEntity
     public ICollection<Blob>? Blobs { get; set; }
 
     public required ICollection<Tag> Tags { get; set; }
+
+    public required JsonObject Metadata { get; set; }
 }

@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Backend.Core;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +49,8 @@ public class MpaDbContext : DbContext
         // Apply global filter to enforce tenant isolation
         ConfigureTenantReadIsolation(modelBuilder);
 
+        ConfigureTypeConversions(modelBuilder);
+
         ConfigureEntityRelationships(modelBuilder);
 
         SeedDatabase(modelBuilder);
@@ -73,6 +77,21 @@ public class MpaDbContext : DbContext
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
             }
         }
+    }
+
+    private void ConfigureTypeConversions(ModelBuilder modelBuilder)
+    {
+        var _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+        modelBuilder.Entity<ArchiveItem>()
+            .Property(e => e.Metadata)
+            .HasConversion(
+                v => v.ToJsonString(_jsonSerializerOptions),
+                v => JsonSerializer.Deserialize<JsonObject>(v, _jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
+            )
+            .HasColumnType("TEXT");
     }
 
     private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)
