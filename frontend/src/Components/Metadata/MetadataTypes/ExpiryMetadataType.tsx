@@ -10,6 +10,11 @@ type State = {
     validUntil: string
 }
 
+const empty: State = {
+    validFrom: "",
+    validUntil: ""
+}
+
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
         case "SET_VALID_FROM":
@@ -58,10 +63,7 @@ const Component = (props: metadataComponentProps) => {
 export default {
     name: "Expiry",
     path: "expiry",
-    empty: {
-        validFrom: "",
-        validUntil: ""
-    },
+    empty,
     component: Component,
     reducer
 } as const

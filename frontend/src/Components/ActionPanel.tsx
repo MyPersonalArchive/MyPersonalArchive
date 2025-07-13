@@ -1,5 +1,5 @@
 import { UnallocatedBlob } from "../Utils/Atoms"
-import { Selection, SelectCheckbox } from "../Pages/useSelection"
+import { Selection, SelectCheckbox } from "../Utils/Selection"
 
 type ActionPanelProps = React.PropsWithChildren & {
     blob: UnallocatedBlob

@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useState } from "react"
 
 
 export type Selection<T> = {
-    readonly selectedItems: Set<T>;
-    readonly areAllItemsSelected: boolean;
-    readonly areAnyItemsSelected: boolean;
-    readonly areNoItemsSelected: boolean;
-    readonly areOnlySomeItemsSelected: boolean;
-    selectAllItems: () => void;
-    clearSelection: () => void;
-    select: (itemToSelect: T) => void;
-    deselect: (itemToDeselect: T) => void;
-    toggleSelection: (itemToToggle: T) => void;
-};
+    readonly selectedItems: Set<T>
+    readonly areAllItemsSelected: boolean
+    readonly areAnyItemsSelected: boolean
+    readonly areNoItemsSelected: boolean
+    readonly areOnlySomeItemsSelected: boolean
+    selectAllItems: () => void
+    clearSelection: () => void
+    initializeSelection: (initialSelection: Set<T>) => void
+    select: (itemToSelect: T) => void
+    deselect: (itemToDeselect: T) => void
+    toggleSelection: (itemToToggle: T) => void
+}
 
 export const useSelection = <T,>(allPossibleItems: Set<T>): Selection<T> => {
     const [selectedItems, setSelectedItems] = useState<Set<T>>(new Set<T>())
@@ -39,8 +40,12 @@ export const useSelection = <T,>(allPossibleItems: Set<T>): Selection<T> => {
         clearSelection() {
             setSelectedItems(new Set())
         },
+        initializeSelection(initialSelection: Set<T>) {
+            // It is only possible to select items that are in the set of all possible items. Other items will be ignored.
+            setSelectedItems(initialSelection.intersection(allPossibleItems))
+        },
         select(itemToSelect: T) {
-            // It should not be possible to select an item that is not in the set of all possible items
+            // It is only possible to select items that are in the set of all possible items. Other items will be ignored.
             if (allPossibleItems.has(itemToSelect)) {
                 setSelectedItems(set => set.union(new Set([itemToSelect])))
             }
@@ -49,7 +54,7 @@ export const useSelection = <T,>(allPossibleItems: Set<T>): Selection<T> => {
             setSelectedItems(set => set.difference(new Set([itemToDeselect])))
         },
         toggleSelection(itemToToggle: T) {
-            // It should not be possible to select an item that is not in the set of all possible items
+            // It is only possible to select items that are in the set of all possible items. Other items will be ignored.
             if (allPossibleItems.has(itemToToggle)) {
                 setSelectedItems(set => set.has(itemToToggle)
                     ? set.difference(new Set([itemToToggle]))
