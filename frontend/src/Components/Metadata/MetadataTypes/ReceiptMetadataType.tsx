@@ -12,6 +12,12 @@ type State = {
     warranty: string
 }
 
+const empty: State = {
+    amount: "",
+    currency: "",
+    warranty: ""
+}
+
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
         case "SET_AMOUNT":
@@ -82,11 +88,7 @@ const Component = (props: metadataComponentProps) => {
 export default {
     name: "Receipt",
     path: "receipt",
-    empty: {
-        amount: "",
-        currency: "",
-        warranty: ""
-    },
+    empty,
     component: Component,
     reducer
 } as const

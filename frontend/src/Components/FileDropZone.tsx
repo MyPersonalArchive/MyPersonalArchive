@@ -7,7 +7,7 @@ import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
 import { DimensionEnum, Preview, PreviewList } from "./PreviewList"
 import { ActionPanel } from "../Components/ActionPanel"
 import { InfoPanel } from "../Components/InfoPanel"
-import { useSelection } from "../Pages/useSelection"
+import { useSelection } from "../Utils/Selection"
 
 
 

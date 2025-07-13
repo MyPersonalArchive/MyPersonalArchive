@@ -6,7 +6,7 @@ import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
 import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { FileDropZone } from "../Components/FileDropZone"
-import { useSelection } from "./useSelection"
+import { useSelection } from "../Utils/Selection"
 import { ActionPanel } from "../Components/ActionPanel"
 import { InfoPanel } from "../Components/InfoPanel"
 
