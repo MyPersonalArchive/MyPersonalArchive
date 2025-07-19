@@ -3,7 +3,7 @@ import ExpiryMetadataComponent from './MetadataTypes/ExpiryMetadataType'
 import ReceiptMetadataComponent from './MetadataTypes/ReceiptMetadataType'
 
 
-export const availableMetadataTypes: Array<MetadataType> = [
+export const allMetadataTypes: Array<MetadataType> = [
     ReceiptMetadataComponent,
     ExpiryMetadataComponent
 ]
