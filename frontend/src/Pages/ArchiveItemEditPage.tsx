@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
@@ -8,21 +8,22 @@ import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
-import { availableMetadataTypes } from "../Components/Metadata/availableMetadataTypes"
-import { metadataTypesReducer } from '../Components/Metadata/metadataTypesReducer'
-import React from "react"
+import { allMetadataTypes } from "../Components/Metadata/availableMetadataTypes"
+import { useMetadata } from "../Utils/useMetadata"
 
 type GetResponse = {
     id: number
     title: string
     tags: string[]
     blobs: BlobResponse[]
+    metadata: any
 }
 
 type BlobResponse = {
     id: number
     numberOfPages: number
 }
+
 
 
 export const ArchiveItemEditPage = () => {
@@ -35,8 +36,7 @@ export const ArchiveItemEditPage = () => {
 
     const allTags = useAtomValue(tagsAtom)
 
-    const [metadataTypes, setMetadataTypes] = useState(availableMetadataTypes.map(({ name, path, component }) => ({ name, path, component, isVisible: false })))
-    const [metadataRootState, metadataStateDispatch] = useReducer(metadataTypesReducer(availableMetadataTypes), availableMetadataTypes.reduce((acc, { path, empty }) => ({ [path]: {...empty}, ...acc }), {} /* TODO: load initial state here */))
+    const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
 
     const params = useParams()
     const navigate = useNavigate()
@@ -49,13 +49,15 @@ export const ArchiveItemEditPage = () => {
                 setTitle(item.title)
                 setTags(item.tags)
                 setBlobs(item.blobs)
+
+                dispatch({ path: "", action: "METADATA_LOADED", metadata: item.metadata })
             })
     }, [])
 
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        const metadataStateToSave = prepareMetadataForSave(metadataRootState, metadataTypes)
+        const metadataStateToSave = prepareMetadataForSave(metadata)
 
         const formData = new FormData()
         const updateRequest = {
@@ -78,11 +80,11 @@ export const ArchiveItemEditPage = () => {
         navigate(RoutePaths.Archive)
     }
 
-    const prepareMetadataForSave = (metadataState: any, metadata: { path: string, isVisible: boolean }[]) => {
+    const prepareMetadataForSave = (metadata: any) => {
         const metadataStateToSave = {} as any
-        metadata
-            .filter(({ isVisible }) => isVisible)
-            .forEach(({ path }) => { metadataStateToSave[path] = metadataState[path] })
+        selectedMetadataTypes.forEach((path) => {
+            metadataStateToSave[path] = metadata[path]
+        })
         return metadataStateToSave
     }
 
@@ -143,28 +145,38 @@ export const ArchiveItemEditPage = () => {
                                 Include metadata for
                                 &nbsp;
                                 {
-                                    metadataTypes.map(({ name, isVisible }) => (
-                                        <label key={name}>
-                                            <input type="checkbox" id={name} checked={isVisible} onChange={() => { setMetadataTypes(metadata => metadata.map(item => item.name === name ? { ...item, isVisible: !item.isVisible } : item)) }} />
-                                            &nbsp;&nbsp;{name}&nbsp;&nbsp;
-                                        </label>
-                                    ))
+                                    allMetadataTypes
+                                        .map(({ name, path }) => (
+                                            <label key={name}>
+                                                <input
+                                                    type="checkbox"
+                                                    id={name}
+                                                    checked={selectedMetadataTypes.has(path)}
+                                                    onChange={() => {
+                                                        dispatch({ path: "", action: "TOGGLE_METADATA_TYPE", type: path })
+                                                    }}
+                                                />
+                                                &nbsp;&nbsp;{name}&nbsp;&nbsp;
+                                            </label>
+                                        ))
                                 }
                             </td>
                         </tr>
                         {
-                            metadataTypes.filter(({ isVisible }) => isVisible).map(({ name, component, path }) => (
-                                <tr key={name}>
-                                    <td>
-                                        {name}
-                                    </td>
-                                    <td>
-                                        {
-                                            React.createElement(component, { state: metadataRootState[path], dispatch: metadataStateDispatch })
-                                        }
-                                    </td>
-                                </tr>
-                            ))
+                            allMetadataTypes
+                                .filter(({ path }) => selectedMetadataTypes.has(path))
+                                .map(({ name, component, path }) => (
+                                    <tr key={name}>
+                                        <td>
+                                            {name}
+                                        </td>
+                                        <td>
+                                            {
+                                                React.createElement(component, { state: metadata[path], dispatch })
+                                            }
+                                        </td>
+                                    </tr>
+                                ))
                         }
                         <tr>
                             <td colSpan={2}>

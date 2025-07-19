@@ -1,5 +1,6 @@
 import { Dispatch } from "react"
 
+
 export type reducer = (state: any, command: any) => unknown
 
 export type metadataComponentProps = {
@@ -7,41 +8,48 @@ export type metadataComponentProps = {
     dispatch: Dispatch<unknown>
 }
 
-export type MetadataType = {
+interface IMetadataType {
+    path: string,
+    empty: any
+    reducer: reducer,
+}
+
+export type MetadataType = IMetadataType & {
     name: string,
     path: string,
-    empty: any,
+    empty: any
     reducer: reducer,
     component: React.FC<metadataComponentProps>
 }
 
-interface IMetadataCommand {
+export type MetadataState = {
+    availableMetadataTypes: Set<String>,
+    selectedMetadataTypes: Set<string>,
+    metadata: Record<string, any>
+}
+export interface IMetadataCommand {
     path: string,
     action: string
 }
-export const metadataTypesReducer = (metadataTypes: Array<MetadataType>) => (stateRoot: any, command: IMetadataCommand): unknown => {
-    //TODO:
-    // - stateRoot or states - object? new Map? array?
-    // - command has a target path, which is the component path.
-    // - the path is the identifier for the component
-    // - send only to the component that matches the path
-    // - no need to call all the reducers, only the one that matches the path
-    // - can have a INIT command specific for each component
-
-    // console.log("*** 1", stateRoot, command.path)
-
-
-    const metadataType = metadataTypes.find(c => c.path === command.path)
-    if (!metadataType) {
-        console.warn(`No metadata type found for path: ${command.path}`)
-        return stateRoot
+export const metadataTypesReducer = (metadataTypes: Array<IMetadataType>) => (state: MetadataState, command: IMetadataCommand): MetadataState => {
+    const metadataTypeFromCommand = metadataTypes.find(c => c.path === command.path)
+    
+    if (!metadataTypeFromCommand) {
+        console.warn(`No metadata component type found for path: ${command.path}`)
+        return state
     }
 
-    const componentState = metadataType.reducer(stateRoot[metadataType.path], command)
+    if (metadataTypeFromCommand.path === "") {
+        return metadataTypeFromCommand.reducer(state, command) as MetadataState
+    }
 
+    const componentState = metadataTypeFromCommand.reducer(state.metadata[metadataTypeFromCommand.path], command)
     return {
-        ...stateRoot,
-        [metadataType.path]: componentState
+        ...state,
+        metadata: {
+            ...state.metadata,
+            [metadataTypeFromCommand.path]: componentState
+        }
     }
 }
 
