@@ -1,18 +1,4 @@
-import { useReducer, useState } from "react"
-
-
-export type Selection<T> = {
-    selectedItems: Set<T>
-    readonly areAllItemsSelected: boolean
-    readonly areAnyItemsSelected: boolean
-    readonly areNoItemsSelected: boolean
-    readonly areOnlySomeItemsSelected: boolean
-    selectAllItems: () => void
-    clearSelection: () => void
-    select: (itemToSelect: T) => void
-    deselect: (itemToDeselect: T) => void
-    toggleSelection: (itemToToggle: T) => void
-}
+import { useReducer } from "react"
 
 type Command<T> =
     | { type: "SELECT_ALL_ITEMS" }
@@ -22,7 +8,7 @@ type Command<T> =
     | { type: "TOGGLE_ITEM", item: T }
     | { type: "SET_SELECTION", items: Set<T> }
 
-const selectionReducer = <T,>(allPossibleItems: Set<T>) => (state: Set<T>, action: Command<T>) => {
+export const selectionReducer = <T,>(allPossibleItems: Set<T>) => (state: Set<T>, action: Command<T>) => {
     switch (action.type) {
         case "SELECT_ALL_ITEMS":
             return new Set(allPossibleItems)
@@ -53,44 +39,68 @@ const selectionReducer = <T,>(allPossibleItems: Set<T>) => (state: Set<T>, actio
     }
 }
 
+export class Selection<T> {
+    private _selectedItems: Set<T>
+    private _dispatch: React.Dispatch<Command<T>>
+
+    constructor(
+        public readonly allPossibleItems: Set<T>,
+        selectedItems: Set<T> = new Set<T>(),
+        dispatch: React.Dispatch<Command<T>>
+    ) {
+        this._selectedItems = selectedItems
+        this._dispatch = dispatch
+    }
+
+    get selectedItems() {
+        return this._selectedItems
+    }
+
+    set selectedItems(items: Set<T>) {
+        this._dispatch({ type: "SET_SELECTION", items })
+    }
+
+    selectAllItems() {
+        this._dispatch({ type: "SELECT_ALL_ITEMS" })
+    }
+
+    clearSelection() {
+        this._dispatch({ type: "DESELECT_ALL_ITEMS" })
+    }
+
+    select(item: T) {
+        this._dispatch({ type: "SELECT_ITEM", item })
+    }
+
+    deselect(item: T) {
+        this._dispatch({ type: "DESELECT_ITEM", item })
+    }
+
+    toggleSelection(item: T) {
+        this._dispatch({ type: "TOGGLE_ITEM", item })
+    }
+
+    get areAllItemsSelected() {
+        return this.allPossibleItems.size === this._selectedItems.size
+    }
+
+    get areAnyItemsSelected() {
+        return this._selectedItems.size > 0
+    }
+
+    get areNoItemsSelected() {
+        return this._selectedItems.size === 0
+    }
+
+    get areOnlySomeItemsSelected() {
+        return this._selectedItems.size > 0 && this.allPossibleItems.size !== this._selectedItems.size
+    }
+}
+
 export const useSelection = <T,>(allPossibleItems: Set<T>): Selection<T> => {
     const [selectedItems, dispatch] = useReducer(selectionReducer(allPossibleItems), new Set<T>())
 
-    return {
-        get selectedItems() {
-            return selectedItems
-        },
-        set selectedItems(items: Set<T>) {
-            dispatch({ type: "SET_SELECTION", items })
-        },
-        selectAllItems() {
-            dispatch({ type: "SELECT_ALL_ITEMS" })
-        },
-        clearSelection() {
-            dispatch({ type: "DESELECT_ALL_ITEMS" })
-        },
-        select(item: T) {
-            dispatch({ type: "SELECT_ITEM", item })
-        },
-        deselect(item: T) {
-            dispatch({ type: "DESELECT_ITEM", item })
-        },
-        toggleSelection(item: T) {
-            dispatch({ type: "TOGGLE_ITEM", item })
-        },
-        get areAllItemsSelected() {
-            return allPossibleItems.size === selectedItems.size
-        },
-        get areAnyItemsSelected() {
-            return selectedItems.size > 0
-        },
-        get areNoItemsSelected() {
-            return selectedItems.size === 0
-        },
-        get areOnlySomeItemsSelected() {
-            return selectedItems.size > 0 && allPossibleItems.size !== selectedItems.size
-        }
-    }
+    return new Selection<T>(allPossibleItems, selectedItems, dispatch)
 }
 
 
