@@ -2,8 +2,11 @@ import React from "react";
 import { metadataComponentProps } from '../metadataTypesReducer';
 
 type Command =
+    | { path: "expiry", action: "INIT" }
+    | { path: "expiry", action: "METADATA_LOADED", metadata: State }
     | { path: "expiry", action: "SET_VALID_FROM", date: string }
     | { path: "expiry", action: "SET_VALID_UNTIL", date: string }
+
 
 type State = {
     validFrom: string
@@ -17,6 +20,15 @@ const empty: State = {
 
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
+        case "INIT":
+            return empty
+            
+        case "METADATA_LOADED":
+            return {
+                ...state,
+                ...command.metadata
+            }
+
         case "SET_VALID_FROM":
             return {
                 ...state,
@@ -33,7 +45,7 @@ const reducer = (state: State, command: Command): State => {
 }
 
 const Component = (props: metadataComponentProps) => {
-    const state = props.state as State ?? reducer(undefined, { path: "expiry", action: "INIT" })
+    const state = props.state as State
     const dispatch = props.dispatch as React.Dispatch<Command>
 
     return (

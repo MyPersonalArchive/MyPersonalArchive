@@ -9,14 +9,14 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
 import { allMetadataTypes } from "../Components/Metadata/availableMetadataTypes"
-import { useMetadata } from "../Utils/useMetadata"
+import { MetadataControlPath, useMetadata } from "../Utils/useMetadata"
 
 type GetResponse = {
     id: number
     title: string
     tags: string[]
     blobs: BlobResponse[]
-    metadata: any
+    metadata: Record<string, any>
 }
 
 type BlobResponse = {
@@ -49,15 +49,13 @@ export const ArchiveItemEditPage = () => {
                 setTitle(item.title)
                 setTags(item.tags)
                 setBlobs(item.blobs)
-
-                dispatch({ path: "", action: "METADATA_LOADED", metadata: item.metadata })
+                    
+                dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
             })
     }, [])
 
     const save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-
-        const metadataStateToSave = prepareMetadataForSave(metadata)
 
         const formData = new FormData()
         const updateRequest = {
@@ -66,7 +64,7 @@ export const ArchiveItemEditPage = () => {
             tags,
             blobsFromUnallocated: blobs.map(blob => blob.id),
             removedBlobs,
-            metadata: metadataStateToSave
+            metadata
         }
 
         formData.append("rawRequest", JSON.stringify(updateRequest))
@@ -78,14 +76,6 @@ export const ArchiveItemEditPage = () => {
         apiClient.putFormData("/api/archive/Update", formData)
 
         navigate(RoutePaths.Archive)
-    }
-
-    const prepareMetadataForSave = (metadata: any) => {
-        const metadataStateToSave = {} as any
-        selectedMetadataTypes.forEach((path) => {
-            metadataStateToSave[path] = metadata[path]
-        })
-        return metadataStateToSave
     }
 
     const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
@@ -153,7 +143,7 @@ export const ArchiveItemEditPage = () => {
                                                     id={name}
                                                     checked={selectedMetadataTypes.has(path)}
                                                     onChange={() => {
-                                                        dispatch({ path: "", action: "TOGGLE_METADATA_TYPE", type: path })
+                                                        dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: path })
                                                     }}
                                                 />
                                                 &nbsp;&nbsp;{name}&nbsp;&nbsp;
@@ -172,7 +162,8 @@ export const ArchiveItemEditPage = () => {
                                         </td>
                                         <td>
                                             {
-                                                React.createElement(component, { state: metadata[path], dispatch })
+                                                
+                                                React.createElement(component, { state: metadata[path], dispatch: dispatch(path) })
                                             }
                                         </td>
                                     </tr>

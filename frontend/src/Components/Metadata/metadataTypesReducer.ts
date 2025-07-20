@@ -9,47 +9,36 @@ export type metadataComponentProps = {
 }
 
 interface IMetadataType {
-    path: string,
+    path: string | symbol
     empty: any
-    reducer: reducer,
+    reducer: reducer
 }
 
 export type MetadataType = IMetadataType & {
-    name: string,
-    path: string,
+    name: string
+    path: string | symbol
     empty: any
-    reducer: reducer,
+    reducer: reducer
     component: React.FC<metadataComponentProps>
 }
 
-export type MetadataState = {
-    availableMetadataTypes: Set<String>,
-    selectedMetadataTypes: Set<string>,
-    metadata: Record<string, any>
-}
+export type MetadataState = Record<string | symbol, any>
 export interface IMetadataCommand {
-    path: string,
+    path: string | symbol
     action: string
 }
 export const metadataTypesReducer = (metadataTypes: Array<IMetadataType>) => (state: MetadataState, command: IMetadataCommand): MetadataState => {
     const metadataTypeFromCommand = metadataTypes.find(c => c.path === command.path)
-    
+
     if (!metadataTypeFromCommand) {
-        console.warn(`No metadata component type found for path: ${command.path}`)
+        console.warn(`No metadata component type found for path: ${String(command.path)}`)
         return state
     }
 
-    if (metadataTypeFromCommand.path === "") {
-        return metadataTypeFromCommand.reducer(state, command) as MetadataState
-    }
-
-    const componentState = metadataTypeFromCommand.reducer(state.metadata[metadataTypeFromCommand.path], command)
+    const componentState = metadataTypeFromCommand.reducer(state[metadataTypeFromCommand.path], command)
     return {
         ...state,
-        metadata: {
-            ...state.metadata,
-            [metadataTypeFromCommand.path]: componentState
-        }
+        [metadataTypeFromCommand.path]: componentState
     }
 }
 
