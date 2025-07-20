@@ -2,6 +2,8 @@ import React from "react";
 import { metadataComponentProps } from '../metadataTypesReducer';
 
 type Command =
+    | { path: "receipt", action: "INIT" }
+    | { path: "receipt", action: "METADATA_LOADED", metadata: State }
     | { path: "receipt", action: "SET_AMOUNT", amount: string }
     | { path: "receipt", action: "SET_CURRENCY", currency: string }
     | { path: "receipt", action: "SET_WARRANTY", warranty: string }
@@ -20,6 +22,15 @@ const empty: State = {
 
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
+        case "INIT":
+            return empty
+
+        case "METADATA_LOADED":
+            return {
+                ...state,
+                ...command.metadata
+            }
+
         case "SET_AMOUNT":
             return {
                 ...state,
@@ -45,7 +56,7 @@ const reducer = (state: State, command: Command): State => {
 
 
 const Component = (props: metadataComponentProps) => {
-    const state = props.state as State ?? reducer(undefined, { path: "receipt", action: "INIT" })
+    const state = props.state as State
     const dispatch = props.dispatch as React.Dispatch<Command>
 
     return (
