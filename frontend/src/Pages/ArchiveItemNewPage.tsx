@@ -8,6 +8,11 @@ import { useApiClient } from "../Utils/useApiClient"
 import { tagsAtom } from "../Utils/Atoms"
 import { DimensionEnum, LegacyPreview } from "../Components/LegacyPreview"
 import { RoutePaths } from "../RoutePaths"
+import { useMetadata } from "../Utils/Metadata/useMetadata"
+import { allMetadataTypes } from "../Components/MetadataTypes"
+import { MetadataElement } from "../Utils/Metadata/MetadataElement"
+import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
+import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 
 type CreateResponse = {
     id: number
@@ -18,7 +23,10 @@ export const ArchiveItemNewPage = () => {
     const [tags, setTags] = useState<string[]>([])
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<number[]>([])
+
     const allTags = useAtomValue(tagsAtom)
+
+    const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
 
     const navigate = useNavigate()
     const apiClient = useApiClient()
@@ -28,9 +36,10 @@ export const ArchiveItemNewPage = () => {
 
         const formData = new FormData()
         const createRequest = {
-            title, 
+            title,
             tags,
-            blobsFromUnallocated
+            blobsFromUnallocated,
+            metadata
         }
 
         formData.append("rawRequest", JSON.stringify(createRequest))
@@ -92,18 +101,44 @@ export const ArchiveItemNewPage = () => {
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td >
-                                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true}/>
+                            <td colSpan={2}>
+                                <MetadataTypeSelector
+                                    selectedMetadataTypes={selectedMetadataTypes}
+                                    allMetadataTypes={allMetadataTypes}
+                                    dispatch={dispatch(MetadataControlPath)}
+                                />
+                            </td>
+                        </tr>
+                        {
+                            allMetadataTypes
+                                .filter(({ path }) => selectedMetadataTypes.has(path as string))
+                                .map((metadataType) => (
+                                    <tr key={metadataType.displayName}>
+                                        <td>
+                                            {metadataType.displayName}
+                                        </td>
+                                        <td>
+                                            <MetadataElement
+                                                metadataType={metadataType}
+                                                metadata={metadata}
+                                                dispatch={dispatch(metadataType.path)}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))
+                        }
+                        <tr>
+                            <td colSpan={2}>
+                                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
 
-                                <div style={{display: "flex", flexWrap: "wrap"}}>
+                                <div style={{ display: "flex", flexWrap: "wrap" }}>
                                     {blobsFromUnallocated.map((blobId) => (
-                                        <LegacyPreview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob}/>
+                                        <LegacyPreview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob} />
                                     ))}
                                     {localBlobs?.map((blob) => (
-                                        <div key={blob.fileName} style={{marginLeft: "5px"}}>
-                                            <LocalFilePreview removeBlob={removeBlob}  fileName={blob.fileName} blob={blob.fileData}/>
-                                        </div> 
+                                        <div key={blob.fileName} style={{ marginLeft: "5px" }}>
+                                            <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
+                                        </div>
                                     ))}
                                 </div>
                             </td>

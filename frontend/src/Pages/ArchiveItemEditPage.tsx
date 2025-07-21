@@ -11,6 +11,8 @@ import { RoutePaths } from "../RoutePaths"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
+import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
+import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 
 type GetResponse = {
     id: number
@@ -26,7 +28,6 @@ type BlobResponse = {
 }
 
 
-
 export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
     const [title, setTitle] = useState<string>("")
@@ -38,7 +39,7 @@ export const ArchiveItemEditPage = () => {
     const allTags = useAtomValue(tagsAtom)
 
     const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
-    
+
     const params = useParams()
     const navigate = useNavigate()
     const apiClient = useApiClient()
@@ -50,7 +51,7 @@ export const ArchiveItemEditPage = () => {
                 setTitle(item.title)
                 setTags(item.tags)
                 setBlobs(item.blobs)
-                    
+
                 dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
             })
     }, [])
@@ -133,38 +134,27 @@ export const ArchiveItemEditPage = () => {
                         </tr>
                         <tr>
                             <td colSpan={2}>
-                                Include metadata for
-                                &nbsp;
-                                {
-                                    allMetadataTypes
-                                        .map(({ displayName, path }) => (
-                                            <label key={displayName}>
-                                                <input
-                                                    type="checkbox"
-                                                    id={displayName}
-                                                    checked={selectedMetadataTypes.has(path)}
-                                                    onChange={() => {
-                                                        dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: path })
-                                                    }}
-                                                />
-                                                &nbsp;&nbsp;{displayName}&nbsp;&nbsp;
-                                            </label>
-                                        ))
-                                }
+                                <MetadataTypeSelector
+                                    selectedMetadataTypes={selectedMetadataTypes}
+                                    allMetadataTypes={allMetadataTypes}
+                                    dispatch={dispatch(MetadataControlPath)}
+                                />
                             </td>
                         </tr>
                         {
                             allMetadataTypes
-                                .filter(({ path }) => selectedMetadataTypes.has(path))
-                                .map(({ displayName: name, component, path }) => (
-                                    <tr key={name}>
+                                .filter(({ path }) => selectedMetadataTypes.has(path as string))
+                                .map((metadataType) => (
+                                    <tr key={metadataType.displayName}>
                                         <td>
-                                            {name}
+                                            {metadataType.displayName}
                                         </td>
                                         <td>
-                                            {
-                                                React.createElement(component, { state: metadata[path], dispatch: dispatch(path) })
-                                            }
+                                            <MetadataElement
+                                                metadataType={metadataType}
+                                                metadata={metadata}
+                                                dispatch={dispatch(metadataType.path)}
+                                            />
                                         </td>
                                     </tr>
                                 ))
@@ -220,4 +210,3 @@ export const ArchiveItemEditPage = () => {
         </>
     )
 }
-

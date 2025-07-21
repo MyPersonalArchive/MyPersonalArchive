@@ -1,7 +1,9 @@
 
 export type ReducerIdentifier = string | symbol
 
-export type MetadataState = Record<ReducerIdentifier, any>
+export type MetadataState = {
+    [key: ReducerIdentifier]: any
+}
 
 export interface ICommand {
     action: string
