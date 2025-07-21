@@ -1,9 +1,11 @@
 import { useEffect, useReducer } from "react"
-import { IMetadataCommand, MetadataState, MetadataType, combinedReducer } from "./combinedReducer"
+import { combinedReducer } from "./combinedReducer"
+import { ICommand, MetadataState, MetadataType } from "./types"
 import React from "react"
 import { MetadataControlPath, metadataControlReducer } from "./metadataControlReducer"
 
-export const useMetadata = (availableMetadataTypes: MetadataType[]): MetadataState & { dispatch: (path: string | symbol) => React.Dispatch<IMetadataCommand> } => {
+
+export const useMetadata = (availableMetadataTypes: MetadataType[]): MetadataState & { dispatch: (path: string | symbol) => React.Dispatch<ICommand> } => {
     const allReducers = new Map(availableMetadataTypes.map(metadataType => [metadataType.path, metadataType.reducer]))
     allReducers.set(MetadataControlPath, metadataControlReducer)
 
@@ -20,24 +22,21 @@ export const useMetadata = (availableMetadataTypes: MetadataType[]): MetadataSta
 
     useEffect(() => {
         availableMetadataTypes.forEach(({ path }) => {
-            dispatch({ path, action: "INIT" })
+            dispatch({ path, command: { action: "INIT" } })
         })
     }, [availableMetadataTypes])
+
+    const selectedTypes = state[MetadataControlPath].selectedMetadataTypes as Set<string>
+    const metadataEntries = Object.entries(state)
+        .filter(([key]) => selectedTypes.has(key))
+    const metadata = Object.fromEntries(metadataEntries)
 
     return {
         availableMetadataTypes: state[MetadataControlPath].availableMetadataTypes,
         selectedMetadataTypes: state[MetadataControlPath].selectedMetadataTypes,
-        metadata: prepareMetadataForSave(state, state[MetadataControlPath].selectedMetadataTypes),
+        metadata,
         dispatch: (path) => (command) => {
-            dispatch({ path, ...command })
+            dispatch({ path, command })
         }
     }
-}
-
-const prepareMetadataForSave = (metadata: any, selectedMetadataTypes: Set<string>) => {
-    const metadataStateToSave = {} as any
-    selectedMetadataTypes.forEach((path) => {
-        metadataStateToSave[path] = metadata[path]
-    })
-    return metadataStateToSave
 }

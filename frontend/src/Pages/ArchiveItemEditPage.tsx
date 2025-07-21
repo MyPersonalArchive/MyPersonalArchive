@@ -8,7 +8,7 @@ import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
-import { allMetadataTypes } from "../Components/Metadata"
+import { allMetadataTypes } from "../Components/MetadataTypes"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 

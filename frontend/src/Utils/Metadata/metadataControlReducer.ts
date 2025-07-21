@@ -1,12 +1,14 @@
-import { IMetadataCommand } from "./combinedReducer"
+import { ICommand } from "./types"
 
 
 export const MetadataControlPath = Symbol("MetadataControl")
+
 type MetadataControlState = {
     availableMetadataTypes: Set<string>
     selectedMetadataTypes: Set<string>
 }
-export const metadataControlReducer = (state: MetadataControlState, command: IMetadataCommand & Record<string, any>): any => {
+
+export const metadataControlReducer = (state: MetadataControlState, command: ICommand ): MetadataControlState => {
     switch (command.action) {
         case "METADATA_LOADED": {
             const populatedMetadataTypes = new Set(Object.keys(command.metadata))

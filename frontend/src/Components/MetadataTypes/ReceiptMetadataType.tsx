@@ -1,12 +1,12 @@
 import React from "react"
-import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/combinedReducer'
+import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/types'
 
 type Command =
-    | { path: "receipt", action: "INIT" }
-    | { path: "receipt", action: "METADATA_LOADED", metadata: State }
-    | { path: "receipt", action: "SET_AMOUNT", amount: string }
-    | { path: "receipt", action: "SET_CURRENCY", currency: string }
-    | { path: "receipt", action: "SET_WARRANTY", warranty: string }
+    | { action: "INIT" }
+    | { action: "METADATA_LOADED", metadata: State }
+    | { action: "SET_AMOUNT", amount: string }
+    | { action: "SET_CURRENCY", currency: string }
+    | { action: "SET_WARRANTY", warranty: string }
 
 type State = {
     amount: string
@@ -65,11 +65,11 @@ const Component = (props: MetadataComponentProps) => {
                 &nbsp;
                 <input type="text" id="amount" className="input" placeholder="Amount"
                     value={state.amount}
-                    onChange={e => dispatch({ path: "receipt", action: "SET_AMOUNT", amount: e.target.value })}
+                    onChange={e => dispatch({ action: "SET_AMOUNT", amount: e.target.value })}
                 />
                 <select
                     value={state.currency}
-                    onChange={e => dispatch({ path: "receipt", action: "SET_CURRENCY", currency: e.target.value })}
+                    onChange={e => dispatch({ action: "SET_CURRENCY", currency: e.target.value })}
                 >
                     <option value="">-</option>
                     <option value="NOK">NOK</option>
@@ -83,7 +83,7 @@ const Component = (props: MetadataComponentProps) => {
                 &nbsp;
                 <select id="warranty"
                     value={state.warranty}
-                    onChange={e => dispatch({ path: "receipt", action: "SET_WARRANTY", warranty: e.target.value })}
+                    onChange={e => dispatch({ action: "SET_WARRANTY", warranty: e.target.value })}
                 >
                     <option value="">-</option>
                     <option value="1">Norsk garanti (2 år)</option>

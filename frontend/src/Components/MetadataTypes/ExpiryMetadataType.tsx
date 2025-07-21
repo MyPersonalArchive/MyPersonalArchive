@@ -1,11 +1,11 @@
 import React from "react"
-import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/combinedReducer'
+import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/types'
 
 type Command =
-    | { path: "expiry", action: "INIT" }
-    | { path: "expiry", action: "METADATA_LOADED", metadata: State }
-    | { path: "expiry", action: "SET_VALID_FROM", date: string }
-    | { path: "expiry", action: "SET_VALID_UNTIL", date: string }
+    | { action: "INIT" }
+    | { action: "METADATA_LOADED", metadata: State }
+    | { action: "SET_VALID_FROM", date: string }
+    | { action: "SET_VALID_UNTIL", date: string }
 
 
 type State = {
@@ -55,7 +55,7 @@ const Component = (props: MetadataComponentProps) => {
                     &nbsp;
                     <input type="date" id="valid-from" className="input" placeholder="Valid from"
                         value={state.validFrom}
-                        onChange={e => dispatch({ path: "expiry", action: "SET_VALID_FROM", date: e.target.value })}
+                        onChange={e => dispatch({ action: "SET_VALID_FROM", date: e.target.value })}
                     />
                 </div>
                 <div>
@@ -63,7 +63,7 @@ const Component = (props: MetadataComponentProps) => {
                     &nbsp;
                     <input type="date" id="valid-to" className="input" placeholder="Valid until"
                         value={state.validUntil}
-                        onChange={e => dispatch({ path: "expiry", action: "SET_VALID_UNTIL", date: e.target.value })}
+                        onChange={e => dispatch({ action: "SET_VALID_UNTIL", date: e.target.value })}
                     />
                 </div>
             </div>
