@@ -8,8 +8,9 @@ import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
-import { allMetadataTypes } from "../Components/Metadata/availableMetadataTypes"
-import { MetadataControlPath, useMetadata } from "../Utils/useMetadata"
+import { allMetadataTypes } from "../Components/Metadata"
+import { useMetadata } from "../Utils/Metadata/useMetadata"
+import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 
 type GetResponse = {
     id: number
@@ -37,7 +38,7 @@ export const ArchiveItemEditPage = () => {
     const allTags = useAtomValue(tagsAtom)
 
     const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
-
+    
     const params = useParams()
     const navigate = useNavigate()
     const apiClient = useApiClient()
@@ -136,17 +137,17 @@ export const ArchiveItemEditPage = () => {
                                 &nbsp;
                                 {
                                     allMetadataTypes
-                                        .map(({ name, path }) => (
-                                            <label key={name}>
+                                        .map(({ displayName, path }) => (
+                                            <label key={displayName}>
                                                 <input
                                                     type="checkbox"
-                                                    id={name}
+                                                    id={displayName}
                                                     checked={selectedMetadataTypes.has(path)}
                                                     onChange={() => {
                                                         dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: path })
                                                     }}
                                                 />
-                                                &nbsp;&nbsp;{name}&nbsp;&nbsp;
+                                                &nbsp;&nbsp;{displayName}&nbsp;&nbsp;
                                             </label>
                                         ))
                                 }
@@ -155,14 +156,13 @@ export const ArchiveItemEditPage = () => {
                         {
                             allMetadataTypes
                                 .filter(({ path }) => selectedMetadataTypes.has(path))
-                                .map(({ name, component, path }) => (
+                                .map(({ displayName: name, component, path }) => (
                                     <tr key={name}>
                                         <td>
                                             {name}
                                         </td>
                                         <td>
                                             {
-                                                
                                                 React.createElement(component, { state: metadata[path], dispatch: dispatch(path) })
                                             }
                                         </td>
