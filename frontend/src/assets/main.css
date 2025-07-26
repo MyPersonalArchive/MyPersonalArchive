@@ -1,15 +1,15 @@
-@import url("reset.css");
+/* @import url("reset.css"); */
 @import url("utils.css");
 @import url("Layout.css");
 @import url("styling.css");
-@import url("filedropzone.css");
-
+/* @import url("filedropzone.css"); */
 @import url("form.layout.css");
-
 @import url("input.styling.css");
 @import url("navbar.css");
 
+/* New tailwind-based css imports */
 @import "tailwindcss";
+@import "./table.css";
 
 .heading-1 {
     @apply text-3xl font-bold;
@@ -17,65 +17,6 @@
 .heading-2 {
     @apply text-2xl font-bold;
 }
-
-
-
-table.has-thead.has-tbody.no-column-seperators {
-    @apply min-w-full rounded-lg shadow-sm border-separate border-spacing-0;
-
-    &>thead {
-        &>tr {
-            @apply bg-gray-100;
-
-            &>th {
-                @apply px-4 py-2 text-left font-semibold border-t border-b border-gray-200;
-            }
-        }
-
-        &>tr:first-child>th:first-child {
-            @apply rounded-tl-lg border-l;
-        }
-
-        &>tr:first-child>th:last-child {
-            @apply rounded-tr-lg border-r;
-        }
-
-    }
-
-    &>tbody {
-        &>tr {
-            @apply border-t border-gray-200 hover:bg-gray-50;
-
-            &>td {
-                @apply px-4 py-2 border-b border-gray-200;
-            }
-
-            &>td:first-child {
-                @apply border-l;
-            }
-
-            &>td:last-child {
-                @apply border-r;
-            }
-
-        }
-
-        &>tr:last-child {
-            @apply border-b-0;
-
-
-            &>td:first-child {
-                @apply rounded-bl-lg;
-            }
-
-            &>td:last-child {
-                @apply rounded-br-lg;
-            }
-
-        }
-    }
-}
-
 
 
 
@@ -90,9 +31,8 @@ table.has-thead.has-tbody.no-column-seperators {
 .input {
     @apply inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200;
 
-    &>input {
+    &>input.stripped {
         @apply p-0 m-0 my-0 focus:outline-none;
-
     }
 }
 

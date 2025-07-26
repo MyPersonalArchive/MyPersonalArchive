@@ -14,22 +14,23 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
         if (event.key === "Enter" || event.key === " ") {
             event.preventDefault()
             const tag = event.currentTarget.value
-            setTags([...tags, tag])
-            event.currentTarget
-
-            setTagsInput("")
+            if (tag !== "") {
+                setTags([...tags, tag])
+                setTagsInput("")
+            }
             return
         }
 
         if (event.key === "Backspace" && tagsInput === "") {
             event.preventDefault()
-            setTagsInput(tags[tags.length - 1])
+
+            setTagsInput(tags[tags.length - 1] ?? "")
             setTags(tags.slice(0, tags.length - 1))
         }
     }
 
     const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if(event.target.value.endsWith(" ")) {
+        if (event.target.value.endsWith(" ")) {
             const tag = event.currentTarget.value
             setTags([...tags, tag])
             event.currentTarget
@@ -49,9 +50,10 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
         <>
             <span className="input" >
                 {
-                    tags?.map((tag, ix) => <span key={ix} className="tag">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
+                    tags?.map((tag, ix) => <span key={ix} className="tag whitespace-nowrap">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
                 }
                 <input
+                className="stripped"
                     type="text"
                     list={htmlId + "List"}
                     placeholder={tags.length == 0 ? placeholder : ""}
