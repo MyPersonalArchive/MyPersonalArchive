@@ -71,7 +71,7 @@ export const ArchiveItemListPage = () => {
             </div>
             <Filter />
             <div className="overflow-x-auto mt-6">
-                <table className="has-thead has-tbody no-column-seperators">
+                <table className="w-full table with-column-seperators">
                     <thead>
                         <tr>
                             <th>Title</th>
