@@ -16,11 +16,13 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@microsoft/signalr": "^8.0.7",
+    "@tailwindcss/vite": "^4.1.11",
     "classnames": "^2.5.1",
     "jotai": "^2.11.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.1.1"
+    "react-router-dom": "^7.1.1",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

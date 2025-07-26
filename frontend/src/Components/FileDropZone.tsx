@@ -98,7 +98,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
     }
 
     return (
-        <div className="filedropzone">
+        <div className="input w-full">
             <input type='file' multiple
                 id='file'
                 ref={inputFileRef}

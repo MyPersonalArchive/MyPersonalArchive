@@ -34,7 +34,9 @@ export const SignOutPage = () => {
 
     return (
         <>
-            <h1>Signing out...</h1>
+            <h1 className="heading-2">
+                Signing out...
+            </h1>
         </>
     )
 }

@@ -54,7 +54,9 @@ export const BlobListPage = () => {
 
     return (
         <>
-            <h1>Blobs</h1>
+            <h1 className="heading-2">
+                Blobs
+            </h1>
             <div className="bloblistpage form">
                 <FileDropZone onBlobAttached={() => { /* //TODO: what? */ }} />
 

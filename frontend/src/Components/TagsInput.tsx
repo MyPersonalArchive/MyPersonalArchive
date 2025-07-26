@@ -1,12 +1,13 @@
 import { useState } from "react"
 
 type TagsProps = {
+    placeholder?: string
     tags: string[]
     setTags: (tags: string[]) => void
     autocompleteList?: string[]
     htmlId?: string
 }
-export const TagsInput = ({ tags, setTags, autocompleteList, htmlId }: TagsProps) => {
+export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId }: TagsProps) => {
     const [tagsInput, setTagsInput] = useState<string>("")
 
     const keyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -46,15 +47,14 @@ export const TagsInput = ({ tags, setTags, autocompleteList, htmlId }: TagsProps
 
     return (
         <>
-            <span className="tags-input input" >
+            <span className="input" >
                 {
                     tags?.map((tag, ix) => <span key={ix} className="tag">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
                 }
                 <input
-                    style={{ border: "none", outline: "none", marginLeft: 0 }}
                     type="text"
                     list={htmlId + "List"}
-                    placeholder=""
+                    placeholder={tags.length == 0 ? placeholder : ""}
                     id={htmlId}
                     value={tagsInput}
                     onKeyDown={keyDown}
