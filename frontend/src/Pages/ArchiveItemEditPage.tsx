@@ -106,7 +106,7 @@ export const ArchiveItemEditPage = () => {
 
     return (
         <>
-            <h1>
+            <h1 className="heading-2">
                 Edit item
             </h1>
             <form onSubmit={save}>

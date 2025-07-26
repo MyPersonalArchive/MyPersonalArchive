@@ -74,7 +74,7 @@ export const ArchiveItemNewPage = () => {
 
     return (
         <>
-            <h1>
+            <h1 className="heading-2">
                 New archive item {title}
             </h1>
             <form onSubmit={save}>

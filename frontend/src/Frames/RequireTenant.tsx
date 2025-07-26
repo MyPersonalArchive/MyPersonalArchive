@@ -22,7 +22,9 @@ export const TenantIdSelector = () => {
     const { switchToTenantId } = useContext(CurrentTenantIdContext)
 
     return <div>
-        <h1>Select a Tenant</h1>
+        <h1 className="heading-2">
+            Select a Tenant
+        </h1>
         <ul>
             {
                 loggedInUser?.availableTenantIds.map(tenantId => (
