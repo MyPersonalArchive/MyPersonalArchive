@@ -55,7 +55,7 @@ export const Dropdown = ({ header, items }: DropdownProps) => {
             <button className="dropdown-button" onClick={toggleDropdown}>
                 {header}
                 <span className="spacer-1ex" />
-                <FontAwesomeIcon icon={faCaretDown} className="dimmed" />
+                <FontAwesomeIcon icon={faCaretDown} className="text-current/50" />
             </button>
             {isOpen &&
                 <div className="dropdown-content">

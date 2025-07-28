@@ -67,10 +67,10 @@ export const ArchiveItemListPage = () => {
             </div>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <button className="btn" onClick={newArchiveItem}>Create new item</button>
-                <button className="btn" onClick={() => navigate(RoutePaths.Blobs)}>Create new item from unallocated blobs</button>
+                <button className="btn" onClick={() => navigate(RoutePaths.Blobs)}>Show unallocated blobs</button>
             </div>
             <Filter />
-            <div className="overflow-x-auto mt-6">
+            <div className="overflow-x-auto mt-2">
                 <table className="w-full table with-column-seperators">
                     <thead>
                         <tr>
@@ -86,7 +86,7 @@ export const ArchiveItemListPage = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-end mt-6 gap-2">
+            <div className="flex justify-end mt-4 gap-2">
                 <button className="btn btn-primary" onClick={newArchiveItem}>Create new item</button>
             </div>
         </div>
@@ -106,7 +106,7 @@ const Row = ({ archiveItem }: RowProps) => {
             <td>
                 {
                     archiveItem.tags.map((tag, ix) => (
-                        <span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded px-2 py-1 mr-1 text-xs">{tag}</span>
+                        <span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
                     ))
                 }
             </td>

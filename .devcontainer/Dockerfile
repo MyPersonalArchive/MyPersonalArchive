@@ -1,4 +1,5 @@
 #noble = ubuntu, bookworm = debian
+# Use noble because the build-script for libvips below is made for Ubuntu.
 FROM mcr.microsoft.com/devcontainers/dotnet:9.0-noble
 # FROM mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm
 

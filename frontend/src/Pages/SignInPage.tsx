@@ -86,7 +86,7 @@ export const SignInPage = () => {
 
 
     return (
-        <div className="signinpage">
+        <div className="flex flex-row">
             <div>
                 <img src={img} alt="" />
             </div>
