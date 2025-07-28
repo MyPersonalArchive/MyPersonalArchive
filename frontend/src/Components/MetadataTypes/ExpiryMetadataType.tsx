@@ -49,7 +49,7 @@ const Component = (props: MetadataComponentProps) => {
 
     return (
         <>
-            <div className="horizontal-stacked-flex">
+            <div className="flex flex-row gap-4">
                 <div>
                     <label htmlFor="valid-from">Valid from</label>
                     &nbsp;

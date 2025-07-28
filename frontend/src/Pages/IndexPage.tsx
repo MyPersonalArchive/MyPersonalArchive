@@ -3,7 +3,7 @@ import img from "../assets/receiptly_logo.png";
 
 export const IndexPage = () => {
     return (
-        <div className="indexpage">
+        <div className="jumbotron">
             <img src={img} alt="The logo!" />
             <h1 className="heading-2">
                 Designed to keep your receipts organized and easily accessible.

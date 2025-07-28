@@ -12,48 +12,12 @@
     --default-button-text-color: var(--complementary-text-color);
 }
 
-body {
-    font-family: sans-serif;
-    margin: 0;
-}
-
-/**/
-.message {
-    border-radius: .5em;
-    padding: .7em 1.4em;
-
-    &.error {
-        background: hsl(0deg, 100%, 85%);
-    }
-
-    &.warning {
-        background: hsl(53, 100%, 85%);
-    }
-}
-
-/**/
-table {
-    &:has(.visible-cell-dividers) {
-        border-collapse: collapse;
-    }
-
-    &>*.visible-cell-dividers>tr>* {
-        border: thin solid hsla(0deg, 0%, 75%, 1);
-    }
-}
-
-td {
-    padding: .3em;
-}
-
-
 
 /**/
 span.tag {
     background: hsl(0, 0%, 90%);
     border-radius: .7em;
     padding: .1em .5em;
-    /* margin-left: .2em; */
     margin-right: .2em;
 
     &>span {

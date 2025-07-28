@@ -1,11 +1,3 @@
-/**/
-.dimmed {
-    color: hsla(from currentColor h s l / 50%) !important;
-}
-
-/* .rounded {
-    border-radius: .5em;
-} */
 
 span.spacer-1ex {
     display: inline-block;
@@ -27,16 +19,4 @@ span.spacer-1em {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-}
-
-.horizontal-stacked-flex {
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-}
-
-
-.vertical-stacked-down-flex {
-    display: flex;
-    flex-direction: column;
 }
