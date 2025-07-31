@@ -10,3 +10,5 @@ Backend.Api/wwwroot/*
 *.user
 
 data
+frontend/temp/
+temp/

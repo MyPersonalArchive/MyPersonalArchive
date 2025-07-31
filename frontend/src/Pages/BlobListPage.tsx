@@ -74,13 +74,13 @@ export const BlobListPage = () => {
                         </label>
                         <span className="spacer-1em" />
 
-                        <button className="button secondary"
+                        <button className="btn"
                             disabled={selectionOfBlobs.areNoItemsSelected}
                             onClick={createArchiveItemFromSelectedUnallocatedBlobs}
                         >
                             Create from all selected
                         </button>
-                        <button className="button secondary"
+                        <button className="btn"
                             disabled={selectionOfBlobs.areNoItemsSelected}
                             onClick={deleteSelectedUnallocatedBlobs}
                         >
@@ -105,8 +105,8 @@ export const BlobListPage = () => {
 
                                 <div style={{ gridArea: "actions" }}>
                                     <ActionPanel blob={blob} selection={selectionOfBlobs}>
-                                        <button className="button secondary" onClick={() => attachBlob(blob.id)}>Add</button>
-                                        <button className="button secondary" onClick={() => deleteBlobs([blob.id])}>Delete</button>
+                                        <button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
+                                        <button className="btn" onClick={() => deleteBlobs([blob.id])}>Delete</button>
                                     </ActionPanel>
                                 </div>
                             </div>

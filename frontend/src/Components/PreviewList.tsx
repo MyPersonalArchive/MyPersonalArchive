@@ -13,20 +13,20 @@ export enum DimensionEnum {
     large = 4
 }
 
-type Blob = {
+export interface BlobIdAndNumberOfPages {
     id: number
     numberOfPages?: number
 }
 
 
-type PreviewListProps<T extends Blob> = {
+type PreviewListProps<T> = {
     blobs: T[]
     containerStyle?: React.CSSProperties
     containerClassName?: string
     thumbnailPreviewTemplate: (blob: T, setMaximizeBlob: (blob?: T) => void) => React.ReactNode
     maximizedPreviewTemplate: (blob: T, minimize: () => void) => React.ReactNode
 }
-export const PreviewList = <T extends Blob,>({ blobs, containerStyle, containerClassName, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
+export const PreviewList = <T,>({ blobs, containerStyle, containerClassName, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
     const [maximizedBlob, setMaximizedBlob] = useState<T | undefined>()
 
     return (
@@ -52,16 +52,15 @@ export const PreviewList = <T extends Blob,>({ blobs, containerStyle, containerC
 }
 
 
-type PreviewProps<T extends Blob> = {
+type PreviewProps<T extends BlobIdAndNumberOfPages> = {
     blob: T
-    numberOfPages?: number
     showPageNavigation?: boolean
     dimension: DimensionEnum
     onMaximize?: (blob: T) => void
     onMinimize?: () => void
     onRemove?: (blob: T) => void
 }
-export const Preview = <T extends Blob,>({ blob, dimension, showPageNavigation, onMaximize, onMinimize, onRemove }: PreviewProps<T>) => {
+export const Preview = <T extends BlobIdAndNumberOfPages,>({ blob, dimension, showPageNavigation, onMaximize, onMinimize, onRemove }: PreviewProps<T>) => {
     const [pageNumber, setPageNumber] = useState<number>(1)
 
     return (

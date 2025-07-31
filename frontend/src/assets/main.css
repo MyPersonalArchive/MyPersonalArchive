@@ -4,7 +4,6 @@
 @import url("styling.css");
 /* @import url("filedropzone.css"); */
 @import url("form.layout.css");
-@import url("input.styling.css");
 @import url("navbar.css");
 
 /* New tailwind-based css imports */
@@ -18,6 +17,7 @@
 .heading-1 {
     @apply text-3xl font-bold;
 }
+
 .heading-2 {
     @apply text-2xl font-bold;
 }
@@ -38,8 +38,14 @@
 .input {
     @apply inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200;
 
+    /* 'is-wrapper' is used when this element is a complex wrapper for other input elements*/
+    &.is-wrapper {
+        @apply has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
+    }
+
+    /* 'stripped' is used for inner input elements inside a complex wrapper with 'is-wrapper' */
     &>input.stripped {
         @apply p-0 m-0 my-0 focus:outline-none;
     }
-}
 
+}

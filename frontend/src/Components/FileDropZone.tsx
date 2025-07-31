@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
-import { DimensionEnum, Preview, PreviewList } from "./PreviewList"
+import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "./PreviewList"
 import { ActionPanel } from "../Components/ActionPanel"
 import { InfoPanel } from "../Components/InfoPanel"
 import { useSelection } from "../Utils/Selection"
@@ -13,7 +13,7 @@ import { useSelection } from "../Utils/Selection"
 
 export type FileDropZoneProps = {
     onBlobAdded?: (files: { fileName: string; fileData: Blob }[]) => void
-    onBlobAttached: (blobId: number[]) => void
+    onBlobAttached: (blob: BlobIdAndNumberOfPages[]) => void
     showUnallocatedBlobs?: boolean
 }
 export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs }: FileDropZoneProps) => {
@@ -98,14 +98,17 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
     }
 
     return (
-        <div className="input w-full">
+        <div className="input is-wrapper w-full">
             <input type='file' multiple
                 id='file'
                 ref={inputFileRef}
                 style={{ display: "none" }}
-                onChange={onChangeFile} />
-            <div draggable="true" onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}
-                style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}
+                onChange={onChangeFile}
+            />
+            <div draggable="true" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
             >
                 <div style={{
                     height: showUnallocatedBlobs ? "7.5em" : "4.5em",
@@ -147,7 +150,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 type UnallocatedBlobsDialogProps = {
     openDialog: boolean,
     onCloseDialog: () => void
-    onBlobAttached: (blobId: number[]) => void
+    onBlobAttached: (blob: BlobIdAndNumberOfPages[]) => void
 }
 const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
     if (!openDialog) return null
@@ -163,8 +166,9 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
         }
     }, [selectionOfBlobs.selectedItems, unallocatedHeap])
 
-    const blobSelected = (blobId: number[]) => {
-        onBlobAttached(blobId)
+    const blobSelected = (blobIds: number[]) => {
+        const blobs = unallocatedHeap.filter(blob => blobIds.includes(blob.id)).map(blob => ({ id: blob.id, numberOfPages: blob.pageCount }))
+        onBlobAttached(blobs)
         onCloseDialog()
     }
 
@@ -185,7 +189,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
                             Select all
                         </label>
                         <span className="spacer-1em" />
-                        <button className="button secondary"
+                        <button className="btn"
                             disabled={selectionOfBlobs.areNoItemsSelected}
                             onClick={() => blobSelected(Array.from(selectionOfBlobs.selectedItems))}
                         >
@@ -210,7 +214,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 
                                 <div style={{ gridArea: "actions" }}>
                                     <ActionPanel blob={blob} selection={selectionOfBlobs}>
-                                        <button className="button secondary" onClick={() => blobSelected([blob.id!])}>Add blob</button>
+                                        <button className="btn" onClick={() => blobSelected([blob.id!])}>Add blob</button>
                                     </ActionPanel>
                                 </div>
                             </div>

@@ -137,9 +137,8 @@ export const SignInPage = () => {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td>
-                                            <button className="button primary" type="submit">
+                                        <td colSpan={2}>
+                                            <button className="btn btn-primary" type="submit">
                                                 Log in
                                             </button>
                                         </td>
