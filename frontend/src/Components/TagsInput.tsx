@@ -48,7 +48,7 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 
     return (
         <>
-            <span className="input" >
+            <span className="input is-wrapper" >
                 {
                     tags?.map((tag, ix) => <span key={ix} className="tag whitespace-nowrap">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
                 }

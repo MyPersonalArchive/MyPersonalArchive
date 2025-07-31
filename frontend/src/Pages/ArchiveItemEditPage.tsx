@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
-import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
+import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
@@ -32,7 +32,7 @@ export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
-    const [blobs, setBlobs] = useState<BlobResponse[]>([])
+    const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
 
@@ -50,7 +50,7 @@ export const ArchiveItemEditPage = () => {
                 setId(item.id)
                 setTitle(item.title)
                 setTags(item.tags)
-                setBlobs(item.blobs)
+                setBlobs(item.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages })))
 
                 dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
             })
@@ -92,14 +92,14 @@ export const ArchiveItemEditPage = () => {
         navigate(-1)
     }
 
-    const attachUnallocatedBlobs = (blobIds: number[]) => {
-        blobIds.map(blobId => {
-            setBlobs(blobs => [...blobs, { id: blobId, numberOfPages: 1 }])
-            setRemovedBlobs(removedBlobs => removedBlobs.filter(id => id !== blobId))
+    const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
+        blobs.forEach(blob => {
+            setBlobs(blobs => [...blobs, blob])
+            setRemovedBlobs(removedBlobs => removedBlobs.filter(id => id !== blob.id))
         })
     }
 
-    const removeUnallocatedBlob = (blob: BlobResponse) => {
+    const removeUnallocatedBlob = (blob: BlobIdAndNumberOfPages) => {
         setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
         setRemovedBlobs(removedBlobs => [...removedBlobs, blob.id])
     }
@@ -167,19 +167,21 @@ export const ArchiveItemEditPage = () => {
                         <tr>
                             <td colSpan={2}>
                                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-                                    <PreviewList<BlobResponse> blobs={blobs}
+                                    <PreviewList<BlobIdAndNumberOfPages> blobs={blobs}
                                         containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
                                         thumbnailPreviewTemplate={
                                             (blob, maximize) =>
                                                 <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
                                                     onRemove={removeUnallocatedBlob}
-                                                    onMaximize={() => maximize(blob)} />
+                                                    onMaximize={() => maximize(blob)}
+                                                />
                                         }
                                         maximizedPreviewTemplate={
                                             (blob, minimize) =>
                                                 <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
                                                     onRemove={removeUnallocatedBlob}
-                                                    onMinimize={() => minimize()} />
+                                                    onMinimize={() => minimize()}
+                                                />
                                         }
                                     />
 
@@ -194,12 +196,11 @@ export const ArchiveItemEditPage = () => {
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td>
-                                <button className="button secondary" type="button" onClick={back}>
+                            <td colSpan={2}>
+                                <button className="btn" type="button" onClick={back}>
                                     Back
                                 </button>
-                                <button className="button primary" type="submit">
+                                <button className="btn btn-primary" type="submit">
                                     Save
                                 </button>
                             </td>

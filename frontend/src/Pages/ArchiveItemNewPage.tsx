@@ -6,13 +6,13 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
 import { tagsAtom } from "../Utils/Atoms"
-import { DimensionEnum, LegacyPreview } from "../Components/LegacyPreview"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
+import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 
 type CreateResponse = {
     id: number
@@ -22,7 +22,7 @@ export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
-    const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<number[]>([])
+    const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
 
     const allTags = useAtomValue(tagsAtom)
 
@@ -64,12 +64,12 @@ export const ArchiveItemNewPage = () => {
         setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
     }
 
-    const attachUnallocatedBlobs = (blobIds: number[]) => {
-        setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, ...blobIds])
+    const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
+        setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, ...blobs])
     }
 
-    const removeUnallocatedBlob = (blobId: number) => {
-        setBlobsFromUnallocated(blobsFromUnallocated => blobsFromUnallocated.filter(id => id !== blobId))
+    const removeUnallocatedBlob = (blob: BlobIdAndNumberOfPages) => {
+        setBlobsFromUnallocated(blobsFromUnallocated => blobsFromUnallocated.filter(x => x.id !== blob.id))
     }
 
     return (
@@ -129,34 +129,49 @@ export const ArchiveItemNewPage = () => {
                         }
                         <tr>
                             <td colSpan={2}>
-                                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
+                                <FileDropZone showUnallocatedBlobs={true}
+                                    onBlobAdded={addFileBlobs}
+                                    onBlobAttached={attachUnallocatedBlobs}
+                                />
 
-                                <div style={{ display: "flex", flexWrap: "wrap" }}>
-                                    {blobsFromUnallocated.map((blobId) => (
-                                        <LegacyPreview blobId={blobId} key={blobId} maximizedDimension={DimensionEnum.large} minimizedDimension={DimensionEnum.small} onRemove={removeUnallocatedBlob} />
-                                    ))}
-                                    {localBlobs?.map((blob) => (
-                                        <div key={blob.fileName} style={{ marginLeft: "5px" }}>
-                                            <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
-                                        </div>
-                                    ))}
+                                <PreviewList blobs={blobsFromUnallocated} containerClassName="flex flex-wrap"
+                                    thumbnailPreviewTemplate={(blob, maximize) =>
+                                        <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
+                                            onRemove={removeUnallocatedBlob}
+                                            onMaximize={() => maximize(blob)} />
+                                    }
+                                    maximizedPreviewTemplate={(blob, minimize) =>
+                                        <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large} showPageNavigation={false}
+                                            onRemove={removeUnallocatedBlob}
+                                            onMaximize={() => minimize()} />
+                                    }
+                                />
+                                
+                                <div className="flex flex-wrap">
+                                    {
+                                        //TODO: Use PreviewList component here!
+                                        localBlobs?.map((blob) => (
+                                            <div key={blob.fileName} style={{ marginLeft: "5px" }}>
+                                                <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
+                                            </div>
+                                        ))
+                                    }
                                 </div>
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td>
-                                <button className="button secondary" type="button" onClick={back}>
+                            <td colSpan={2}>
+                                <button className="btn" type="button" onClick={back}>
                                     Back
                                 </button>
-                                <button className="button primary" type="submit">
+                                <button className="btn btn-primary" type="submit">
                                     Save
                                 </button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-            </form>
+            </form >
         </>
     )
 }
