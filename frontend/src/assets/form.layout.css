@@ -37,11 +37,4 @@ form,
         }
     }
 
-    & input[type="checkbox"] {
-        transform: scale(1.4) translate(.14em, -.08em);
-
-        &+label {
-            margin-left: 1em;
-        }
-    }
 }
