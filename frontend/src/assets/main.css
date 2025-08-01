@@ -3,12 +3,13 @@
 @import url("Layout.css");
 @import url("styling.css");
 /* @import url("filedropzone.css"); */
-@import url("form.layout.css");
+/* @import url("form.layout.css"); */
 @import url("navbar.css");
 
 /* New tailwind-based css imports */
 @import "tailwindcss";
 @import "./table.css";
+
 
 .jumbotron {
     @apply bg-gray-100 max-w-md mt-6 mx-auto rounded-xl px-4 py-2;
@@ -26,6 +27,9 @@
     @apply text-blue-600 hover:underline cursor-pointer;
 }
 
+.align-with-btn {
+    @apply py-1;
+}
 
 .btn {
     @apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 transition;
@@ -33,6 +37,10 @@
     &.btn-primary {
         @apply bg-blue-600 text-white hover:bg-blue-700;
     }
+}
+
+div.input {
+    @apply py-4;
 }
 
 .input {
@@ -47,5 +55,12 @@
     &>input.stripped {
         @apply p-0 m-0 my-0 focus:outline-none;
     }
+}
 
+input[type="checkbox"] {
+    transform: scale(1.4) translate(.14em, -.08em);
+
+    &+label {
+        margin-left: 1em;
+    }
 }

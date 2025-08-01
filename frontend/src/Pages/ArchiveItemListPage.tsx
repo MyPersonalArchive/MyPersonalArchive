@@ -62,15 +62,19 @@ export const ArchiveItemListPage = () => {
             <h1 className="heading-1">
                 Archive
             </h1>
+
             <div>
                 <FileDropZone onBlobAttached={() => { }} />
             </div>
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+
+            <div className="flex justify-end my-2 gap-2">
+                <Link className="link align-with-btn" to={RoutePaths.Blobs}>Show unallocated blobs</Link>
                 <button className="btn" onClick={newArchiveItem}>Create new item</button>
-                <button className="btn" onClick={() => navigate(RoutePaths.Blobs)}>Show unallocated blobs</button>
             </div>
+
             <Filter />
-            <div className="overflow-x-auto mt-2">
+
+            <div className="overflow-x-auto my-2">
                 <table className="w-full table with-column-seperators">
                     <thead>
                         <tr>
@@ -86,8 +90,8 @@ export const ArchiveItemListPage = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-end mt-4 gap-2">
-                <button className="btn btn-primary" onClick={newArchiveItem}>Create new item</button>
+            <div className="flex justify-end my-2 gap-2">
+                <button className="btn" onClick={newArchiveItem}>Create new item</button>
             </div>
         </div>
     )
@@ -147,7 +151,7 @@ const Filter = () => {
     }
 
     return (
-        <form onSubmit={search} onReset={reset}>
+        <form onSubmit={search} onReset={reset} className="flex justify-start my-2 gap-2">
             <input className="input"
                 type="text"
                 placeholder="Search by title"
