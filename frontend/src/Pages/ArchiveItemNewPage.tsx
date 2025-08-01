@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
 import { FileDropZone } from "../Components/FileDropZone"
@@ -74,12 +74,14 @@ export const ArchiveItemNewPage = () => {
 
     return (
         <>
-            <h1 className="heading-2">
-                New archive item {title}
-            </h1>
             <form onSubmit={save}>
-                <table>
+                <h1 className="heading-2">
+                    New archive item {title}
+                </h1>
+
+                <table className="w-full">
                     <tbody>
+
                         <tr>
                             <td>
                                 <label htmlFor="title">Title</label>
@@ -92,6 +94,7 @@ export const ArchiveItemNewPage = () => {
                                 />
                             </td>
                         </tr>
+
                         <tr>
                             <td>
                                 <label htmlFor="tags">Tags</label>
@@ -100,6 +103,7 @@ export const ArchiveItemNewPage = () => {
                                 <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
                             </td>
                         </tr>
+
                         <tr>
                             <td colSpan={2}>
                                 <MetadataTypeSelector
@@ -109,6 +113,7 @@ export const ArchiveItemNewPage = () => {
                                 />
                             </td>
                         </tr>
+
                         {
                             allMetadataTypes
                                 .filter(({ path }) => selectedMetadataTypes.has(path as string))
@@ -127,6 +132,7 @@ export const ArchiveItemNewPage = () => {
                                     </tr>
                                 ))
                         }
+
                         <tr>
                             <td colSpan={2}>
                                 <FileDropZone showUnallocatedBlobs={true}
@@ -146,7 +152,7 @@ export const ArchiveItemNewPage = () => {
                                             onMaximize={() => minimize()} />
                                     }
                                 />
-                                
+
                                 <div className="flex flex-wrap">
                                     {
                                         //TODO: Use PreviewList component here!
@@ -159,18 +165,18 @@ export const ArchiveItemNewPage = () => {
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td colSpan={2}>
-                                <button className="btn" type="button" onClick={back}>
-                                    Back
-                                </button>
-                                <button className="btn btn-primary" type="submit">
-                                    Save
-                                </button>
-                            </td>
-                        </tr>
+
                     </tbody>
                 </table>
+
+                <div className="flex justify-end my-2 gap-2">
+                    <Link className="link align-with-btn" to={-1 as any}>
+                        Back
+                    </Link>
+                    <button className="btn btn-primary" type="submit">
+                        Save
+                    </button>
+                </div>
             </form >
         </>
     )
