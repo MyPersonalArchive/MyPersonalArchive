@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
@@ -88,10 +88,6 @@ export const ArchiveItemEditPage = () => {
         setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
     }
 
-    const back = () => {
-        navigate(-1)
-    }
-
     const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
         blobs.forEach(blob => {
             setBlobs(blobs => [...blobs, blob])
@@ -106,11 +102,12 @@ export const ArchiveItemEditPage = () => {
 
     return (
         <>
-            <h1 className="heading-2">
-                Edit item
-            </h1>
             <form onSubmit={save}>
-                <table>
+                <h1 className="heading-2">
+                    Edit item
+                </h1>
+
+                <table className="w-full">
                     <tbody>
                         <tr>
                             <td>
@@ -195,18 +192,16 @@ export const ArchiveItemEditPage = () => {
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td colSpan={2}>
-                                <button className="btn" type="button" onClick={back}>
-                                    Back
-                                </button>
-                                <button className="btn btn-primary" type="submit">
-                                    Save
-                                </button>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
+                <div className="flex justify-end my-2 gap-2 w-full">
+                    <Link className="link align-with-btn" to={-1 as any}>
+                        Back
+                    </Link>
+                    <button className="btn btn-primary" type="submit">
+                        Save
+                    </button>
+                </div>
             </form>
         </>
     )
