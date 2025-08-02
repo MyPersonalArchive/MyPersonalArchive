@@ -103,98 +103,81 @@ export const ArchiveItemEditPage = () => {
     return (
         <>
             <form onSubmit={save}>
+
                 <h1 className="heading-2">
                     Edit item
                 </h1>
 
-                <table className="w-full">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <label htmlFor="title">Title</label>
-                            </td>
-                            <td>
-                                <input className="input" type="text"
-                                    id="title" placeholder="" autoFocus data-1p-ignore
-                                    value={title}
-                                    onChange={event => setTitle(event.target.value)}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label htmlFor="tags">Tags</label>
-                            </td>
-                            <td>
-                                <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>
-                                <MetadataTypeSelector
-                                    selectedMetadataTypes={selectedMetadataTypes}
-                                    allMetadataTypes={allMetadataTypes}
-                                    dispatch={dispatch(MetadataControlPath)}
-                                />
-                            </td>
-                        </tr>
-                        {
-                            allMetadataTypes
-                                .filter(({ path }) => selectedMetadataTypes.has(path as string))
-                                .map((metadataType) => (
-                                    <tr key={metadataType.displayName}>
-                                        <td>
-                                            {metadataType.displayName}
-                                        </td>
-                                        <td>
-                                            <MetadataElement
-                                                metadataType={metadataType}
-                                                metadata={metadata}
-                                                dispatch={dispatch(metadataType.path)}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
-                        }
-                        <tr>
-                            <td colSpan={2}>
-                                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan={2}>
-                                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-                                    <PreviewList<BlobIdAndNumberOfPages> blobs={blobs}
-                                        containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
-                                        thumbnailPreviewTemplate={
-                                            (blob, maximize) =>
-                                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
-                                                    onRemove={removeUnallocatedBlob}
-                                                    onMaximize={() => maximize(blob)}
-                                                />
-                                        }
-                                        maximizedPreviewTemplate={
-                                            (blob, minimize) =>
-                                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
-                                                    onRemove={removeUnallocatedBlob}
-                                                    onMinimize={() => minimize()}
-                                                />
-                                        }
-                                    />
 
-                                    {
-                                        localBlobs.map((blob) => (
-                                            <div key={blob.fileName} style={{ marginLeft: "5px" }}>
-                                                <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
-                                            </div>
-                                        ))
-                                    }
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="title">Title</label>
+                    <input className="input" type="text"
+                        id="title" placeholder="" autoFocus data-1p-ignore
+                        value={title}
+                        onChange={event => setTitle(event.target.value)}
+                    />
+                </div>
+
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="tags">Tags</label>
+                    <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
+                </div>
+
+                <MetadataTypeSelector
+                    selectedMetadataTypes={selectedMetadataTypes}
+                    allMetadataTypes={allMetadataTypes}
+                    dispatch={dispatch(MetadataControlPath)}
+                />
+
+                {
+                    allMetadataTypes
+                        .filter(({ path }) => selectedMetadataTypes.has(path as string))
+                        .map((metadataType) => (
+                            <div key={metadataType.path as string} className="aligned-labels-and-inputs">
+                                <span>{metadataType.displayName}</span>
+                                <div>
+                                    <MetadataElement
+                                        metadataType={metadataType}
+                                        metadata={metadata}
+                                        dispatch={dispatch(metadataType.path)}
+                                    />
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div className="flex justify-end my-2 gap-2 w-full">
+                            </div>
+                        ))
+                }
+
+                <FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
+
+                <div>
+                    <PreviewList<BlobIdAndNumberOfPages> blobs={blobs}
+                        containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
+                        containerClassName="flex flex-row justify-center"
+                        thumbnailPreviewTemplate={
+                            (blob, maximize) =>
+                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
+                                    onRemove={removeUnallocatedBlob}
+                                    onMaximize={() => maximize(blob)}
+                                />
+                        }
+                        maximizedPreviewTemplate={
+                            (blob, minimize) =>
+                                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
+                                    onRemove={removeUnallocatedBlob}
+                                    onMinimize={() => minimize()}
+                                />
+                        }
+                    />
+
+                    {
+                        localBlobs.map((blob) => (
+                            <div key={blob.fileName} style={{ marginLeft: "5px" }}>
+                                <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
+                            </div>
+                        ))
+                    }
+                </div>
+
+                <div className="links-and-buttons-to-the-right">
                     <Link className="link align-with-btn" to={-1 as any}>
                         Back
                     </Link>

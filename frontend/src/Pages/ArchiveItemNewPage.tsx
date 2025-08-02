@@ -79,97 +79,73 @@ export const ArchiveItemNewPage = () => {
                     New archive item {title}
                 </h1>
 
-                <table className="w-full">
-                    <tbody>
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="title">Title</label>
+                    <input className="input" type="text"
+                        id="title" placeholder="" autoFocus required data-1p-ignore
+                        value={title}
+                        onChange={event => setTitle(event.target.value)}
+                    />
+                </div>
 
-                        <tr>
-                            <td>
-                                <label htmlFor="title">Title</label>
-                            </td>
-                            <td>
-                                <input className="input" type="text"
-                                    id="title" placeholder="" autoFocus required data-1p-ignore
-                                    value={title}
-                                    onChange={event => setTitle(event.target.value)}
-                                />
-                            </td>
-                        </tr>
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="tags">Tags</label>
+                    <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
+                </div>
 
-                        <tr>
-                            <td>
-                                <label htmlFor="tags">Tags</label>
-                            </td>
-                            <td>
-                                <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
-                            </td>
-                        </tr>
+                <MetadataTypeSelector
+                    selectedMetadataTypes={selectedMetadataTypes}
+                    allMetadataTypes={allMetadataTypes}
+                    dispatch={dispatch(MetadataControlPath)}
+                />
 
-                        <tr>
-                            <td colSpan={2}>
-                                <MetadataTypeSelector
-                                    selectedMetadataTypes={selectedMetadataTypes}
-                                    allMetadataTypes={allMetadataTypes}
-                                    dispatch={dispatch(MetadataControlPath)}
-                                />
-                            </td>
-                        </tr>
-
-                        {
-                            allMetadataTypes
-                                .filter(({ path }) => selectedMetadataTypes.has(path as string))
-                                .map((metadataType) => (
-                                    <tr key={metadataType.displayName}>
-                                        <td>
-                                            {metadataType.displayName}
-                                        </td>
-                                        <td>
-                                            <MetadataElement
-                                                metadataType={metadataType}
-                                                metadata={metadata}
-                                                dispatch={dispatch(metadataType.path)}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
-                        }
-
-                        <tr>
-                            <td colSpan={2}>
-                                <FileDropZone showUnallocatedBlobs={true}
-                                    onBlobAdded={addFileBlobs}
-                                    onBlobAttached={attachUnallocatedBlobs}
-                                />
-
-                                <PreviewList blobs={blobsFromUnallocated} containerClassName="flex flex-wrap"
-                                    thumbnailPreviewTemplate={(blob, maximize) =>
-                                        <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
-                                            onRemove={removeUnallocatedBlob}
-                                            onMaximize={() => maximize(blob)} />
-                                    }
-                                    maximizedPreviewTemplate={(blob, minimize) =>
-                                        <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large} showPageNavigation={false}
-                                            onRemove={removeUnallocatedBlob}
-                                            onMaximize={() => minimize()} />
-                                    }
-                                />
-
-                                <div className="flex flex-wrap">
-                                    {
-                                        //TODO: Use PreviewList component here!
-                                        localBlobs?.map((blob) => (
-                                            <div key={blob.fileName} style={{ marginLeft: "5px" }}>
-                                                <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
-                                            </div>
-                                        ))
-                                    }
+                {
+                    allMetadataTypes
+                        .filter(({ path }) => selectedMetadataTypes.has(path as string))
+                        .map((metadataType) => (
+                            <div key={metadataType.path as string} className="aligned-labels-and-inputs">
+                                <span>{metadataType.displayName}</span>
+                                <div>
+                                    <MetadataElement
+                                        metadataType={metadataType}
+                                        metadata={metadata}
+                                        dispatch={dispatch(metadataType.path)}
+                                    />
                                 </div>
-                            </td>
-                        </tr>
+                            </div>
+                        ))
+                }
 
-                    </tbody>
-                </table>
+                <FileDropZone showUnallocatedBlobs={true}
+                    onBlobAdded={addFileBlobs}
+                    onBlobAttached={attachUnallocatedBlobs}
+                />
 
-                <div className="flex justify-end my-2 gap-2">
+                <div>
+                    <PreviewList blobs={blobsFromUnallocated} containerClassName="flex flex-wrap"
+                        thumbnailPreviewTemplate={(blob, maximize) =>
+                            <Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
+                                onRemove={removeUnallocatedBlob}
+                                onMaximize={() => maximize(blob)} />
+                        }
+                        maximizedPreviewTemplate={(blob, minimize) =>
+                            <Preview key={blob.id} blob={blob} dimension={DimensionEnum.large} showPageNavigation={false}
+                                onRemove={removeUnallocatedBlob}
+                                onMaximize={() => minimize()} />
+                        }
+                    />
+
+                </div>
+
+                {
+                    localBlobs?.map((blob) => (
+                        <div key={blob.fileName} style={{ marginLeft: "5px" }}>
+                            <LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
+                        </div>
+                    ))
+                }
+
+                <div className="links-and-buttons-to-the-right">
                     <Link className="link align-with-btn" to={-1 as any}>
                         Back
                     </Link>

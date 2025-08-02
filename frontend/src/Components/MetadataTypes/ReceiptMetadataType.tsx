@@ -60,7 +60,7 @@ const Component = (props: MetadataComponentProps) => {
 
     return (
         <>
-            <div>
+            <div className="aligned-labels-and-inputs">
                 <label htmlFor="amount">Amount</label>
                 &nbsp;
                 <input type="text" id="amount" className="input" placeholder="Amount"
@@ -78,7 +78,8 @@ const Component = (props: MetadataComponentProps) => {
                     <option value="SEK">SEK</option>
                 </select>
             </div>
-            <div>
+
+            <div className="aligned-labels-and-inputs">
                 <label htmlFor="warranty">Warranty</label>
                 &nbsp;
                 <select id="warranty"

@@ -18,7 +18,7 @@
 }
 
 .heading-2 {
-    @apply text-2xl font-bold;
+    @apply text-2xl font-bold mb-3;
 }
 
 .link {
@@ -61,4 +61,16 @@ input[type="checkbox"] {
     &+label {
         margin-left: 1em;
     }
+}
+
+.aligned-labels-and-inputs {
+    @apply flex flex-row my-4;
+
+    &>:first-child {
+        width: 5em;
+    }
+}
+
+.links-and-buttons-to-the-right {
+    @apply flex flex-row justify-end my-4 gap-2;
 }

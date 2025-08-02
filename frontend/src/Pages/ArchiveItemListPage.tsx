@@ -67,14 +67,14 @@ export const ArchiveItemListPage = () => {
                 <FileDropZone onBlobAttached={() => { }} />
             </div>
 
-            <div className="flex justify-end my-2 gap-2">
+            <div className="links-and-buttons-to-the-right">
                 <Link className="link align-with-btn" to={RoutePaths.Blobs}>Show unallocated blobs</Link>
                 <button className="btn" onClick={newArchiveItem}>Create new item</button>
             </div>
 
             <Filter />
 
-            <div className="overflow-x-auto my-2">
+            <div className="overflow-x-auto my-4">
                 <table className="w-full table with-column-seperators">
                     <thead>
                         <tr>
@@ -90,7 +90,7 @@ export const ArchiveItemListPage = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-end my-2 gap-2">
+            <div className="links-and-buttons-to-the-right">
                 <button className="btn" onClick={newArchiveItem}>Create new item</button>
             </div>
         </div>
