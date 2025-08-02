@@ -21,7 +21,7 @@ const reducer = (state: State, command: Command): State => {
                 validFrom: "",
                 validUntil: ""
             }
-            
+
         case "METADATA_LOADED":
             return {
                 ...state,
@@ -49,23 +49,20 @@ const Component = (props: MetadataComponentProps) => {
 
     return (
         <>
-            <div className="flex flex-row gap-4">
-                <div>
-                    <label htmlFor="valid-from">Valid from</label>
-                    &nbsp;
-                    <input type="date" id="valid-from" className="input" placeholder="Valid from"
-                        value={state.validFrom}
-                        onChange={e => dispatch({ action: "SET_VALID_FROM", date: e.target.value })}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="valid-from">Valid to</label>
-                    &nbsp;
-                    <input type="date" id="valid-to" className="input" placeholder="Valid until"
-                        value={state.validUntil}
-                        onChange={e => dispatch({ action: "SET_VALID_UNTIL", date: e.target.value })}
-                    />
-                </div>
+            <div className="aligned-labels-and-inputs">
+                <label htmlFor="valid-from">Valid from</label>
+                <input type="date" id="valid-from" className="input" placeholder="Valid from"
+                    value={state.validFrom}
+                    onChange={e => dispatch({ action: "SET_VALID_FROM", date: e.target.value })}
+                />
+            </div>
+
+            <div className="aligned-labels-and-inputs">
+                <label htmlFor="valid-from">Valid to</label>
+                <input type="date" id="valid-to" className="input" placeholder="Valid until"
+                    value={state.validUntil}
+                    onChange={e => dispatch({ action: "SET_VALID_UNTIL", date: e.target.value })}
+                />
             </div>
         </>
     )
