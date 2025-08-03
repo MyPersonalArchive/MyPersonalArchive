@@ -67,7 +67,7 @@ export const ArchiveItemListPage = () => {
                 <FileDropZone onBlobAttached={() => { }} />
             </div>
 
-            <div className="links-and-buttons-to-the-right">
+            <div className="push-right">
                 <Link className="link align-with-btn" to={RoutePaths.Blobs}>Show unallocated blobs</Link>
                 <button className="btn" onClick={newArchiveItem}>Create new item</button>
             </div>
@@ -90,7 +90,7 @@ export const ArchiveItemListPage = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="links-and-buttons-to-the-right">
+            <div className="push-right">
                 <button className="btn" onClick={newArchiveItem}>Create new item</button>
             </div>
         </div>

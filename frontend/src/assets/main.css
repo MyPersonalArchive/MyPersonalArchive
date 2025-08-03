@@ -57,6 +57,7 @@ div.input {
 
 input[type="checkbox"] {
     transform: scale(1.4) translate(.14em, -.08em);
+    width: 1.4em;
 
     &+label {
         margin-left: 1em;
@@ -71,6 +72,6 @@ input[type="checkbox"] {
     }
 }
 
-.links-and-buttons-to-the-right {
-    @apply flex flex-row justify-end my-4 gap-2;
+.push-right {
+    @apply flex flex-row justify-end my-4 gap-2 items-baseline;
 }

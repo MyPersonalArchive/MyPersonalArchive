@@ -4,16 +4,10 @@ span.spacer-1ex {
     width: 1ex;
 }
 
-span.spacer-1em {
-    display: inline-block;
-    width: 1em;
-}
-
 .horizontal-line {
     height: 0;
     border-bottom: thin solid hsl(0deg, 0%, 80%);
 }
-
 
 .horizontal-evenly-spaced-flex {
     display: flex;

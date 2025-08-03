@@ -177,7 +177,7 @@ export const ArchiveItemEditPage = () => {
                     }
                 </div>
 
-                <div className="links-and-buttons-to-the-right">
+                <div className="push-right">
                     <Link className="link align-with-btn" to={-1 as any}>
                         Back
                     </Link>
