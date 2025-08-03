@@ -18,7 +18,6 @@ export const MetadataTypeSelector = ({selectedMetadataTypes, allMetadataTypes, d
                     .map(({ displayName, path }) => (
                         <label key={displayName} >
                             <input
-                            className="mr-2.5"
                                 type="checkbox"
                                 id={displayName}
                                 checked={selectedMetadataTypes.has(path as string)}

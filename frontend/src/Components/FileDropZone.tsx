@@ -5,9 +5,9 @@ import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "./PreviewList"
-import { ActionPanel } from "../Components/ActionPanel"
+// import { ActionPanel } from "../Components/ActionPanel"
 import { InfoPanel } from "../Components/InfoPanel"
-import { useSelection } from "../Utils/Selection"
+import { SelectCheckbox, Selection, useSelection } from "../Utils/Selection"
 
 
 

@@ -1,4 +1,3 @@
-import "./BlobListPage.css"
 import { useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
@@ -6,8 +5,7 @@ import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
 import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { FileDropZone } from "../Components/FileDropZone"
-import { useSelection } from "../Utils/Selection"
-import { ActionPanel } from "../Components/ActionPanel"
+import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { InfoPanel } from "../Components/InfoPanel"
 
 
@@ -57,11 +55,11 @@ export const BlobListPage = () => {
             <h1 className="heading-2">
                 Blobs
             </h1>
-            <div className="bloblistpage form">
+            <div className="bloblistpage">
                 <FileDropZone onBlobAttached={() => { /* //TODO: what? */ }} />
 
                 <div>
-                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+                    <div className="push-right">
                         <label>
                             <input ref={selectAllCheckboxRef} type="checkbox"
                                 checked={selectionOfBlobs.areAllItemsSelected}
@@ -69,10 +67,8 @@ export const BlobListPage = () => {
                                     ? selectionOfBlobs.clearSelection()
                                     : selectionOfBlobs.selectAllItems()
                                 } />
-                            <span className="spacer-1ex" />
                             Select all
                         </label>
-                        <span className="spacer-1em" />
 
                         <button className="btn"
                             disabled={selectionOfBlobs.areNoItemsSelected}
@@ -80,6 +76,7 @@ export const BlobListPage = () => {
                         >
                             Create from all selected
                         </button>
+
                         <button className="btn"
                             disabled={selectionOfBlobs.areNoItemsSelected}
                             onClick={deleteSelectedUnallocatedBlobs}
@@ -90,24 +87,28 @@ export const BlobListPage = () => {
                 </div>
 
                 <PreviewList<UnallocatedBlob> blobs={unallocatedHeap}
-                    containerStyle={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
+                    containerClassName="flex flex-col justify-center gap-1"
                     thumbnailPreviewTemplate={
                         (blob, maximize) =>
-                            <div key={blob.id} className="box grid">
-                                <div style={{ gridArea: "image", background: "whitesmoke", padding: "5px" }}>
+                            <div key={blob.id} className="my-1 h-[107px] border border-gray-300 rounded-md shadow flex flex-row items-start gap-1 p-0">
+                                <div className="w-[200px] bg-gray-200 py-1 content-center">
                                     <Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
                                         onMaximize={maximize} />
                                 </div>
 
-                                <div style={{ gridArea: "information" }}>
+                                <div className="w-full">
                                     <InfoPanel blob={blob} />
                                 </div>
 
-                                <div style={{ gridArea: "actions" }}>
-                                    <ActionPanel blob={blob} selection={selectionOfBlobs}>
+                                <div className="w-[300px] h-full flex flex-col justify-between">
+                                    <div className="push-right pr-0.5">
+                                        <SelectCheckbox selection={selectionOfBlobs} item={blob.id} />
+                                    </div>
+
+                                    <div className="push-right pr-2.5 mb-0">
                                         <button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
                                         <button className="btn" onClick={() => deleteBlobs([blob.id])}>Delete</button>
-                                    </ActionPanel>
+                                    </div>
                                 </div>
                             </div>
 
