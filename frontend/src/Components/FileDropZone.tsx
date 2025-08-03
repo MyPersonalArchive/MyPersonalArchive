@@ -5,9 +5,8 @@ import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "./PreviewList"
-// import { ActionPanel } from "../Components/ActionPanel"
-import { InfoPanel } from "../Components/InfoPanel"
-import { SelectCheckbox, Selection, useSelection } from "../Utils/Selection"
+import { useSelection } from "../Utils/Selection"
+import { BlobListItem } from "./BlobListItem"
 
 
 
@@ -166,7 +165,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
         }
     }, [selectionOfBlobs.selectedItems, unallocatedHeap])
 
-    const blobSelected = (blobIds: number[]) => {
+    const addBlob = (blobIds: number[]) => {
         const blobs = unallocatedHeap.filter(blob => blobIds.includes(blob.id)).map(blob => ({ id: blob.id, numberOfPages: blob.pageCount }))
         onBlobAttached(blobs)
         onCloseDialog()
@@ -174,10 +173,13 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 
     return (
         <div className="dimmedBackground" style={{ zIndex: 1 }} onClick={onCloseDialog}>
-            <div className="overlay bloblistpage" onClick={event => event.stopPropagation()}>
-                <div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", width: "95%" }}>
+            <div className="max-w-[95%] max-h-[95%] p-4 overflow-auto bg-white rounded-lg shadow-lg shadow-black-400 shadow-opacity-50" onClick={event => event.stopPropagation()}>
+                <h1 className="heading-2">
+                    Select from unallocated blobs
+                </h1>
+                <div className="">
 
+                    <div className="push-right">
                         <label>
                             <input ref={selectAllCheckboxRef} type="checkbox"
                                 checked={selectionOfBlobs.areAllItemsSelected}
@@ -185,13 +187,11 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
                                     ? selectionOfBlobs.clearSelection()
                                     : selectionOfBlobs.selectAllItems()
                                 } />
-                            <span className="spacer-1ex" />
                             Select all
                         </label>
-                        <span className="spacer-1em" />
                         <button className="btn"
                             disabled={selectionOfBlobs.areNoItemsSelected}
-                            onClick={() => blobSelected(Array.from(selectionOfBlobs.selectedItems))}
+                            onClick={() => addBlob(Array.from(selectionOfBlobs.selectedItems))}
                         >
                             Add selected blobs
                         </button>
@@ -202,22 +202,14 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
                     containerStyle={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
                     thumbnailPreviewTemplate={
                         (blob, maximize) =>
-                            <div key={blob.id} className="box grid">
-                                <div style={{ gridArea: "image", background: "whitesmoke", padding: "5px" }}>
-                                    <Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
-                                        onMaximize={maximize} />
-                                </div>
+                            <BlobListItem
+                                key={blob.id}
+                                blob={blob}
+                                attachBlob={() => addBlob([blob.id!])}
+                                maximize={maximize}
+                                selectionOfBlobs={selectionOfBlobs}
+                            />
 
-                                <div style={{ gridArea: "information" }}>
-                                    <InfoPanel blob={blob} />
-                                </div>
-
-                                <div style={{ gridArea: "actions" }}>
-                                    <ActionPanel blob={blob} selection={selectionOfBlobs}>
-                                        <button className="btn" onClick={() => blobSelected([blob.id!])}>Add blob</button>
-                                    </ActionPanel>
-                                </div>
-                            </div>
 
                     }
                     maximizedPreviewTemplate={

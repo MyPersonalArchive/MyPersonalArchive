@@ -53,7 +53,7 @@ const Navbar = () => {
                     </>}
                     items={[
                         { type: "link", label: "Archive", link: RoutePaths.Archive },
-                        { type: "link", label: "Blobs", link: RoutePaths.Blobs }
+                        { type: "link", label: "Unallocated blobs", link: RoutePaths.Blobs }
                     ]}
                 />
 
