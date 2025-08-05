@@ -13,22 +13,6 @@
 }
 
 
-/**/
-span.tag {
-    background: hsl(0, 0%, 90%);
-    border-radius: .7em;
-    padding: .1em .5em;
-    margin-right: .2em;
-
-    &>span {
-        padding-left: .2em;
-        color: hsl(0, 0%, 70%);
-        border-left: thin solid currentColor;
-        cursor: pointer;
-    }
-}
-
-
 
 /**/
 .preview {
