@@ -8,9 +8,3 @@ span.spacer-1ex {
     height: 0;
     border-bottom: thin solid hsl(0deg, 0%, 80%);
 }
-
-.horizontal-evenly-spaced-flex {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}

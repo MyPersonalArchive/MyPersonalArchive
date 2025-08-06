@@ -68,10 +68,19 @@ input[type="checkbox"] {
     @apply flex flex-row my-4;
 
     &>:first-child {
-        width: 5em;
+        @apply w-[5em];
     }
 }
 
 .push-right {
     @apply flex flex-row justify-end my-4 gap-2 items-baseline;
+}
+
+
+span.tag {
+    @apply bg-gray-200 rounded-xl px-2 py-0.5 mr-1;
+
+    &>span {
+        @apply pl-1 text-gray-400 border-l border-current cursor-pointer;
+    }
 }

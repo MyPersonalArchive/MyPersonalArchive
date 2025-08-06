@@ -4,7 +4,7 @@ import { loggedInUserAtom, User } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { PropsWithChildren, useContext } from "react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faCaretDown, faUser, faUserTie } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faUser, faUserTie } from '@fortawesome/free-solid-svg-icons'
 import { CurrentTenantIdContext } from './CurrentTenantIdFrame'
 import { Dropdown, DropdownItem } from "./Dropdown"
 
@@ -44,7 +44,7 @@ const Navbar = () => {
     return (
         loggedInUser
             ?
-            <nav className="navbar horizontal-evenly-spaced-flex">
+            <nav className="navbar flex flex-row justify-between">
                 <Dropdown
                     header={<>
                         <FontAwesomeIcon icon={faBars} />
