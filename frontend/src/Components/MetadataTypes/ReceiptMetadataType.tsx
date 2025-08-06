@@ -7,11 +7,13 @@ type Command =
     | { action: "SET_AMOUNT", amount: string }
     | { action: "SET_CURRENCY", currency: string }
     | { action: "SET_WARRANTY", warranty: string }
+    | { action: "SET_DISPOSITION_STATUS", dispositionStatus: string }
 
 type State = {
     amount: string
     currency: string
     warranty: string
+    dispositionStatus: string
 }
 
 
@@ -21,7 +23,8 @@ const reducer = (state: State, command: Command): State => {
             return {
                 amount: "",
                 currency: "",
-                warranty: ""
+                warranty: "",
+                dispositionStatus: ""
             }
 
         case "METADATA_LOADED":
@@ -46,6 +49,11 @@ const reducer = (state: State, command: Command): State => {
             return {
                 ...state,
                 warranty: command.warranty
+            }
+        case "SET_DISPOSITION_STATUS":
+            return {
+                ...state,
+                dispositionStatus: command.dispositionStatus
             }
 
         default:
@@ -90,6 +98,20 @@ const Component = (props: MetadataComponentProps) => {
                     <option value="1">Norsk garanti (2 år)</option>
                     <option value="3">Norsk reklamasjon (5 år)</option>
                 </select>
+            </div>
+
+            <div className="aligned-labels-and-inputs">
+                <label htmlFor="dispositionStatus">Status</label>
+                <select
+                    value={state.dispositionStatus}
+                    onChange={e => dispatch({ action: "SET_DISPOSITION_STATUS", dispositionStatus: e.target.value })}
+                >
+                    <option value="">-</option>
+                    <option value="Sold">Sold</option>
+                    <option value="Scrapped">Scrapped</option>
+                    <option value="RTV">Return to vendor</option>
+                </select>
+                
             </div>
         </>
     )
