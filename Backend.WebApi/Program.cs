@@ -40,6 +40,11 @@ public static class Program
         builder.RegisterJwtServices();
         builder.RegisterSwaggerServices();
 
+        builder.Services.AddScoped<CipherService>();
+        builder.Services.AddScoped<BackupClient>();
+        builder.Services.AddScoped<IBackupStore, BackupStorageProvider>();
+        builder.Services.AddSingleton<TenantBackupManager>();
+
         builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
         // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
         // builder.Services.AddScoped<ISeedService, SeedService>();
