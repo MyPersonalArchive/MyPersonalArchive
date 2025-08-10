@@ -61,6 +61,9 @@ g7KuNtGVfViqbvA2x5PpTrYU2IuXtXxh7yntAceuzFCvcb6GSbs=
 
     public byte[] DecryptFile(byte[] cipherText, byte[] encryptedKey, byte[] iv, byte[] tag)
     {
+        Console.WriteLine("EncryptedKey length: " + encryptedKey.Length);
+        Console.WriteLine("Expected length: " + (_rsaMasterKey.KeySize / 8));
+
         byte[] fileKey = _rsaMasterKey.Decrypt(encryptedKey, RSAEncryptionPadding.OaepSHA256);
 
         using var aes = new AesGcm(fileKey, tagSizeInBytes: 16);
