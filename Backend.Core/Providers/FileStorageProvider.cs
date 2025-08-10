@@ -1,11 +1,6 @@
-using System.Buffers.Text;
 using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using NetVips;
-using Microsoft.VisualBasic;
 
 namespace Backend.Core.Providers;
 

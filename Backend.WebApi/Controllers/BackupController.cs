@@ -8,13 +8,11 @@ using System.Net.Http.Headers;
 [Route("api/[controller]")]
 public class BackupController : ControllerBase
 {
-    private readonly IBackupStore _backupStore;
     private readonly TenantBackupManager _tenantBackupManager;
     private readonly AmbientDataResolver _ambientDataResolver;
 
-    public BackupController(IBackupStore backupStore, TenantBackupManager tenantBackupManager, AmbientDataResolver ambientDataResolver)
+    public BackupController(TenantBackupManager tenantBackupManager, AmbientDataResolver ambientDataResolver)
     {
-        _backupStore = backupStore;
         _tenantBackupManager = tenantBackupManager;
         _ambientDataResolver = ambientDataResolver;
     }
@@ -34,17 +32,22 @@ public class BackupController : ControllerBase
     }
 
 
-    [HttpPost("store")]
-    public async Task<IActionResult> Store([FromBody] BackupPayload payload)
+    [HttpPost("storeblob")]
+    public async Task<IActionResult> StoreBlob([FromBody] BackupPayload payload)
     {
-        await _backupStore.SaveAsync(payload);
         return Ok();
     }
 
-    [HttpGet("restore")]
-    public async Task<IActionResult> Restore([FromBody] Guid fileId)
+    [HttpGet("restoreblob")]
+    public async Task<IActionResult> RestoreBlob([FromBody] Guid fileId)
     {
-        var payload = await _backupStore.GetAsync(fileId);
-        return Ok(payload);
+        return Ok();
+    }
+
+    [HttpGet("restoretabledata")]
+    public async Task<IActionResult> RestoreTableData([FromQuery] string name, [FromQuery] int tenantId)
+    {
+        //Restore table data and insert whats missing
+        return Ok();
     }
 }
