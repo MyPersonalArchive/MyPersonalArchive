@@ -10,6 +10,11 @@ using Backend.Core.Providers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.IdentityModel.Logging;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Backend.WebApi;
 
@@ -19,6 +24,14 @@ public static class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        // OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
+        // JsonObject is used in our dbContext. Can we instead use JObject? We are not using Newtonsoft there.
+        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+        {
+            Converters = { new JsonObjectConverter() },
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
 
         // Add services to the container.
         builder.Services.AddControllers();
@@ -189,7 +202,7 @@ public static class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
+        
         app.UseHttpsRedirection();
 
         app.UseAuthentication();
