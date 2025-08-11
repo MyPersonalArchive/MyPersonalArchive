@@ -330,6 +330,45 @@ namespace Backend.DbModel.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Backup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("LastStartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Backup");
+                });
+
+            modelBuilder.Entity("BackupItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ArchiveItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArchiveItemId");
+
+                    b.ToTable("BackupItem");
+                });
+
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
                 {
                     b.HasOne("Backend.DbModel.Database.EntityModels.User", "CreatedBy")
@@ -403,6 +442,15 @@ namespace Backend.DbModel.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BackupItem", b =>
+                {
+                    b.HasOne("Backend.DbModel.Database.EntityModels.ArchiveItem", "ArchiveItem")
+                        .WithMany()
+                        .HasForeignKey("ArchiveItemId");
+
+                    b.Navigation("ArchiveItem");
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
