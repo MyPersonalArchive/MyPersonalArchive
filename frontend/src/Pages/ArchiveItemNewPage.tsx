@@ -52,10 +52,6 @@ export const ArchiveItemNewPage = () => {
         navigate(RoutePaths.Archive)
     }
 
-    const back = () => {
-        navigate(RoutePaths.Archive)
-    }
-
     const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
         setLocalBlobs([...localBlobs, ...blobs])
     }
@@ -105,7 +101,7 @@ export const ArchiveItemNewPage = () => {
                         .map((metadataType) => (
                             <div key={metadataType.path as string} className="aligned-labels-and-inputs">
                                 <span>{metadataType.displayName}</span>
-                                <div>
+                                <div className="w-full">
                                     <MetadataElement
                                         metadataType={metadataType}
                                         metadata={metadata}

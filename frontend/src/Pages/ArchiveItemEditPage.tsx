@@ -135,7 +135,7 @@ export const ArchiveItemEditPage = () => {
                         .map((metadataType) => (
                             <div key={metadataType.path as string} className="aligned-labels-and-inputs">
                                 <span>{metadataType.displayName}</span>
-                                <div>
+                                <div className="w-full">
                                     <MetadataElement
                                         metadataType={metadataType}
                                         metadata={metadata}

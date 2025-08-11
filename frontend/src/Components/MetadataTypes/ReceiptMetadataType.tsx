@@ -70,27 +70,31 @@ const Component = (props: MetadataComponentProps) => {
         <>
             <div className="aligned-labels-and-inputs">
                 <label htmlFor="amount">Amount</label>
-                &nbsp;
-                <input type="text" id="amount" className="input" placeholder="Amount"
-                    value={state.amount}
-                    onChange={e => dispatch({ action: "SET_AMOUNT", amount: e.target.value })}
-                />
-                <select
-                    value={state.currency}
-                    onChange={e => dispatch({ action: "SET_CURRENCY", currency: e.target.value })}
-                >
-                    <option value="">-</option>
-                    <option value="NOK">NOK</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="SEK">SEK</option>
-                </select>
+                <div className="flex">
+                    <input type="text" id="amount"
+                        className="input"
+                        placeholder="Amount"
+                        value={state.amount}
+                        onChange={e => dispatch({ action: "SET_AMOUNT", amount: e.target.value })}
+                    />
+                    <select
+                        className="input w-20"
+                        value={state.currency}
+                        onChange={e => dispatch({ action: "SET_CURRENCY", currency: e.target.value })}
+                    >
+                        <option value="">-</option>
+                        <option value="NOK">NOK</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="SEK">SEK</option>
+                    </select>
+                </div>
             </div>
 
             <div className="aligned-labels-and-inputs">
                 <label htmlFor="warranty">Warranty</label>
-                &nbsp;
                 <select id="warranty"
+                    className="input"
                     value={state.warranty}
                     onChange={e => dispatch({ action: "SET_WARRANTY", warranty: e.target.value })}
                 >
@@ -103,6 +107,7 @@ const Component = (props: MetadataComponentProps) => {
             <div className="aligned-labels-and-inputs">
                 <label htmlFor="dispositionStatus">Status</label>
                 <select
+                    className="input"
                     value={state.dispositionStatus}
                     onChange={e => dispatch({ action: "SET_DISPOSITION_STATUS", dispositionStatus: e.target.value })}
                 >
@@ -111,7 +116,7 @@ const Component = (props: MetadataComponentProps) => {
                     <option value="Scrapped">Scrapped</option>
                     <option value="RTV">Return to vendor</option>
                 </select>
-                
+
             </div>
         </>
     )
