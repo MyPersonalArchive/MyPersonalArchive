@@ -97,6 +97,8 @@ public class TenantBackupManager
                         await backupClient.BackupBlob(stream, blob.TenantId, blob.Id, Guid.Parse(fileId), metadata);
                     }
                 }
+
+                Console.WriteLine($"Backup for tenant {tenantId} completed");
             }
             catch (Exception e)
             {
