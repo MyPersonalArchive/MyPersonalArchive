@@ -3,9 +3,10 @@ using System.Security.Cryptography;
 public class CipherService
 {
     private readonly RSA _rsaMasterKey;
-    
+
 
     //OBS: ONLY FOR DEBUG PURPOSES, DO NOT USE IN PRODUCTION
+    // https://cryptotools.net/rsagen
     const string privateKeyPem = @"
 -----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAvaZjGPqjzCQ7PO09LNLXYxbJUPZUuD77TSkupk6Gd982xWn5
@@ -37,6 +38,8 @@ g7KuNtGVfViqbvA2x5PpTrYU2IuXtXxh7yntAceuzFCvcb6GSbs=
 
     public CipherService()
     {
+        // We need to load the private key from a file correctly. Curently only debug static file is used
+        // Note that PUBLIC KEY is not needed, it is only decrypted on the source side.
         _rsaMasterKey = RSA.Create();
         _rsaMasterKey.ImportFromPem(privateKeyPem);
     }
@@ -45,13 +48,11 @@ g7KuNtGVfViqbvA2x5PpTrYU2IuXtXxh7yntAceuzFCvcb6GSbs=
     {
         byte[] fileKey = RandomNumberGenerator.GetBytes(32);
         byte[] iv = RandomNumberGenerator.GetBytes(12);
-
-        using var aes = new AesGcm(fileKey, tagSizeInBytes: 16);
-        using var ms = new MemoryStream();
         byte[] plainBytes = ReadAllBytes(fileStream);
         byte[] cipherText = new byte[plainBytes.Length];
         byte[] tag = new byte[16];
 
+        using var aes = new AesGcm(fileKey, tagSizeInBytes: 16);
         aes.Encrypt(iv, plainBytes, cipherText, tag);
 
         byte[] encryptedKey = _rsaMasterKey.Encrypt(fileKey, RSAEncryptionPadding.OaepSHA256);
@@ -61,9 +62,6 @@ g7KuNtGVfViqbvA2x5PpTrYU2IuXtXxh7yntAceuzFCvcb6GSbs=
 
     public byte[] DecryptFile(byte[] cipherText, byte[] encryptedKey, byte[] iv, byte[] tag)
     {
-        Console.WriteLine("EncryptedKey length: " + encryptedKey.Length);
-        Console.WriteLine("Expected length: " + (_rsaMasterKey.KeySize / 8));
-
         byte[] fileKey = _rsaMasterKey.Decrypt(encryptedKey, RSAEncryptionPadding.OaepSHA256);
 
         using var aes = new AesGcm(fileKey, tagSizeInBytes: 16);
