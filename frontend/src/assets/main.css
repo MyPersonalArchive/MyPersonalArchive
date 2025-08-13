@@ -55,14 +55,12 @@ div.input {
     }
 }
 
-input[type="checkbox"] {
-    transform: scale(1.4) translate(.14em, -.08em);
-    width: 1.4em;
 
-    &+label {
-        margin-left: 1em;
-    }
+input[type="checkbox"]+label,
+label>input[type="checkbox"] {
+    @apply mr-1;
 }
+
 
 .aligned-labels-and-inputs {
     @apply flex flex-row my-4;
@@ -70,6 +68,10 @@ input[type="checkbox"] {
     &>:first-child {
         @apply w-[5em];
     }
+}
+
+.push-left {
+    @apply flex flex-row justify-start my-4 gap-2 items-baseline;
 }
 
 .push-right {

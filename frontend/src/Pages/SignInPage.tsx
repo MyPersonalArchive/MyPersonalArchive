@@ -99,52 +99,42 @@ export const SignInPage = () => {
                     : <>
                         {loginFailed && <p className="message error">Username or password is incorrect</p>}
                         <form onSubmit={login}>
-                            <table>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <label htmlFor="username">Email</label>
-                                        </td>
-                                        <td>
-                                            <input className="input" type="email"
-                                                id="username" autoComplete="username" placeholder=""
-                                                required
-                                                ref={userNameInputRef}
-                                                value={username}
-                                                onChange={event => setUsername(event.target.value)}
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <label htmlFor="password">Password</label>
-                                        </td>
-                                        <td>
-                                            <input className="input" type="password"
-                                                id="password" autoComplete="current-password" placeholder=""
-                                                required
-                                                ref={passwordInputRef}
-                                                value={password}
-                                                onChange={event => setPassword(event.target.value)}
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <input className="input" type="checkbox" id="rememberMe" />
-                                            <label htmlFor="rememberMe">Remember me</label>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colSpan={2}>
-                                            <button className="btn btn-primary" type="submit">
-                                                Log in
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div className="aligned-labels-and-inputs">
+                                <label htmlFor="username">Email</label>
+                                <input className="input" type="email"
+                                    id="username" autoComplete="username" placeholder=""
+                                    required
+                                    ref={userNameInputRef}
+                                    value={username}
+                                    onChange={event => setUsername(event.target.value)}
+                                />
+                            </div>
+                            <div className="aligned-labels-and-inputs">
+                                <label htmlFor="password">Password</label>
+                                <input className="input" type="password"
+                                    id="password" autoComplete="current-password" placeholder=""
+                                    required
+                                    ref={passwordInputRef}
+                                    value={password}
+                                    onChange={event => setPassword(event.target.value)}
+                                />
+                            </div>
+
+                            <div className="aligned-labels-and-inputs">
+                                <div></div>
+                                <div>
+                                    <label htmlFor="rememberMe">
+                                        <input className="input" type="checkbox" id="rememberMe" />
+                                        Remember me
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="push-right">
+                                <button className="btn btn-primary" type="submit">
+                                    Log in
+                                </button>
+                            </div>
                         </form>
                     </>
                 }
