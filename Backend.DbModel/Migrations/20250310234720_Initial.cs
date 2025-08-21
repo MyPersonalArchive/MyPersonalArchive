@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -13,21 +13,6 @@ namespace Backend.DbModel.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Backup",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    LastStartedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    CompletedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Backup", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Tag",
                 columns: table => new
@@ -82,7 +67,6 @@ namespace Backend.DbModel.Migrations
                     Title = table.Column<string>(type: "TEXT", maxLength: 80, nullable: false),
                     CreatedByUsername = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    Metadata = table.Column<string>(type: "TEXT", nullable: false),
                     TenantId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -167,25 +151,6 @@ namespace Backend.DbModel.Migrations
                         principalTable: "Tag",
                         principalColumns: new[] { "Id", "TenantId" },
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BackupItem",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ArchiveItemId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TenantId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BackupItem", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_BackupItem_ArchiveItem_ArchiveItemId",
-                        column: x => x.ArchiveItemId,
-                        principalTable: "ArchiveItem",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -280,11 +245,6 @@ namespace Backend.DbModel.Migrations
                 columns: new[] { "TagId", "TenantId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BackupItem_ArchiveItemId",
-                table: "BackupItem",
-                column: "ArchiveItemId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Blob_ArchiveItemId_ArchiveItemTenantId",
                 table: "Blob",
                 columns: new[] { "ArchiveItemId", "ArchiveItemTenantId" });
@@ -328,12 +288,6 @@ namespace Backend.DbModel.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ArchiveItemAndTag");
-
-            migrationBuilder.DropTable(
-                name: "Backup");
-
-            migrationBuilder.DropTable(
-                name: "BackupItem");
 
             migrationBuilder.DropTable(
                 name: "Blob");
