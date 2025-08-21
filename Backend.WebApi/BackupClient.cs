@@ -61,7 +61,7 @@ public class BackupClient
         var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload));
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-        var response = await _httpClient.PostAsync("/api/Backup/backupblob", content);
+        var response = await _httpClient.PostAsync("/api/Backup/storeblob", content);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -90,7 +90,7 @@ public class BackupClient
         var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload));
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-        var response = await _httpClient.PostAsync("/api/Backup/backuptabledata", content);
+        var response = await _httpClient.PostAsync("/api/Backup/storetabledataa", content);
 
         if (!response.IsSuccessStatusCode)
         {

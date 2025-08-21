@@ -40,8 +40,8 @@ public class BackupController : ControllerBase
     }
 
 
-    [HttpPost("backupblob")]
-    public async Task<IActionResult> BackupBlob([FromBody] BackupPayload payload)
+    [HttpPost("storeblob")]
+    public async Task<IActionResult> StoreBlob([FromBody] BackupPayload payload)
     {
         var json = JsonConvert.SerializeObject(payload);
 
@@ -57,8 +57,8 @@ public class BackupController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("backuptabledata")]
-    public async Task<IActionResult> BackupTableData([FromBody] BackupTableData payload)
+    [HttpPost("storetabledata")]
+    public async Task<IActionResult> StoreTableData([FromBody] BackupTableData payload)
     {
         var folderPath = $"{_backupFolder}/{payload.TenantId}/database";
         if (!Directory.Exists(folderPath))

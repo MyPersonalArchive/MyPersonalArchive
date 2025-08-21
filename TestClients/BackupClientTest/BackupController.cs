@@ -6,8 +6,8 @@ using Newtonsoft.Json;
 public class BackupController : ControllerBase
 {
 
-    [HttpPost("backuptabledata")]
-    public async Task<IActionResult> BackupTableData([FromBody] BackupTableData payload)
+    [HttpPost("storetabledataa")]
+    public async Task<IActionResult> StoreTableData([FromBody] BackupTableData payload)
     {
         var folderPath = $"/data/backup/{payload.TenantId}/database";
         if (!Directory.Exists(folderPath))
@@ -33,7 +33,7 @@ public class BackupController : ControllerBase
         return Ok(payload);
     }
 
-    [HttpPost("backupblob")]
+    [HttpPost("storeblob")]
     public async Task<IActionResult> Store([FromBody] BackupPayload payload)
     {
         Console.WriteLine(payload);
