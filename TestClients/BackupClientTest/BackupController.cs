@@ -6,65 +6,28 @@ using Newtonsoft.Json;
 public class BackupController : ControllerBase
 {
 
-    [HttpPost("storetabledataa")]
-    public async Task<IActionResult> StoreTableData([FromBody] BackupTableData payload)
+    [HttpPost("backup")]
+    public async Task<IActionResult> Backup([FromQuery] int tenantId, [FromQuery] string name)
     {
-        var folderPath = $"/data/backup/{payload.TenantId}/database";
+        var folderPath = $"/data/backup/{tenantId}";
         if (!Directory.Exists(folderPath))
         {
             Directory.CreateDirectory(folderPath);
         }
 
-        var filePath = folderPath + $"/{payload.Name}";
+        var filePath = folderPath + $"/{name}";
 
-        var json = JsonConvert.SerializeObject(payload);
-        await System.IO.File.WriteAllTextAsync(filePath, json);
-
-        return Ok();
-    }
-
-    [HttpGet("restoretabledata")]
-    public async Task<IActionResult> RestoreTableDta(int tenantId, string name)
-    {
-        var folderPath = $"/data/backup/{tenantId}/database/";
-        var json = await System.IO.File.ReadAllTextAsync(folderPath + name);
-        var payload = JsonConvert.DeserializeObject<BackupTableData>(json);
-
-        return Ok(payload);
-    }
-
-    [HttpPost("storeblob")]
-    public async Task<IActionResult> Store([FromBody] BackupPayload payload)
-    {
-        Console.WriteLine(payload);
-
-        var json = JsonConvert.SerializeObject(payload);
-
-        var folderPath = $"/data/backup/{payload.File.TenantId}/blobs";
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-
-        var filePath = folderPath + $"/{payload.File.FileId}";
-        if (!payload.Replace && System.IO.File.Exists(filePath))
-        {
-            return Ok();
-        }
-
-        await System.IO.File.WriteAllTextAsync(folderPath + $"/{payload.File.FileId}", json);
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await Request.Body.CopyToAsync(fileStream);
 
         return Ok();
     }
 
-    [HttpGet("restoreblob")]
-    public async Task<IActionResult> Restore(int tenantId, Guid fileId)
+    [HttpGet("restore")]
+    public async Task<IActionResult> Restore([FromQuery] int tenantId, [FromQuery] string name)
     {
-        var json = await System.IO.File.ReadAllTextAsync($"/data/backup/{tenantId}/blobs/{fileId}");
-        var payload = JsonConvert.DeserializeObject<BackupPayload>(json);
-
-        return Ok(payload);
+        var filePath = $"/data/backup/{tenantId}/{name}";
+        using var fileStream = new FileStream(filePath, FileMode.Open);
+        return File(fileStream, "application/zip", name);
     }
-
-
 }

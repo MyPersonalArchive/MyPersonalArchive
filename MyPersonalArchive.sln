@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.WebApi", "Backend.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Core", "Backend.Core\Backend.Core.csproj", "{F74C81D8-C559-49F1-8FEC-C382B02B197A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Crypto", "Backend.Crypto\Backend.Crypto.csproj", "{488B146C-F0B3-4DEF-9015-75E9DD4405AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{F74C81D8-C559-49F1-8FEC-C382B02B197A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F74C81D8-C559-49F1-8FEC-C382B02B197A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F74C81D8-C559-49F1-8FEC-C382B02B197A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{488B146C-F0B3-4DEF-9015-75E9DD4405AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{488B146C-F0B3-4DEF-9015-75E9DD4405AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{488B146C-F0B3-4DEF-9015-75E9DD4405AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{488B146C-F0B3-4DEF-9015-75E9DD4405AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
