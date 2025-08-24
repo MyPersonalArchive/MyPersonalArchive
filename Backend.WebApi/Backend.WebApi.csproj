@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="../Backend.DbModel/Backend.DbModel.csproj" />
     <ProjectReference Include="../Backend.Core/Backend.Core.csproj" />
+    <ProjectReference Include="..\Backend.Crypto\Backend.Crypto.csproj" />
   </ItemGroup>
 
 </Project>

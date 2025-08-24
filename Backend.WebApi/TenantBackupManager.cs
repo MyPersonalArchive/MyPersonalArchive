@@ -1,3 +1,4 @@
+using System.Text;
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
@@ -6,9 +7,26 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
+public class TenantBackup
+{
+    public enum BackupStatus
+    {
+        NotStarted,
+        Running,
+        Stopped
+    }
+
+    public required int TenantId { get; set; }
+    public DateTime? LastBackupTime { get; set; }
+    public DateTime? NextBackupTime { get; set; }
+    public required CancellationTokenSource TokenSource { get; set; }
+    public required TimeSpan Interval { get; set; }
+    public BackupStatus Status { get; set; } = BackupStatus.NotStarted;
+}
+
 public class TenantBackupManager
 {
-    private readonly Dictionary<int, (CancellationTokenSource tokenSource, Task task)> _backupTenants = [];
+    private readonly Dictionary<int, TenantBackup> _backupTenants = [];
     private readonly IServiceScopeFactory _scopeFactory;
 
     public TenantBackupManager(IServiceScopeFactory scopeFactory)
@@ -22,9 +40,16 @@ public class TenantBackupManager
             return false;
 
         var tokenSource = new CancellationTokenSource();
-        var task = Task.Run(() => RunBackupAsync(tenantId, interval, tokenSource.Token));
+        _backupTenants[tenantId] = new TenantBackup
+        {
+            TenantId = tenantId,
+            LastBackupTime = null,
+            NextBackupTime = null,
+            TokenSource = tokenSource,
+            Interval = interval
+        };
 
-        _backupTenants[tenantId] = (tokenSource, task);
+        Task.Run(() => RunBackupAsync(_backupTenants[tenantId]));
 
         Console.WriteLine($"Started backup for tenant {tenantId}");
         return true;
@@ -32,78 +57,101 @@ public class TenantBackupManager
 
     public bool StopTenant(int tenantId)
     {
-        if (!_backupTenants.TryGetValue(tenantId, out var cancellationTokenAndTask))
+        if (!_backupTenants.TryGetValue(tenantId, out var backup))
             return false;
 
-        cancellationTokenAndTask.tokenSource.Cancel();
+        backup.TokenSource.Cancel();
         _backupTenants.Remove(tenantId);
 
         Console.WriteLine($"Stopped backup for tenant {tenantId}");
         return true;
     }
 
-    private async Task RunBackupAsync(int tenantId, TimeSpan interval, CancellationToken token)
+    public TenantBackup? GetBackupInformation(int tenantId)
     {
-        while (!token.IsCancellationRequested)
+        if (!_backupTenants.TryGetValue(tenantId, out var backup))
         {
-            using var scope = _scopeFactory.CreateScope();
+            return null;
+        }
+        return _backupTenants[tenantId];
+    }
 
-            var dbContext = ActivatorUtilities.CreateInstance<MpaDbContext>(
-                scope.ServiceProvider,
-                new StaticAmbientDataResolver(tenantId)
-            );
+    private async Task RunBackupAsync(TenantBackup backup)
+    {
+        try
+        {
 
-            var lastRun = dbContext.Backups.FirstOrDefault()?.LastStartedAt ?? DateTimeOffset.MinValue;
-
-            try
+            while (!backup.TokenSource.IsCancellationRequested)
             {
-                //Is it instead possible to backup the entire ArchiveItem item info and its blobs?
-                //This would make restoring much easier and more complete.
-                //How do I know if an archiveItem.blobs has had any changes to it?
+                backup.Status = TenantBackup.BackupStatus.Running;
 
-                //The complexity here is that we are interested in the tenant, so cant really backup entire database?
+                using var scope = _scopeFactory.CreateScope();
 
-                var fileProvider = ActivatorUtilities.CreateInstance<FileStorageProvider>(
-                        scope.ServiceProvider,
-                        new StaticAmbientDataResolver(tenantId)
-                    );
-
-                var cipherService = ActivatorUtilities.CreateInstance<CipherService>(
-                    scope.ServiceProvider
+                var dbContext = ActivatorUtilities.CreateInstance<MpaDbContext>(
+                    scope.ServiceProvider,
+                    new StaticAmbientDataResolver(backup.TenantId)
                 );
 
-                var appConfig = scope.ServiceProvider.GetRequiredService<IOptions<AppConfig>>();
+                var fileProvider = ActivatorUtilities.CreateInstance<FileStorageProvider>(
+                            scope.ServiceProvider,
+                            new StaticAmbientDataResolver(backup.TenantId)
+                        );
 
-                // Newing up this due to DI errors because of ambientResolver stuff. Cant seem to override it with the static resolver
-                var backupClient = new BackupClient(cipherService, appConfig, fileProvider, dbContext);
+                var backupProvider = scope.ServiceProvider.GetService<IBackupProvider>()!;
+                var encryptionService = scope.ServiceProvider.GetService<IEncryptionService>()!;
+                var appConfig = scope.ServiceProvider.GetRequiredService<IOptions<AppConfig>>()!;
 
-                await backupClient.BackupTableData(nameof(ArchiveItem), tenantId, EfBackupHelper.Backup<ArchiveItem>(dbContext, tenantId));
-                await backupClient.BackupTableData(nameof(ArchiveItemAndTag), tenantId, EfBackupHelper.Backup<ArchiveItemAndTag>(dbContext, tenantId));
-                await backupClient.BackupTableData(nameof(Tag), tenantId, EfBackupHelper.Backup<Tag>(dbContext, tenantId));
+                await backupProvider.Connect(appConfig.Value.TargetBackupSystemAddress);
 
-                var blobsSinceLastbackup = await dbContext.Blobs
-                                        .Where(archiveItem => archiveItem.UploadedAt.CompareTo(lastRun) > 0)
-                                        .ToListAsync();
+                var archiveItems = dbContext.ArchiveItems
+                    .Include(archiveItem => archiveItem.Blobs)
+                    // .Include(archiveItem => archiveItem.Tags) // This references all archiveitems again which causes the data to be too large.
+                    .Where(archiveItem => archiveItem.TenantId == backup.TenantId)
+                    .AsAsyncEnumerable();
 
-                if (blobsSinceLastbackup.Any())
+                await foreach (var archiveItem in archiveItems)
                 {
-                    foreach (var blob in blobsSinceLastbackup)
+                    var json = JsonConvert.SerializeObject(archiveItem);
+
+                    Console.WriteLine($"{json}");
+
+                    var zipEntries = new Dictionary<string, Stream>
                     {
-                        var fileId = Path.GetFileNameWithoutExtension(blob.PathInStore);
-                        var stream = fileProvider.GetFile(blob.PathInStore, out var metadata);
-                        if (stream == null)
-                            continue;
+                        { $"ArchiveItem_{archiveItem.Id}.json", new MemoryStream(Encoding.UTF8.GetBytes(json)) }
+                    };
 
-                        await backupClient.BackupBlob(stream, blob.TenantId, blob.Id, Guid.Parse(fileId), metadata);
+                    if (archiveItem.Blobs != null)
+                    {
+                        foreach (var blob in archiveItem.Blobs)
+                        {
+                            var stream = fileProvider.GetFile(blob.PathInStore, out var metadata);
+                            if (stream == null)
+                                continue;
+
+                            zipEntries.Add(blob.OriginalFilename, stream);
+                            zipEntries.Add(blob.OriginalFilename + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
+                        }
                     }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Backup for tenant {tenantId} failed: {e.Message}");
-            }
 
-            await Task.Delay(interval, token);
+                    var zipStream = await ZipUtils.CreateZipFromStreamsAsync(zipEntries);
+                    var encryptedStream = encryptionService.Encrypt(zipStream, "password");
+
+                    await backupProvider.BackupAsync(backup.TenantId, $"ArchiveItem_{archiveItem.Id}.zip.enc", encryptedStream);
+
+                    zipEntries.Values.ToList().ForEach(d => d.Dispose());
+                    zipStream.Dispose();
+                    encryptedStream.Dispose();
+                }
+
+                backup.LastBackupTime = DateTime.UtcNow;
+                backup.NextBackupTime = backup.LastBackupTime + backup.Interval;
+                backup.Status = TenantBackup.BackupStatus.Stopped;
+                await Task.Delay(backup.Interval, backup.TokenSource.Token);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Backup for tenant {backup.TenantId} failed: {ex.Message}");
         }
     }
 }

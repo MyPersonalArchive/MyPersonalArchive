@@ -9,15 +9,9 @@ using Backend.DbModel.Database;
 using Backend.Core.Providers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.IdentityModel.Logging;
-using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
-using System.Text.Json;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Backend.WebApi;
-
 
 public static class Program
 {
@@ -55,8 +49,10 @@ public static class Program
 
         builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
         builder.Services.AddScoped<CipherService>();
-        builder.Services.AddScoped<BackupClient>();
+        builder.Services.AddScoped<IBackupProvider, BuddyTargetBackupProvider>();
+        builder.Services.AddScoped<IEncryptionService, OpenSslAes256Cbc>();
         builder.Services.AddSingleton<TenantBackupManager>();
+
         // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
         // builder.Services.AddScoped<ISeedService, SeedService>();
 
