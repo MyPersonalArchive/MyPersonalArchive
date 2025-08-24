@@ -39,13 +39,12 @@ public class TenantBackupManager
         if (_backupTenants.ContainsKey(tenantId))
             return false;
 
-        var tokenSource = new CancellationTokenSource();
         _backupTenants[tenantId] = new TenantBackup
         {
             TenantId = tenantId,
             LastBackupTime = null,
             NextBackupTime = null,
-            TokenSource = tokenSource,
+            TokenSource = new CancellationTokenSource(),
             Interval = interval
         };
 
@@ -80,7 +79,6 @@ public class TenantBackupManager
     {
         try
         {
-
             while (!backup.TokenSource.IsCancellationRequested)
             {
                 backup.Status = TenantBackup.BackupStatus.Running;
@@ -128,8 +126,8 @@ public class TenantBackupManager
                             if (stream == null)
                                 continue;
 
-                            zipEntries.Add(blob.OriginalFilename, stream);
-                            zipEntries.Add(blob.OriginalFilename + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
+                            zipEntries.Add($"{blob.OriginalFilename}", stream);
+                            zipEntries.Add($"{blob.OriginalFilename}" + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
                         }
                     }
 
