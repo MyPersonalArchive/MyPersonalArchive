@@ -20,4 +20,10 @@ public static class ZipUtils
         zipStream.Position = 0;
         return zipStream;
     }
+
+    public static ZipArchive UnZipStream(Stream zipStream)
+    {
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read, leaveOpen: true);
+        return archive;
+    }
 }

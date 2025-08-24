@@ -30,4 +30,12 @@ public class BackupController : ControllerBase
         using var fileStream = new FileStream(filePath, FileMode.Open);
         return File(fileStream, "application/zip", name);
     }
+
+    [HttpGet("list")]
+    public async Task<IActionResult> GetList([FromQuery] int tenantId)
+    {
+        var folderPath = $"/data/backup/{tenantId}";
+        var files = Directory.GetFiles(folderPath, "*.zip.enc").Select(Path.GetFileName).ToList();
+        return Ok(files);
+    }
 }

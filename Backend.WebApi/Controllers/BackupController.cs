@@ -67,6 +67,15 @@ public class BackupController : ControllerBase
         return Ok();
     }
 
+    [HttpGet("list")]
+    public async Task<IActionResult> GetList([FromQuery] int tenantId)
+    {
+        var folderPath = $"{_backupFolder}/{tenantId}";
+        var files = Directory.GetFiles(folderPath, "*.zip.enc").Select(Path.GetFileName).ToList();
+        return Ok(files);
+    }
+
+
     [HttpGet("restore")]
     public IActionResult Restore([FromQuery] int tenantId, [FromQuery] string name)
     {
