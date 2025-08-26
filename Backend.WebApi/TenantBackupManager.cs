@@ -95,11 +95,11 @@ public class TenantBackupManager
                             new StaticAmbientDataResolver(backup.TenantId)
                         );
 
-                var backupProvider = scope.ServiceProvider.GetService<IBackupProvider>()!;
-                var encryptionService = scope.ServiceProvider.GetService<IEncryptionService>()!;
+                var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
+                var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
                 var appConfig = scope.ServiceProvider.GetRequiredService<IOptions<AppConfig>>()!;
 
-                await backupProvider.Connect(appConfig.Value.TargetBackupSystemAddress);
+                await backupProviderFactory.CurrentProvider.Connect(appConfig.Value.TargetBackupSystemAddress);
 
                 var archiveItems = dbContext.ArchiveItems
                     .Include(archiveItem => archiveItem.Blobs)
@@ -126,16 +126,17 @@ public class TenantBackupManager
                             if (stream == null)
                                 continue;
 
-                            zipEntries.Add($"{blob.OriginalFilename}", stream);
-                            zipEntries.Add($"{blob.OriginalFilename}" + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
+                            zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.OriginalFilename)}", stream);
+                            zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.OriginalFilename)}" + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
                         }
                     }
 
                     var zipStream = await ZipUtils.CreateZipFromStreamsAsync(zipEntries);
-                    var encryptedStream = encryptionService.Encrypt(zipStream, "password");
+                    var encryptedStream = encryptionServiceFactory.CurrentProvider.Encrypt(zipStream, "password");
 
-                    await backupProvider.BackupAsync(backup.TenantId, $"ArchiveItem_{archiveItem.Id}.zip.enc", encryptedStream);
+                    await backupProviderFactory.CurrentProvider.BackupAsync(backup.TenantId, $"ArchiveItem_{archiveItem.Id}.zip.enc", encryptedStream);
 
+                    //Not sure if this is needed
                     zipEntries.Values.ToList().ForEach(d => d.Dispose());
                     zipStream.Dispose();
                     encryptedStream.Dispose();

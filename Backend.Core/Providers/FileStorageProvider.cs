@@ -9,6 +9,7 @@ namespace Backend.Core.Providers;
 public interface IFileStorageProvider
 {
     Task<string> Store(string fileName, string mimeType, Stream stream);
+    Task StoreForKnownMetadata(string fileName, Stream stream);
     Stream GetFile(string filePath, out FileMetadata metadata);
     // Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
     void DeleteFile(string fileName);
@@ -58,6 +59,22 @@ public class FileStorageProvider : IFileStorageProvider
         await stream.CopyToAsync(fileStream);
 
         return filePath;
+    }
+
+    public async Task StoreForKnownMetadata(string fileName, Stream stream)
+    {
+        var fileId = Path.GetFileNameWithoutExtension(fileName);
+        var folderPath = GetFolderPath(Path.GetFileNameWithoutExtension(fileName));
+        if (!Directory.Exists(folderPath))
+        {
+            Directory.CreateDirectory(folderPath);
+        }
+
+        var filePath = Path.Combine(folderPath, fileId) + Path.GetExtension(fileName);
+        
+        // stream.Seek(0, SeekOrigin.Begin);
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await stream.CopyToAsync(fileStream);
     }
 
     public Stream GetFile(string filePath, out FileMetadata metadata)

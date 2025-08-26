@@ -26,27 +26,26 @@ public static class EfBackupHelper
 
     public static void Restore<TEntity>(DbContext context, string json) where TEntity : class
     {
-        var entities = JsonConvert.DeserializeObject<List<TEntity>>(json, JsonSettings);
-        if (entities == null) return;
+        var entity = JsonConvert.DeserializeObject<TEntity>(json, JsonSettings);
+        if (entity == null) return;
 
         var entityType = context.Model.FindEntityType(typeof(TEntity));
         var keyProp = entityType.FindPrimaryKey().Properties.First();
         var keyName = keyProp.Name;
 
-        foreach (var entity in entities)
-        {
-            var keyValue = entity.GetType().GetProperty(keyName)?.GetValue(entity);
-            var existingEntity = context.Set<TEntity>().Find(keyValue);
+        var keyValue = entity.GetType().GetProperty(keyName)?.GetValue(entity);
+        var existingEntity = context.Set<TEntity>().Find(keyValue);
 
-            if (existingEntity != null)
-            {
-                context.Entry(existingEntity).CurrentValues.SetValues(entity);
-                UpdateNavigationProperties(existingEntity, entity, context);
-            }
-            else
-            {
-                context.Set<TEntity>().Add(entity);
-            }
+        if (existingEntity != null)
+        {
+            context.Entry(existingEntity).CurrentValues.SetValues(entity);
+
+            // TODO: Update navigation properties
+            //UpdateNavigationProperties(existingEntity, entity, context);
+        }
+        else
+        {
+            context.Set<TEntity>().Add(entity);
         }
 
         context.SaveChanges();
