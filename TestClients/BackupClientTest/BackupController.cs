@@ -24,15 +24,31 @@ public class BackupController : ControllerBase
     }
 
     [HttpGet("restore")]
-    public async Task<IActionResult> Restore([FromQuery] int tenantId, [FromQuery] string name)
+    public IActionResult Restore([FromQuery] int tenantId, [FromQuery] string name)
     {
-        var filePath = $"/data/backup/{tenantId}/{name}";
-        using var fileStream = new FileStream(filePath, FileMode.Open);
-        return File(fileStream, "application/zip", name);
+        try
+        {
+            var filePath = $"/data/backup/{tenantId}/{name}";
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound($"Backup file for tenant {tenantId} with name {name} not found.");
+            }
+
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return File(fileStream, "application/zip", name);
+        }
+        catch (IOException ex)
+        {
+            return StatusCode(500, $"IO error while accessing file: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Unexpected error: {ex.Message}");
+        }
     }
 
     [HttpGet("list")]
-    public async Task<IActionResult> GetList([FromQuery] int tenantId)
+    public IActionResult GetList([FromQuery] int tenantId)
     {
         var folderPath = $"/data/backup/{tenantId}";
         var files = Directory.GetFiles(folderPath, "*.zip.enc").Select(Path.GetFileName).ToList();

@@ -72,37 +72,49 @@ public class TenantRestoreManager
             new StaticAmbientDataResolver(restore.TenantId)
         );
 
-        var backupProvider = scope.ServiceProvider.GetService<IBackupProvider>()!;
-        var encryptionService = scope.ServiceProvider.GetService<IEncryptionService>()!;
+        var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
+        var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
         var appConfig = scope.ServiceProvider.GetRequiredService<IOptions<AppConfig>>()!;
 
-        await foreach (var item in backupProvider.RestoreAsync(restore.TenantId))
+        await backupProviderFactory.CurrentProvider.Connect(appConfig.Value.TargetBackupSystemAddress);
+
+        await foreach (var (archiveName, stream) in backupProviderFactory.CurrentProvider.RestoreAsync(restore.TenantId))
         {
-            if (restore.TokenSource.IsCancellationRequested)
-                break;
-
-            var decryptedStream = encryptionService.Decrypt(item.stream, "password");
-            var zipArchive = ZipUtils.UnZipStream(decryptedStream);
-
-            foreach (var entry in zipArchive.Entries)
+            try
             {
+
                 if (restore.TokenSource.IsCancellationRequested)
                     break;
 
-                if (entry.Name.StartsWith("ArchiveItem"))
+                Console.WriteLine($"Restoring {archiveName}...");
+
+                var decryptedStream = encryptionServiceFactory.CurrentProvider.Decrypt(stream, "password");
+                var zipArchive = ZipUtils.CreateArchive(decryptedStream);
+
+                foreach (var entry in zipArchive.Entries)
                 {
-                    using var reader = new StreamReader(entry.Open());
-                    var json = await reader.ReadToEndAsync();
-                    EfBackupHelper.Restore<ArchiveItem>(dbContext, json);
+                    if (restore.TokenSource.IsCancellationRequested)
+                        break;
+
+                    if (entry.Name.StartsWith("ArchiveItem"))
+                    {
+                        using var reader = new StreamReader(entry.Open());
+                        var json = await reader.ReadToEndAsync();
+                        EfBackupHelper.Restore<ArchiveItem>(dbContext, json);
+                    }
+                    else
+                    {
+                        await fileProvider.StoreForKnownMetadata(entry.Name, entry.Open());
+                    }
                 }
-                else if (entry.Name.StartsWith("Blob"))
-                {
-                    using var reader = new StreamReader(entry.Open());
-                    await fileProvider.Store(entry.Name, "application/octet-stream", reader.BaseStream);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error restoring {archiveName}: {ex.Message}");
             }
         }
 
         restore.Status = TenantRestore.RestoreStatus.Finished;
+        StopTenant(restore.TenantId);
     }
 }

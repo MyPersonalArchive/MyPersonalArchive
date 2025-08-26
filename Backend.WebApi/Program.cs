@@ -40,18 +40,16 @@ public static class Program
 
         builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
         builder.Services.AddTransient<PasswordHasher>();
+        builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
 
         builder.Services.AddOptions();
 
         builder.RegisterSignalRServices();
         builder.RegisterJwtServices();
+        builder.RegisterBackupProviders();
+        builder.RegisterEncryptionServics();
+        builder.RegisterRestoreServices();
         builder.RegisterSwaggerServices();
-
-        builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
-        builder.Services.AddScoped<CipherService>();
-        builder.Services.AddScoped<IBackupProvider, BuddyTargetBackupProvider>();
-        builder.Services.AddScoped<IEncryptionService, OpenSslAes256Cbc>();
-        builder.Services.AddSingleton<TenantBackupManager>();
 
         // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
         // builder.Services.AddScoped<ISeedService, SeedService>();
@@ -76,7 +74,32 @@ public static class Program
         }));
         services.AddScoped<SignalRService>();
     }
+    
+    private static void RegisterBackupProviders(this IHostApplicationBuilder builder)
+    {
+        var services = builder.Services;
 
+        services.AddSingleton<TenantBackupManager>();
+        services.AddSingleton<BackupProviderFactory>();
+
+        services.AddScoped<BuddyTargetBackupProvider>();
+    }
+
+    private static void RegisterRestoreServices(this IHostApplicationBuilder builder)
+    {
+        var services = builder.Services;
+
+        services.AddSingleton<TenantRestoreManager>();
+    }
+
+    private static void RegisterEncryptionServics(this IHostApplicationBuilder builder)
+    {
+        var services = builder.Services;
+
+        services.AddSingleton<EncryptionProviderFactory>();
+
+        services.AddScoped<OpenSslAes256Cbc>();
+    }
 
 
     private static void RegisterJwtServices(this WebApplicationBuilder builder)

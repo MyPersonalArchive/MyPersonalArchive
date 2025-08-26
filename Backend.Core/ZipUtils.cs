@@ -21,9 +21,8 @@ public static class ZipUtils
         return zipStream;
     }
 
-    public static ZipArchive UnZipStream(Stream zipStream)
+    public static ZipArchive CreateArchive(Stream zipStream)
     {
-        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read, leaveOpen: true);
-        return archive;
+        return new ZipArchive(zipStream, ZipArchiveMode.Read);
     }
 }

@@ -39,6 +39,8 @@ public class BuddyTargetBackupProvider : IBackupProvider
         foreach (var name in list)
         {
             var response = await _httpClient.GetAsync($"/api/Backup/restore?tenantId={tenantId}&name={name}");
+            
+
             var stream = await response.Content.ReadAsStreamAsync();
             stream.Position = 0;
             yield return (name, stream);

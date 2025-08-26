@@ -11,19 +11,31 @@ using System.Net.Http.Headers;
 public class BackupController : ControllerBase
 {
     private readonly TenantBackupManager _tenantBackupManager;
-    private readonly IBackupProvider _backupProvider;
     private readonly AmbientDataResolver _ambientDataResolver;
+    private readonly BackupProviderFactory _backupProviderFactory;
+    private readonly EncryptionProviderFactory _encryptionProviderFactory;
     private readonly IOptions<AppConfig> _config;
     private readonly string _backupFolder;
 
-    public BackupController(TenantBackupManager tenantBackupManager, IBackupProvider backupClient, AmbientDataResolver ambientDataResolver, IOptions<AppConfig> config)
+    public BackupController(TenantBackupManager tenantBackupManager,
+                            AmbientDataResolver ambientDataResolver,
+                            BackupProviderFactory backupProviderFactory,
+                            EncryptionProviderFactory encryptionProviderFactory,
+                            IOptions<AppConfig> config)
     {
         _tenantBackupManager = tenantBackupManager;
-        _backupProvider = backupClient;
         _ambientDataResolver = ambientDataResolver;
+        _backupProviderFactory = backupProviderFactory;
+        _encryptionProviderFactory = encryptionProviderFactory;
         _config = config;
         _backupFolder = _config.Value.BackupFolder;
     }
+
+    [HttpPost("setbackupprovider")]
+    public void SetBackupProvider([FromQuery] string providerName) => _backupProviderFactory.SetProvider(providerName);
+
+    [HttpPost("setencryptionprovider")]
+    public void SetEncryptionProvider([FromQuery] string providerName) => _encryptionProviderFactory.SetProvider(providerName);
 
     [HttpPost("startbackup")]
     public IActionResult StartBackup()
@@ -68,7 +80,7 @@ public class BackupController : ControllerBase
     }
 
     [HttpGet("list")]
-    public async Task<IActionResult> GetList([FromQuery] int tenantId)
+    public IActionResult GetList([FromQuery] int tenantId)
     {
         var folderPath = $"{_backupFolder}/{tenantId}";
         var files = Directory.GetFiles(folderPath, "*.zip.enc").Select(Path.GetFileName).ToList();
@@ -79,9 +91,24 @@ public class BackupController : ControllerBase
     [HttpGet("restore")]
     public IActionResult Restore([FromQuery] int tenantId, [FromQuery] string name)
     {
-        var folderPath = $"{_backupFolder}/{tenantId}";
-        using var fileStream = new FileStream($"{folderPath}/{name}", FileMode.Open);
+        try
+        {
+            var filePath = $"/data/backup/{tenantId}/{name}";
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound($"Backup file for tenant {tenantId} with name {name} not found.");
+            }
 
-        return File(fileStream, "application/zip", name);
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return File(fileStream, "application/zip", name);
+        }
+        catch (IOException ex)
+        {
+            return StatusCode(500, $"IO error while accessing file: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Unexpected error: {ex.Message}");
+        }
     }
 }
