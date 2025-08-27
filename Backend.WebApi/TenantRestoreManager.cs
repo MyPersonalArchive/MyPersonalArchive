@@ -16,6 +16,7 @@ public class TenantRestore
     }
 
     public required int TenantId { get; set; }
+    public required string Password { get; set; }
     public RestoreStatus Status { get; set; }
     public required CancellationTokenSource TokenSource { get; set; }
 }
@@ -32,7 +33,7 @@ public class TenantRestoreManager
         _scopeFactory = scopeFactory;
     }
 
-    public bool StartTenant(int tenantId)
+    public bool StartTenant(int tenantId, string password)
     {
         if (_restoreTenants.ContainsKey(tenantId))
             return false;
@@ -40,6 +41,7 @@ public class TenantRestoreManager
         _restoreTenants[tenantId] = new TenantRestore
         {
             TenantId = tenantId,
+            Password = password,
             Status = TenantRestore.RestoreStatus.InProgress,
             TokenSource = new CancellationTokenSource()
         };
@@ -74,7 +76,7 @@ public class TenantRestoreManager
 
         var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
         var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
-        var appConfig = scope.ServiceProvider.GetRequiredService<IOptions<AppConfig>>()!;
+        var appConfig = scope.ServiceProvider.GetService<IOptions<AppConfig>>()!;
 
         await backupProviderFactory.CurrentProvider.Connect(appConfig.Value.TargetBackupSystemAddress);
 
@@ -82,13 +84,12 @@ public class TenantRestoreManager
         {
             try
             {
-
                 if (restore.TokenSource.IsCancellationRequested)
                     break;
 
                 Console.WriteLine($"Restoring {archiveName}...");
 
-                var decryptedStream = encryptionServiceFactory.CurrentProvider.Decrypt(stream, "password");
+                var decryptedStream = encryptionServiceFactory.CurrentProvider.Decrypt(stream, restore.Password);
                 var zipArchive = ZipUtils.CreateArchive(decryptedStream);
 
                 foreach (var entry in zipArchive.Entries)

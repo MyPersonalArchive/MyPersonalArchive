@@ -7,6 +7,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
+//Talking points with Arjan
+// How to supply the user password for backups?
+// Send password via the StartBackup https request in body?
+//      - This has to be supplied everytime a backup request is initiated
+//      - This means that everytime the system goes down, or it has to be restarted the backup process has to be started with the password again
+// Store password in a secure storage? Which one? How?
+//      - We can read the passsword and automatically start backup process again
+
+
 public class TenantBackup
 {
     public enum BackupStatus
@@ -17,6 +26,7 @@ public class TenantBackup
     }
 
     public required int TenantId { get; set; }
+    public required string Password { get; set; }
     public DateTime? LastBackupTime { get; set; }
     public DateTime? NextBackupTime { get; set; }
     public required CancellationTokenSource TokenSource { get; set; }
@@ -34,7 +44,7 @@ public class TenantBackupManager
         _scopeFactory = scopeFactory;
     }
 
-    public bool StartTenant(int tenantId, TimeSpan interval)
+    public bool StartTenant(int tenantId, TimeSpan interval, string passsword)
     {
         if (_backupTenants.ContainsKey(tenantId))
             return false;
@@ -42,6 +52,7 @@ public class TenantBackupManager
         _backupTenants[tenantId] = new TenantBackup
         {
             TenantId = tenantId,
+            Password = passsword,
             LastBackupTime = null,
             NextBackupTime = null,
             TokenSource = new CancellationTokenSource(),
@@ -97,7 +108,7 @@ public class TenantBackupManager
 
                 var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
                 var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
-                var appConfig = scope.ServiceProvider.GetRequiredService<IOptions<AppConfig>>()!;
+                var appConfig = scope.ServiceProvider.GetService<IOptions<AppConfig>>()!;
 
                 await backupProviderFactory.CurrentProvider.Connect(appConfig.Value.TargetBackupSystemAddress);
 
@@ -132,7 +143,7 @@ public class TenantBackupManager
                     }
 
                     var zipStream = await ZipUtils.CreateZipFromStreamsAsync(zipEntries);
-                    var encryptedStream = encryptionServiceFactory.CurrentProvider.Encrypt(zipStream, "password");
+                    var encryptedStream = encryptionServiceFactory.CurrentProvider.Encrypt(zipStream, backup.Password);
 
                     await backupProviderFactory.CurrentProvider.BackupAsync(backup.TenantId, $"ArchiveItem_{archiveItem.Id}.zip.enc", encryptedStream);
 

@@ -38,9 +38,9 @@ public class BackupController : ControllerBase
     public void SetEncryptionProvider([FromQuery] string providerName) => _encryptionProviderFactory.SetProvider(providerName);
 
     [HttpPost("startbackup")]
-    public IActionResult StartBackup()
+    public IActionResult StartBackup([FromBody] string password)
     {
-        _tenantBackupManager.StartTenant(_ambientDataResolver.GetCurrentTenantId()!.Value, TimeSpan.FromMinutes(5));
+        _tenantBackupManager.StartTenant(_ambientDataResolver.GetCurrentTenantId()!.Value, TimeSpan.FromMinutes(5), password);
         return Ok();
     }
 
