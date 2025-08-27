@@ -12,3 +12,7 @@ Backend.Api/wwwroot/*
 data
 frontend/temp/
 temp/
+
+
+TestClients/BackupClientTest/TestFiles/Encrypted/*
+TestClients/BackupClientTest/TestFiles/Decrypted/*

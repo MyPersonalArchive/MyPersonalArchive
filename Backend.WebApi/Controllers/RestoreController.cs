@@ -15,7 +15,7 @@ public class RestoreController : ControllerBase
     }
 
     [HttpPost("startrestore")]
-    public bool StartRestore() => _tenantRestoreManager.StartTenant(_ambientDataResolver.GetCurrentTenantId()!.Value);
+    public bool StartRestore([FromBody] string password) => _tenantRestoreManager.StartTenant(_ambientDataResolver.GetCurrentTenantId()!.Value, password);
 
     [HttpPost("stoprestore")]
     public bool StopRestore() => _tenantRestoreManager.StopTenant(_ambientDataResolver.GetCurrentTenantId()!.Value);
