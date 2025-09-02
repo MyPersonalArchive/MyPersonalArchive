@@ -1,12 +1,19 @@
-/* @import url("reset.css"); */
-@import url("utils.css");
 @import url("Layout.css");
 @import url("styling.css");
-@import url("navbar.css");
 
 /* New tailwind-based css imports */
 @import "tailwindcss";
 @import "./table.css";
+
+@theme {
+  --color-customblue: hsla(197, 68%, 37%, 10);
+}
+
+
+.horizontal-line {
+    height: 0;
+    border-bottom: thin solid hsl(0deg, 0%, 80%);
+}
 
 
 .jumbotron {

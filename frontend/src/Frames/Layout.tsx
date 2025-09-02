@@ -7,24 +7,50 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faUser, faUserTie } from '@fortawesome/free-solid-svg-icons'
 import { CurrentTenantIdContext } from './CurrentTenantIdFrame'
 import { Dropdown, DropdownItem } from "./Dropdown"
+import { StickyFooter, StickyHeader } from "../Components/Sticky"
 
 
 
 export const Layout = ({ children }: PropsWithChildren) => {
     return (
         <>
-            <div className="layout-container">
+            <StickyHeader
+                className=" bg-customblue text-white px-2"
+                goesAway={
+                    <h1 className="text-3xl font-bold text-center py-2">My Personal Archive</h1>
+                }
+                alwaysVisible={
+                    <>
+                        <Navbar />
+                    </>
+                }
+            />
 
-                <Navbar />
 
-                <main className="main">
-                    {children}
-                </main>
+            <main className="main">
+                {children}
+            </main>
 
-                <footer className="footer">
-                    &copy; 2025 Stian Thoresen & Arjan Einbu
-                </footer>
-            </div>
+            <StickyFooter
+                className="bg-customblue text-white m-0"
+                alwaysVisible={
+                    <div className="text-center py-1">
+                        My Personal Archive &copy; 2025 <a href="https://github.com/gotnoname" className="hover:underline">Stian Thoresen</a> & <a href="https://github.com/aeinbu" className="hover:underline">Arjan Einbu</a>
+                    </div>}
+                goesAway={<div className="text-center text-sm py-1">
+                    <ul className="inline-flex space-x-4 list-disc list-inside">
+                        <li>
+                            <a href="https://github.com/gotnoname/MyPersonalArchive" className="hover:underline">Link to github repo</a>
+                        </li>
+                        <li>
+                            <a href="#" className="hover:underline">Link to policies</a>
+                        </li>
+                        <li>
+                            <a href="#" className="hover:underline">Other info in footer</a>
+                        </li>
+                    </ul>
+                </div>}
+            />
         </>
     )
 }
@@ -44,16 +70,15 @@ const Navbar = () => {
     return (
         loggedInUser
             ?
-            <nav className="navbar flex flex-row justify-between">
+            <nav className="page-header flex flex-row justify-between py-1">
                 <Dropdown
                     header={<>
-                        <FontAwesomeIcon icon={faBars} />
-                        <span className="spacer-1ex" />
+                        <FontAwesomeIcon icon={faBars} className="mr-1" />
                         Pages
                     </>}
                     items={[
-                        { type: "link", label: "Archive", link: RoutePaths.Archive },
-                        { type: "link", label: "Unallocated blobs", link: RoutePaths.Blobs }
+                        { type: "link", label: <>Archive</>, link: RoutePaths.Archive },
+                        { type: "link", label: <>Unallocated&nbsp;blobs</>, link: RoutePaths.Blobs }
                     ]}
                 />
 
@@ -69,8 +94,8 @@ const Navbar = () => {
                                     { type: "seperator" },
                                     ...loggedInUser.availableTenantIds.map((tenantId) => (
                                         currentTenantId === tenantId
-                                            ? { type: "inactive", label: `Tenant ${tenantId}` }
-                                            : { type: "button", label: `Tenant ${tenantId}`, onClick: () => { switchTenant(tenantId) }}
+                                            ? { type: "inactive", label: <>Tenant {tenantId}</> }
+                                            : { type: "button", label: <>Tenant {tenantId}</>, onClick: () => { switchTenant(tenantId) } }
                                     ))
                                 ] as DropdownItem[]
                                 : []
@@ -91,10 +116,9 @@ const UserProfileHeader = ({ user }: { user: User }) => {
     return <>
         {
             user.username === "admin@localhost"
-                ? <FontAwesomeIcon icon={faUserTie} />
-                : <FontAwesomeIcon icon={faUser} />
+                ? <FontAwesomeIcon icon={faUserTie} className="mr-1" />
+                : <FontAwesomeIcon icon={faUser} className="mr-1" />
         }
-        <span className="spacer-1ex" />
         {user.fullname}
     </>
 }

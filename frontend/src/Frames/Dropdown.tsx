@@ -1,6 +1,5 @@
 // Dropdown.tsx
 import React, { useState, useEffect, useRef } from 'react'
-import './Dropdown.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons'
 
@@ -51,26 +50,38 @@ export const Dropdown = ({ header, items }: DropdownProps) => {
     const toggleDropdown = () => setIsOpen(!isOpen)
 
     return (
-        <div className="dropdown" ref={dropdownRef}>
-            <button className="dropdown-button" onClick={toggleDropdown}>
+        <div className="relative" ref={dropdownRef}>
+            <button onClick={toggleDropdown}>
                 {header}
-                <span className="spacer-1ex" />
-                <FontAwesomeIcon icon={faCaretDown} className="text-current/50" />
+                <FontAwesomeIcon icon={faCaretDown} className="text-current/50 ml-1" />
             </button>
             {isOpen &&
-                <div className="dropdown-content">
+                <div className="absolute bg-gray-50 shadow-lg border-l border-b border-r border-gray-200 rounded-b mt-3">
                     {items.map((item, index) => {
                         switch (item.type) {
                             case "link":
-                                return <a className="active dropdown-item"  href={item.link} key={index} onClick={() => setIsOpen(false)}>{item.label}</a>
+                                return <a className="text-black py-2 px-4 block w-full border-none hover:bg-gray-200 transition-colors duration-300 cursor-pointer"
+                                    href={item.link}
+                                    key={index}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {item.label}
+                                </a>
 
                             case "button":
-                                return <button className="active dropdown-item" key={index} onClick={() => { item.onClick(); setIsOpen(false) }}>
+                                return <button className="text-black py-2 px-4 block w-full border-none hover:bg-gray-200 transition-colors duration-300 cursor-pointer"
+                                    key={index}
+                                    onClick={() => { item.onClick(); setIsOpen(false) }}
+                                >
                                     {item.label}
                                 </button>
 
                             case "inactive":
-                                return <div className="dropdown-item" key={index}>{item.label}</div>
+                                return <div className="text-gray-400 py-2 px-4 block w-full border-none"
+                                    key={index}
+                                >
+                                    {item.label}
+                                </div>
 
                             case "seperator":
                                 return <div className="horizontal-line" key={index}></div>
