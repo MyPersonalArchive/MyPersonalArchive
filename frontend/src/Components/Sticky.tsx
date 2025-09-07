@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 
 
 type StickyHeaderProps = {
@@ -15,7 +15,7 @@ export const StickyHeader = ({ goesAway, alwaysVisible, className }: StickyHeade
 
         // Get scroll positions
         const scrollTop = Math.max(0, window.pageYOffset || document.documentElement.scrollTop)
-        const scrollBottom = Math.max(0, document.documentElement.scrollHeight - (scrollTop + window.innerHeight))
+        // const scrollBottom = Math.max(0, document.documentElement.scrollHeight - (scrollTop + window.innerHeight))
 
         // Animate the header
         const alwaysVisibleStyles = window.getComputedStyle(alwaysVisibleRef.current!)
@@ -29,6 +29,36 @@ export const StickyHeader = ({ goesAway, alwaysVisible, className }: StickyHeade
 
     document.addEventListener("scroll", animateOnScroll)
     window.addEventListener("resize", animateOnScroll)
+
+    useEffect(() => {
+    const observer = new MutationObserver(() => {
+        animateOnScroll()
+    })
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    })
+    
+        const mainElement = document.querySelector("main")
+        var observer: MutationObserver | undefined = undefined
+        if (mainElement) {
+            observer = new MutationObserver(() => {
+                animateOnScroll()
+            })
+            observer.observe(mainElement, {
+                childList: true,
+                subtree: true,
+                attributes: false,
+                characterData: false
+            })
+        }
+
+        return () => {
+            document.removeEventListener("scroll", animateOnScroll)
+            window.removeEventListener("resize", animateOnScroll)
+            observer?.disconnect()
+        }
+    }, [])
 
     return (
         <>
@@ -64,7 +94,7 @@ export const StickyFooter = ({ goesAway, alwaysVisible, className }: StickyFoote
         const scrollTop = Math.max(0, window.pageYOffset || document.documentElement.scrollTop)
         const scrollBottom = Math.max(0, document.documentElement.scrollHeight - (scrollTop + window.innerHeight))
 
-        // Animate the header
+        // Animate the footer
         const alwaysVisibleStyles = window.getComputedStyle(alwaysVisibleRef.current!)
         const alwaysVisibleHeight = parseFloat(alwaysVisibleStyles.marginTop) + parseFloat(alwaysVisibleStyles.marginBottom) + alwaysVisibleRef.current!.offsetHeight
         const fullHeight = footerRef.current!.offsetHeight
@@ -77,6 +107,28 @@ export const StickyFooter = ({ goesAway, alwaysVisible, className }: StickyFoote
 
     document.addEventListener("scroll", animateOnScroll)
     window.addEventListener("resize", animateOnScroll)
+
+    useEffect(() => {
+        const mainElement = document.querySelector("main")
+        var observer: MutationObserver | undefined = undefined
+        if (mainElement) {
+            observer = new MutationObserver(() => {
+                animateOnScroll()
+            })
+            observer.observe(mainElement, {
+                childList: true,
+                subtree: true,
+                attributes: false,
+                characterData: false
+            })
+        }
+
+        return () => {
+            document.removeEventListener("scroll", animateOnScroll)
+            window.removeEventListener("resize", animateOnScroll)
+            observer?.disconnect()
+        }
+    }, [])
 
     return (
         <>
