@@ -15,7 +15,6 @@ export const StickyHeader = ({ goesAway, alwaysVisible, className }: StickyHeade
 
         // Get scroll positions
         const scrollTop = Math.max(0, window.pageYOffset || document.documentElement.scrollTop)
-        // const scrollBottom = Math.max(0, document.documentElement.scrollHeight - (scrollTop + window.innerHeight))
 
         // Animate the header
         const alwaysVisibleStyles = window.getComputedStyle(alwaysVisibleRef.current!)
@@ -30,15 +29,10 @@ export const StickyHeader = ({ goesAway, alwaysVisible, className }: StickyHeade
     document.addEventListener("scroll", animateOnScroll)
     window.addEventListener("resize", animateOnScroll)
 
+    //TODO: share the mutationobserver instance and code between header and footer
+    //TODO: Remember scrollposition of top bar when navigating to other page(s). If part of header is hidden, keep it hidden
     useEffect(() => {
-    const observer = new MutationObserver(() => {
-        animateOnScroll()
-    })
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    })
-    
+        // Observe only changes inside the <main> element
         const mainElement = document.querySelector("main")
         var observer: MutationObserver | undefined = undefined
         if (mainElement) {
@@ -90,6 +84,9 @@ export const StickyFooter = ({ goesAway, alwaysVisible, className }: StickyFoote
     const animateOnScroll = () => {
         if (!footerRef.current || !alwaysVisibleRef.current) return
 
+        // Reset footer margin top before calculating anything for the footer
+        footerRef.current!.style.marginTop = `0px`
+
         // Get scroll positions
         const scrollTop = Math.max(0, window.pageYOffset || document.documentElement.scrollTop)
         const scrollBottom = Math.max(0, document.documentElement.scrollHeight - (scrollTop + window.innerHeight))
@@ -99,8 +96,12 @@ export const StickyFooter = ({ goesAway, alwaysVisible, className }: StickyFoote
         const alwaysVisibleHeight = parseFloat(alwaysVisibleStyles.marginTop) + parseFloat(alwaysVisibleStyles.marginBottom) + alwaysVisibleRef.current!.offsetHeight
         const fullHeight = footerRef.current!.offsetHeight
         const translateY = Math.min(scrollBottom, fullHeight - alwaysVisibleHeight)
+
         footerRef.current!.style.transform = `translateY(${translateY}px)`
 
+        const bottomOfElementBeforeFooter = footerRef.current!.previousElementSibling?.getBoundingClientRect()?.bottom ?? 0
+        const marginTop = Math.max(0, window.innerHeight - (bottomOfElementBeforeFooter + scrollTop) - fullHeight)
+        footerRef.current!.style.marginTop = `${marginTop}px`
     }
 
     animateOnScroll()
