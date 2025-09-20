@@ -8,12 +8,14 @@ import { tagsAtom } from "../Utils/Atoms"
 import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
+import { PredefinedSearchList } from "../Components/PredefinedSearchList"
 
 type ListResponse = {
     id: number
     title: string
     tags: string[]
     createdAt: string
+    documentDate: Date
 }
 
 type ArchiveItem = {
@@ -21,6 +23,7 @@ type ArchiveItem = {
     title: string
     tags: string[]
     createdAt: Date
+    documentDate: Date
 }
 
 export const ArchiveItemListPage = () => {
@@ -33,10 +36,12 @@ export const ArchiveItemListPage = () => {
     useEffect(() => {
         const payload = {
             title: searchParams.get("title"),
-            tags: searchParams.getAll("tags")
+            tags: searchParams.getAll("tags"),
+            label: searchParams.get("label"),
+            metadataTypes: searchParams.getAll("metadataTypes")
         }
         apiClient.get<ListResponse[]>("/api/archive/list", payload)
-            .then(response => setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) }))))
+            .then(response => setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate }))))
     }, [searchParams])
 
     useSignalR((message: SignalRMessage) => {
@@ -46,7 +51,7 @@ export const ArchiveItemListPage = () => {
             case "ArchiveItemDeleted": {
                 apiClient.get<ListResponse[]>("/api/archive/list")
                     .then(response => {
-                        setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) })))
+                        setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate})))
                     })
                 break
             }
@@ -74,12 +79,15 @@ export const ArchiveItemListPage = () => {
 
             <Filter />
 
+            <PredefinedSearchList orientation="horizontal" maxVisible={5} />
+
             <div className="overflow-x-auto my-4">
                 <table className="w-full table with-column-seperators">
                     <thead>
                         <tr>
                             <th>Title</th>
                             <th>Tags</th>
+                            <th>Document date</th>
                             <th>Created</th>
                         </tr>
                     </thead>
@@ -113,6 +121,9 @@ const Row = ({ archiveItem }: RowProps) => {
                         <span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
                     ))
                 }
+            </td>
+            <td>
+                {archiveItem.documentDate ? new Date(archiveItem.documentDate).toLocaleDateString() : ""}
             </td>
             <td>
                 {archiveItem.createdAt.toLocaleDateString()}

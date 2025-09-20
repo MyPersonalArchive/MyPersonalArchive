@@ -49,6 +49,7 @@ public class ArchiveController : ControllerBase
             Title = createRequest.Title,
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
+            DocumentDate = createRequest.DocumentDate,
             Tags = [.. Tags.Ensure(_dbContext, createRequest.Tags)],
             Metadata = createRequest.Metadata
         };
@@ -177,6 +178,7 @@ public class ArchiveController : ControllerBase
         archiveItem.Title = updateRequest.Title;
         archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
         archiveItem.Metadata = updateRequest.Metadata;
+        archiveItem.DocumentDate = updateRequest.DocumentDate;
 
         await _dbContext.SaveChangesAsync();
 
@@ -207,6 +209,7 @@ public class ArchiveController : ControllerBase
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
             Metadata = archiveItem.Metadata,
             CreatedAt = archiveItem.CreatedAt,
+            DocumentDate = archiveItem.DocumentDate,
             Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
             {
                 Id = blob.Id,
@@ -220,22 +223,29 @@ public class ArchiveController : ControllerBase
     {
         var titleFilter = filterRequest.Title?.ToLowerInvariant() ?? "";
         var tagsFilter = filterRequest.Tags ?? [];
+        var metadataTypesFilter = filterRequest.MetadataTypes ?? [];
 
-        return await _dbContext.ArchiveItems
+        var results = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Tags)
             .ConditionalWhere(!string.IsNullOrEmpty(filterRequest.Title), archiveItem => archiveItem.Title.ToLower().Contains(titleFilter))
-            .Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
-            .Select(archiveItem => new ListResponse
-            {
-                Id = archiveItem.Id,
-                Title = archiveItem.Title,
-                Tags = archiveItem.Tags.Select(tag => tag.Title),
-                // Metadata = archiveItem.Metadata,
-                CreatedAt = archiveItem.CreatedAt,
-            })
+            .Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag))).ToListAsync();
+
+        if (metadataTypesFilter.Any())
+        {
+            results = [.. results.Where(archiveItem => metadataTypesFilter.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))];
+        }
+
+        return results.Select(archiveItem => new ListResponse
+        {
+            Id = archiveItem.Id,
+            Title = archiveItem.Title,
+            Tags = archiveItem.Tags.Select(tag => tag.Title),
+            // Metadata = archiveItem.Metadata,
+            CreatedAt = archiveItem.CreatedAt,
+            DocumentDate = archiveItem.DocumentDate
+        })
             .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.ToLower().IndexOf(titleFilter))
-            .ThenBy(archItem => archItem.Title == null ? null : archItem.Title.ToLower())
-            .ToListAsync();
+            .ThenBy(archItem => archItem.Title == null ? null : archItem.Title.ToLower()).ToList();
     }
 
 
@@ -310,11 +320,13 @@ public class ArchiveController : ControllerBase
         public required IEnumerable<string> Tags { get; set; }
         // public required JsonObject Metadata { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
     }
 
     public class CreateRequest
     {
         public required string Title { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
@@ -329,6 +341,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
@@ -339,6 +352,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
@@ -355,6 +369,7 @@ public class ArchiveController : ControllerBase
     {
         public string? Title { get; set; }
         public string[]? Tags { get; set; } = [];
+        public string[]? MetadataTypes { get; set; }
     }
     #endregion
 }

@@ -1,11 +1,11 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
-import { tagsAtom } from "../Utils/Atoms"
+import {  tagsAtom } from "../Utils/Atoms"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
@@ -13,6 +13,7 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
+import { DatePicker } from "../Components/DatePicker"
 
 type CreateResponse = {
     id: number
@@ -21,6 +22,8 @@ type CreateResponse = {
 export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
+    const [label, setLabel] = useState<string>()
+    const [documentDate, setDocumentDate] = useState<string | undefined>(undefined);
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
 
@@ -39,7 +42,9 @@ export const ArchiveItemNewPage = () => {
             title,
             tags,
             blobsFromUnallocated,
-            metadata
+            metadata,
+            label,
+            documentDate
         }
 
         formData.append("rawRequest", JSON.stringify(createRequest))
@@ -82,6 +87,11 @@ export const ArchiveItemNewPage = () => {
                         value={title}
                         onChange={event => setTitle(event.target.value)}
                     />
+                </div>
+
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="documentDate">Document date</label>
+                    <DatePicker date={documentDate ?? ""} setDate={setDocumentDate} />
                 </div>
 
                 <div className="aligned-labels-and-inputs">

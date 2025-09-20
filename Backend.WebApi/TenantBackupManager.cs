@@ -137,8 +137,8 @@ public class TenantBackupManager
                             if (stream == null)
                                 continue;
 
-                            zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.OriginalFilename)}", stream);
-                            zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.OriginalFilename)}" + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
+                            zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.PathInStore)}", stream);
+                            zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.PathInStore)}" + ".metadata", new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
                         }
                     }
 
