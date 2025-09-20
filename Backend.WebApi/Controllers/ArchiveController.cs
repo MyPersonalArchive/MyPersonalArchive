@@ -50,7 +50,8 @@ public class ArchiveController : ControllerBase
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
             Tags = [.. Tags.Ensure(_dbContext, createRequest.Tags)],
-            Metadata = createRequest.Metadata
+            Metadata = createRequest.Metadata,
+            Label = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Title == createRequest.Label)
         };
 
         var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
@@ -126,6 +127,7 @@ public class ArchiveController : ControllerBase
         var archiveItem = await _dbContext.ArchiveItems
             .Include(item => item.Blobs)
             .Include(item => item.Tags)
+            .Include(item => item.Label)
             .SingleOrDefaultAsync(item => item.Id == updateRequest.Id);
 
         if (archiveItem == null)
@@ -175,6 +177,7 @@ public class ArchiveController : ControllerBase
         }
 
         archiveItem.Title = updateRequest.Title;
+        archiveItem.Label = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Title == updateRequest.Label);
         archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
         archiveItem.Metadata = updateRequest.Metadata;
 
@@ -193,6 +196,7 @@ public class ArchiveController : ControllerBase
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
             .Include(archiveItem => archiveItem.Tags)
+            .Include(archiveItem => archiveItem.Label)
             .SingleOrDefaultAsync(x => x.Id == id);
 
         if (archiveItem == null)
@@ -204,6 +208,7 @@ public class ArchiveController : ControllerBase
         {
             Id = archiveItem.Id,
             Title = archiveItem.Title,
+            Label = archiveItem.Label?.Title,
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
             Metadata = archiveItem.Metadata,
             CreatedAt = archiveItem.CreatedAt,
@@ -220,6 +225,32 @@ public class ArchiveController : ControllerBase
     {
         var titleFilter = filterRequest.Title?.ToLowerInvariant() ?? "";
         var tagsFilter = filterRequest.Tags ?? [];
+
+        if (!string.IsNullOrEmpty(filterRequest.Label))
+        {
+            var label = await _dbContext.Labels
+                            .Include(x => x.Owner)
+                            .Where(x => x.Owner.Username == _resolver.GetCurrentUsername())
+                            .SingleOrDefaultAsync(x => x.Title == filterRequest.Label);
+
+            if (label == null)
+            {
+                return new List<ListResponse>();
+            }
+
+            return await _dbContext.ArchiveItems
+                .Include(archiveItem => archiveItem.Tags)
+                .Where(archiveItem => archiveItem.Label != null && archiveItem.Label.Title == filterRequest.Label)
+                .Select(archiveItem => new ListResponse
+                {
+                    Id = archiveItem.Id,
+                    Title = archiveItem.Title,
+                    Tags = archiveItem.Tags.Select(tag => tag.Title),
+                    // Metadata = archiveItem.Metadata,
+                    CreatedAt = archiveItem.CreatedAt,
+                })
+                .ToListAsync();
+        }
 
         return await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Tags)
@@ -315,6 +346,7 @@ public class ArchiveController : ControllerBase
     public class CreateRequest
     {
         public required string Title { get; set; }
+        public string? Label { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
@@ -329,6 +361,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public string? Label { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
         public int[]? BlobsFromUnallocated { get; set; }
@@ -340,6 +373,7 @@ public class ArchiveController : ControllerBase
         public int Id { get; set; }
         public required string Title { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+        public string? Label { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
         public required List<Blob> Blobs { get; set; }
@@ -355,6 +389,7 @@ public class ArchiveController : ControllerBase
     {
         public string? Title { get; set; }
         public string[]? Tags { get; set; } = [];
+        public string? Label { get; set; }
     }
     #endregion
 }

@@ -5,7 +5,7 @@ import { TagsInput } from "../Components/TagsInput"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
-import { tagsAtom } from "../Utils/Atoms"
+import { LabelItem, labelsAtom, tagsAtom } from "../Utils/Atoms"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
@@ -13,6 +13,7 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
+import { LabelsInput } from "../Components/LabelsInput"
 
 type CreateResponse = {
     id: number
@@ -21,10 +22,12 @@ type CreateResponse = {
 export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
+    const [label, setLabel] = useState<string>()
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
 
     const allTags = useAtomValue(tagsAtom)
+    const allLabels = useAtomValue(labelsAtom)
 
     const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
 
@@ -39,7 +42,8 @@ export const ArchiveItemNewPage = () => {
             title,
             tags,
             blobsFromUnallocated,
-            metadata
+            metadata,
+            label
         }
 
         formData.append("rawRequest", JSON.stringify(createRequest))
@@ -87,6 +91,11 @@ export const ArchiveItemNewPage = () => {
                 <div className="aligned-labels-and-inputs">
                     <label htmlFor="tags">Tags</label>
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
+                </div>
+
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="title">Labels</label>
+                    <LabelsInput labels={allLabels} onChange={setLabel} />
                 </div>
 
                 <MetadataTypeSelector

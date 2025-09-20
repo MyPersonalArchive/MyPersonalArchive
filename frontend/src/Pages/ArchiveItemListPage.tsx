@@ -8,6 +8,7 @@ import { tagsAtom } from "../Utils/Atoms"
 import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
+import LabelList from "../Components/LabelList"
 
 type ListResponse = {
     id: number
@@ -33,7 +34,8 @@ export const ArchiveItemListPage = () => {
     useEffect(() => {
         const payload = {
             title: searchParams.get("title"),
-            tags: searchParams.getAll("tags")
+            tags: searchParams.getAll("tags"),
+            label: searchParams.get("label")
         }
         apiClient.get<ListResponse[]>("/api/archive/list", payload)
             .then(response => setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt) }))))
@@ -73,6 +75,8 @@ export const ArchiveItemListPage = () => {
             </div>
 
             <Filter />
+
+            <LabelList orientation="horizontal" maxVisible={5}/>
 
             <div className="overflow-x-auto my-4">
                 <table className="w-full table with-column-seperators">

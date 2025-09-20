@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
-import { tagsAtom } from "../Utils/Atoms"
+import { labelsAtom, tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
@@ -13,10 +13,12 @@ import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
+import { LabelsInput } from "../Components/LabelsInput"
 
 type GetResponse = {
     id: number
     title: string
+    label: string
     tags: string[]
     blobs: BlobResponse[]
     metadata: Record<string, any>
@@ -32,11 +34,13 @@ export const ArchiveItemEditPage = () => {
     const [id, setId] = useState<number | null>(null)
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
+    const [label, setLabel] = useState<string>()
     const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
 
     const allTags = useAtomValue(tagsAtom)
+    const allLabels = useAtomValue(labelsAtom)
 
     const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
 
@@ -51,6 +55,7 @@ export const ArchiveItemEditPage = () => {
                 setTitle(item.title)
                 setTags(item.tags)
                 setBlobs(item.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages })))
+                setLabel(item.label)
 
                 dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
             })
@@ -66,7 +71,8 @@ export const ArchiveItemEditPage = () => {
             tags,
             blobsFromUnallocated: blobs.map(blob => blob.id),
             removedBlobs,
-            metadata
+            metadata,
+            label
         }
 
         formData.append("rawRequest", JSON.stringify(updateRequest))
@@ -121,6 +127,11 @@ export const ArchiveItemEditPage = () => {
                 <div className="aligned-labels-and-inputs">
                     <label htmlFor="tags">Tags</label>
                     <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
+                </div>
+
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="tags">Label</label>
+                    <LabelsInput labels={allLabels} currentLabel={label} onChange={setLabel} />
                 </div>
 
                 <MetadataTypeSelector
