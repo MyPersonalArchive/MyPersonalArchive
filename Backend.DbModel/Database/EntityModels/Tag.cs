@@ -29,7 +29,8 @@ public static class Tags
     public static ICollection<Tag> Ensure(MpaDbContext dbContext, params IEnumerable<string> tagTitles)
     {
         Tag EnsureTag(string tagTitle) => dbContext.Tags.FirstOrDefault(x => x.Title == tagTitle) ?? dbContext.Tags.Add(new Tag { Title = tagTitle }).Entity;
-        var tags = tagTitles.Distinct().Select(EnsureTag);
+
+        var tags = tagTitles.Distinct().Select(tagTitle => EnsureTag(tagTitle.Trim()));
         
         return [.. tags];
     }
