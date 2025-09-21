@@ -42,6 +42,10 @@
     &.btn-primary {
         @apply bg-blue-600 text-white hover:bg-blue-700;
     }
+
+    &.btn-danger {
+        @apply bg-red-600 text-white hover:bg-red-700;
+    }
 }
 
 div.input {

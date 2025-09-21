@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
@@ -14,6 +14,7 @@ import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { LabelsInput } from "../Components/LabelsInput"
+import { DatePicker } from "../Components/DatePicker"
 
 type CreateResponse = {
     id: number
@@ -23,6 +24,7 @@ export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [label, setLabel] = useState<string>()
+    const [documentDate, setDocumentDate] = useState<string | undefined>(undefined);
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
 
@@ -43,7 +45,8 @@ export const ArchiveItemNewPage = () => {
             tags,
             blobsFromUnallocated,
             metadata,
-            label
+            label,
+            documentDate
         }
 
         formData.append("rawRequest", JSON.stringify(createRequest))
@@ -89,12 +92,17 @@ export const ArchiveItemNewPage = () => {
                 </div>
 
                 <div className="aligned-labels-and-inputs">
+                    <label htmlFor="documentDate">Document date</label>
+                    <DatePicker date={documentDate ?? ""} setDate={setDocumentDate} />
+                </div>
+
+                <div className="aligned-labels-and-inputs">
                     <label htmlFor="tags">Tags</label>
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
                 </div>
 
                 <div className="aligned-labels-and-inputs">
-                    <label htmlFor="title">Labels</label>
+                    <label htmlFor="labels">Labels</label>
                     <LabelsInput labels={allLabels} onChange={setLabel} />
                 </div>
 

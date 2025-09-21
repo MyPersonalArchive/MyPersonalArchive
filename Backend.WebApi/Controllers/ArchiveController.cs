@@ -49,6 +49,7 @@ public class ArchiveController : ControllerBase
             Title = createRequest.Title,
             CreatedByUsername = _resolver.GetCurrentUsername(),
             CreatedAt = DateTimeOffset.Now,
+            DocumentDate = createRequest.DocumentDate,
             Tags = [.. Tags.Ensure(_dbContext, createRequest.Tags)],
             Metadata = createRequest.Metadata,
             Label = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Title == createRequest.Label)
@@ -180,6 +181,7 @@ public class ArchiveController : ControllerBase
         archiveItem.Label = await _dbContext.Labels.SingleOrDefaultAsync(x => x.Title == updateRequest.Label);
         archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
         archiveItem.Metadata = updateRequest.Metadata;
+        archiveItem.DocumentDate = updateRequest.DocumentDate;
 
         await _dbContext.SaveChangesAsync();
 
@@ -212,6 +214,7 @@ public class ArchiveController : ControllerBase
             Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
             Metadata = archiveItem.Metadata,
             CreatedAt = archiveItem.CreatedAt,
+            DocumentDate = archiveItem.DocumentDate,
             Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
             {
                 Id = blob.Id,
@@ -248,6 +251,8 @@ public class ArchiveController : ControllerBase
                     Tags = archiveItem.Tags.Select(tag => tag.Title),
                     // Metadata = archiveItem.Metadata,
                     CreatedAt = archiveItem.CreatedAt,
+                    DocumentDate = archiveItem.DocumentDate
+                    
                 })
                 .ToListAsync();
         }
@@ -263,6 +268,7 @@ public class ArchiveController : ControllerBase
                 Tags = archiveItem.Tags.Select(tag => tag.Title),
                 // Metadata = archiveItem.Metadata,
                 CreatedAt = archiveItem.CreatedAt,
+                DocumentDate = archiveItem.DocumentDate
             })
             .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.ToLower().IndexOf(titleFilter))
             .ThenBy(archItem => archItem.Title == null ? null : archItem.Title.ToLower())
@@ -341,11 +347,13 @@ public class ArchiveController : ControllerBase
         public required IEnumerable<string> Tags { get; set; }
         // public required JsonObject Metadata { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
     }
 
     public class CreateRequest
     {
         public required string Title { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
         public string? Label { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
@@ -361,6 +369,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
         public string? Label { get; set; }
         public required List<string> Tags { get; set; }
         public required JsonObject Metadata { get; set; }
@@ -372,6 +381,7 @@ public class ArchiveController : ControllerBase
     {
         public int Id { get; set; }
         public required string Title { get; set; }
+        public DateTimeOffset? DocumentDate { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public string? Label { get; set; }
         public required List<string> Tags { get; set; }

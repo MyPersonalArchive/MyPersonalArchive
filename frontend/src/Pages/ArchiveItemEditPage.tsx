@@ -14,6 +14,8 @@ import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { LabelsInput } from "../Components/LabelsInput"
+import { DatePicker } from "../Components/DatePicker"
+import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModelDialog"
 
 type GetResponse = {
     id: number
@@ -22,6 +24,7 @@ type GetResponse = {
     tags: string[]
     blobs: BlobResponse[]
     metadata: Record<string, any>
+    documentDate: string
 }
 
 type BlobResponse = {
@@ -35,9 +38,11 @@ export const ArchiveItemEditPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [label, setLabel] = useState<string>()
+    const [documentDate, setDocumentDate] = useState("")
     const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
     const allTags = useAtomValue(tagsAtom)
     const allLabels = useAtomValue(labelsAtom)
@@ -56,6 +61,7 @@ export const ArchiveItemEditPage = () => {
                 setTags(item.tags)
                 setBlobs(item.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages })))
                 setLabel(item.label)
+                setDocumentDate(item.documentDate)
 
                 dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
             })
@@ -72,7 +78,8 @@ export const ArchiveItemEditPage = () => {
             blobsFromUnallocated: blobs.map(blob => blob.id),
             removedBlobs,
             metadata,
-            label
+            label,
+            documentDate
         }
 
         formData.append("rawRequest", JSON.stringify(updateRequest))
@@ -83,6 +90,13 @@ export const ArchiveItemEditPage = () => {
 
         apiClient.putFormData("/api/archive/Update", formData)
 
+        navigate(RoutePaths.Archive)
+    }
+
+    const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.preventDefault()
+
+        apiClient.delete("/api/archive/delete", { id: id! })
         navigate(RoutePaths.Archive)
     }
 
@@ -122,6 +136,13 @@ export const ArchiveItemEditPage = () => {
                         value={title}
                         onChange={event => setTitle(event.target.value)}
                     />
+                </div>
+
+                <div className="aligned-labels-and-inputs">
+                    <label htmlFor="documentDate">Document date</label>
+                    
+                    <DatePicker date={documentDate} setDate={setDocumentDate} />
+                    
                 </div>
 
                 <div className="aligned-labels-and-inputs">
@@ -195,7 +216,29 @@ export const ArchiveItemEditPage = () => {
                     <button className="btn btn-primary" type="submit">
                         Save
                     </button>
+                    <button className="btn btn-danger" onClick={(e) => {e.preventDefault(); setOpenDeleteDialog(true)}}>
+                        Delete
+                    </button>
                 </div>
+                
+                {
+                    openDeleteDialog && (
+                        <ModalDialog onClose={() => { setOpenDeleteDialog(false) } }>
+                            <DialogHeader>
+                                <div>
+                                    Are you sure you want to delete this item?
+                                </div>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <div className="push-right">
+                                    <button className="btn" onClick={(e) => { e.preventDefault(); setOpenDeleteDialog(false) } }>Cancel</button>
+                                    <button className="btn btn-danger" onClick={deleteItem}>Delete</button>
+                                </div>
+                            </DialogFooter>
+                        </ModalDialog>
+                    )
+                }
+
             </form>
         </>
     )

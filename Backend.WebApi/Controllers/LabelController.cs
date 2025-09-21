@@ -54,6 +54,7 @@ public class LabelController : ControllerBase
 
         return labels.Select(label => new LabelResponse
         {
+            Id = label.Id,
             Title = label.Title
         });
     }
