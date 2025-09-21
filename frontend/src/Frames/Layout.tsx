@@ -40,13 +40,13 @@ export const Layout = ({ children }: PropsWithChildren) => {
                 goesAway={<div className="text-center text-sm py-1">
                     <ul className="inline-flex space-x-4 list-disc list-inside">
                         <li>
-                            <a href="https://github.com/gotnoname/MyPersonalArchive" className="hover:underline">Link to github repo</a>
+                            <a href="https://github.com/MyPersonalArchive/MyPersonalArchive" target="_blank" className="hover:underline">Link to github repo</a>
                         </li>
                         <li>
-                            <a href="#" className="hover:underline">Link to policies</a>
+                            <a href="#" target="_blank" className="hover:underline">Link to policies</a>
                         </li>
                         <li>
-                            <a href="#" className="hover:underline">Other info in footer</a>
+                            <a href="#" target="_blank" className="hover:underline">Other info in footer</a>
                         </li>
                     </ul>
                 </div>}
