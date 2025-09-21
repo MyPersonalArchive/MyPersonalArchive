@@ -30,10 +30,9 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
     }
 
     const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.value.endsWith(" ")) {
-            const tag = event.currentTarget.value
+        if (event.target.value.length > 0 && event.target.value.endsWith(" ")) {
+            const tag = event.currentTarget.value.trim()
             setTags([...tags, tag])
-            event.currentTarget
 
             setTagsInput("")
             return
