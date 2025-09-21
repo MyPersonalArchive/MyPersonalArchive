@@ -22,8 +22,6 @@ public class ArchiveItem : TenantEntity
 
     public ICollection<Blob>? Blobs { get; set; }
 
-    public Label? Label { get; set; }
-
     public required ICollection<Tag> Tags { get; set; }
 
     public required JsonObject Metadata { get; set; }

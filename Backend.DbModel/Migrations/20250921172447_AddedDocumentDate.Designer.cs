@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    [Migration("20250917183814_AddLabelTable")]
-    partial class AddLabelTable
+    [Migration("20250921172447_AddedDocumentDate")]
+    partial class AddedDocumentDate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,8 +33,8 @@ namespace Backend.DbModel.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("LabelId")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTimeOffset?>("DocumentDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Metadata")
                         .IsRequired()
@@ -51,8 +51,6 @@ namespace Backend.DbModel.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUsername");
-
-                    b.HasIndex("LabelId");
 
                     b.ToTable("ArchiveItem");
                 });
@@ -338,29 +336,6 @@ namespace Backend.DbModel.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Label", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Label");
-                });
-
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>
                 {
                     b.HasOne("Backend.DbModel.Database.EntityModels.User", "CreatedBy")
@@ -370,13 +345,7 @@ namespace Backend.DbModel.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Label", "Label")
-                        .WithMany()
-                        .HasForeignKey("LabelId");
-
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("Label");
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItemAndTag", b =>
@@ -440,17 +409,6 @@ namespace Backend.DbModel.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Label", b =>
-                {
-                    b.HasOne("Backend.DbModel.Database.EntityModels.User", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Backend.DbModel.Database.EntityModels.ArchiveItem", b =>

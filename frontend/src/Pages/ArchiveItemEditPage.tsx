@@ -13,7 +13,6 @@ import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
-import { LabelsInput } from "../Components/LabelsInput"
 import { DatePicker } from "../Components/DatePicker"
 import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModelDialog"
 
@@ -150,10 +149,6 @@ export const ArchiveItemEditPage = () => {
                     <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
                 </div>
 
-                <div className="aligned-labels-and-inputs">
-                    <label htmlFor="tags">Label</label>
-                    <LabelsInput labels={allLabels} currentLabel={label} onChange={setLabel} />
-                </div>
 
                 <MetadataTypeSelector
                     selectedMetadataTypes={selectedMetadataTypes}

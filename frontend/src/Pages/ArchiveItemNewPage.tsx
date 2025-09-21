@@ -13,7 +13,6 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
-import { LabelsInput } from "../Components/LabelsInput"
 import { DatePicker } from "../Components/DatePicker"
 
 type CreateResponse = {
@@ -99,11 +98,6 @@ export const ArchiveItemNewPage = () => {
                 <div className="aligned-labels-and-inputs">
                     <label htmlFor="tags">Tags</label>
                     <TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
-                </div>
-
-                <div className="aligned-labels-and-inputs">
-                    <label htmlFor="labels">Labels</label>
-                    <LabelsInput labels={allLabels} onChange={setLabel} />
                 </div>
 
                 <MetadataTypeSelector

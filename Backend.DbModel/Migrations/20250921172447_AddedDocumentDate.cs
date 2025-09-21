@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Backend.DbModel.Migrations
 {
     /// <inheritdoc />
-    public partial class AddedDocumentDateField : Migration
+    public partial class AddedDocumentDate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

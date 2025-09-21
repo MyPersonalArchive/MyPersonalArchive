@@ -243,7 +243,6 @@ public class MpaDbContext : DbContext
     public DbSet<Token> Tokens { get; set; }
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
-    public DbSet<Label> Labels { get; set; }
 
     public class MpaDbModelCacheKeyFactoryDesignTimeSupport : IModelCacheKeyFactory
     {

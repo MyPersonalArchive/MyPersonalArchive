@@ -8,7 +8,7 @@ import { tagsAtom } from "../Utils/Atoms"
 import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
-import LabelList from "../Components/LabelList"
+import { PredefinedSearchList } from "../Components/PredefinedSearchList"
 
 type ListResponse = {
     id: number
@@ -37,7 +37,8 @@ export const ArchiveItemListPage = () => {
         const payload = {
             title: searchParams.get("title"),
             tags: searchParams.getAll("tags"),
-            label: searchParams.get("label")
+            label: searchParams.get("label"),
+            metadataTypes: searchParams.getAll("metadataTypes")
         }
         apiClient.get<ListResponse[]>("/api/archive/list", payload)
             .then(response => setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate }))))
@@ -78,7 +79,7 @@ export const ArchiveItemListPage = () => {
 
             <Filter />
 
-            <LabelList orientation="horizontal" maxVisible={5}/>
+            <PredefinedSearchList orientation="horizontal" maxVisible={5} />
 
             <div className="overflow-x-auto my-4">
                 <table className="w-full table with-column-seperators">
