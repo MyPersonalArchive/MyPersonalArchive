@@ -52,10 +52,10 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
     const handleFileChange = (files: File[]) => {
         if (!files) {
-            return;
+            return
         }
 
-        const filePromises = [];
+        const filePromises = []
 
         for (let i = 0; i < files.length; i++) {
             const reader = new FileReader()
@@ -69,11 +69,11 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                 }
 
                 reader.onerror = () => {
-                    reject(new Error('Error reading file'));
+                    reject(new Error("Error reading file"))
                 }
 
                 reader.readAsDataURL(files[i])
-            });
+            })
 
             filePromises.push(filePromise)
         }
@@ -83,7 +83,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
                 uploadBlobs(fileDataArray)
             })
             .catch((error) => {
-                console.error('Error reading files:', error)
+                console.error("Error reading files:", error)
             })
     }
 

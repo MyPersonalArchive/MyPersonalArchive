@@ -1,4 +1,4 @@
-import img from "../assets/receiptly_logo.png";
+import img from "../assets/receiptly_logo.png"
 
 
 export const IndexPage = () => {

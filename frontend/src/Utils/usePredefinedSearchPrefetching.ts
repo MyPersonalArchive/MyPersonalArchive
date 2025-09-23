@@ -18,15 +18,15 @@ export const usePredefinedSearchesPrefetching = () => {
 
     useSignalR((message: SignalRMessage) => {
         switch (message.messageType) {
-            case "PredefinedSearchCreated":{
+            case "PredefinedSearchCreated": {
                 setPredefinedSearches(searches => [...searches, message.data])
                 break
             }
-            case "PredefinedSearchDeleted":{
+            case "PredefinedSearchDeleted": {
                 setPredefinedSearches(searches => searches.filter(search => search.id !== message.data))
                 break
             }
-            case "PredefinedSearchUpdated":{
+            case "PredefinedSearchUpdated": {
                 setPredefinedSearches(searches => searches.map(search => search.id === message.data.id ? message.data : search))
                 break
             }

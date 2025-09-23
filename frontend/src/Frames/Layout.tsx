@@ -3,9 +3,9 @@ import { RoutePaths } from "../RoutePaths"
 import { loggedInUserAtom, User } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { PropsWithChildren, useContext } from "react"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faUser, faUserTie } from '@fortawesome/free-solid-svg-icons'
-import { CurrentTenantIdContext } from './CurrentTenantIdFrame'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faBars, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
+import { CurrentTenantIdContext } from "./CurrentTenantIdFrame"
 import { Dropdown, DropdownItem } from "./Dropdown"
 import { StickyFooter, StickyHeader } from "../Components/Sticky"
 

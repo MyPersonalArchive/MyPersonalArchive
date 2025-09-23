@@ -8,7 +8,7 @@ type MetadataControlState = {
     selectedMetadataTypes: Set<string>
 }
 
-export const metadataControlReducer = (state: MetadataControlState, command: ICommand ): MetadataControlState => {
+export const metadataControlReducer = (state: MetadataControlState, command: ICommand): MetadataControlState => {
     switch (command.action) {
         case "METADATA_LOADED": {
             const populatedMetadataTypes = new Set(Object.keys(command.metadata))

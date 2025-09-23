@@ -34,7 +34,7 @@ export const StickyHeader = ({ goesAway, alwaysVisible, className }: StickyHeade
     useEffect(() => {
         // Observe only changes inside the <main> element
         const mainElement = document.querySelector("main")
-        var observer: MutationObserver | undefined = undefined
+        let observer: MutationObserver | undefined = undefined
         if (mainElement) {
             observer = new MutationObserver(() => {
                 animateOnScroll()
@@ -85,7 +85,7 @@ export const StickyFooter = ({ goesAway, alwaysVisible, className }: StickyFoote
         if (!footerRef.current || !alwaysVisibleRef.current) return
 
         // Reset footer margin top before calculating anything for the footer
-        footerRef.current!.style.marginTop = `0px`
+        footerRef.current!.style.marginTop = "0px"
 
         // Get scroll positions
         const scrollTop = Math.max(0, window.pageYOffset || document.documentElement.scrollTop)
@@ -111,7 +111,7 @@ export const StickyFooter = ({ goesAway, alwaysVisible, className }: StickyFoote
 
     useEffect(() => {
         const mainElement = document.querySelector("main")
-        var observer: MutationObserver | undefined = undefined
+        let observer: MutationObserver | undefined = undefined
         if (mainElement) {
             observer = new MutationObserver(() => {
                 animateOnScroll()

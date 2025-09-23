@@ -9,7 +9,7 @@ import { allMetadataTypes } from "../Components/MetadataTypes"
 
 export const PredefinedSearchEditPage = () => {
     const [search, setSearch] = useState<PredefinedSearch | undefined>(undefined)
-    const [mode, setMode] = useState<Mode>('create')
+    const [mode, setMode] = useState<Mode>("create")
     const [openNewSearchDialog, setOpenNewSearchDialog] = useState(false)
     const [openDeleteSearchDialog, setOpenDeleteSearchDialog] = useState(false)
 
@@ -48,26 +48,26 @@ export const PredefinedSearchEditPage = () => {
     
 
     const DeleteSearchDialog = () => {
-        if (!openDeleteSearchDialog) return null;
+        if (!openDeleteSearchDialog) return null
 
         return (
-                <ModalDialog onClose={() => setOpenDeleteSearchDialog(false)}>
-                    <DialogHeader>
-                        <div className="dialog-header">Delete search item?</div>
-                    </DialogHeader>
-                    <DialogContent>
-                        <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
-                        </div>
-                    </DialogContent>
-                    <DialogFooter> 
-                        <button className="btn" onClick={() => setOpenDeleteSearchDialog(false)}>Cancel</button>
-                        <button className="btn btn-danger" onClick={() => {
-                            setOpenDeleteSearchDialog(false)
-                            deleteSearch(search)
-                        }}>Delete</button>
-                    </DialogFooter>
-                </ModalDialog>
-            )
+            <ModalDialog onClose={() => setOpenDeleteSearchDialog(false)}>
+                <DialogHeader>
+                    <div className="dialog-header">Delete search item?</div>
+                </DialogHeader>
+                <DialogContent>
+                    <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
+                    </div>
+                </DialogContent>
+                <DialogFooter> 
+                    <button className="btn" onClick={() => setOpenDeleteSearchDialog(false)}>Cancel</button>
+                    <button className="btn btn-danger" onClick={() => {
+                        setOpenDeleteSearchDialog(false)
+                        deleteSearch(search)
+                    }}>Delete</button>
+                </DialogFooter>
+            </ModalDialog>
+        )
     }
 
 
@@ -81,7 +81,7 @@ export const PredefinedSearchEditPage = () => {
             <DeleteSearchDialog />
             
             <div>
-                <button className="btn" onClick={() => { setSearch(undefined); setMode('create'); setOpenNewSearchDialog(true)}}>New search</button>
+                <button className="btn" onClick={() => { setSearch(undefined); setMode("create"); setOpenNewSearchDialog(true)}}>New search</button>
             </div>
 
             <div className="overflow-x-auto my-4">
@@ -98,9 +98,9 @@ export const PredefinedSearchEditPage = () => {
                     <tbody>
                         {
                             predefinedSearches?.map(item => <Row key={item.id} 
-                                    search={item} 
-                                    edit={() => {setSearch(item); setMode('edit'); setOpenNewSearchDialog(true)}} 
-                                    deleteItem={() => {setSearch(item); setOpenDeleteSearchDialog(true)}} />)
+                                search={item} 
+                                edit={() => {setSearch(item); setMode("edit"); setOpenNewSearchDialog(true)}} 
+                                deleteItem={() => {setSearch(item); setOpenDeleteSearchDialog(true)}} />)
                         }
                     </tbody>
                 </table>
@@ -140,106 +140,105 @@ const Row = ({ search, edit, deleteItem }: { search: PredefinedSearch, edit: (se
     )
 }
 
-type Mode = 'create' | 'edit';
+type Mode = "create" | "edit";
 
 type NewSearchDialogProps = {
     open: boolean
     setOpen: (open: boolean) => void
-    onSave: (search: PredefinedSearch) => void,
-    mode?: Mode;
-    initialValues?: Partial<PredefinedSearch>; // optional for create mode
+    onSave: (search: PredefinedSearch) => void
+    mode?: Mode
+    initialValues?: Partial<PredefinedSearch>
 }
 
 
 const NewSearchDialog = ({
-  open,
-  setOpen,
-  onSave,
-  mode = 'create',
-  initialValues = {}
+    open,
+    setOpen,
+    onSave,
+    mode = "create",
+    initialValues = {}
 }: NewSearchDialogProps) => {
-  const [name, setName] = useState(initialValues.name ?? '');
-  const [title, setTitle] = useState(initialValues.title ?? '');
-  const [tags, setTags] = useState<string[]>(initialValues.tags ?? []);
-  const [metadataTypes, setMetadataTypes] = useState<string[]>(initialValues.metadataTypes ?? []);
-  const allTags = useAtomValue(tagsAtom);
+    const [name, setName] = useState(initialValues.name ?? "")
+    const [title, setTitle] = useState(initialValues.title ?? "")
+    const [tags, setTags] = useState<string[]>(initialValues.tags ?? [])
+    const [metadataTypes, setMetadataTypes] = useState<string[]>(initialValues.metadataTypes ?? [])
+    const allTags = useAtomValue(tagsAtom)
 
-  // Optional: Reset state when dialog opens
-  useEffect(() => {
-    if (open) {
-      setName(initialValues.name ?? '');
-      setTitle(initialValues.title ?? '');
-      setTags(initialValues.tags ?? []);
-      setMetadataTypes(initialValues.metadataTypes ?? []);
-    }
-  }, [open]);
+    useEffect(() => {
+        if (open) {
+            setName(initialValues.name ?? "")
+            setTitle(initialValues.title ?? "")
+            setTags(initialValues.tags ?? [])
+            setMetadataTypes(initialValues.metadataTypes ?? [])
+        }
+    }, [open])
 
-  if (!open) return null;
+    if (!open) return null
 
-  return (
-    <ModalDialog onClose={() => setOpen(false)}>
-      <DialogHeader>
-        <div className="dialog-header">{mode === 'create' ? 'New search' : 'Edit search'}</div>
-      </DialogHeader>
-      <DialogContent>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <span>Name of search</span>
-          <input
-            type="text"
-            className="input"
-            placeholder="Name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
+    return (
+        <ModalDialog onClose={() => setOpen(false)}>
+            <DialogHeader>
+                <div className="dialog-header">{mode === "create" ? "New search" : "Edit search"}</div>
+            </DialogHeader>
+            <DialogContent>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <span>Name of search</span>
+                    <input
+                        type="text"
+                        className="input"
+                        placeholder="Name"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                    />
 
-          <span>Search by title</span>
-          <input
-            type="text"
-            className="input"
-            placeholder="Search title"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-          />
+                    <span>Search by title</span>
+                    <input
+                        type="text"
+                        className="input"
+                        placeholder="Search title"
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                    />
 
-          <span>Search by tags</span>
-          <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} />
+                    <span>Search by tags</span>
+                    <TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} />
 
-          <span>Search by metadata types</span>
-          {allMetadataTypes.map(component => (
-            <div key={component.displayName} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span>{component.displayName}</span>
-              <input
-                type="checkbox"
-                checked={metadataTypes.includes(component.displayName)}
-                onChange={e =>
-                  setMetadataTypes(e.target.checked
-                    ? [...metadataTypes, component.displayName]
-                    : metadataTypes.filter(name => name !== component.displayName)
-                  )
-                }
-              />
-            </div>
-          ))}
-        </div>
-      </DialogContent>
-      <DialogFooter>
-        <button className="btn" onClick={() => setOpen(false)}>Cancel</button>
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            setOpen(false);
-            onSave({
-              id: initialValues.id ?? 0,
-              name,
-              title,
-              tags,
-              metadataTypes
-            });
-          }}
-        >
-          {mode === 'create' ? 'Save' : 'Update'}
-        </button>
-      </DialogFooter>
-    </ModalDialog>
-  );
-};
+                    <span>Search by metadata types</span>
+                    {allMetadataTypes.map(component => (
+                        <div key={component.displayName} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <span>{component.displayName}</span>
+                            <input
+                                type="checkbox"
+                                checked={metadataTypes.includes(component.displayName)}
+                                onChange={e =>
+                                    setMetadataTypes(e.target.checked
+                                        ? [...metadataTypes, component.displayName]
+                                        : metadataTypes.filter(name => name !== component.displayName)
+                                    )
+                                }
+                            />
+                        </div>
+                    ))}
+                </div>
+            </DialogContent>
+            <DialogFooter>
+                <button className="btn" onClick={() => setOpen(false)}>Cancel</button>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                        setOpen(false)
+                        onSave({
+                            id: initialValues.id ?? 0,
+                            name,
+                            title,
+                            tags,
+                            metadataTypes
+                        })
+                    }}
+                >
+                    {mode === "create" ? "Save" : "Update"}
+                </button>
+            </DialogFooter>
+        </ModalDialog>
+    )
+}

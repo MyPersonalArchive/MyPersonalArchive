@@ -1,7 +1,7 @@
-import { InfoPanel } from "./InfoPanel";
-import { Preview, DimensionEnum } from "./PreviewList";
-import { SelectCheckbox, Selection } from "../Utils/Selection";
-import { UnallocatedBlob } from "../Utils/Atoms";
+import { InfoPanel } from "./InfoPanel"
+import { Preview, DimensionEnum } from "./PreviewList"
+import { SelectCheckbox, Selection } from "../Utils/Selection"
+import { UnallocatedBlob } from "../Utils/Atoms"
 
 
 export type BlobListItemProps = {
@@ -34,5 +34,5 @@ export const BlobListItem = ({ blob, attachBlob, deleteBlobs, maximize, selectio
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}

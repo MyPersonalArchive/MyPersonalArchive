@@ -1,7 +1,7 @@
 // Dropdown.tsx
-import React, { useState, useEffect, useRef } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCaretDown } from '@fortawesome/free-solid-svg-icons'
+import React, { useState, useEffect, useRef } from "react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCaretDown } from "@fortawesome/free-solid-svg-icons"
 
 type DropdownLink = {
     type: "link"
@@ -38,14 +38,14 @@ export const Dropdown = ({ header, items }: DropdownProps) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false)
             }
-        };
+        }
 
         document.addEventListener("mousedown", handleClickOutside)
 
         return () => {
             document.removeEventListener("mousedown", handleClickOutside)
-        };
-    }, []);
+        }
+    }, [])
 
     const toggleDropdown = () => setIsOpen(!isOpen)
 

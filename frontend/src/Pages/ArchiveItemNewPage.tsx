@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
@@ -23,7 +23,7 @@ export const ArchiveItemNewPage = () => {
     const [title, setTitle] = useState<string>("")
     const [tags, setTags] = useState<string[]>([])
     const [label, setLabel] = useState<string>()
-    const [documentDate, setDocumentDate] = useState<string | undefined>(undefined);
+    const [documentDate, setDocumentDate] = useState<string | undefined>(undefined)
     const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
     const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
 

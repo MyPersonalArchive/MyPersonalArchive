@@ -1,5 +1,5 @@
 import React from "react"
-import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/types'
+import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
 
 type Command =
     | { action: "INIT" }

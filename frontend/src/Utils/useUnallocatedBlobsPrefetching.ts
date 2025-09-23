@@ -12,16 +12,16 @@ export type UnallocatedBlobResponse = {
 export const useUnallocatedBlobsPrefetching = () => {
     const setUnallocatedBlobs = useSetAtom(unallocatedBlobsAtom)
     const apiClient = useApiClient()
-    
+
     useEffect(() => {
         apiClient.get<UnallocatedBlobResponse>("/api/blob/unallocatedBlobs")
-                .then(response => {
-                    setUnallocatedBlobs(response.blobs)
+            .then(response => {
+                setUnallocatedBlobs(response.blobs)
             })
     }, [])
 
-    useSignalR(message => {        
-        switch(message.messageType) {
+    useSignalR(message => {
+        switch (message.messageType) {
             case "AddedBlobs": {
                 console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
                 setUnallocatedBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as UnallocatedBlob[])])
