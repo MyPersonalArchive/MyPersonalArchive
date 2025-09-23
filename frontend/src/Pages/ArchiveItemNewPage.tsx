@@ -5,7 +5,7 @@ import { TagsInput } from "../Components/TagsInput"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { useApiClient } from "../Utils/useApiClient"
-import { LabelItem, labelsAtom, tagsAtom } from "../Utils/Atoms"
+import {  tagsAtom } from "../Utils/Atoms"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
@@ -28,7 +28,6 @@ export const ArchiveItemNewPage = () => {
     const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
 
     const allTags = useAtomValue(tagsAtom)
-    const allLabels = useAtomValue(labelsAtom)
 
     const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
 

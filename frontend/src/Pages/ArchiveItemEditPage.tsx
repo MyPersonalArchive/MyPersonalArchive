@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/useApiClient"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
-import { labelsAtom, tagsAtom } from "../Utils/Atoms"
+import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { LocalFilePreview } from "../Components/LocalFilePreview"
@@ -44,7 +44,6 @@ export const ArchiveItemEditPage = () => {
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
     const allTags = useAtomValue(tagsAtom)
-    const allLabels = useAtomValue(labelsAtom)
 
     const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
 

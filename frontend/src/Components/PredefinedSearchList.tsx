@@ -5,14 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { createQueryString } from "../Utils/createQueryString";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 import "../assets/labelList.css"
+import { PredefinedSearch, predefinedSearchesAtom } from "../Utils/Atoms";
+import { useAtom, useAtomValue } from "jotai";
 
-type PredefinedSearch = {
-    id: number
-    name: string
-    title: string
-    metadataTypes: string[]
-    tags: string[]
-}
+
 
 export type Orientation = "vertical" | "horizontal";
 
@@ -22,37 +18,11 @@ type PredefinedSearchListProps = {
 }
 
 export const PredefinedSearchList = ({ orientation, maxVisible }: PredefinedSearchListProps) => {
-    const [items, setItems] = useState<PredefinedSearch[]>([])
     const [maxVisibleItems, setMaxVisibleItems] = useState(maxVisible)
-    const apiClient = useApiClient()
     const navigate = useNavigate()
 
-    const getPredefinedSearches = () => {
-        return [
-            {
-                id: 0,
-                name: "Kvittering",
-                title: "",
-                tags: [],
-                metadataTypes: ["receipt"]
-            },
-            {
-                id: 1,
-                name: "Markus skole",
-                title: "",
-                tags: ["Markus", "Skole"],
-                metadataTypes: []
-            },
-            {
-                id: 2,
-                name: "Barnevernet",
-                title: "",
-                tags: ["Barnevern"],
-                metadataTypes: []
-            }
-        ]
-    }
-
+    const predefinedSearches = useAtomValue(predefinedSearchesAtom)
+    
       const selectSearch = (search: PredefinedSearch) => {
           navigate({
               search: createQueryString({ 
@@ -63,13 +33,9 @@ export const PredefinedSearchList = ({ orientation, maxVisible }: PredefinedSear
           })
       }
 
-    useEffect(() => {
-        setItems(getPredefinedSearches())
-    }, [])
-
-      const displayed = items.length > maxVisibleItems
-    ? items.slice(0, maxVisibleItems)
-    : items
+      const displayed = predefinedSearches.length > maxVisibleItems
+    ? predefinedSearches.slice(0, maxVisibleItems)
+    : predefinedSearches
 
     return (
         <>
@@ -79,9 +45,8 @@ export const PredefinedSearchList = ({ orientation, maxVisible }: PredefinedSear
                 aria-orientation={orientation === "vertical" ? "vertical" : "horizontal"}
                 >
                 {displayed.map((search, idx) => (
-                    <div className="item">
+                    <div className="item" key={search.id}>
                         <div
-                            key={search.id}
                             role="listitem"
                             tabIndex={0}
                             // draggable
@@ -95,10 +60,10 @@ export const PredefinedSearchList = ({ orientation, maxVisible }: PredefinedSear
                     
                 ))}
     
-                {items.length > maxVisibleItems && (
+                {predefinedSearches.length > maxVisibleItems && (
                     <button className="item collapsed" 
-                    onClick={() => setMaxVisibleItems(items.length)}
-                    aria-hidden>+{items.length - maxVisibleItems} more</button>
+                    onClick={() => setMaxVisibleItems(predefinedSearches.length)}
+                    aria-hidden>+{predefinedSearches.length - maxVisibleItems} more</button>
                 )}
             </div>
         </>

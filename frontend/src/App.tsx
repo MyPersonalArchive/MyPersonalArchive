@@ -14,6 +14,7 @@ import { Layout } from "./Frames/Layout"
 import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
+import { PredefinedSearchEditPage } from "./Pages/PredefinedSearchEditPage"
 
 
 const routers = createBrowserRouter([
@@ -68,6 +69,10 @@ const routers = createBrowserRouter([
                     {
                         path: "archive/new",
                         element: <ArchiveItemNewPage />
+                    },
+                    {
+                        path: "search/edit",
+                        element: <PredefinedSearchEditPage />
                     }
                 ]
             }

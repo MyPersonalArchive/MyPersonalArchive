@@ -232,7 +232,7 @@ public class ArchiveController : ControllerBase
 
         if (metadataTypesFilter.Any())
         {
-            results = [.. results.Where(archiveItem => metadataTypesFilter.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType)))];
+            results = [.. results.Where(archiveItem => metadataTypesFilter.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))];
         }
 
         return results.Select(archiveItem => new ListResponse

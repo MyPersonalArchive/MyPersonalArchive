@@ -89,8 +89,8 @@
   background-color: whitesmoke;
   padding: 20px;
   border-radius: 10px;
-  width: 30em;
-  height: 20em;
+  min-width: 30em;
+  min-height: 20em;
 }
 
 .dialog-backdrop {
@@ -104,7 +104,8 @@
 
 .dialog-header {
   min-height: 2rem;
-  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   font-size: 20px;
 }
 

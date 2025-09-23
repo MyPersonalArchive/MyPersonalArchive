@@ -17,7 +17,7 @@ export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSele
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 export const tagsAtom = atom<string[]>([])
-export const labelsAtom = atom<LabelItem[]>([])
+export const predefinedSearchesAtom = atom<PredefinedSearch[]>([])
 
 export const unallocatedBlobsAtom = atom<UnallocatedBlob[]>([])
 export type UnallocatedBlob = {
@@ -29,8 +29,11 @@ export type UnallocatedBlob = {
     uploadedByUser: string
 }
 
-export type LabelItem = {
-  id: number
-  title: string
+export type PredefinedSearch = {
+    id: number
+    name: string
+    title: string
+    metadataTypes: string[]
+    tags: string[]
 }
 
