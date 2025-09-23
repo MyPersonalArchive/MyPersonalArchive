@@ -164,6 +164,16 @@ public class ArchiveController : ControllerBase
             archiveItem.Blobs!.Add(blob);
         }
 
+        var removedTags = archiveItem.Tags.Where(tag => !updateRequest.Tags.Contains(tag.Title));
+        foreach (var tag in removedTags)
+        {
+            archiveItem.Tags.Remove(tag);
+            if (tag.ArchiveItems != null && tag.ArchiveItems.Count == 1 && tag.ArchiveItems.Contains(archiveItem))
+            {
+                _dbContext.Tags.Remove(tag);
+            }
+        }
+
         archiveItem.Title = updateRequest.Title;
         archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
         archiveItem.Metadata = updateRequest.Metadata;
@@ -234,6 +244,8 @@ public class ArchiveController : ControllerBase
     {
         var archiveItem = await _dbContext.ArchiveItems
             .Include(archiveItem => archiveItem.Blobs)
+            .Include(archiveItem => archiveItem.Tags)
+                .ThenInclude(tag => tag.ArchiveItems)
             .SingleOrDefaultAsync(x => x.Id == id);
 
         if (archiveItem == null)
@@ -248,6 +260,12 @@ public class ArchiveController : ControllerBase
                 _fileProvider.DeleteFile(blob.PathInStore);
                 _dbContext.Blobs.Remove(blob);
             }
+        }
+
+        var removedTags = archiveItem.Tags.Where(tag => tag.ArchiveItems != null && tag.ArchiveItems.Count == 1 && tag.ArchiveItems.Contains(archiveItem));
+        foreach (var tag in removedTags)
+        {
+            _dbContext.Tags.Remove(tag);
         }
 
         _dbContext.ArchiveItems.Remove(archiveItem);
