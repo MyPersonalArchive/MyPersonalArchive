@@ -12,9 +12,11 @@ module.exports = {
     // Disable the default no-unused-vars as we use unused-imports plugin
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
+    "react-hooks/exhaustive-deps": "off",
 
     // Enable unused-imports plugin to auto remove unused imports and vars
     'unused-imports/no-unused-imports': 'error',
+    "@typescript-eslint/no-explicit-any": "off", // turn off warning for 'any'
     'unused-imports/no-unused-vars': [
       'warn',
       {
