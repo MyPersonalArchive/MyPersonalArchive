@@ -1,5 +1,5 @@
 import React from "react"
-import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/types'
+import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
 
 type Command =
     | { action: "INIT" }
@@ -19,45 +19,45 @@ type State = {
 
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
-        case "INIT":
-            return {
-                amount: "",
-                currency: "",
-                warranty: "",
-                dispositionStatus: ""
-            }
+    case "INIT":
+        return {
+            amount: "",
+            currency: "",
+            warranty: "",
+            dispositionStatus: ""
+        }
 
-        case "METADATA_LOADED":
-            return {
-                ...state,
-                ...command.metadata
-            }
+    case "METADATA_LOADED":
+        return {
+            ...state,
+            ...command.metadata
+        }
 
-        case "SET_AMOUNT":
-            return {
-                ...state,
-                amount: command.amount
-            }
+    case "SET_AMOUNT":
+        return {
+            ...state,
+            amount: command.amount
+        }
 
-        case "SET_CURRENCY":
-            return {
-                ...state,
-                currency: command.currency
-            }
+    case "SET_CURRENCY":
+        return {
+            ...state,
+            currency: command.currency
+        }
 
-        case "SET_WARRANTY":
-            return {
-                ...state,
-                warranty: command.warranty
-            }
-        case "SET_DISPOSITION_STATUS":
-            return {
-                ...state,
-                dispositionStatus: command.dispositionStatus
-            }
+    case "SET_WARRANTY":
+        return {
+            ...state,
+            warranty: command.warranty
+        }
+    case "SET_DISPOSITION_STATUS":
+        return {
+            ...state,
+            dispositionStatus: command.dispositionStatus
+        }
 
-        default:
-            return state
+    default:
+        return state
     }
 }
 

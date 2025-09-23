@@ -30,10 +30,10 @@ export const useSignalR = (
 
             connection.on("ReceiveMessage", (message) => {
                 callbacksRef.current.forEach(cb => cb(message))
-            });
+            })
 
             setSignalRConnection(connection)
-        })();
+        })()
 
         // Cleanup connection on component unmount
         return () => {

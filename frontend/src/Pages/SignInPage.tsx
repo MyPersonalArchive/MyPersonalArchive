@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
-import img from "../assets/receiptly_logo.png";
+import img from "../assets/receiptly_logo.png"
 import { useAtom, useSetAtom } from "jotai"
 import { accessTokenAtom, lastLoggedInUsernameAtom, loggedInUserAtom } from "../Utils/Atoms"
 
@@ -36,7 +36,7 @@ export const SignInPage = () => {
 
         const success = await loginAction(username, password)
         if (success) {
-            var redirect = new URLSearchParams(window.location.search).get("redirect")
+            const redirect = new URLSearchParams(window.location.search).get("redirect")
             navigate(redirect ?? RoutePaths.Archive)
         } else {
             setIsLoading(false)

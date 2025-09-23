@@ -15,24 +15,24 @@ export const useUnallocatedBlobsPrefetching = () => {
     
     useEffect(() => {
         apiClient.get<UnallocatedBlobResponse>("/api/blob/unallocatedBlobs")
-                .then(response => {
-                    setUnallocatedBlobs(response.blobs)
+            .then(response => {
+                setUnallocatedBlobs(response.blobs)
             })
     }, [])
 
     useSignalR(message => {        
         switch(message.messageType) {
-            case "AddedBlobs": {
-                console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
-                setUnallocatedBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as UnallocatedBlob[])])
-                break
-            }
-            case "BlobsAllocated":
-            case "BlobDeleted": {
-                console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
-                setUnallocatedBlobs(unallocatedBlobs => unallocatedBlobs.filter(blob => !message.data.includes(blob.id)))
-                break
-            }
+        case "AddedBlobs": {
+            console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
+            setUnallocatedBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as UnallocatedBlob[])])
+            break
+        }
+        case "BlobsAllocated":
+        case "BlobDeleted": {
+            console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
+            setUnallocatedBlobs(unallocatedBlobs => unallocatedBlobs.filter(blob => !message.data.includes(blob.id)))
+            break
+        }
         }
     })
 }

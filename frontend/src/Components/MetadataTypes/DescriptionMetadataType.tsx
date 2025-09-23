@@ -11,25 +11,25 @@ type State = {
 
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
-        case "INIT":
-            return {
-                notes: "",
-            }
+    case "INIT":
+        return {
+            notes: "",
+        }
 
-        case "METADATA_LOADED":
-            return {
-                ...state,
-                ...command.metadata
-            }
+    case "METADATA_LOADED":
+        return {
+            ...state,
+            ...command.metadata
+        }
 
-        case "SET_NOTES":
-            return {
-                ...state,
-                notes: command.notes
-            }
+    case "SET_NOTES":
+        return {
+            ...state,
+            notes: command.notes
+        }
 
-        default:
-            return state
+    default:
+        return state
     }
 }
 

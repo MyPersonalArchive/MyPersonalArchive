@@ -73,7 +73,7 @@ export const useApiClient = () => {
         return fetch(url, options)
             .then(async response => {
                 if (response.status === 401 && retryAfterRefreshingToken) {
-                    var json = await refresh()
+                    const json = await refresh()
 
                     commonHeaders.Authorization = `Bearer ${json!.accessToken}`
                     return interceptedFetch(url, options, false)
@@ -115,9 +115,9 @@ export const useApiClient = () => {
                         const regex = /filename="([^"]+)"|filename\*=UTF-8''([^;]+)/
                         const matches = contentDisposition.match(regex)
                         if (matches && (matches[1] || matches[2])) {
-                            filename = matches[1] || matches[2] || ''
+                            filename = matches[1] || matches[2] || ""
                         }
-                      }
+                    }
                     
                     return {
                         blob: await response?.blob(),

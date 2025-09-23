@@ -10,32 +10,32 @@ type Command<T> =
 
 export const selectionReducer = <T,>(allPossibleItems: Set<T>) => (state: Set<T>, action: Command<T>) => {
     switch (action.type) {
-        case "SELECT_ALL_ITEMS":
-            return new Set(allPossibleItems)
+    case "SELECT_ALL_ITEMS":
+        return new Set(allPossibleItems)
 
-        case "DESELECT_ALL_ITEMS":
-            return new Set<T>()
+    case "DESELECT_ALL_ITEMS":
+        return new Set<T>()
 
-        case "SELECT_ITEM":
-            if (allPossibleItems.has(action.item)) {
-                return state.union(new Set([action.item]))
-            }
-            return state // Ignore selection of items not in the set of all possible items
+    case "SELECT_ITEM":
+        if (allPossibleItems.has(action.item)) {
+            return state.union(new Set([action.item]))
+        }
+        return state // Ignore selection of items not in the set of all possible items
 
-        case "DESELECT_ITEM":
-            return state.difference(new Set([action.item]))
+    case "DESELECT_ITEM":
+        return state.difference(new Set([action.item]))
 
-        case "TOGGLE_ITEM":
-            if (allPossibleItems.has(action.item)) {
-                return state.has(action.item)
-                    ? state.difference(new Set([action.item]))
-                    : state.union(new Set([action.item]))
-            }
-            return state // Ignore selection of items not in the set of all possible items
+    case "TOGGLE_ITEM":
+        if (allPossibleItems.has(action.item)) {
+            return state.has(action.item)
+                ? state.difference(new Set([action.item]))
+                : state.union(new Set([action.item]))
+        }
+        return state // Ignore selection of items not in the set of all possible items
 
-        case "SET_SELECTION":
-            // It is only possible to select items that are in the set of all possible items. Other items will be ignored.
-            return action.items.intersection(allPossibleItems)
+    case "SET_SELECTION":
+        // It is only possible to select items that are in the set of all possible items. Other items will be ignored.
+        return action.items.intersection(allPossibleItems)
     }
 }
 

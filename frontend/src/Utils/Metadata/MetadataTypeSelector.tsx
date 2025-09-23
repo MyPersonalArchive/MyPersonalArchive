@@ -1,4 +1,4 @@
-import { ICommand, MetadataType } from "./types";
+import { ICommand, MetadataType } from "./types"
 
 
 type MetadataTypeSelectorProps = {

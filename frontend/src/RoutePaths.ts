@@ -7,4 +7,4 @@ export const RoutePaths = {
     Archive: "/archive/list",
     Blobs: "/blob/list",
     Unallocated: "/archive/unallocated"
-  }
+}

@@ -1,5 +1,5 @@
 import React from "react"
-import { MetadataComponentProps, MetadataType } from '../../Utils/Metadata/types'
+import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
 
 type Command =
     | { action: "INIT" }
@@ -16,30 +16,30 @@ type State = {
 
 const reducer = (state: State, command: Command): State => {
     switch (command.action) {
-        case "INIT":
-            return {
-                validFrom: "",
-                validUntil: ""
-            }
+    case "INIT":
+        return {
+            validFrom: "",
+            validUntil: ""
+        }
 
-        case "METADATA_LOADED":
-            return {
-                ...state,
-                ...command.metadata
-            }
+    case "METADATA_LOADED":
+        return {
+            ...state,
+            ...command.metadata
+        }
 
-        case "SET_VALID_FROM":
-            return {
-                ...state,
-                validFrom: command.date
-            }
-        case "SET_VALID_UNTIL":
-            return {
-                ...state,
-                validUntil: command.date
-            }
-        default:
-            return state
+    case "SET_VALID_FROM":
+        return {
+            ...state,
+            validFrom: command.date
+        }
+    case "SET_VALID_UNTIL":
+        return {
+            ...state,
+            validUntil: command.date
+        }
+    default:
+        return state
     }
 }
 

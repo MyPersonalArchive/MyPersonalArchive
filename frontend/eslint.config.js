@@ -1,5 +1,6 @@
 import js from '@eslint/js'
-import globals, { node } from 'globals'
+import globals from "globals"
+const { node } = globals
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
