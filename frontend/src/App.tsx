@@ -18,77 +18,77 @@ import { PredefinedSearchEditPage } from "./Pages/PredefinedSearchEditPage"
 
 
 const routers = createBrowserRouter([
-    {
-        element: (
-            <CurrentTenantIdFrame>
-                <Layout>
-                    <Outlet />
-                </Layout>
-            </CurrentTenantIdFrame>
-        ),
-        children: [
-            {
-                path: RoutePaths.Index,
-                element: <IndexPage />
-            },
-            {
-                path: RoutePaths.SignIn,
-                element: <SignInPage />
-            },
-            {
-                element: (
-                    <RequireAuthentication>
-                        <RequireTenant>
-                            <PrefetchDataFrame>
-                                <Outlet />
-                            </PrefetchDataFrame>
-                        </RequireTenant>
-                    </RequireAuthentication>
-                ),
-                children: [
-                    {
-                        path: RoutePaths.SignOut,
-                        element: <SignOutPage />
-                    },
-                    {
-                        path: RoutePaths.Profile,
-                        element: <UserProfilePage />
-                    },
-                    {
-                        path: RoutePaths.Archive,
-                        element: <ArchiveItemListPage />
-                    },
-                    {
-                        path: RoutePaths.Blobs,
-                        element: <BlobListPage />
-                    },
-                    {
-                        path: "archive/edit/:id",
-                        element: <ArchiveItemEditPage />
-                    },
-                    {
-                        path: "archive/new",
-                        element: <ArchiveItemNewPage />
-                    },
-                    {
-                        path: "search/edit",
-                        element: <PredefinedSearchEditPage />
-                    }
-                ]
-            }
-        ]
-    }
+	{
+		element: (
+			<CurrentTenantIdFrame>
+				<Layout>
+					<Outlet />
+				</Layout>
+			</CurrentTenantIdFrame>
+		),
+		children: [
+			{
+				path: RoutePaths.Index,
+				element: <IndexPage />
+			},
+			{
+				path: RoutePaths.SignIn,
+				element: <SignInPage />
+			},
+			{
+				element: (
+					<RequireAuthentication>
+						<RequireTenant>
+							<PrefetchDataFrame>
+								<Outlet />
+							</PrefetchDataFrame>
+						</RequireTenant>
+					</RequireAuthentication>
+				),
+				children: [
+					{
+						path: RoutePaths.SignOut,
+						element: <SignOutPage />
+					},
+					{
+						path: RoutePaths.Profile,
+						element: <UserProfilePage />
+					},
+					{
+						path: RoutePaths.Archive,
+						element: <ArchiveItemListPage />
+					},
+					{
+						path: RoutePaths.Blobs,
+						element: <BlobListPage />
+					},
+					{
+						path: "archive/edit/:id",
+						element: <ArchiveItemEditPage />
+					},
+					{
+						path: "archive/new",
+						element: <ArchiveItemNewPage />
+					},
+					{
+						path: "search/edit",
+						element: <PredefinedSearchEditPage />
+					}
+				]
+			}
+		]
+	}
 ])
 
 
 export const App = () => {
-    useEffect(() => {
-        document.title = "My Personal Archive"
-    }, [])
+	useEffect(() => {
+		document.title = "My Personal Archive"
+	}, [])
 
-    return (
-        <>
-            <RouterProvider router={routers} />
-        </>
-    )
+	return (
+		<>
+			<RouterProvider router={routers} />
+		</>
+	)
 }

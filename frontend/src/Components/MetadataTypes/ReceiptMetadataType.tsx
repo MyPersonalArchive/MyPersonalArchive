@@ -18,114 +18,114 @@ type State = {
 
 
 const reducer = (state: State, command: Command): State => {
-    switch (command.action) {
-        case "INIT":
-            return {
-                amount: "",
-                currency: "",
-                warranty: "",
-                dispositionStatus: ""
-            }
+	switch (command.action) {
+		case "INIT":
+			return {
+				amount: "",
+				currency: "",
+				warranty: "",
+				dispositionStatus: ""
+			}
 
-        case "METADATA_LOADED":
-            return {
-                ...state,
-                ...command.metadata
-            }
+		case "METADATA_LOADED":
+			return {
+				...state,
+				...command.metadata
+			}
 
-        case "SET_AMOUNT":
-            return {
-                ...state,
-                amount: command.amount
-            }
+		case "SET_AMOUNT":
+			return {
+				...state,
+				amount: command.amount
+			}
 
-        case "SET_CURRENCY":
-            return {
-                ...state,
-                currency: command.currency
-            }
+		case "SET_CURRENCY":
+			return {
+				...state,
+				currency: command.currency
+			}
 
-        case "SET_WARRANTY":
-            return {
-                ...state,
-                warranty: command.warranty
-            }
-        case "SET_DISPOSITION_STATUS":
-            return {
-                ...state,
-                dispositionStatus: command.dispositionStatus
-            }
+		case "SET_WARRANTY":
+			return {
+				...state,
+				warranty: command.warranty
+			}
+		case "SET_DISPOSITION_STATUS":
+			return {
+				...state,
+				dispositionStatus: command.dispositionStatus
+			}
 
-        default:
-            return state
-    }
+		default:
+			return state
+	}
 }
 
 
 const Component = (props: MetadataComponentProps) => {
-    const state = props.state
-    const dispatch = props.dispatch as React.Dispatch<Command>
+	const state = props.state
+	const dispatch = props.dispatch as React.Dispatch<Command>
 
-    return (
-        <>
-            <div className="aligned-labels-and-inputs">
-                <label htmlFor="amount">Amount</label>
-                <div className="flex">
-                    <input type="text" id="amount"
-                        className="input"
-                        placeholder="Amount"
-                        value={state.amount}
-                        onChange={e => dispatch({ action: "SET_AMOUNT", amount: e.target.value })}
-                    />
-                    <select
-                        className="input w-20"
-                        value={state.currency}
-                        onChange={e => dispatch({ action: "SET_CURRENCY", currency: e.target.value })}
-                    >
-                        <option value="">-</option>
-                        <option value="NOK">NOK</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="SEK">SEK</option>
-                    </select>
-                </div>
-            </div>
+	return (
+		<>
+			<div className="aligned-labels-and-inputs">
+				<label htmlFor="amount">Amount</label>
+				<div className="flex">
+					<input type="text" id="amount"
+						className="input"
+						placeholder="Amount"
+						value={state.amount}
+						onChange={e => dispatch({ action: "SET_AMOUNT", amount: e.target.value })}
+					/>
+					<select
+						className="input w-20"
+						value={state.currency}
+						onChange={e => dispatch({ action: "SET_CURRENCY", currency: e.target.value })}
+					>
+						<option value="">-</option>
+						<option value="NOK">NOK</option>
+						<option value="EUR">EUR</option>
+						<option value="GBP">GBP</option>
+						<option value="SEK">SEK</option>
+					</select>
+				</div>
+			</div>
 
-            <div className="aligned-labels-and-inputs">
-                <label htmlFor="warranty">Warranty</label>
-                <select id="warranty"
-                    className="input"
-                    value={state.warranty}
-                    onChange={e => dispatch({ action: "SET_WARRANTY", warranty: e.target.value })}
-                >
-                    <option value="">-</option>
-                    <option value="1">Norsk garanti (2 år)</option>
-                    <option value="3">Norsk reklamasjon (5 år)</option>
-                </select>
-            </div>
+			<div className="aligned-labels-and-inputs">
+				<label htmlFor="warranty">Warranty</label>
+				<select id="warranty"
+					className="input"
+					value={state.warranty}
+					onChange={e => dispatch({ action: "SET_WARRANTY", warranty: e.target.value })}
+				>
+					<option value="">-</option>
+					<option value="1">Norsk garanti (2 år)</option>
+					<option value="3">Norsk reklamasjon (5 år)</option>
+				</select>
+			</div>
 
-            <div className="aligned-labels-and-inputs">
-                <label htmlFor="dispositionStatus">Status</label>
-                <select
-                    className="input"
-                    value={state.dispositionStatus}
-                    onChange={e => dispatch({ action: "SET_DISPOSITION_STATUS", dispositionStatus: e.target.value })}
-                >
-                    <option value="">-</option>
-                    <option value="Sold">Sold</option>
-                    <option value="Scrapped">Scrapped</option>
-                    <option value="RTV">Return to vendor</option>
-                </select>
+			<div className="aligned-labels-and-inputs">
+				<label htmlFor="dispositionStatus">Status</label>
+				<select
+					className="input"
+					value={state.dispositionStatus}
+					onChange={e => dispatch({ action: "SET_DISPOSITION_STATUS", dispositionStatus: e.target.value })}
+				>
+					<option value="">-</option>
+					<option value="Sold">Sold</option>
+					<option value="Scrapped">Scrapped</option>
+					<option value="RTV">Return to vendor</option>
+				</select>
 
-            </div>
-        </>
-    )
+			</div>
+		</>
+	)
 }
 
 
 export default {
-    displayName: "Receipt",
-    path: "receipt",
-    component: Component,
-    reducer
+	displayName: "Receipt",
+	path: "receipt",
+	component: Component,
+	reducer
 } as MetadataType

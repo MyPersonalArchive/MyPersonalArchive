@@ -9,7 +9,7 @@ type MetadataElementProps = {
 }
 
 export const MetadataElement = ({ metadataType, metadata, dispatch }: MetadataElementProps) => {
-    return (
-        React.createElement(metadataType.component, { state: metadata[metadataType.path as string], dispatch })
-    )
+	return (
+		React.createElement(metadataType.component, { state: metadata[metadataType.path as string], dispatch })
+	)
 }

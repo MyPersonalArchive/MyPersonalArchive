@@ -5,11 +5,11 @@ import { usePredefinedSearchesPrefetching } from "../Utils/usePredefinedSearchPr
 
 
 export const PrefetchDataFrame = ({ children }: PropsWithChildren) => {
-    useTagsPrefetching()
-    useUnallocatedBlobsPrefetching()
-    usePredefinedSearchesPrefetching()
+	useTagsPrefetching()
+	useUnallocatedBlobsPrefetching()
+	usePredefinedSearchesPrefetching()
 
-    return <>
-        {children}
-    </>
+	return <>
+		{children}
+	</>
 }

@@ -12,27 +12,27 @@ export type BlobListItemProps = {
     selectionOfBlobs: Selection<number>
 }
 export const BlobListItem = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }: BlobListItemProps) => {
-    return (
-        <div key={blob.id} className="my-1 h-[107px] border border-gray-300 rounded-md shadow flex flex-row items-start gap-1 p-0">
-            <div className="w-[200px] bg-gray-200 py-1 content-center">
-                <Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
-                    onMaximize={maximize} />
-            </div>
+	return (
+		<div key={blob.id} className="my-1 h-[107px] border border-gray-300 rounded-md shadow flex flex-row items-start gap-1 p-0">
+			<div className="w-[200px] bg-gray-200 py-1 content-center">
+				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
+					onMaximize={maximize} />
+			</div>
 
-            <div className="w-full">
-                <InfoPanel blob={blob} />
-            </div>
+			<div className="w-full">
+				<InfoPanel blob={blob} />
+			</div>
 
-            <div className="w-[300px] h-full flex flex-col justify-between">
-                <div className="push-right pr-0.5">
-                    <SelectCheckbox selection={selectionOfBlobs} item={blob.id} />
-                </div>
+			<div className="w-[300px] h-full flex flex-col justify-between">
+				<div className="push-right pr-0.5">
+					<SelectCheckbox selection={selectionOfBlobs} item={blob.id} />
+				</div>
 
-                <div className="push-right pr-2.5 mb-0">
-                    <button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
-                    {deleteBlobs && <button className="btn" onClick={() => deleteBlobs([blob.id])}>Delete</button>}
-                </div>
-            </div>
-        </div>
-    )
+				<div className="push-right pr-2.5 mb-0">
+					<button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
+					{deleteBlobs && <button className="btn" onClick={() => deleteBlobs([blob.id])}>Delete</button>}
+				</div>
+			</div>
+		</div>
+	)
 }

@@ -1,25 +1,25 @@
 table.table {
-    @apply border-separate border-spacing-0;
+	@apply border-separate border-spacing-0;
 
-    & tr>td,
-    & tr>th {
-        @apply px-4 py-2 text-left;
-    }
+	& tr>td,
+	& tr>th {
+		@apply px-4 py-2 text-left;
+	}
 
-    &>thead>tr>td,
-    &>thead>tr>th {
-        @apply text-center text-black font-semibold bg-gray-100;
-    }
+	&>thead>tr>td,
+	&>thead>tr>th {
+		@apply text-center text-black font-semibold bg-gray-100;
+	}
 
-    &>tbody>tr>td,
-    &>tbody>tr>th {
-        @apply text-left;
-    }
+	&>tbody>tr>td,
+	&>tbody>tr>th {
+		@apply text-left;
+	}
 
-    &>tfoot>tr>td,
-    &>tfoot>tr>th {
-        @apply text-center text-black font-semibold bg-blue-200;
-    }
+	&>tfoot>tr>td,
+	&>tfoot>tr>th {
+		@apply text-center text-black font-semibold bg-blue-200;
+	}
 
 }
 
@@ -28,109 +28,109 @@ table.table {
 /* Default is no column seperator*/
 table.table {
 
-    &>thead>tr>td,
-    &>thead>tr>th {
-        @apply border-t border-b;
-    }
+	&>thead>tr>td,
+	&>thead>tr>th {
+		@apply border-t border-b;
+	}
 
 
-    & tr>td,
-    & tr>th {
-        @apply border-0 border-gray-200;
-    }
+	& tr>td,
+	& tr>th {
+		@apply border-0 border-gray-200;
+	}
 
-    &>tbody>tr:nth-child(n+1) {
+	&>tbody>tr:nth-child(n+1) {
 
-        &>td,
-        &>th {
-            @apply border-b;
-        }
-    }
+		&>td,
+		&>th {
+			@apply border-b;
+		}
+	}
 
 
-    &>tfoot>tr>td,
-    &>tfoot>tr>th {
-        @apply border-b;
-    }
+	&>tfoot>tr>td,
+	&>tfoot>tr>th {
+		@apply border-b;
+	}
 
-    &>*>tr>td,
-    &>*>tr>th {
-        @apply border-0;
+	&>*>tr>td,
+	&>*>tr>th {
+		@apply border-0;
 
-        &:first-child {
-            @apply border-l;
-        }
+		&:first-child {
+			@apply border-l;
+		}
 
-        &:last-child {
-            @apply border-r;
-        }
-    }
+		&:last-child {
+			@apply border-r;
+		}
+	}
 }
 
 table.table.with-column-seperators {
 
-    &>*>tr>td,
-    &>*>tr>th {
-        &:nth-child(n+2) {
-            @apply border-l;
-        }
-    }
+	&>*>tr>td,
+	&>*>tr>th {
+		&:nth-child(n+2) {
+			@apply border-l;
+		}
+	}
 }
 
 
 /* Rounded corners */
 table.table {
 
-    &>thead>tr:first-child {
+	&>thead>tr:first-child {
 
-        &>td:first-child,
-        &>th:first-child {
-            @apply rounded-tl-lg;
-        }
+		&>td:first-child,
+		&>th:first-child {
+			@apply rounded-tl-lg;
+		}
 
-        &>td:last-child,
-        &>th:last-child {
-            @apply rounded-tr-lg;
-        }
-    }
+		&>td:last-child,
+		&>th:last-child {
+			@apply rounded-tr-lg;
+		}
+	}
 
-    &>tfoot>tr:last-child {
+	&>tfoot>tr:last-child {
 
-        &>td:first-child,
-        &>th:first-child {
-            @apply rounded-bl-lg;
-        }
+		&>td:first-child,
+		&>th:first-child {
+			@apply rounded-bl-lg;
+		}
 
-        &>td:last-child,
-        &>th:last-child {
-            @apply rounded-br-lg;
-        }
-    }
+		&>td:last-child,
+		&>th:last-child {
+			@apply rounded-br-lg;
+		}
+	}
 
-    &:not(:has(thead)) {
-        &>tbody>tr:first-child {
+	&:not(:has(thead)) {
+		&>tbody>tr:first-child {
 
-            &>td:first-child,
-            &>th:first-child {
-                @apply rounded-tl-lg;
-            }
+			&>td:first-child,
+			&>th:first-child {
+				@apply rounded-tl-lg;
+			}
 
-            &>td:last-child,
-            &>th:last-child {
-                @apply rounded-tr-lg;
-            }
-        }
-    }
+			&>td:last-child,
+			&>th:last-child {
+				@apply rounded-tr-lg;
+			}
+		}
+	}
 
-    &:not(:has(tfoot)) {
-        &>tbody>tr:last-child {
-            &>td:first-child {
-                @apply rounded-bl-lg;
-            }
+	&:not(:has(tfoot)) {
+		&>tbody>tr:last-child {
+			&>td:first-child {
+				@apply rounded-bl-lg;
+			}
 
-            &>td:last-child {
-                @apply rounded-br-lg;
-            }
-        }
-    }
+			&>td:last-child {
+				@apply rounded-br-lg;
+			}
+		}
+	}
 }

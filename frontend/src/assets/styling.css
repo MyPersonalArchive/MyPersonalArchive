@@ -1,141 +1,141 @@
 :root {
-    --complementary-background-color: hsla(197, 68%, 37%, 10);
-    --complementary-text-color: whitesmoke;
+	--complementary-background-color: hsla(197, 68%, 37%, 10);
+	--complementary-text-color: whitesmoke;
 
-    --primary-button-background-color: var(--complementary-background-color);
-    --primary-button-text-color: var(--complementary-text-color);
+	--primary-button-background-color: var(--complementary-background-color);
+	--primary-button-text-color: var(--complementary-text-color);
 
-    --secondary-button-background-color: white;
-    --secondary-button-text-color: black;
+	--secondary-button-background-color: white;
+	--secondary-button-text-color: black;
 
-    --default-button-background-color: hsl(from var(--complementary-background-color) h 0 50%);
-    --default-button-text-color: var(--complementary-text-color);
+	--default-button-background-color: hsl(from var(--complementary-background-color) h 0 50%);
+	--default-button-text-color: var(--complementary-text-color);
 }
 
 
 
 /**/
 .preview {
-    position: relative;
-    cursor: pointer ;
+	position: relative;
+	cursor: pointer;
 
-    &>img {
-        margin: 0 2em;
-        border: thin dashed hsl(from black h s l / 50%);
-        border-radius: 4px;
-    }
+	&>img {
+		margin: 0 2em;
+		border: thin dashed hsl(from black h s l / 50%);
+		border-radius: 4px;
+	}
 
-    &>button {
-        background-color: hsl(from white h s l / 50%);
-        color: hsl(from black h s l / 50%);
-        border: none;
-        position: absolute;
-        top: calc(50% - 2em);
-    }
+	&>button {
+		background-color: hsl(from white h s l / 50%);
+		color: hsl(from black h s l / 50%);
+		border: none;
+		position: absolute;
+		top: calc(50% - 2em);
+	}
 
-    &>button.previous {
-        left: 2.2em;
-    }
+	&>button.previous {
+		left: 2.2em;
+	}
 
-    &>button.next {
-        right: 2.2em;
-    }
+	&>button.next {
+		right: 2.2em;
+	}
 
-    &>button.minimize,
-    &>button.maximize {
-        top: 0;
-        right: 2.2em;
-    }
+	&>button.minimize,
+	&>button.maximize {
+		top: 0;
+		right: 2.2em;
+	}
 
-    &>button.delete {
-        top: 0;
-        left: 1.2em;
-    }
+	&>button.delete {
+		top: 0;
+		left: 1.2em;
+	}
 }
 
 .pageNumber {
-    text-align: center;
-    font-size: .8em;
-    color: hsl(from black h s l / 50%);
+	text-align: center;
+	font-size: .8em;
+	color: hsl(from black h s l / 50%);
 }
 
 .dimmedBackground {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgb(from black r g b / .25);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgb(from black r g b / .25);
+	display: flex;
+	justify-content: center;
+	align-items: center;
 
-    &>.overlay {
-        background-color: white;
-        border-radius: 4px;
-        box-shadow: 0 0 3em rgb(from black r g b / .5);
-        padding: 2em 0;
-        max-width: 90%;
-        max-height: 90%;
-        overflow: auto;
-    }
+	&>.overlay {
+		background-color: white;
+		border-radius: 4px;
+		box-shadow: 0 0 3em rgb(from black r g b / .5);
+		padding: 2em 0;
+		max-width: 90%;
+		max-height: 90%;
+		overflow: auto;
+	}
 }
 
 .dialog {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background-color: whitesmoke;
-  padding: 20px;
-  border-radius: 10px;
-  min-width: 30em;
-  min-height: 20em;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background-color: whitesmoke;
+	padding: 20px;
+	border-radius: 10px;
+	min-width: 30em;
+	min-height: 20em;
 }
 
 .dialog-backdrop {
-  background: rgba(0, 0, 0, 0.3);
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+	background: rgba(0, 0, 0, 0.3);
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 }
 
 .dialog-header {
-  min-height: 2rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  font-size: 20px;
+	min-height: 2rem;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	font-size: 20px;
 }
 
 .dialog-content {
-  flex-grow: 1;
-  padding: 1rem;
+	flex-grow: 1;
+	padding: 1rem;
 }
 
 .dialog-footer {
-  min-height: 4rem;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  gap: 1rem;
+	min-height: 4rem;
+	padding: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: end;
+	gap: 1rem;
 }
 
 .dialog-close {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: none;
-  border: 0;
-  padding: 0.5rem;
-  margin: 0;
-  cursor: pointer;
-  border-radius: 1rem;
-  display: flex;
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	background: none;
+	border: 0;
+	padding: 0.5rem;
+	margin: 0;
+	cursor: pointer;
+	border-radius: 1rem;
+	display: flex;
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
+	&:hover {
+		background: rgba(0, 0, 0, 0.2);
+	}
 }

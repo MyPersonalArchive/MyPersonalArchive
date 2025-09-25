@@ -6,18 +6,18 @@ import { loggedInUserAtom } from "../Utils/Atoms"
 
 
 export const RequireAuthentication = ({ children }: PropsWithChildren) => {
-    const loggedInUser = useAtomValue(loggedInUserAtom)
-    const navigate = useNavigate()
+	const loggedInUser = useAtomValue(loggedInUserAtom)
+	const navigate = useNavigate()
 
-    const currentPath = window.location.pathname
+	const currentPath = window.location.pathname
 
-    useEffect(() => {
-        if (loggedInUser === null) {
-            navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
-        }
-    }, [loggedInUser, navigate])
+	useEffect(() => {
+		if (loggedInUser === null) {
+			navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
+		}
+	}, [loggedInUser, navigate])
 
-    return <>
-        {children}
-    </>
+	return <>
+		{children}
+	</>
 }

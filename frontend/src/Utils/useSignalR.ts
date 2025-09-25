@@ -11,67 +11,67 @@ export type SignalRMessage = {
 }
 
 export const useSignalR = (
-    callback: (message: SignalRMessage) => void
+	callback: (message: SignalRMessage) => void
 ) => {
-    const [signalRConnection, setSignalRConnection] = useAtom(signalRConnectionAtom)
-    const callbacksRef = useRef<Array<(message: SignalRMessage) => void>>([])
+	const [signalRConnection, setSignalRConnection] = useAtom(signalRConnectionAtom)
+	const callbacksRef = useRef<Array<(message: SignalRMessage) => void>>([])
 
-    const { currentTenantId } = useContext(CurrentTenantIdContext)
-    const accessToken = useAtomValue(accessTokenAtom)
+	const { currentTenantId } = useContext(CurrentTenantIdContext)
+	const accessToken = useAtomValue(accessTokenAtom)
 
-    useEffect(() => {
-        if (accessToken === undefined || currentTenantId === undefined) {
-            return
-        }
+	useEffect(() => {
+		if (accessToken === undefined || currentTenantId === undefined) {
+			return
+		}
 
-        (async () => {
-            const url = `/notificationHub?tenantId=${currentTenantId}`
-            const connection = signalRConnection ?? await ensureSignalRConnection(url, accessToken)
+		(async () => {
+			const url = `/notificationHub?tenantId=${currentTenantId}`
+			const connection = signalRConnection ?? await ensureSignalRConnection(url, accessToken)
 
-            connection.on("ReceiveMessage", (message) => {
-                callbacksRef.current.forEach(cb => cb(message))
-            })
+			connection.on("ReceiveMessage", (message) => {
+				callbacksRef.current.forEach(cb => cb(message))
+			})
 
-            setSignalRConnection(connection)
-        })()
+			setSignalRConnection(connection)
+		})()
 
-        // Cleanup connection on component unmount
-        return () => {
-            if (callbacksRef.current.length === 0) {
-                setSignalRConnection(current => {
-                    current?.stop()
-                    return undefined
-                })
-            }
-        }
-    }, [accessToken, currentTenantId])
+		// Cleanup connection on component unmount
+		return () => {
+			if (callbacksRef.current.length === 0) {
+				setSignalRConnection(current => {
+					current?.stop()
+					return undefined
+				})
+			}
+		}
+	}, [accessToken, currentTenantId])
 
 
-    useEffect(() => {
-        if (callbacksRef.current.indexOf(callback) === -1) {
-            callbacksRef.current.push(callback)
-        }
+	useEffect(() => {
+		if (callbacksRef.current.indexOf(callback) === -1) {
+			callbacksRef.current.push(callback)
+		}
 
-        // Cleanup connection on component unmount
-        return () => {
-            callbacksRef.current.splice(callbacksRef.current.indexOf(callback), 1)
-        }
-    }, [])
+		// Cleanup connection on component unmount
+		return () => {
+			callbacksRef.current.splice(callbacksRef.current.indexOf(callback), 1)
+		}
+	}, [])
 }
 
 const ensureSignalRConnection = async (url: string, accessToken: string) => {
-    const connection = new HubConnectionBuilder()
-        .withUrl(url, {
-            skipNegotiation: true,
-            transport: HttpTransportType.WebSockets,
-            accessTokenFactory: () => accessToken,
-            withCredentials: true
-        })
-        .configureLogging(LogLevel.Warning)
-        .withAutomaticReconnect()
-        .build()
+	const connection = new HubConnectionBuilder()
+		.withUrl(url, {
+			skipNegotiation: true,
+			transport: HttpTransportType.WebSockets,
+			accessTokenFactory: () => accessToken,
+			withCredentials: true
+		})
+		.configureLogging(LogLevel.Warning)
+		.withAutomaticReconnect()
+		.build()
 
-    await connection.start()
+	await connection.start()
 
-    return connection
+	return connection
 }

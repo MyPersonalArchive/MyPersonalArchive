@@ -6,94 +6,94 @@
 @import "./table.css";
 
 @theme {
-  --color-customblue: hsla(197, 68%, 37%, 10);
+	--color-customblue: hsla(197, 68%, 37%, 10);
 }
 
 
 .horizontal-line {
-    height: 0;
-    border-bottom: thin solid hsl(0deg, 0%, 80%);
+	height: 0;
+	border-bottom: thin solid hsl(0deg, 0%, 80%);
 }
 
 
 .jumbotron {
-    @apply bg-gray-100 max-w-md mt-6 mx-auto rounded-xl px-4 py-2;
+	@apply bg-gray-100 max-w-md mt-6 mx-auto rounded-xl px-4 py-2;
 }
 
 .heading-1 {
-    @apply text-3xl font-bold;
+	@apply text-3xl font-bold;
 }
 
 .heading-2 {
-    @apply text-2xl font-bold mb-3;
+	@apply text-2xl font-bold mb-3;
 }
 
 .link {
-    @apply text-blue-600 hover:underline cursor-pointer;
+	@apply text-blue-600 hover:underline cursor-pointer;
 }
 
 .align-with-btn {
-    @apply py-1;
+	@apply py-1;
 }
 
 .btn {
-    @apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 transition;
+	@apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 transition;
 
-    &.btn-primary {
-        @apply bg-blue-600 text-white hover:bg-blue-700;
-    }
+	&.btn-primary {
+		@apply bg-blue-600 text-white hover:bg-blue-700;
+	}
 
-    &.btn-danger {
-        @apply bg-red-600 text-white hover:bg-red-700;
-    }
+	&.btn-danger {
+		@apply bg-red-600 text-white hover:bg-red-700;
+	}
 }
 
 div.input {
-    @apply py-4;
+	@apply py-4;
 }
 
 .input {
-    @apply inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200;
+	@apply inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200;
 
-    /* 'is-wrapper' is used when this element is a complex wrapper for other input elements*/
-    &.is-wrapper {
-        @apply has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
-    }
+	/* 'is-wrapper' is used when this element is a complex wrapper for other input elements*/
+	&.is-wrapper {
+		@apply has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
+	}
 
-    /* 'stripped' is used for inner input elements inside a complex wrapper with 'is-wrapper' */
-    &>input.stripped {
-        @apply p-0 m-0 my-0 focus:outline-none;
-    }
+	/* 'stripped' is used for inner input elements inside a complex wrapper with 'is-wrapper' */
+	&>input.stripped {
+		@apply p-0 m-0 my-0 focus:outline-none;
+	}
 }
 
 
 input[type="checkbox"]+label,
 label>input[type="checkbox"] {
-    @apply mr-1;
+	@apply mr-1;
 }
 
 
 .aligned-labels-and-inputs {
-    @apply flex flex-row my-4;
+	@apply flex flex-row my-4;
 
-    &>:first-child {
-        @apply w-[5em];
-    }
+	&>:first-child {
+		@apply w-[5em];
+	}
 }
 
 .push-left {
-    @apply flex flex-row justify-start my-4 gap-2 items-baseline;
+	@apply flex flex-row justify-start my-4 gap-2 items-baseline;
 }
 
 .push-right {
-    @apply flex flex-row justify-end my-4 gap-2 items-baseline;
+	@apply flex flex-row justify-end my-4 gap-2 items-baseline;
 }
 
 
 span.tag {
-    @apply bg-gray-200 rounded-xl px-2 py-0.5 mr-1;
+	@apply bg-gray-200 rounded-xl px-2 py-0.5 mr-1;
 
-    &>span {
-        @apply pl-1 text-gray-400 border-l border-current cursor-pointer;
-    }
+	&>span {
+		@apply pl-1 text-gray-400 border-l border-current cursor-pointer;
+	}
 }

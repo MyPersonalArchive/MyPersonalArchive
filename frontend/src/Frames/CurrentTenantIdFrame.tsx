@@ -10,38 +10,38 @@ type CurrentTenantIdContextProps = {
 }
 
 const defaultValue: CurrentTenantIdContextProps = {
-    currentTenantId: null,
-    switchToTenantId: () => { }
+	currentTenantId: null,
+	switchToTenantId: () => { }
 }
 
 export const CurrentTenantIdContext = createContext(defaultValue)
 
 
 export const CurrentTenantIdFrame = ({ children }: PropsWithChildren) => {
-    const [currentTenantId, setCurrentTenantId] = useState<number | null>(null)
-    const [lastSelectedTenantId, setLastSelectedTenantId] = useAtom(lastSelectedTenantIdAtom)
+	const [currentTenantId, setCurrentTenantId] = useState<number | null>(null)
+	const [lastSelectedTenantId, setLastSelectedTenantId] = useAtom(lastSelectedTenantIdAtom)
 
-    const refresh = useRefresh()
+	const refresh = useRefresh()
 
-    useEffect(() => {
-        refresh()
-    }, [])
+	useEffect(() => {
+		refresh()
+	}, [])
 
-    useEffect(() => {
-        if (lastSelectedTenantId !== undefined) {
-            setCurrentTenantId(lastSelectedTenantId)
-        }
-    }, [lastSelectedTenantId])
+	useEffect(() => {
+		if (lastSelectedTenantId !== undefined) {
+			setCurrentTenantId(lastSelectedTenantId)
+		}
+	}, [lastSelectedTenantId])
 
 
-    const switchToTenantId = (tenantId: number | null) => {
-        setCurrentTenantId(tenantId)
-        setLastSelectedTenantId(tenantId)
-    }
+	const switchToTenantId = (tenantId: number | null) => {
+		setCurrentTenantId(tenantId)
+		setLastSelectedTenantId(tenantId)
+	}
 
-    return (
-        <CurrentTenantIdContext.Provider value={{ currentTenantId, switchToTenantId }}>
-            {children}
-        </CurrentTenantIdContext.Provider>
-    )
+	return (
+		<CurrentTenantIdContext.Provider value={{ currentTenantId, switchToTenantId }}>
+			{children}
+		</CurrentTenantIdContext.Provider>
+	)
 }

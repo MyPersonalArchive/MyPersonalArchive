@@ -14,7 +14,7 @@ export const selectionReducer = <T,>(allPossibleItems: Set<T>) => (state: Set<T>
 			return new Set(allPossibleItems)
 
 		case "DESELECT_ALL_ITEMS":
-			return new Set<T>();
+			return new Set<T>()
 
 		case "SELECT_ITEM":
 			if (allPossibleItems.has(action.item)) {
