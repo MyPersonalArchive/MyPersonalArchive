@@ -72,16 +72,16 @@ export const PredefinedSearchEditPage = () => {
 
 
 	return (
-		<div>
-			<h1 className="heading-2">
-				Edit Predefined Search
+		<div className="container mx-auto px-4 py-6">
+			<h1 className="heading-1">
+				Stored filters
 			</h1>
 
 			<NewSearchDialog open={openNewSearchDialog} mode={mode} initialValues={search} setOpen={setOpenNewSearchDialog} onSave={save} />
 			<DeleteSearchDialog />
 
 			<div>
-				<button className="btn" onClick={() => { setSearch(undefined); setMode("create"); setOpenNewSearchDialog(true) }}>New search</button>
+				<button className="btn" onClick={() => { setSearch(undefined); setMode("create"); setOpenNewSearchDialog(true) }}>New filter</button>
 			</div>
 
 			<div className="overflow-x-auto my-4">
@@ -89,10 +89,10 @@ export const PredefinedSearchEditPage = () => {
 					<thead>
 						<tr>
 							<th>Name</th>
-							<th>Search title</th>
-							<th>Search tags</th>
-							<th>Search metadata</th>
-							<th>Actions</th>
+							<th>Filter by title</th>
+							<th>Filter by tags</th>
+							<th>Filter by metadata</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -178,11 +178,11 @@ const NewSearchDialog = ({
 	return (
 		<ModalDialog onClose={() => setOpen(false)}>
 			<DialogHeader>
-				<div className="dialog-header">{mode === "create" ? "New search" : "Edit search"}</div>
+				<div className="dialog-header">{mode === "create" ? "New filter" : "Edit filter"}</div>
 			</DialogHeader>
 			<DialogContent>
 				<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-					<span>Name of search</span>
+					<span>Name of filter</span>
 					<input
 						type="text"
 						className="input"
@@ -191,7 +191,7 @@ const NewSearchDialog = ({
 						onChange={e => setName(e.target.value)}
 					/>
 
-					<span>Search by title</span>
+					<span>Filter by title</span>
 					<input
 						type="text"
 						className="input"
@@ -200,10 +200,10 @@ const NewSearchDialog = ({
 						onChange={e => setTitle(e.target.value)}
 					/>
 
-					<span>Search by tags</span>
+					<span>Filter by tags</span>
 					<TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} />
 
-					<span>Search by metadata types</span>
+					<span>Filter by metadata types</span>
 					{allMetadataTypes.map(component => (
 						<div key={component.displayName} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 							<span>{component.displayName}</span>

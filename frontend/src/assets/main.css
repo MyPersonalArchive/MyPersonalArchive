@@ -47,6 +47,14 @@
 		@apply bg-red-600 text-white hover:bg-red-700;
 	}
 }
+/* 
+.btn+.input {
+	@apply rounded-r-none bg-green-500;
+}
+
+.input+.btn {
+	@apply rounded-l-none;
+} */
 
 div.input {
 	@apply py-4;

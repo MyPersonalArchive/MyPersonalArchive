@@ -11,7 +11,7 @@ export const ModalDialog = ({ onClose, children }: ModalDialogProps) => {
 			<div className="dialog-backdrop" onClick={onClose}></div>
 			<div className="dialog">
 				<button className="dialog-close" onClick={onClose}>
-					X
+					&times;
 				</button>
 				{children}
 			</div>
