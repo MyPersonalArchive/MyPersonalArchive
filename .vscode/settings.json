@@ -1,18 +1,20 @@
 {
-    "database-client.telemetry.usesOnlineServices": false,
-    "eslint.validate": [
-        "typescript",
-        "typescriptreact"
-    ],
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
-    },
-    "workbench.colorCustomizations": {
-        "titleBar.inactiveBackground": "#bbb80099",
-        "titleBar.activeBackground": "#bbb800",
-        "titleBar.activeForeground": "#000000",
-        "activityBar.background": "#bbb80099",
-        "activityBar.foreground": "#000000",
-        "activityBar.inactiveForeground": "#444444"
-    }
+	"database-client.telemetry.usesOnlineServices": false,
+	"eslint.validate": [
+		"typescript",
+		"typescriptreact"
+	],
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"workbench.colorCustomizations": {
+		"titleBar.inactiveBackground": "#bbb80099",
+		"titleBar.activeBackground": "#bbb800",
+		"titleBar.activeForeground": "#000000",
+		"activityBar.background": "#bbb80099",
+		"activityBar.foreground": "#000000",
+		"activityBar.inactiveForeground": "#444444"
+	}
 }
