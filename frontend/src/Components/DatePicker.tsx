@@ -16,22 +16,9 @@ export const DatePicker = ({ date, setDate }: DatePickerProps) => {
 						<input type="date" className="input"
 							value={date ? new Date(date).toISOString().split("T")[0] : ""}
 							onChange={e => setDate(e.target.value)}
-							// style={{
-							// 	border: "1px solid #ccc",
-							// 	borderRadius: "4px",
-							// 	padding: "4px",
-							// 	width: "220px"
-							// }}
 						/>
 					) : (
-						<span className="input" onClick={() => setClickedNoDate(true)}
-							// style={{
-							// 	border: "1px solid #ccc",
-							// 	borderRadius: "4px",
-							// 	padding: "4px",
-							// 	width: "220px"
-							// }}
-						>
+						<span className="input" onClick={() => setClickedNoDate(true)}>
 							Not date set
 						</span>
 					)
