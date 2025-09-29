@@ -14,7 +14,7 @@ import { Layout } from "./Frames/Layout"
 import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
-import { PredefinedSearchEditPage } from "./Pages/PredefinedSearchEditPage"
+import { StoredFilterListPage } from "./Pages/StoredFilterListPage"
 
 
 const routers = createBrowserRouter([
@@ -59,10 +59,6 @@ const routers = createBrowserRouter([
 						element: <ArchiveItemListPage />
 					},
 					{
-						path: RoutePaths.Blobs,
-						element: <BlobListPage />
-					},
-					{
 						path: "archive/edit/:id",
 						element: <ArchiveItemEditPage />
 					},
@@ -71,8 +67,12 @@ const routers = createBrowserRouter([
 						element: <ArchiveItemNewPage />
 					},
 					{
-						path: "search/edit",
-						element: <PredefinedSearchEditPage />
+						path: RoutePaths.Blobs,
+						element: <BlobListPage />
+					},
+					{
+						path: RoutePaths.StoredFilters,
+						element: <StoredFilterListPage />
 					}
 				]
 			}

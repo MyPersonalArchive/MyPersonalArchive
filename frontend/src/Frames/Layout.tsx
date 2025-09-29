@@ -79,7 +79,7 @@ const Navbar = () => {
 					items={[
 						{ type: "link", label: <>Archive</>, link: RoutePaths.Archive },
 						{ type: "link", label: <>Unallocated&nbsp;blobs</>, link: RoutePaths.Blobs },
-						{ type: "link", label: <>Predefined searches</>, link: "/search/edit" },
+						{ type: "link", label: <>Stored&nbsp;filters</>, link: RoutePaths.StoredFilters },
 					]}
 				/>
 

@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai"
-import { PredefinedSearch, predefinedSearchesAtom, tagsAtom } from "../Utils/Atoms"
+import { StoredFilter, storedFiltersAtom, tagsAtom } from "../Utils/Atoms"
 import { TagsInput } from "../Components/TagsInput"
 import { useEffect, useState } from "react"
 import { DialogContent, DialogFooter, DialogHeader, ModalDialog } from "../Components/ModelDialog"
@@ -7,63 +7,63 @@ import { useApiClient } from "../Utils/useApiClient"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 
 
-export const PredefinedSearchEditPage = () => {
-	const [search, setSearch] = useState<PredefinedSearch | undefined>(undefined)
+export const StoredFilterListPage = () => {
+	const [filter, setFilter] = useState<StoredFilter | undefined>(undefined)
 	const [mode, setMode] = useState<Mode>("create")
-	const [openNewSearchDialog, setOpenNewSearchDialog] = useState(false)
-	const [openDeleteSearchDialog, setOpenDeleteSearchDialog] = useState(false)
+	const [openNewFilterDialog, setOpenNewFilterDialog] = useState(false)
+	const [openDeleteFilterConfirmationDialog, setOpenDeleteFilterConfirmationDialog] = useState(false)
 
-
-	const predefinedSearches = useAtomValue(predefinedSearchesAtom)
+	const storedFilters = useAtomValue(storedFiltersAtom)
 
 	const apiClient = useApiClient()
 
-	const save = (search: PredefinedSearch) => {
+	const save = (filter: StoredFilter) => {
+		// console.log("*** tags", filter.tags)
 		if (mode === "create") {
-			apiClient.post("/api/predefinedSearch/create", {
-				name: search.name,
-				title: search.title,
-				tags: search.tags.map(tag => tag.trim()),
-				metadataTypes: search.metadataTypes
+			apiClient.post("/api/StoredFilter/create", {
+				name: filter.name,
+				title: filter.title,
+				tags: filter.tags.map(tag => tag.trim()),
+				metadataTypes: filter.metadataTypes
 			})
 		}
 		else if (mode == "edit") {
-			apiClient.put("/api/predefinedSearch/update", {
-				id: search.id,
-				name: search.name,
-				title: search.title,
-				tags: search.tags.map(tag => tag.trim()),
-				metadataTypes: search.metadataTypes
+			apiClient.put("/api/StoredFilter/update", {
+				id: filter.id,
+				name: filter.name,
+				title: filter.title,
+				tags: filter.tags.map(tag => tag.trim()),
+				metadataTypes: filter.metadataTypes
 			})
 		}
 
 	}
 
-	const deleteSearch = (search?: PredefinedSearch) => {
-		if (!search) return
+	const deleteFilter = (filter?: StoredFilter) => {
+		if (!filter) return
 
-		apiClient.delete("/api/predefinedSearch/delete", { id: search.id })
+		apiClient.delete("/api/StoredFilter/delete", { id: filter.id })
 	}
 
 
 
-	const DeleteSearchDialog = () => {
-		if (!openDeleteSearchDialog) return null
+	const DeleteFilterConfirmationDialog = () => {
+		if (!openDeleteFilterConfirmationDialog) return null
 
 		return (
-			<ModalDialog onClose={() => setOpenDeleteSearchDialog(false)}>
+			<ModalDialog onClose={() => setOpenDeleteFilterConfirmationDialog(false)}>
 				<DialogHeader>
-					<div className="dialog-header">Delete search item?</div>
+					<div className="dialog-header">Delete stored filter?</div>
 				</DialogHeader>
 				<DialogContent>
 					<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 					</div>
 				</DialogContent>
 				<DialogFooter>
-					<button className="btn" onClick={() => setOpenDeleteSearchDialog(false)}>Cancel</button>
+					<button className="btn" onClick={() => setOpenDeleteFilterConfirmationDialog(false)}>Cancel</button>
 					<button className="btn btn-danger" onClick={() => {
-						setOpenDeleteSearchDialog(false)
-						deleteSearch(search)
+						setOpenDeleteFilterConfirmationDialog(false)
+						deleteFilter(filter)
 					}}>Delete</button>
 				</DialogFooter>
 			</ModalDialog>
@@ -77,11 +77,11 @@ export const PredefinedSearchEditPage = () => {
 				Stored filters
 			</h1>
 
-			<NewSearchDialog open={openNewSearchDialog} mode={mode} initialValues={search} setOpen={setOpenNewSearchDialog} onSave={save} />
-			<DeleteSearchDialog />
+			<NewFilterDialog open={openNewFilterDialog} mode={mode} initialValues={filter} setOpen={setOpenNewFilterDialog} onSave={save} />
+			<DeleteFilterConfirmationDialog />
 
 			<div>
-				<button className="btn" onClick={() => { setSearch(undefined); setMode("create"); setOpenNewSearchDialog(true) }}>New filter</button>
+				<button className="btn" onClick={() => { setFilter(undefined); setMode("create"); setOpenNewFilterDialog(true) }}>New filter</button>
 			</div>
 
 			<div className="overflow-x-auto my-4">
@@ -97,10 +97,10 @@ export const PredefinedSearchEditPage = () => {
 					</thead>
 					<tbody>
 						{
-							predefinedSearches?.map(item => <Row key={item.id}
-								search={item}
-								edit={() => { setSearch(item); setMode("edit"); setOpenNewSearchDialog(true) }}
-								deleteItem={() => { setSearch(item); setOpenDeleteSearchDialog(true) }} />)
+							storedFilters?.map(item => <Row key={item.id}
+								filter={item}
+								edit={() => { setFilter(item); setMode("edit"); setOpenNewFilterDialog(true) }}
+								deleteItem={() => { setFilter(item); setOpenDeleteFilterConfirmationDialog(true) }} />)
 						}
 					</tbody>
 				</table>
@@ -109,32 +109,39 @@ export const PredefinedSearchEditPage = () => {
 	)
 }
 
-const Row = ({ search, edit, deleteItem }: { search: PredefinedSearch, edit: (search: PredefinedSearch) => void, deleteItem: (search: PredefinedSearch) => void }) => {
+
+type RowProps = {
+	filter: StoredFilter,
+	edit: (filter: StoredFilter) => void,
+	deleteItem: (filter: StoredFilter) => void
+}
+
+const Row = ({ filter, edit, deleteItem }: RowProps) => {
 	return (
 		<tr>
 			<td>
-				{search.name}
+				{filter.name}
 			</td>
 			<td>
-				{search.title}
+				{filter.title}
 			</td>
 			<td>
 				{
-					search.tags.map((tag, ix) => (
+					filter.tags.map((tag, ix) => (
 						<span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
 					))
 				}
 			</td>
 			<td>
 				{
-					search.metadataTypes.map((tag, ix) => (
+					filter.metadataTypes.map((tag, ix) => (
 						<span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
 					))
 				}
 			</td>
 			<td>
-				<button className="btn btn-primary" onClick={() => edit(search)}>Edit</button>
-				<button style={{ marginLeft: "10px" }} className="btn btn-danger" onClick={() => deleteItem(search)}>Delete</button>
+				<button className="btn btn-primary" onClick={() => edit(filter)}>Edit</button>
+				<button style={{ marginLeft: "10px" }} className="btn btn-danger" onClick={() => deleteItem(filter)}>Delete</button>
 			</td>
 		</tr>
 	)
@@ -142,22 +149,22 @@ const Row = ({ search, edit, deleteItem }: { search: PredefinedSearch, edit: (se
 
 type Mode = "create" | "edit";
 
-type NewSearchDialogProps = {
+type NewFilterDialogProps = {
 	open: boolean
 	setOpen: (open: boolean) => void
-	onSave: (search: PredefinedSearch) => void
+	onSave: (filter: StoredFilter) => void
 	mode?: Mode
-	initialValues?: Partial<PredefinedSearch>
+	initialValues?: Partial<StoredFilter>
 }
 
 
-const NewSearchDialog = ({
+const NewFilterDialog = ({
 	open,
 	setOpen,
 	onSave,
 	mode = "create",
 	initialValues = {}
-}: NewSearchDialogProps) => {
+}: NewFilterDialogProps) => {
 	const [name, setName] = useState(initialValues.name ?? "")
 	const [title, setTitle] = useState(initialValues.title ?? "")
 	const [tags, setTags] = useState<string[]>(initialValues.tags ?? [])
@@ -195,7 +202,7 @@ const NewSearchDialog = ({
 					<input
 						type="text"
 						className="input"
-						placeholder="Search title"
+						placeholder="Filter title"
 						value={title}
 						onChange={e => setTitle(e.target.value)}
 					/>

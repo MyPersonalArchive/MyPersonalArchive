@@ -1,9 +1,8 @@
 using Backend.DbModel.Database.EntityModels;
 
 
-//TODO: Should this be renamed to StoredFilters?
-// - Should we use a FilterModel json field instead of specific fields for Title, MetadataTypes and Tags?
-public class PredefinedSearch : TenantEntity
+// TODO: Should we use a FilterModel json field instead of specific fields for Title, MetadataTypes and Tags?
+public class StoredFilter : TenantEntity
 {
     public int Id { get; set; }
     public required string Name { get; set; }
