@@ -8,7 +8,7 @@ import { tagsAtom } from "../Utils/Atoms"
 import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
-import { PredefinedSearchList } from "../Components/PredefinedSearchList"
+import { StoredFilterSelector } from "../Components/StoredFilterSelector"
 
 type ListResponse = {
 	id: number
@@ -79,7 +79,7 @@ export const ArchiveItemListPage = () => {
 
 			<Filter />
 
-			<PredefinedSearchList orientation="horizontal" maxVisible={5} />
+			<StoredFilterSelector orientation="horizontal" maxVisible={5} />
 
 			<div className="overflow-x-auto my-4">
 				<table className="w-full table with-column-seperators">
