@@ -176,12 +176,22 @@ public class MpaDbContext : DbContext
 			);
 		});
 
+		modelBuilder.Entity<StoredFilter>(storedFilters =>
+		{
+			storedFilters.HasData(
+				new StoredFilter { Id = -1, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
+				new StoredFilter { Id = 1, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
+				new StoredFilter { Id = 2, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
+				new StoredFilter { Id = 3, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] }
+			);
+		});
+
 		modelBuilder.Entity<User>(users =>
 		{
 			users.HasData(
-				new User { Id = 1, Username = "admin@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") },
-				new User { Id = 2, Username = "arjan@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("GsvRPZ+/Nvh5k6OF+GwhBn172mFD0dN8qwBtA54CqII="), Salt = Convert.FromBase64String("S/QxVyyNjFijqftxtN69Iw==") },
-				new User { Id = 3, Username = "stian@localhost", Fullname = "administrator", HashedPassword = Convert.FromBase64String("nwX3O9gTRAh8P0SnHo/vfV9jxFD272MflikCAU2kIuw="), Salt = Convert.FromBase64String("ZAAcuZXGK8v1sQQVvLesfQ==") }
+				new User { Id = 1, Username = "admin@localhost", Fullname = "Administrator", HashedPassword = Convert.FromBase64String("QmGEqvYQRERIkSwjxzIjVHA8f81ycbynlvM4+nix5tM="), Salt = Convert.FromBase64String("AdWB+bSQNMYwJMrauW9Ibg==") },
+				new User { Id = 2, Username = "arjan@localhost", Fullname = "Arjan", HashedPassword = Convert.FromBase64String("GsvRPZ+/Nvh5k6OF+GwhBn172mFD0dN8qwBtA54CqII="), Salt = Convert.FromBase64String("S/QxVyyNjFijqftxtN69Iw==") },
+				new User { Id = 3, Username = "stian@localhost", Fullname = "Stian", HashedPassword = Convert.FromBase64String("nwX3O9gTRAh8P0SnHo/vfV9jxFD272MflikCAU2kIuw="), Salt = Convert.FromBase64String("ZAAcuZXGK8v1sQQVvLesfQ==") }
 			);
 		});
 
