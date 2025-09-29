@@ -23,7 +23,7 @@ export const DatePicker = ({ date, setDate }: DatePickerProps) => {
 						</span>
 					)
 				}
-				<button className="btn" onClick={() => setClickedNoDate(false)}>&times;</button>
+				<button className="btn" type="button" onClick={() => setClickedNoDate(false)}>&times;</button>
 			</div>
 		</>
 	)
