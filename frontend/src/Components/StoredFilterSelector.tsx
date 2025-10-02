@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { createQueryString } from "../Utils/createQueryString"
 import { faTag } from "@fortawesome/free-solid-svg-icons"
 import "../assets/labelList.css"
@@ -19,6 +19,7 @@ type StoredFilterSelectorProps = {
 export const StoredFilterSelector = ({ orientation, maxVisible }: StoredFilterSelectorProps) => {
 	const [maxVisibleItems, setMaxVisibleItems] = useState(maxVisible)
 	const navigate = useNavigate()
+	const location = useLocation()
 
 	const storedFilters = useAtomValue(storedFiltersAtom)
 
@@ -30,6 +31,16 @@ export const StoredFilterSelector = ({ orientation, maxVisible }: StoredFilterSe
 				metadataTypes: filter.metadataTypes
 			}, { skipEmptyStrings: true })
 		})
+	}
+
+	const isChecked = (search: StoredFilter) => {
+		const searchParams = new URLSearchParams(location.search)
+		const title = searchParams.get("title") ?? ""
+		const tags = searchParams.getAll("tags")
+		const metadataTypes = searchParams.getAll("metadataTypes")
+		console.log(title, tags, metadataTypes, search)
+
+		return search.title === title && search.tags.every(tag => tags.includes(tag)) && search.metadataTypes.every(md => metadataTypes.includes(md))
 	}
 
 	const displayed = storedFilters.length > maxVisibleItems
@@ -44,7 +55,7 @@ export const StoredFilterSelector = ({ orientation, maxVisible }: StoredFilterSe
 				aria-orientation={orientation === "vertical" ? "vertical" : "horizontal"}
 			>
 				{displayed.map((filter) => (
-					<div className="item" key={filter.id}>
+					<div className={"item" + (isChecked(filter) ? " item-selected" : "")} key={filter.id}>
 						<div
 							role="listitem"
 							tabIndex={0}
