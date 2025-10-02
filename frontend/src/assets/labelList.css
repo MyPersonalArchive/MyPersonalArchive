@@ -27,9 +27,8 @@
   min-width: 48px;
 }
 
-.label-list .item:focus {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
+.label-list .item-selected {
+    background: #d4d4d4;
 }
 
 .label-list .item.dragging {
