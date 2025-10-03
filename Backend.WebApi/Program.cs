@@ -50,11 +50,12 @@ public static class Program
         builder.RegisterEncryptionServics();
         builder.RegisterRestoreServices();
         builder.RegisterSwaggerServices();
+		builder.RegisterEmailIngestionServices();
 
         // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
-        // builder.Services.AddScoped<ISeedService, SeedService>();
+		// builder.Services.AddScoped<ISeedService, SeedService>();
 
-        var app = builder.Build();
+		var app = builder.Build();
 
         app.PrepareDatabase();
         app.Configure();
@@ -101,57 +102,66 @@ public static class Program
         services.AddScoped<OpenSslAes256Cbc>();
     }
 
+	private static void RegisterEmailIngestionServices(this IHostApplicationBuilder builder)
+	{
+		var services = builder.Services;
+
+		services.AddSingleton<IEmailIngestionProvider, GmailProvider>();
+		services.AddSingleton<IEmailIngestionProvider, FastMailProvider>();
+		services.AddSingleton<EmailIngestionProviderFactory>();
+	}
+
 
     private static void RegisterJwtServices(this WebApplicationBuilder builder)
-    {
-        // Build a temporary serviceprovider to get the JWT configuration 
-        var jwtOptions = WebApplication
-            .CreateBuilder()
-            .Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration))
-            .BuildServiceProvider()
-            .GetRequiredService<IOptions<JwtConfig>>()
-            .Value;
+	{
+		// Build a temporary serviceprovider to get the JWT configuration 
+		var jwtOptions = WebApplication
+			.CreateBuilder()
+			.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration))
+			.BuildServiceProvider()
+			.GetRequiredService<IOptions<JwtConfig>>()
+			.Value;
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.JwtIssuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.JwtSecret))
-                };
+		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+			.AddJwtBearer(options =>
+			{
+				options.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateLifetime = true,
+					ValidateIssuerSigningKey = true,
+					ValidIssuer = jwtOptions.JwtIssuer,
+					ValidAudience = jwtOptions.Audience,
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.JwtSecret))
+				};
 
-                options.Audience = jwtOptions.Audience;
-                // options.Authority = jwtOptions.???;
+				options.Audience = jwtOptions.Audience;
+				// options.Authority = jwtOptions.???;
 
-                // Enable SignalR authentication via access token query string
-                options.Events = new JwtBearerEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        // If the request is for the SignalR hub, read the token from the query string
-                        var path = context.HttpContext.Request.Path;
-                        if (path.StartsWithSegments("/notificationHub"))
-                        {
-                            var accessToken = context.Request.Query["access_token"];
-                            if (!string.IsNullOrEmpty(accessToken))
-                            {
-                                context.Token = accessToken;
-                            }
-                        }
+				// Enable SignalR authentication via access token query string
+				options.Events = new JwtBearerEvents
+				{
+					OnMessageReceived = context =>
+					{
+						// If the request is for the SignalR hub, read the token from the query string
+						var path = context.HttpContext.Request.Path;
+						if (path.StartsWithSegments("/notificationHub"))
+						{
+							var accessToken = context.Request.Query["access_token"];
+							if (!string.IsNullOrEmpty(accessToken))
+							{
+								context.Token = accessToken;
+							}
+						}
 
-                        return Task.CompletedTask;
-                    }
-                };
-            });
+						return Task.CompletedTask;
+					}
+				};
+			});
 
-        builder.Services.AddAuthorization();
-    }
+		builder.Services.AddAuthorization();
+	}
 
     private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
     {
