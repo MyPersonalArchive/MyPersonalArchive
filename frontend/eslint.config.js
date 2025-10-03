@@ -43,7 +43,6 @@ export default tseslint.config(
 
 			// // Enable unused-imports plugin to auto remove unused imports and vars
 			// "unused-imports/no-unused-imports": "error",
-			// "@typescript-eslint/no-explicit-any": "off", // turn off warning for 'any'
 			// "unused-imports/no-unused-vars": [
 			// 	"warn",
 			// 	{
@@ -53,6 +52,8 @@ export default tseslint.config(
 			// 		argsIgnorePattern: "^_",
 			// 	},
 			// ],
+
+			"@typescript-eslint/no-explicit-any": "off", // turn off warning for 'any'
 
 			// Other style rules
 			'quotes': ['warn', 'double', { avoidEscape: true }],

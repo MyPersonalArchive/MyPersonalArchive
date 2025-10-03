@@ -129,7 +129,8 @@ export const ArchiveItemEditPage = () => {
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="title">Title</label>
-					<input className="input" type="text"
+					<input type="text"
+						className="input"
 						id="title" placeholder="" autoFocus data-1p-ignore
 						value={title}
 						onChange={event => setTitle(event.target.value)}

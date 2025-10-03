@@ -35,9 +35,9 @@ export const ArchiveItemListPage = () => {
 
 	useEffect(() => {
 		const payload = {
-			title: searchParams.get("title"),
+			title: searchParams.get("title") || undefined,
 			tags: searchParams.getAll("tags"),
-			label: searchParams.get("label"),
+			filter: searchParams.get("filter") || undefined,
 			metadataTypes: searchParams.getAll("metadataTypes")
 		}
 		apiClient.get<ListResponse[]>("/api/archive/list", payload)
@@ -79,7 +79,7 @@ export const ArchiveItemListPage = () => {
 
 			<Filter />
 
-			<StoredFilterSelector orientation="horizontal" maxVisible={5} />
+			<StoredFilterSelector />
 
 			<div className="overflow-x-auto my-4">
 				<table className="w-full table with-column-seperators">
@@ -94,6 +94,15 @@ export const ArchiveItemListPage = () => {
 					<tbody>
 						{
 							archiveItems?.map(item => <Row key={item.id} archiveItem={item} />)
+						}
+						{
+							archiveItems && archiveItems.length === 0 && (
+								<tr>
+									<td colSpan={4} className="text-center italic text-gray-500 py-4">
+										No items found
+									</td>
+								</tr>
+							)
 						}
 					</tbody>
 				</table>

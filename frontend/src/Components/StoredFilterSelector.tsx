@@ -1,78 +1,37 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { createQueryString } from "../Utils/createQueryString"
+import { useSearchParams } from "react-router-dom"
 import { faTag } from "@fortawesome/free-solid-svg-icons"
-import "../assets/labelList.css"
 import { StoredFilter, storedFiltersAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
+import classNames from "classnames"
 
 
-
-export type Orientation = "vertical" | "horizontal";
-
-type StoredFilterSelectorProps = {
-	orientation: Orientation
-	maxVisible: number
-}
-
-export const StoredFilterSelector = ({ orientation, maxVisible }: StoredFilterSelectorProps) => {
-	const [maxVisibleItems, setMaxVisibleItems] = useState(maxVisible)
-	const navigate = useNavigate()
-	const location = useLocation()
-
+export const StoredFilterSelector = () => {
+	const [searchParams, setSearchParams] = useSearchParams()
 	const storedFilters = useAtomValue(storedFiltersAtom)
 
 	const selectFilter = (filter: StoredFilter) => {
-		navigate({
-			search: createQueryString({
-				title: filter.title,
-				tags: filter.tags.map(tag => tag.trim()),
-				metadataTypes: filter.metadataTypes
-			}, { skipEmptyStrings: true })
+		setSearchParams({
+			filter: filter.name
 		})
 	}
 
-	const isChecked = (search: StoredFilter) => {
-		const searchParams = new URLSearchParams(location.search)
-		const title = searchParams.get("title") ?? ""
-		const tags = searchParams.getAll("tags")
-		const metadataTypes = searchParams.getAll("metadataTypes")
-		console.log(title, tags, metadataTypes, search)
-
-		return search.title === title && search.tags.every(tag => tags.includes(tag)) && search.metadataTypes.every(md => metadataTypes.includes(md))
+	const isChecked = (filter: StoredFilter) => {
+		return filter.name === searchParams.get("filter")
 	}
-
-	const displayed = storedFilters.length > maxVisibleItems
-		? storedFilters.slice(0, maxVisibleItems)
-		: storedFilters
 
 	return (
 		<>
-			<div
-				className={`label-list ${orientation}`}
-				role="list"
-				aria-orientation={orientation === "vertical" ? "vertical" : "horizontal"}
-			>
-				{displayed.map((filter) => (
-					<div className={"item" + (isChecked(filter) ? " item-selected" : "")} key={filter.id}>
-						<div
-							role="listitem"
-							tabIndex={0}
-							onClick={() => selectFilter(filter)}
-						>
-							<FontAwesomeIcon icon={faTag} className="mr-1" color="gray" />
-							<span className="text">{filter.name}</span>
-						</div>
-					</div>
-
+			<div className="push-left">
+				{storedFilters.map((filter) => (
+					<button className={classNames("btn" , {"selected": isChecked(filter)})}
+						key={filter.id}
+						onClick={() => selectFilter(filter)}
+					>
+						<FontAwesomeIcon icon={faTag} className="mr-1" color="gray" />
+						{filter.name}
+					</button>
 				))}
-
-				{storedFilters.length > maxVisibleItems && (
-					<button className="item collapsed"
-						onClick={() => setMaxVisibleItems(storedFilters.length)}
-						aria-hidden>+{storedFilters.length - maxVisibleItems} more</button>
-				)}
 			</div>
 		</>
 	)

@@ -22,7 +22,7 @@ type CreateResponse = {
 export const ArchiveItemNewPage = () => {
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
-	const [label, setLabel] = useState<string>()
+	const [label] = useState<string>()
 	const [documentDate, setDocumentDate] = useState<string | undefined>(undefined)
 	const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
 	const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
@@ -82,7 +82,8 @@ export const ArchiveItemNewPage = () => {
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="title">Title</label>
-					<input className="input" type="text"
+					<input type="text"
+						className="input"
 						id="title" placeholder="" autoFocus required data-1p-ignore
 						value={title}
 						onChange={event => setTitle(event.target.value)}

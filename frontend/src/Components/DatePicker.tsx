@@ -10,7 +10,7 @@ export const DatePicker = ({ date, setDate }: DatePickerProps) => {
 
 	return (
 		<>
-			<div>
+			<div className="group">
 				{
 					(date || clickedNoDate) ? (
 						<input type="date" className="input"
@@ -25,6 +25,17 @@ export const DatePicker = ({ date, setDate }: DatePickerProps) => {
 				}
 				<button className="btn" type="button" onClick={() => setClickedNoDate(false)}>&times;</button>
 			</div>
+			{/* <span className="group">
+				<button className="btn" type="button">First</button>
+				<button className="btn" type="button">Second</button>
+				<button className="btn" type="button">Third</button>
+			</span>
+
+			<span className="group">
+				<input type="text" className="input" placeholder="First" />
+				<button className="btn" type="button">Last</button>
+			</span> */}
+
 		</>
 	)
 }
