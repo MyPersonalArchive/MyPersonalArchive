@@ -25,6 +25,7 @@
     <ProjectReference Include="../Backend.DbModel/Backend.DbModel.csproj" />
     <ProjectReference Include="../Backend.Core/Backend.Core.csproj" />
     <ProjectReference Include="..\Backend.Crypto\Backend.Crypto.csproj" />
+    <ProjectReference Include="..\Backend.EmailIngestion\Backend.EmailIngestion.csproj" />
   </ItemGroup>
 
 </Project>
