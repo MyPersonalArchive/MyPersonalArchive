@@ -1,5 +1,3 @@
-public record TokenResult(string AccessToken, string RefreshToken, DateTime ExpiresAt);
-
 public record EmailAttachment(
     string MessageId,
     string Subject,
@@ -8,41 +6,55 @@ public record EmailAttachment(
     string FileName
 );
 
+public class Attachment
+{
+	public required Stream Stream { get; set; }
+	public required string ContentType { get; set; }
+	public required string FileName { get; set; }
+	public long FileSize { get; set; }
+}
+
 public record AuthContext
 {
-    public string? AccessToken { get; init; }      // For OAuth providers
-    public string? RefreshToken { get; init; }     // Optional
-    public string? Username { get; init; }         // For FastMail / plain IMAP
-    public string? Password { get; init; }         // For FastMail / plain IMAP
+	public string? AccessToken { get; init; }      // For OAuth providers
+	public string? RefreshToken { get; init; }
+	public string? Username { get; init; }         // For plain IMAP
+	public string? Password { get; init; }         // For plain IMAP
+	public DateTime ExpiresAt { get; set; }
 
-    public static AuthContext FromOAuth(string accessToken, string? refreshToken = null) =>
-        new AuthContext { AccessToken = accessToken, RefreshToken = refreshToken };
+	public static AuthContext FromOAuth(string accessToken, string? refreshToken = null) =>
+		new AuthContext { AccessToken = accessToken, RefreshToken = refreshToken };
 
-    public static AuthContext FromBasic(string username, string password) =>
-        new AuthContext { Username = username, Password = password };
+	public static AuthContext FromBasic(string username, string password) =>
+		new AuthContext { Username = username, Password = password };
 }
 
 
 public enum EmailIngestionAuthMode
 {
-    Oath2,
-    Basic
+	Oath2,
+	Basic
+}
+
+public class EmailSearchCriteria
+{
+	public string? Subject { get; set; }
+	public string? From { get; set; }
+	public string? To { get; set; }
+	public int Limit { get; set; }
+	public DateTime? Since { get; set; }
 }
 
 public interface IEmailIngestionProvider
 {
-    EmailIngestionAuthMode AuthenticationMode {get;}
-    string Name { get; }
+	EmailIngestionAuthMode AuthenticationMode { get; }
+	string Name { get; }
 
-    // Step 1: Get OAuth login URL
-    string GetAuthorizationUrl(string state, string redirectUri);
+	string GetAuthorizationUrl(string state, string redirectUri);
 
-    // Step 2: Exchange code for tokens
-    Task<TokenResult> ExchangeCodeForTokenAsync(string code, string redirectUri);
+	Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
 
-    // Step 3: Find attachments
-    Task<IList<EmailAttachment>> FindAttachmentsAsync(AuthContext auth);
+	Task<IList<EmailAttachment>> FindAttachmentsAsync(AuthContext auth, EmailSearchCriteria searchCriteria);
 
-    // Step 4: Download attachment
-    Task<Stream?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName);
+	Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName);
 }

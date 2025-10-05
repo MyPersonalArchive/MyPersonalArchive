@@ -107,7 +107,7 @@ public static class Program
 		var services = builder.Services;
 
 		services.AddSingleton<IEmailIngestionProvider, GmailProvider>();
-		services.AddSingleton<IEmailIngestionProvider, FastMailProvider>();
+		services.AddSingleton<IEmailIngestionProvider, FastMailBasicAuthProvider>();
 		services.AddSingleton<EmailIngestionProviderFactory>();
 	}
 

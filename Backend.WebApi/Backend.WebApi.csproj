@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Backend.WebApi</RootNamespace>
+    <UserSecretsId>7c5f8e2c-d532-454a-a8b6-a76cb2e68879</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
