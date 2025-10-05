@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react"
+import { useApiClient } from "./useApiClient"
 
 type OAuthAuth = {
   accessToken: string
   refreshToken?: string
 }
 
-type BasicAuth = {
-  username: string
-  password: string
-}
-
-type AuthContext = OAuthAuth | BasicAuth | null;
-
-export type Attachment = {
+export type EmailAttachment = {
   subject: string
   from: string
   date: string
@@ -20,11 +14,54 @@ export type Attachment = {
   messageId: string
 }
 
+type AuthUrlResponse = {
+  url: string
+  state: string
+}
+
+/*
+public class EmailSearchCriteria
+{
+	public string? Subject { get; set; }
+	public string? From { get; set; }
+	public string? To { get; set; }
+	public int Limit { get; set; }
+	public DateTime? Since { get; set; }
+}
+*/
+
+type FindAttachmentRequest = {
+	provider: string
+	subject?: string
+	from?: string
+	to?: string
+	limit?: number
+	since?: string
+}
+
+type FindAttachmentsResponse = {
+  attachments: EmailAttachment[]
+}
+
 export function useMailProvider() {
 	const [provider, setProvider] = useState<"none" | "gmail" | "fastmail">("none")
 
-	const [auth, setAuth] = useState<AuthContext>(null)
-	const [attachments, setAttachments] = useState<Attachment[]>([])
+	const [auth, setAuth] = useState<{isAuthenticated: boolean}>({isAuthenticated: false})
+	const [attachments, setAttachments] = useState<EmailAttachment[]>([])
+
+	const apiClient = useApiClient()
+
+	// Restore provider + auth from storage on mount. This is because the redirect 
+	useEffect(() => {
+		const savedProvider = sessionStorage.getItem("pending-provider")
+		if (savedProvider && (savedProvider === "gmail" || savedProvider === "fastmail")) {
+			setProvider(savedProvider)
+		}
+		if (provider !== "none") {
+			const savedAuth = localStorage.getItem(`auth-${provider}`)
+			if (savedAuth) setAuth(JSON.parse(savedAuth))
+		}
+	}, [provider])
 
 	useEffect(() => {
 		// restore auth on mount
@@ -32,71 +69,65 @@ export function useMailProvider() {
 		if (saved) setAuth(JSON.parse(saved))
 	}, [provider])
 
-	async function login(): Promise<void> {
+	const login = async (): Promise<void> => {
+		sessionStorage.setItem("pending-provider", provider)
+
 		if (provider === "gmail") {
 			const redirectUri = window.location.origin + "/auth-callback"
-			const res = await fetch(`/api/emailingestion/${provider}/auth/url?redirectUri=${encodeURIComponent(redirectUri)}`)
-			const { url } = await res.json()
-			window.location.href = url // full redirect, no popup
+			const response = await apiClient.get<AuthUrlResponse>(`/api/emailingestion/${provider}/auth/url?redirectUri=${encodeURIComponent(redirectUri)}`, null, { credentials: "include" })
+			window.location.href = response.url // full redirect, no popup
 		} else if (provider === "fastmail") {
 			const username = prompt("FastMail username:")
 			const password = prompt("FastMail app password:")
 			if (username && password) {
-				const creds: BasicAuth = { username, password }
-				setAuth(creds)
-				localStorage.setItem(`auth-${provider}`, JSON.stringify(creds))
+				await apiClient.post(`/api/emailingestion/${provider}/auth/exchange`, {provider, username, password }, { credentials: "include" })
+				localStorage.setItem(`auth-${provider}`, "true")
+				setAuth({isAuthenticated: true})
 			}
 		}
 	}
 
-	async function handleAuthCallback(): Promise<OAuthAuth | null> {
+	const handleAuthCallback = async (): Promise<OAuthAuth | null> => {
+		const savedProvider = sessionStorage.getItem("pending-provider")
+		if (!savedProvider) return null
+
 		const params = new URLSearchParams(window.location.search)
 		if (params.has("code")) {
 			const code = params.get("code")
 			const state = params.get("state")
 			const redirectUri = window.location.origin + "/auth-callback"
 
-			const res = await fetch(`/api/emailingestion/${provider}/auth/exchange`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ code, state, redirectUri }),
-			})
-
-			if (res.ok) {
-				const tokens: OAuthAuth = await res.json()
-				setAuth(tokens)
-				localStorage.setItem(`auth-${provider}`, JSON.stringify(tokens))
-				return tokens
-			}
+			await apiClient.post(`/api/emailingestion/${savedProvider}/auth/exchange`, {provider: savedProvider, code, state, redirectUri }, { credentials: "include" })
+			
+			localStorage.setItem(`auth-${savedProvider}`, "true")
+			setAuth({isAuthenticated: true})
 		}
 		return null
 	}
 
-	async function fetchAttachments(): Promise<Attachment[]> {
+	const fetchAttachments = async (search: FindAttachmentRequest): Promise<EmailAttachment[]> => {
 		if (!auth) throw new Error("Not authenticated")
-		const res = await fetch(`/api/emailingestion/${provider}/find-attachments`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(auth),
-		})
-		const json = await res.json()
-		const list: Attachment[] = json.attachments || []
+		const savedProvider = sessionStorage.getItem("pending-provider")
+		if (!savedProvider) return []
+
+		const response = await apiClient.post<FindAttachmentsResponse>(`/api/emailingestion/${savedProvider}/find-attachments`, search, { credentials: "include" })
+		
+		const list: EmailAttachment[] = response.attachments || []
 		setAttachments(list)
 		return list
 	}
 
-	async function downloadAttachment(messageId: string, fileName: string): Promise<void> {
+	const downloadAttachment = async (messageId: string, fileName: string): Promise<void> => {
 		if (!auth) throw new Error("Not authenticated")
 
-		const res = await fetch(`/api/emailingestion/${provider}/download-attachment`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ ...auth, messageId, fileName }),
-		})
-		if (!res.ok) throw new Error("Download failed")
+		const response = await apiClient.getBlob(`/api/emailingestion/${provider}/download-attachment`, {
+			messageId,
+			fileName
+		}, { credentials: "include" })
+		
+		if (!response.blob) throw new Error("Download failed")
 
-		const blob = await res.blob()
-		const url = window.URL.createObjectURL(blob)
+		const url = window.URL.createObjectURL(response.blob)
 		const a = document.createElement("a")
 		a.href = url
 		a.download = fileName

@@ -5,7 +5,7 @@ using MailKit.Search;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 
-public class GmailProvider : IEmailIngestionProvider
+public class GmailProvider : ImapProviderBase, IEmailIngestionProvider
 {
     private readonly string _clientId;
     private readonly string _clientSecret;
@@ -29,71 +29,32 @@ public class GmailProvider : IEmailIngestionProvider
             $"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={_clientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&scope={scopes}&access_type=offline&prompt=consent&state={state}";
     }
 
-    public async Task<TokenResult> ExchangeCodeForTokenAsync(string code, string redirectUri)
-    {
-        using var client = new HttpClient();
-        var resp = await client.PostAsync("https://oauth2.googleapis.com/token",
-            new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["code"] = code,
-                ["client_id"] = _clientId,
-                ["client_secret"] = _clientSecret,
-                ["redirect_uri"] = redirectUri,
-                ["grant_type"] = "authorization_code"
-            })
-        );
+	public async Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri)
+	{
+		using var client = new HttpClient();
+		var resp = await client.PostAsync("https://oauth2.googleapis.com/token",
+			new FormUrlEncodedContent(new Dictionary<string, string>
+			{
+				["code"] = code,
+				["client_id"] = _clientId,
+				["client_secret"] = _clientSecret,
+				["redirect_uri"] = redirectUri,
+				["grant_type"] = "authorization_code"
+			})
+		);
 
-        resp.EnsureSuccessStatusCode();
-        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
+		resp.EnsureSuccessStatusCode();
+		var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
 
-        return new TokenResult(
-            json.GetProperty("access_token").GetString()!,
-            json.GetProperty("refresh_token").GetString()!,
-            DateTime.UtcNow.AddSeconds(json.GetProperty("expires_in").GetInt32())
-        );
+		return new AuthContext
+		{
+			AccessToken = json.GetProperty("access_token").GetString()!,
+			RefreshToken = json.GetProperty("refresh_token").GetString(),
+			ExpiresAt = DateTime.UtcNow.AddSeconds(json.GetProperty("expires_in").GetInt32())
+		};
     }
 
-    public async Task<IList<EmailAttachment>> FindAttachmentsAsync(AuthContext auth)
-    {
-        var results = new List<EmailAttachment>();
-
-        using var client = new ImapClient();
-        var http = new HttpClient();
-        var info = await http.GetStringAsync($"https://openidconnect.googleapis.com/v1/userinfo?access_token={Uri.EscapeDataString(auth.AccessToken)}");
-        var email = JsonDocument.Parse(info).RootElement.GetProperty("email").GetString();
-
-        await client.ConnectAsync("imap.gmail.com", 993, SecureSocketOptions.SslOnConnect);
-        await client.AuthenticateAsync(new SaslMechanismOAuth2(email, auth.AccessToken));
-
-        var inbox = client.Inbox;
-        await inbox.OpenAsync(MailKit.FolderAccess.ReadOnly);
-
-        var uids = await inbox.SearchAsync(SearchQuery.All);
-        var items = await inbox.FetchAsync(uids.Reverse().Take(200).ToList(), MessageSummaryItems.Full | MessageSummaryItems.UniqueId);
-
-        foreach (var item in items)
-        {
-            var message = await inbox.GetMessageAsync(item.UniqueId);
-            foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
-            {
-                if (part.IsAttachment)
-                {
-                    results.Add(new EmailAttachment(
-                        item.UniqueId.Id.ToString(),
-                        message.Subject,
-                        message.From.ToString(),
-                        message.Date.UtcDateTime,
-                        part.FileName ?? "attachment"
-                    ));
-                }
-            }
-        }
-
-        await client.DisconnectAsync(true);
-        return results;
-    }
-
-    public async Task<Stream?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName)
+    public async Task<IList<EmailAttachment>> FindAttachmentsAsync(AuthContext auth, EmailSearchCriteria searchCriteria)
     {
         using var client = new ImapClient();
         var http = new HttpClient();
@@ -103,22 +64,19 @@ public class GmailProvider : IEmailIngestionProvider
         await client.ConnectAsync("imap.gmail.com", 993, SecureSocketOptions.SslOnConnect);
         await client.AuthenticateAsync(new SaslMechanismOAuth2(email, auth.AccessToken));
 
-        var inbox = client.Inbox;
-        await inbox.OpenAsync(FolderAccess.ReadOnly);
+		return await FindAttachmentsAsync(client, searchCriteria);
+    }
 
-        var message = await inbox.GetMessageAsync(new UniqueId(uint.Parse(messageId)));
+    public async Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName)
+    {
+        using var client = new ImapClient();
+        var http = new HttpClient();
+        var info = await http.GetStringAsync($"https://openidconnect.googleapis.com/v1/userinfo?access_token={Uri.EscapeDataString(auth.AccessToken)}");
+        var email = JsonDocument.Parse(info).RootElement.GetProperty("email").GetString();
 
-        foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
-        {
-            if (part.IsAttachment && part.FileName == fileName)
-            {
-                var ms = new MemoryStream();
-                await part.Content.DecodeToAsync(ms);
-                ms.Position = 0;
-                return ms;
-            }
-        }
+        await client.ConnectAsync("imap.gmail.com", 993, SecureSocketOptions.SslOnConnect);
+        await client.AuthenticateAsync(new SaslMechanismOAuth2(email, auth.AccessToken));
 
-        return null;
+        return await DownloadAttachmentAsync(client, messageId, fileName);
     }
 }
