@@ -4,6 +4,7 @@ using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Text.Json;
 
 //TODO:
@@ -50,9 +51,17 @@ public class EmailIngestionController : ControllerBase
 		if (prov.AuthenticationMode != EmailIngestionAuthMode.Oath2)
 			return BadRequest(new { error = $"{provider} does not support OAuth" });
 
-		var state = Guid.NewGuid().ToString("N");
-		var url = prov.GetAuthorizationUrl(state, redirectUri);
-		return Ok(new AuthUrlResponse { Url = url, State = state });
+		//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
+		var rawState = new {
+			provider,
+			nonce = Guid.NewGuid().ToString("N")
+		};
+
+		var stateJson = JsonSerializer.Serialize(rawState);
+		var encodedState = WebUtility.UrlEncode(stateJson);
+
+		var url = prov.GetAuthorizationUrl(encodedState, redirectUri);
+		return Ok(new AuthUrlResponse { Url = url, State = encodedState });
 	}
 
 	[HttpPost("{provider}/auth/exchange")]
