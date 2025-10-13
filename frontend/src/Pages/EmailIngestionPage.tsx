@@ -41,7 +41,7 @@ export const EmailIngestionPage = () => {
 		<div>
 			<select value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail")}>
 				<option value="gmail">Gmail</option>
-				<option value="fastmail">FastMail</option>
+				<option value="fastmail">Fastmail</option>
 			</select>
 			
 			<div>
