@@ -4,47 +4,78 @@ using MailKit.Search;
 
 public abstract class ImapProviderBase
 {
-	protected async Task<IList<EmailAttachment>> FindAttachmentsAsync(IImapClient client, EmailSearchCriteria searchCriteria)
+	protected async Task<IList<string>> GetAvailableFolders(IImapClient client)
 	{
-		var results = new List<EmailAttachment>();
+		var root = client.GetFolder(client.PersonalNamespaces[0]);
+		var allFolders = await root.GetSubfoldersAsync(true);
+		return allFolders.Select(f => f.FullName).ToList();
 
-		var inbox = client.Inbox;
-		await inbox.OpenAsync(FolderAccess.ReadOnly);
+	}
 
-		var uids = await inbox.SearchAsync(GenerateSearchQuery(searchCriteria));
-		var limitedUids = uids.Reverse().Take(searchCriteria != null ? searchCriteria.Limit : 100).ToList();
+	protected async Task<IList<Email>> FindAsync(IImapClient client, EmailSearchCriteria searchCriteria)
+	{
+		var results = new List<Email>();
 
-		const int batchSize = 50;
-		var allMessagesWithAttachments = new List<IMessageSummary>();
-
-		//For better performance fetch in batches. This seems to be faster, at least on my account with ALOT of emails.
-		//By requesting just the uniqueId and BodyStructure we don't have to download the message bodies.
-		for (int i = 0; i < limitedUids.Count; i += batchSize)
+		var folders = searchCriteria.Folders;
+		if (folders == null || !folders.Any())
 		{
-			var batch = limitedUids.Skip(i).Take(batchSize).ToList();
-			var summaries = await inbox.FetchAsync(batch, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
-			allMessagesWithAttachments.AddRange(summaries.Where(i => i.BodyParts?.Any(bp => bp.IsAttachment) == true));
+			//Folder names are case sensetive. Gmail, Fastmail uses default "INBOX", but for Outlook etc it's "Inbox".
+			//If we shall allow users to search inboxes we need to solve this somehow?
+			folders = ["INBOX"];
 		}
 
-		foreach (var item in allMessagesWithAttachments)
+		foreach (var folder in folders)
 		{
-			var message = await inbox.GetMessageAsync(item.UniqueId);
-			foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
+			var mailFolder = client.GetFolder(folder);
+			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+
+			var uids = await mailFolder.SearchAsync(GenerateSearchQuery(searchCriteria));
+			var limitedUids = uids.Reverse().Take(searchCriteria != null ? searchCriteria.Limit : 100).ToList();
+
+			const int batchSize = 50;
+			var messages = new List<IMessageSummary>();
+
+			//For better performance fetch in batches. This seems to be faster, at least on my account with ALOT of emails.
+			//By requesting just the uniqueId and BodyStructure we don't have to download the message bodies.
+			for (int i = 0; i < limitedUids.Count; i += batchSize)
 			{
-				if (part.IsAttachment)
+				var batch = limitedUids.Skip(i).Take(batchSize).ToList();
+				var summaries = await mailFolder.FetchAsync(batch, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
+				messages.AddRange(summaries);
+			}
+
+			foreach (var item in messages)
+			{
+				var message = await mailFolder.GetMessageAsync(item.UniqueId);
+				var email = new Email()
 				{
-					results.Add(new EmailAttachment(
-						item.UniqueId.Id.ToString(),
-						message.Subject,
-						message.From.ToString(),
-						message.Date.UtcDateTime,
-						part.FileName ?? "attachment"
-					));
+					UniqueId = item.UniqueId.Id.ToString(),
+					Subject = message.Subject,
+					From = message.From.ToString(),
+					To = message.To.ToString(),
+					ReceivedTime = message.Date,
+					Body = message.TextBody,
+					HtmlBody = message.HtmlBody
+				};
+
+				foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
+				{
+					if (part.IsAttachment)
+					{
+						email.Attachments.Add(new EmailAttachment(
+							part.FileName ?? "attachment",
+							part.ContentType.MimeType
+						));
+					}
 				}
+
+				results.Add(email);
 			}
 		}
 
+
 		await client.DisconnectAsync(true);
+		client.Dispose();
 		return results;
 	}
 

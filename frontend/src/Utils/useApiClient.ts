@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { createQueryString } from "./createQueryString"
 import { useContext } from "react"
-import { useMemo } from "react"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdFrame"
 
 
@@ -108,7 +107,7 @@ export const useApiClient = () => {
 
 			return interceptedFetch(url + queryString, options)
 				.then(async response => {
-
+					console.log(response)
 					let filename = ""
 					const contentDisposition = response.headers.get("Content-Disposition")
 

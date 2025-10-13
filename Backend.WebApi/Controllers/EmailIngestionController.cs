@@ -114,6 +114,42 @@ public class EmailIngestionController : ControllerBase
 		return Ok(new { Ok = true });
 	}
 
+	[HttpGet("{provider}/list-folders")]
+
+	public async Task<IActionResult> GetFolders(string provider)
+	{
+		if (!_registry.TryGetProvider(provider, out var prov))
+			return BadRequest(new { error = $"Unknown provider: {provider}" });
+
+		if (!Request.Cookies.TryGetValue($"auth-{provider}", out var authJson))
+		{
+			return Unauthorized();
+		}
+
+		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
+
+		if (auth == null)
+			return Unauthorized();
+
+		if (prov.AuthenticationMode == EmailIngestionAuthMode.Oath2)
+		{
+			if (string.IsNullOrEmpty(auth?.AccessToken))
+				return BadRequest(new { error = "missing access_token" });
+
+			auth = AuthContext.FromOAuth(auth.AccessToken, auth.RefreshToken);
+		}
+		else
+		{
+			if (string.IsNullOrEmpty(auth.Username) || string.IsNullOrEmpty(auth.Password))
+			{
+				return BadRequest(new { error = "missing username or password" });
+			}
+			auth = AuthContext.FromBasic(auth.Username, auth.Password);
+		}
+
+		return Ok(await prov.GetAvailableFolders(auth));
+	}
+
 	[HttpPost("{provider}/find-attachments")]
 	public async Task<IActionResult> FindAttachments([FromBody] FindAttachmentsRequest request)
 	{
@@ -147,11 +183,11 @@ public class EmailIngestionController : ControllerBase
 		}
 
 		var results = await prov.FindAttachmentsAsync(auth, request);
-		return Ok(new FindAttachmentsResponse { Attachments = [.. results] });
+		return Ok(new FindAttachmentsResponse { Emails = [.. results] });
 	}
 
 	[HttpGet("{provider}/download-attachment")]
-	public async Task<IActionResult> DownloadAttachment(string provider, [FromBody] DownloadAttachmentRequest download)
+	public async Task<IActionResult> DownloadAttachment(string provider, [FromQuery] string messageId, [FromQuery] string fileName)
 	{
 		if (!_registry.TryGetProvider(provider, out var prov))
 			return BadRequest(new { error = $"Unknown provider: {provider}" });
@@ -167,10 +203,10 @@ public class EmailIngestionController : ControllerBase
 			return Unauthorized();
 
 
-		var attachment = await prov.DownloadAttachmentAsync(auth, download.MessageId, download.FileName);
+		var attachment = await prov.DownloadAttachmentAsync(auth, messageId, fileName);
 		if (attachment == null) return NotFound();
 		
-		return File(attachment.Stream, "application/octet-stream", download.FileName);
+		return File(attachment.Stream, "application/octet-stream", fileName);
 	}
 	
 	[HttpPost("{provider}/unallocate-attachment")]
@@ -270,10 +306,11 @@ public class AuthUrlResponse
 
 public class FindAttachmentsResponse
 {
-	public required EmailAttachment[] Attachments { get; set; }
+	public required Email[] Emails { get; set; }
 }
 
 public class FindAttachmentsRequest : EmailSearchCriteria
 {
 	public required string Provider { get; set; }
 }
+
