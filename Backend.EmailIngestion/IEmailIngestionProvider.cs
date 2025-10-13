@@ -1,10 +1,19 @@
 public record EmailAttachment(
-    string MessageId,
-    string Subject,
-    string From,
-    DateTime Date,
-    string FileName
+    string FileName,
+	string ContentType
 );
+
+public class Email
+{
+	public string UniqueId { get; set; } = string.Empty;
+	public string Subject { get; set; } = string.Empty;
+	public string Body { get; set; } = string.Empty;
+	public string HtmlBody { get; set; } = string.Empty;
+	public DateTimeOffset ReceivedTime { get; set; }
+	public string From { get; set; } = string.Empty;
+	public string To { get; set; } = string.Empty;
+	public List<EmailAttachment> Attachments { get; set; } = [];
+}
 
 public class Attachment
 {
@@ -38,6 +47,7 @@ public enum EmailIngestionAuthMode
 
 public class EmailSearchCriteria
 {
+	public List<string>? Folders { get; set; }
 	public string? Subject { get; set; }
 	public string? From { get; set; }
 	public string? To { get; set; }
@@ -54,7 +64,9 @@ public interface IEmailIngestionProvider
 
 	Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
 
-	Task<IList<EmailAttachment>> FindAttachmentsAsync(AuthContext auth, EmailSearchCriteria searchCriteria);
+	Task<IList<string>> GetAvailableFolders(AuthContext auth);
+
+	Task<IList<Email>> FindAttachmentsAsync(AuthContext auth, EmailSearchCriteria searchCriteria);
 
 	Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName);
 }

@@ -1,38 +1,17 @@
 import { useEffect } from "react"
-import { EmailAttachment, useMailProvider } from "../Utils/useMailProvider"
+import { Email, EmailAttachment, useMailProvider } from "../Utils/useMailProvider"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
-import { useApiClient } from "../Utils/useApiClient"
-
-interface UploadAttachmentRequest {
-  attachments: Attachment[]
-}
-
-interface Attachment {
-  messageId: string
-  fileName: string
-}
+import DOMPurify from "dompurify"
 
 export const EmailIngestionPage = () => {
 
-	const { provider, setProvider, login, fetchAttachments, attachments, downloadAttachment } = useMailProvider()
-	const apiClient = useApiClient()
-
-	const uploadBlobs = async (emailAttachments: EmailAttachment[]): Promise<void> => {
-
-		const body: UploadAttachmentRequest = {
-			attachments: emailAttachments.map(a => ({
-				messageId: a.messageId,
-				fileName: a.fileName
-			})),
-		}
-
-		apiClient.post(`/api/emailingestion/${provider}/unallocate-attachment`, body, { credentials: "include" })
-	}
+	const { provider, setProvider, login, fetchAttachments, emails, downloadAttachment, uploadAttachments, listAvailableFolders } = useMailProvider()
 
 	const search = () => {
 		fetchAttachments({
 			provider,
+			folders: ["INBOX"],
 			limit: 300,
 		})
 	}
@@ -48,6 +27,10 @@ export const EmailIngestionPage = () => {
 				<button className="btn" onClick={() => {
 					login()
 				}} >Login with {provider}</button>
+
+				<button className="btn" onClick={() => {
+					listAvailableFolders()
+				}} >List Folders (see network tab)</button>
 					
 			</div>
 			<div>
@@ -56,18 +39,18 @@ export const EmailIngestionPage = () => {
 					<table className="w-full table with-column-seperators">
 						<thead>
 							<tr>
-								<th>File</th>
-								<th>Date</th>
+								<th>Subject</th>
+								<th>Body</th>
 								<th>From</th>
 								<th></th>
 							</tr>
 						</thead>
 						<tbody>
 							{
-								attachments?.map(item => <Row key={item.messageId}
-									attachment={item} 
-									addToUnallocated={(attachment) => uploadBlobs([attachment])}
-									download={(attachment) => downloadAttachment(attachment.messageId, attachment.fileName)} />)
+								emails?.map(item => <Row key={item.uniqueId}
+									email={item} 
+									addToUnallocated={() => uploadAttachments(item.uniqueId, item.attachments)}
+									download={(attachment) => downloadAttachment(item.uniqueId, attachment.fileName)} />)
 							}
 						</tbody>
 					</table>
@@ -78,26 +61,38 @@ export const EmailIngestionPage = () => {
 }
 
 type RowProps = {
-	attachment: EmailAttachment,
+	email: Email,
 	download: (attachment: EmailAttachment) => void
 	addToUnallocated: (attachment: EmailAttachment) => void
 }
 
-const Row = ({ attachment, download, addToUnallocated }: RowProps) => {
+const Row = ({ email, download, addToUnallocated }: RowProps) => {
+	
+	const purifyHtml = (html: string) => {
+		const cleanHtml = DOMPurify.sanitize(html)
+		return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />
+	}
+
 	return (
 		<tr>
 			<td>
-				{attachment.fileName}
+				{email.subject}
+			</td>
+			<td className="max-w-3xl w-full overflow-hidden">
+				{purifyHtml(email.htmlBody)} 
 			</td>
 			<td>
-				{attachment.date}
+				{email.from}
 			</td>
 			<td>
-				{attachment.from}
-			</td>
-			<td>
-				<button className="btn btn-primary" onClick={() => addToUnallocated(attachment)}>Add to unallocated</button>
-				<button className="btn btn-primary" onClick={() => download(attachment)}>Download</button>
+				{email.attachments.map((attachment, ix) => (
+					<div>
+						<span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{attachment.fileName}</span>
+						<button className="btn btn-primary" onClick={() => addToUnallocated(attachment)}>Add to unallocated</button>
+						<button className="btn btn-primary" onClick={() => download(attachment)}>Download</button>
+					</div>
+				))}
+				
 			</td>
 		</tr>
 	)

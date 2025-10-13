@@ -7,11 +7,19 @@ type OAuthAuth = {
 }
 
 export type EmailAttachment = {
-  subject: string
-  from: string
-  date: string
   fileName: string
-  messageId: string
+  contentType: string
+}
+
+export type Email = {
+  uniqueId: string
+  subject: string
+  body: string
+  htmlBody: string
+  receivedTime: string
+  from: string
+  to: string
+  attachments: EmailAttachment[]
 }
 
 type AuthUrlResponse = {
@@ -21,6 +29,7 @@ type AuthUrlResponse = {
 
 type FindAttachmentRequest = {
 	provider: string
+	folders?: string[]
 	subject?: string
 	from?: string
 	to?: string
@@ -29,14 +38,23 @@ type FindAttachmentRequest = {
 }
 
 type FindAttachmentsResponse = {
-  attachments: EmailAttachment[]
+  emails: Email[]
+}
+
+interface UploadAttachmentRequest {
+  attachments: Attachment[]
+}
+
+interface Attachment {
+  messageId: string
+  fileName: string
 }
 
 export function useMailProvider() {
 	const [provider, setProvider] = useState<"gmail" | "fastmail">("gmail")
 
 	const [auth, setAuth] = useState<{isAuthenticated: boolean}>({isAuthenticated: false})
-	const [attachments, setAttachments] = useState<EmailAttachment[]>([])
+	const [emails, setEmails] = useState<Email[]>([])
 
 	const apiClient = useApiClient()
 
@@ -94,25 +112,35 @@ export function useMailProvider() {
 		return null
 	}
 
-	const fetchAttachments = async (search: FindAttachmentRequest): Promise<EmailAttachment[]> => {
+	const listAvailableFolders = async (): Promise<string[]> => {
+		if (!auth) throw new Error("Not authenticated")
+		const response = await apiClient.get<string[]>(`/api/emailingestion/${provider}/list-folders`, null, { credentials: "include" })
+		return response
+	}
+
+	const fetchAttachments = async (search: FindAttachmentRequest): Promise<Email[]> => {
 		if (!auth) throw new Error("Not authenticated")
 
 		const response = await apiClient.post<FindAttachmentsResponse>(`/api/emailingestion/${provider}/find-attachments`, search, { credentials: "include" })
 		
-		const list: EmailAttachment[] = response.attachments || []
-		setAttachments(list)
+		const list: Email[] = response.emails || []
+		setEmails(list)
 		return list
 	}
 
 	const downloadAttachment = async (messageId: string, fileName: string): Promise<void> => {
 		if (!auth) throw new Error("Not authenticated")
 
+		console.log(messageId, fileName)
+
+
 		const response = await apiClient.getBlob(`/api/emailingestion/${provider}/download-attachment`, {
 			messageId,
 			fileName
 		}, { credentials: "include" })
 		
-		if (!response.blob) throw new Error("Download failed")
+		if (!response.blob || !response.filename) throw new Error("Download failed")
+
 
 		const url = window.URL.createObjectURL(response.blob)
 		const a = document.createElement("a")
@@ -122,5 +150,16 @@ export function useMailProvider() {
 		window.URL.revokeObjectURL(url)
 	}
 
-	return { provider, setProvider, login, handleAuthCallback, fetchAttachments, attachments, downloadAttachment, auth }
+	const uploadAttachments = async (messageId: string, emailAttachments: EmailAttachment[]): Promise<void> => {
+		const body: UploadAttachmentRequest = {
+			attachments: emailAttachments.map(a => ({
+				messageId: messageId,
+				fileName: a.fileName
+			}))
+		}
+
+		apiClient.post(`/api/emailingestion/${provider}/unallocate-attachment`, body, { credentials: "include" })
+	}
+
+	return { provider, setProvider, login, handleAuthCallback, fetchAttachments, uploadAttachments, listAvailableFolders, emails, downloadAttachment, auth }
 }
