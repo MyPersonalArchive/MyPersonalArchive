@@ -160,8 +160,8 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
-			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.areOnlySomeItemsSelected
-			selectAllCheckboxRef.current.checked = selectionOfBlobs.areAllItemsSelected
+			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 ||selectionOfBlobs.areOnlySomeItemsSelected
+			selectAllCheckboxRef.current.checked = selectionOfBlobs.allPossibleItems.size > 0 && selectionOfBlobs.areAllItemsSelected
 		}
 	}, [selectionOfBlobs.selectedItems, unallocatedHeap])
 
@@ -172,12 +172,12 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 	}
 
 	return (
-		<div className="dimmedBackground" style={{ zIndex: 1 }} onClick={onCloseDialog}>
+		<div className="overlay-backdrop" style={{ zIndex: 1 }} onClick={onCloseDialog}>
 			<div className="max-w-[95%] max-h-[95%] p-4 overflow-auto bg-white rounded-lg shadow-lg shadow-black-400 shadow-opacity-50" onClick={event => event.stopPropagation()}>
 				<h1 className="heading-2">
 					Select from unallocated blobs
 				</h1>
-				<div className="">
+				<div>
 
 					<div className="push-right">
 						<label>
@@ -199,7 +199,6 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 				</div>
 
 				<PreviewList<UnallocatedBlob> blobs={unallocatedHeap}
-					containerStyle={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
 							<BlobListItem

@@ -8,5 +8,5 @@ export const RoutePaths = {
 	Blobs: "/blob/list",
 	StoredFilters: "/filters",
 	Unallocated: "/archive/unallocated",
-	EmailIngestion: "/email-ingestion"
+	Email: "/email"
 }

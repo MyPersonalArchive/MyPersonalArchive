@@ -15,7 +15,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	return (
 		<>
 			<StickyHeader
-				className=" bg-customblue text-white px-2"
+				className="z-10 bg-customblue text-white px-2"
 				goesAway={
 					<h1 className="text-3xl font-bold text-center py-2">My Personal Archive</h1>
 				}
@@ -32,7 +32,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 			</main>
 
 			<StickyFooter
-				className="bg-customblue text-white m-0"
+				className="z-10 bg-customblue text-white m-0"
 				alwaysVisible={
 					<div className="text-center py-1">
 						My Personal Archive &copy; 2025 <a href="https://github.com/gotnoname" className="hover:underline">Stian Thoresen</a> & <a href="https://github.com/aeinbu" className="hover:underline">Arjan Einbu</a>
@@ -80,7 +80,7 @@ const Navbar = () => {
 						{ type: "link", label: <>Archive</>, link: RoutePaths.Archive },
 						{ type: "link", label: <>Unallocated&nbsp;blobs</>, link: RoutePaths.Blobs },
 						{ type: "link", label: <>Stored&nbsp;filters</>, link: RoutePaths.StoredFilters },
-						{ type: "link", label: <>Email&nbsp;ingestion</>, link: RoutePaths.EmailIngestion },
+						{ type: "link", label: <>Email</>, link: RoutePaths.Email },
 					]}
 				/>
 

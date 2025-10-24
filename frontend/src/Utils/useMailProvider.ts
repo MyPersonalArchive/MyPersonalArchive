@@ -2,29 +2,34 @@ import { useState } from "react"
 import { useApiClient } from "./useApiClient"
 
 type OAuthAuth = {
-  accessToken: string
-  refreshToken?: string
+	accessToken: string
+	refreshToken?: string
 }
 
 export type EmailAttachment = {
-  fileName: string
-  contentType: string
+	fileName: string
+	contentType: string
 }
 
 export type Email = {
-  uniqueId: string
-  subject: string
-  body: string
-  htmlBody: string
-  receivedTime: string
-  from: string
-  to: string
-  attachments: EmailAttachment[]
+	uniqueId: string
+	subject: string
+	body: string
+	htmlBody: string
+	receivedTime: string
+	from: EmailAddress[]
+	to: EmailAddress[]
+	attachments: EmailAttachment[]
+}
+
+export type EmailAddress = {
+	name?: string
+	emailAddress: string
 }
 
 type AuthUrlResponse = {
-  url: string
-  state: string
+	url: string
+	state: string
 }
 
 type FindAttachmentRequest = {
@@ -38,38 +43,35 @@ type FindAttachmentRequest = {
 }
 
 type FindAttachmentsResponse = {
-  emails: Email[]
-}
-
-interface UploadAttachmentRequest {
-  attachments: Attachment[]
+	emails: Email[]
 }
 
 interface Attachment {
-  messageId: string
-  fileName: string
+	messageId: string
+	fileName: string
 }
 
 export function useMailProvider() {
 	const [provider, setProvider] = useState<"gmail" | "fastmail">("gmail")
 
-	const [auth, setAuth] = useState<{isAuthenticated: boolean}>({isAuthenticated: false})
+	const [auth, setAuth] = useState<{ isAuthenticated: boolean }>({ isAuthenticated: false })
 	const [emails, setEmails] = useState<Email[]>([])
+	const [folders, setFolders] = useState<string[]>([])
 
 	const apiClient = useApiClient()
 
 	const login = async (): Promise<void> => {
 		if (provider === "gmail") {
 			const redirectUri = window.location.origin + "/auth-callback"
-			const response = await apiClient.get<AuthUrlResponse>(`/api/emailingestion/${provider}/auth/url?redirectUri=${encodeURIComponent(redirectUri)}`, null, { credentials: "include" })
+			const response = await apiClient.get<AuthUrlResponse>(`/api/email/${provider}/auth/url?redirectUri=${encodeURIComponent(redirectUri)}`, null, { credentials: "include" })
 			window.location.href = response.url // full redirect, no popup
 		} else if (provider === "fastmail") {
 			const username = prompt("FastMail username:")
 			const password = prompt("FastMail app password:")
 			if (username && password) {
-				await apiClient.post(`/api/emailingestion/${provider}/auth/exchange`, {provider, username, password }, { credentials: "include" })
+				await apiClient.post(`/api/email/${provider}/auth/exchange`, { provider, username, password }, { credentials: "include" })
 				localStorage.setItem(`auth-${provider}`, "true")
-				setAuth({isAuthenticated: true})
+				setAuth({ isAuthenticated: true })
 			}
 		}
 	}
@@ -104,62 +106,40 @@ export function useMailProvider() {
 
 			const redirectUri = window.location.origin + "/auth-callback"
 
-			await apiClient.post(`/api/emailingestion/${providerFromState}/auth/exchange`, {provider: providerFromState, code, state, redirectUri }, { credentials: "include" })
-			
+			await apiClient.post(`/api/email/${providerFromState}/auth/exchange`, { provider: providerFromState, code, state, redirectUri }, { credentials: "include" })
+
 			localStorage.setItem(`auth-${providerFromState}`, "true")
-			setAuth({isAuthenticated: true})
+			setAuth({ isAuthenticated: true })
 		}
 		return null
 	}
 
-	const listAvailableFolders = async (): Promise<string[]> => {
-		if (!auth) throw new Error("Not authenticated")
-		const response = await apiClient.get<string[]>(`/api/emailingestion/${provider}/list-folders`, null, { credentials: "include" })
-		return response
-	}
-
-	const fetchAttachments = async (search: FindAttachmentRequest): Promise<Email[]> => {
+	const fetchFolders = async () => {
 		if (!auth) throw new Error("Not authenticated")
 
-		const response = await apiClient.post<FindAttachmentsResponse>(`/api/emailingestion/${provider}/find-attachments`, search, { credentials: "include" })
-		
-		const list: Email[] = response.emails || []
-		setEmails(list)
-		return list
+		const response = await apiClient.get<string[]>(`/api/email/${provider}/list-folders`, null, { credentials: "include" })
+		setFolders(response)
 	}
 
-	const downloadAttachment = async (messageId: string, fileName: string): Promise<void> => {
+	const fetchEmails = async (search: FindAttachmentRequest) => {
 		if (!auth) throw new Error("Not authenticated")
 
-		console.log(messageId, fileName)
-
-
-		const response = await apiClient.getBlob(`/api/emailingestion/${provider}/download-attachment`, {
-			messageId,
-			fileName
-		}, { credentials: "include" })
-		
-		if (!response.blob || !response.filename) throw new Error("Download failed")
-
-
-		const url = window.URL.createObjectURL(response.blob)
-		const a = document.createElement("a")
-		a.href = url
-		a.download = fileName
-		a.click()
-		window.URL.revokeObjectURL(url)
+		const response = await apiClient.post<FindAttachmentsResponse>(`/api/email/${provider}/list`, search, { credentials: "include" })
+		setEmails((response.emails || []))
 	}
 
-	const uploadAttachments = async (messageId: string, emailAttachments: EmailAttachment[]): Promise<void> => {
-		const body: UploadAttachmentRequest = {
+	const ingestAttachments = async (messageId: string, emailAttachments: EmailAttachment[]) => {
+		console.log("*** 2 *** Ingesting attachments for messageId:", messageId, emailAttachments)
+		const body = {
 			attachments: emailAttachments.map(a => ({
 				messageId: messageId,
 				fileName: a.fileName
 			}))
 		}
-
-		apiClient.post(`/api/emailingestion/${provider}/unallocate-attachment`, body, { credentials: "include" })
+		console.log("*** 2 *** Request body:", body)
+		await apiClient.post(`/api/email/${provider}/unallocate-attachment`, body, { credentials: "include" })
+		console.log("*** 3 *** Ingestion request sent")
 	}
 
-	return { provider, setProvider, login, handleAuthCallback, fetchAttachments, uploadAttachments, listAvailableFolders, emails, downloadAttachment, auth }
+	return { provider, setProvider, login, handleAuthCallback, fetchEmails, ingestAttachments, fetchFolders, emails, folders, auth }
 }

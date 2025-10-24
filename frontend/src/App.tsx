@@ -15,7 +15,7 @@ import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { StoredFilterListPage } from "./Pages/StoredFilterListPage"
-import AuthCallback, { EmailIngestionPage } from "./Pages/EmailIngestionPage"
+import AuthCallback, { EmailListPage } from "./Pages/EmailListPage"
 
 
 const routers = createBrowserRouter([
@@ -76,8 +76,8 @@ const routers = createBrowserRouter([
 						element: <StoredFilterListPage />
 					},
 					{
-						path: RoutePaths.EmailIngestion,
-						element: <EmailIngestionPage />
+						path: RoutePaths.Email,
+						element: <EmailListPage />
 					},
 					{
 						path: "/auth-callback",

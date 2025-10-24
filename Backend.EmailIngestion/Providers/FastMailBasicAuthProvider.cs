@@ -3,14 +3,14 @@ using MailKit.Net.Imap;
 using MailKit.Search;
 using MailKit.Security;
 
-public class FastMailBasicAuthProvider : ImapProviderBase, IEmailIngestionProvider
+public class FastMailBasicAuthProvider : ImapProviderBase, IEmailProvider
 {
 	private readonly string _imapHost = "imap.fastmail.com";
 	private readonly int _imapPort = 993;
 
 	public string Name => "fastmail";
 
-	public EmailIngestionAuthMode AuthenticationMode => EmailIngestionAuthMode.Basic;
+	public EmailAuthMode AuthenticationMode => EmailAuthMode.Basic;
 
 	public string GetAuthorizationUrl(string state, string redirectUri)
 	{

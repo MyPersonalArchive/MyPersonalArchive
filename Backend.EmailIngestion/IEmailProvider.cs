@@ -1,3 +1,5 @@
+using MimeKit;
+
 public record EmailAttachment(
     string FileName,
 	string ContentType
@@ -10,9 +12,15 @@ public class Email
 	public string Body { get; set; } = string.Empty;
 	public string HtmlBody { get; set; } = string.Empty;
 	public DateTimeOffset ReceivedTime { get; set; }
-	public string From { get; set; } = string.Empty;
-	public string To { get; set; } = string.Empty;
+	public IEnumerable<Address> From { get; set; } = [];
+	public IEnumerable<Address> To { get; set; } = [];
 	public List<EmailAttachment> Attachments { get; set; } = [];
+
+	public class Address
+	{
+		public required string EmailAddress { get; set; }
+		public string? Name { get; set; }
+	}
 }
 
 public class Attachment
@@ -39,7 +47,7 @@ public record AuthContext
 }
 
 
-public enum EmailIngestionAuthMode
+public enum EmailAuthMode
 {
 	Oath2,
 	Basic
@@ -55,9 +63,9 @@ public class EmailSearchCriteria
 	public DateTime? Since { get; set; }
 }
 
-public interface IEmailIngestionProvider
+public interface IEmailProvider
 {
-	EmailIngestionAuthMode AuthenticationMode { get; }
+	EmailAuthMode AuthenticationMode { get; }
 	string Name { get; }
 
 	string GetAuthorizationUrl(string state, string redirectUri);

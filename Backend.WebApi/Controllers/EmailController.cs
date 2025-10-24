@@ -27,14 +27,14 @@ using System.Text.Json;
 [ApiController]
 [Route("api/[controller]")]
 // [Authorize]
-public class EmailIngestionController : ControllerBase
+public class EmailController : ControllerBase
 {
-	private readonly EmailIngestionProviderFactory _registry;
+	private readonly EmailProviderFactory _registry;
 	private readonly MpaDbContext _dbContext;
 	private readonly IFileStorageProvider _fileProvider;
 	private readonly AmbientDataResolver _resolver;
 
-	public EmailIngestionController(EmailIngestionProviderFactory registry, MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
+	public EmailController(EmailProviderFactory registry, MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
 	{
 		_registry = registry;
 		_dbContext = dbContext;
@@ -48,11 +48,12 @@ public class EmailIngestionController : ControllerBase
 		if (!_registry.TryGetProvider(provider, out var prov))
 			return BadRequest(new { error = $"Unknown provider: {provider}" });
 
-		if (prov.AuthenticationMode != EmailIngestionAuthMode.Oath2)
+		if (prov.AuthenticationMode != EmailAuthMode.Oath2)
 			return BadRequest(new { error = $"{provider} does not support OAuth" });
 
 		//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
-		var rawState = new {
+		var rawState = new
+		{
 			provider,
 			nonce = Guid.NewGuid().ToString("N")
 		};
@@ -72,7 +73,7 @@ public class EmailIngestionController : ControllerBase
 
 		if (prov == null) return NotFound();
 
-		if (prov.AuthenticationMode == EmailIngestionAuthMode.Oath2)
+		if (prov.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(token.Code) || string.IsNullOrEmpty(token.RedirectUri))
 			{
@@ -90,7 +91,7 @@ public class EmailIngestionController : ControllerBase
 				SameSite = SameSiteMode.Strict
 			});
 		}
-		else if (prov.AuthenticationMode == EmailIngestionAuthMode.Basic)
+		else if (prov.AuthenticationMode == EmailAuthMode.Basic)
 		{
 			if (string.IsNullOrEmpty(token.Username) || string.IsNullOrEmpty(token.Password))
 			{
@@ -131,7 +132,7 @@ public class EmailIngestionController : ControllerBase
 		if (auth == null)
 			return Unauthorized();
 
-		if (prov.AuthenticationMode == EmailIngestionAuthMode.Oath2)
+		if (prov.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(auth?.AccessToken))
 				return BadRequest(new { error = "missing access_token" });
@@ -150,12 +151,16 @@ public class EmailIngestionController : ControllerBase
 		return Ok(await prov.GetAvailableFolders(auth));
 	}
 
-	[HttpPost("{provider}/find-attachments")]
-	public async Task<IActionResult> FindAttachments([FromBody] FindAttachmentsRequest request)
+
+
+	[HttpPost("{provider}/list")]
+	public async Task<IActionResult> List([FromBody] ListEmailsRequest request)
 	{
 		if (!_registry.TryGetProvider(request.Provider, out var prov))
+		{
 			return BadRequest(new { error = $"Unknown provider: {request.Provider}" });
 
+		}
 		if (!Request.Cookies.TryGetValue($"auth-{request.Provider}", out var authJson))
 		{
 			return Unauthorized();
@@ -164,13 +169,17 @@ public class EmailIngestionController : ControllerBase
 		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
 
 		if (auth == null)
+		{
 			return Unauthorized();
 
-		if (prov.AuthenticationMode == EmailIngestionAuthMode.Oath2)
+		}
+
+		if (prov.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(auth?.AccessToken))
+			{
 				return BadRequest(new { error = "missing access_token" });
-
+			}
 			auth = AuthContext.FromOAuth(auth.AccessToken, auth.RefreshToken);
 		}
 		else
@@ -183,8 +192,9 @@ public class EmailIngestionController : ControllerBase
 		}
 
 		var results = await prov.FindAttachmentsAsync(auth, request);
-		return Ok(new FindAttachmentsResponse { Emails = [.. results] });
+		return Ok(new ListEmailsResponse { Emails = [.. results] });
 	}
+
 
 	[HttpGet("{provider}/download-attachment")]
 	public async Task<IActionResult> DownloadAttachment(string provider, [FromQuery] string messageId, [FromQuery] string fileName)
@@ -205,10 +215,10 @@ public class EmailIngestionController : ControllerBase
 
 		var attachment = await prov.DownloadAttachmentAsync(auth, messageId, fileName);
 		if (attachment == null) return NotFound();
-		
+
 		return File(attachment.Stream, "application/octet-stream", fileName);
 	}
-	
+
 	[HttpPost("{provider}/unallocate-attachment")]
 	public async Task<IActionResult> UnallocateAttachment(string provider, [FromBody] UploadAttachmentRequest download)
 	{
@@ -223,7 +233,9 @@ public class EmailIngestionController : ControllerBase
 		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
 
 		if (auth == null)
+		{
 			return Unauthorized();
+		}
 
 		if (download.Attachments == null || !download.Attachments.Any())
 		{
@@ -254,14 +266,14 @@ public class EmailIngestionController : ControllerBase
 
 				await _dbContext.Blobs.AddAsync(blob);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				
+				Console.WriteLine($"--- Empty catch block --- {ex.Message}");
 			}
 		}
-		
+
 		await _dbContext.SaveChangesAsync();
-		return Ok();
+		return NoContent();
 	}
 }
 
@@ -304,12 +316,12 @@ public class AuthUrlResponse
 	public required string Url { get; set; }
 }
 
-public class FindAttachmentsResponse
+public class ListEmailsResponse
 {
 	public required Email[] Emails { get; set; }
 }
 
-public class FindAttachmentsRequest : EmailSearchCriteria
+public class ListEmailsRequest : EmailSearchCriteria
 {
 	public required string Provider { get; set; }
 }

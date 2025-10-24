@@ -20,7 +20,7 @@
 	cursor: pointer;
 
 	&>img {
-		margin: 0 2em;
+		margin: 2em;
 		border: thin dashed hsl(from black h s l / 50%);
 		border-radius: 4px;
 	}
@@ -59,27 +59,7 @@
 	color: hsl(from black h s l / 50%);
 }
 
-.dimmedBackground {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: rgb(from black r g b / .25);
-	display: flex;
-	justify-content: center;
-	align-items: center;
 
-	&>.overlay {
-		background-color: white;
-		border-radius: 4px;
-		box-shadow: 0 0 3em rgb(from black r g b / .5);
-		padding: 2em 0;
-		max-width: 90%;
-		max-height: 90%;
-		overflow: auto;
-	}
-}
 
 .dialog {
 	position: fixed;

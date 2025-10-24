@@ -30,12 +30,14 @@
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [5000, 5001],
-	// "portsAttributes": {
-	//		"5001": {
-	//			"protocol": "https"
-	//		}
-	// }
+	"forwardPorts": [5173],
+	"portsAttributes": {
+			"5173": {
+				"protocol": "https",
+				"onAutoForward": "notify",
+				"label": "React Application"
+			}
+	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "dotnet restore",

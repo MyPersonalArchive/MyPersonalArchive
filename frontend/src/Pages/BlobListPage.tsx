@@ -19,8 +19,8 @@ export const BlobListPage = () => {
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
-			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.areOnlySomeItemsSelected
-			selectAllCheckboxRef.current.checked = selectionOfBlobs.areAllItemsSelected
+			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 ||selectionOfBlobs.areOnlySomeItemsSelected
+			selectAllCheckboxRef.current.checked = selectionOfBlobs.allPossibleItems.size > 0 && selectionOfBlobs.areAllItemsSelected
 		}
 	}, [selectionOfBlobs.selectedItems, unallocatedHeap])
 
@@ -58,36 +58,33 @@ export const BlobListPage = () => {
 			<div className="bloblistpage">
 				<FileDropZone onBlobAttached={() => { /* //TODO: what? */ }} />
 
-				<div>
-					<div className="push-right">
-						<label>
-							<input ref={selectAllCheckboxRef} type="checkbox"
-								checked={selectionOfBlobs.areAllItemsSelected}
-								onChange={() => selectionOfBlobs.areAllItemsSelected
-									? selectionOfBlobs.clearSelection()
-									: selectionOfBlobs.selectAllItems()
-								} />
+				<div className="push-right">
+					<label>
+						<input ref={selectAllCheckboxRef} type="checkbox"
+							checked={selectionOfBlobs.areAllItemsSelected}
+							onChange={() => selectionOfBlobs.areAllItemsSelected
+								? selectionOfBlobs.clearSelection()
+								: selectionOfBlobs.selectAllItems()
+							} />
 							Select all
-						</label>
+					</label>
 
-						<button className="btn"
-							disabled={selectionOfBlobs.areNoItemsSelected}
-							onClick={createArchiveItemFromSelectedUnallocatedBlobs}
-						>
+					<button className="btn"
+						disabled={selectionOfBlobs.areNoItemsSelected}
+						onClick={createArchiveItemFromSelectedUnallocatedBlobs}
+					>
 							Create from all selected
-						</button>
+					</button>
 
-						<button className="btn"
-							disabled={selectionOfBlobs.areNoItemsSelected}
-							onClick={deleteSelectedUnallocatedBlobs}
-						>
+					<button className="btn"
+						disabled={selectionOfBlobs.areNoItemsSelected}
+						onClick={deleteSelectedUnallocatedBlobs}
+					>
 							Delete all selected
-						</button>
-					</div>
+					</button>
 				</div>
 
 				<PreviewList<UnallocatedBlob> blobs={unallocatedHeap}
-					containerClassName="flex flex-col justify-center gap-1"
 					thumbnailPreviewTemplate={
 						(blob, maximize) => <BlobListItem
 							key={blob.id}

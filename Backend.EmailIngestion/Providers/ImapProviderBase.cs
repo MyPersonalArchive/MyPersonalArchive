@@ -1,6 +1,8 @@
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using MimeKit;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 
 public abstract class ImapProviderBase
 {
@@ -19,7 +21,7 @@ public abstract class ImapProviderBase
 		var folders = searchCriteria.Folders;
 		if (folders == null || !folders.Any())
 		{
-			//Folder names are case sensetive. Gmail, Fastmail uses default "INBOX", but for Outlook etc it's "Inbox".
+			//Folder names are case sensitive. Gmail, Fastmail uses default "INBOX", but for Outlook etc it's "Inbox".
 			//If we shall allow users to search inboxes we need to solve this somehow?
 			folders = ["INBOX"];
 		}
@@ -51,8 +53,16 @@ public abstract class ImapProviderBase
 				{
 					UniqueId = item.UniqueId.Id.ToString(),
 					Subject = message.Subject,
-					From = message.From.ToString(),
-					To = message.To.ToString(),
+					From = message.From
+						.Select(address => address is MailboxAddress mb
+							? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+							: new Email.Address { EmailAddress = address.Name}
+						),
+					To = message.To
+						.Select(address => address is MailboxAddress mb
+							? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+							: new Email.Address { EmailAddress = address.Name }
+						),
 					ReceivedTime = message.Date,
 					Body = message.TextBody,
 					HtmlBody = message.HtmlBody

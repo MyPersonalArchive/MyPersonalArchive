@@ -94,7 +94,12 @@ export const useApiClient = () => {
 			}
 
 			return interceptedFetch(url + queryString, options)
-				.then(response => response?.json() as T)
+				.then(response => {
+					if (response.status === 200) {
+						return response.json() as T
+					}
+					return undefined
+				})
 		},
 
 		getBlob: async (url: string, payload: any = {}, incomingOptions?: RequestInit) => {
@@ -135,8 +140,14 @@ export const useApiClient = () => {
 			}
 
 			return interceptedFetch(url, options)
-				.then(response => response?.json() as T)
+				.then(response => {
+					if (response.status === 200) {
+						return response.json() as T
+					}
+					return undefined
+				})
 		},
+		
 		postFormData: async <T>(url: string, payload: FormData, incomingOptions?: RequestInit) => {
 			const options = {
 				...incomingOptions,
@@ -145,7 +156,12 @@ export const useApiClient = () => {
 			}
 
 			return interceptedFetch(url, options)
-				.then(response => response?.json() as T)
+				.then(response => {
+					if (response.status === 200) {
+						return response.json() as T
+					}
+					return undefined
+				})
 		},
 
 		put: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {
@@ -157,7 +173,12 @@ export const useApiClient = () => {
 			}
 
 			return interceptedFetch(url, options)
-				.then(response => response?.json() as T)
+				.then(response => {
+					if (response.status === 200) {
+						return response.json() as T
+					}
+					return undefined
+				})
 		},
 
 		putFormData: async <T>(url: string, payload: FormData, incomingOptions?: RequestInit) => {
@@ -168,7 +189,12 @@ export const useApiClient = () => {
 			}
 
 			return interceptedFetch(url, options)
-				.then(response => response?.json() as T)
+				.then(response => {
+					if (response.status === 200) {
+						return response.json() as T
+					}
+					return undefined
+				})
 		},
 
 		delete: async <T>(url: string, payload: any, incomingOptions?: RequestInit) => {
@@ -180,8 +206,6 @@ export const useApiClient = () => {
 
 			return interceptedFetch(url + queryString, options)
 				.then(response => {
-					//Should we have this as a common part of the response parsing? 
-					//We are not always returning json... If we are not json we crash
 					if (response.status === 200) {
 						return response.json() as T
 					}

@@ -13,7 +13,7 @@ export type BlobListItemProps = {
 }
 export const BlobListItem = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }: BlobListItemProps) => {
 	return (
-		<div key={blob.id} className="my-1 h-[107px] border border-gray-300 rounded-md shadow flex flex-row items-start gap-1 p-0">
+		<div key={blob.id} className="card grid grid-cols-3">
 			<div className="w-[200px] bg-gray-200 py-1 content-center">
 				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
 					onMaximize={maximize} />

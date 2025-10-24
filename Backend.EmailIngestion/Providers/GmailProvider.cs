@@ -5,14 +5,14 @@ using MailKit.Search;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 
-public class GmailProvider : ImapProviderBase, IEmailIngestionProvider
+public class GmailProvider : ImapProviderBase, IEmailProvider
 {
 	private readonly string _clientId;
 	private readonly string _clientSecret;
 
 	public string Name => "gmail";
 
-	public EmailIngestionAuthMode AuthenticationMode => EmailIngestionAuthMode.Oath2;
+	public EmailAuthMode AuthenticationMode => EmailAuthMode.Oath2;
 
 	public GmailProvider(IConfiguration config)
 	{

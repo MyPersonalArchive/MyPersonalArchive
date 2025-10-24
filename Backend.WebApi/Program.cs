@@ -50,7 +50,7 @@ public static class Program
         builder.RegisterEncryptionServics();
         builder.RegisterRestoreServices();
         builder.RegisterSwaggerServices();
-		builder.RegisterEmailIngestionServices();
+		builder.RegisterEmailServices();
 
         // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
 		// builder.Services.AddScoped<ISeedService, SeedService>();
@@ -102,13 +102,13 @@ public static class Program
         services.AddScoped<OpenSslAes256Cbc>();
     }
 
-	private static void RegisterEmailIngestionServices(this IHostApplicationBuilder builder)
+	private static void RegisterEmailServices(this IHostApplicationBuilder builder)
 	{
 		var services = builder.Services;
 
-		services.AddSingleton<IEmailIngestionProvider, GmailProvider>();
-		services.AddSingleton<IEmailIngestionProvider, FastMailBasicAuthProvider>();
-		services.AddSingleton<EmailIngestionProviderFactory>();
+		services.AddSingleton<IEmailProvider, GmailProvider>();
+		services.AddSingleton<IEmailProvider, FastMailBasicAuthProvider>();
+		services.AddSingleton<EmailProviderFactory>();
 	}
 
 

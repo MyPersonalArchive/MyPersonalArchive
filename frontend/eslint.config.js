@@ -37,7 +37,10 @@ export default tseslint.config(
 			],
 
 			// // Disable the default no-unused-vars as we use unused-imports plugin
-			// "no-unused-vars": "off",
+			"no-unused-vars": "warn",
+			"@typescript-eslint/no-unused-vars": "warn",
+			"no-unused-imports": "warn",
+			"@typescript-eslint/no-unused-imports": "warn",
 			// "@typescript-eslint/no-unused-vars": "off",
 			// // "react-hooks/exhaustive-deps": "off",
 
@@ -58,7 +61,7 @@ export default tseslint.config(
 			// Other style rules
 			'quotes': ['warn', 'double', { avoidEscape: true }],
 			'semi': ['error', 'never'],
-			'indent': ['error', 'tab', { "SwitchCase": 1 }]
+			'indent': ['warn', 'tab', { "SwitchCase": 1 }]
 		},
 
 
