@@ -43,7 +43,7 @@ public class EmailController : ControllerBase
 	}
 
 	[HttpGet("{provider}/auth/url")]
-	public IActionResult GetAuthUrl(string provider, [FromQuery] string redirectUri)
+	public ActionResult<AuthUrlResponse> GetAuthUrl(string provider, [FromQuery] string redirectUri)
 	{
 		if (!_registry.TryGetProvider(provider, out var prov))
 			return BadRequest(new { error = $"Unknown provider: {provider}" });
@@ -241,8 +241,43 @@ public class EmailController : ControllerBase
 		return File(attachment.Stream, "application/octet-stream", fileName);
 	}
 
-	[HttpPost("{provider}/unallocate-attachment")]
-	public async Task<IActionResult> UnallocateAttachment(string provider, [FromBody] UploadAttachmentRequest download)
+
+	[HttpPost("{provider}/create-archive-item-from-emails")]
+	public async Task<IActionResult> CreateArchiveItemFromEmails(string provider, [FromBody] CreateArchiveItemFromEmailsRequest request)
+	{
+		if (!_registry.TryGetProvider(provider, out var prov))
+			return BadRequest(new { error = $"Unknown provider: {provider}" });
+
+		if (!Request.Cookies.TryGetValue($"auth-{provider}", out var authJson))
+		{
+			return Unauthorized();
+		}
+
+		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
+
+		if (auth == null)
+		{
+			return Unauthorized();
+		}
+
+		if (request.MessageIds == null || !request.MessageIds.Any())
+		{
+			return NoContent();
+		}
+
+		//TODO: Implement this method
+		// - Get the emails by their IDs, create an ArchiveItem and store it in the database
+		// - Set the email info on the ArchiveItem (subject, date, from, to, body, etc)
+		// - Get the attachments for the emails add them to the ArchiveItem as well
+
+		throw new NotImplementedException();
+
+		return NoContent();
+	}
+
+
+	[HttpPost("{provider}/create-blobs-from-attachments")]
+	public async Task<IActionResult> CreateBlobsFromAttachments(string provider, [FromBody] CreateBlobsFromAttachmentsRequest request)
 	{
 		if (!_registry.TryGetProvider(provider, out var prov))
 			return BadRequest(new { error = $"Unknown provider: {provider}" });
@@ -291,79 +326,96 @@ public class EmailController : ControllerBase
 			catch (Exception ex)
 			{
 				Console.WriteLine($"--- Empty catch block --- {ex.Message}");
+				//TODO: Why is there an empty catch here? Log error?
 			}
 		}
 
 		await _dbContext.SaveChangesAsync();
 		return NoContent();
 	}
-}
 
-public class TokenRequestExchangeRequest
-{
-	public required string Provider { get; set; }
-	public string? Code { get; set; }
-	public string? RedirectUri { get; set; }
-	public string? Username { get; set; }
-	public string? Password { get; set; }
-}
 
-public class DownloadAttachmentRequest
-{
-	public required string MessageId { get; set; }
-	public required string FileName { get; set; }
-}
+	#region Request and response models
 
-public class CreateBlobsFromAttachmentsRequest
-{
-	public List<Attachment>? Attachments { get; set; }
+	public class TokenRequestExchangeRequest
+	{
+		public required string Provider { get; set; }
+		public string? Code { get; set; }
+		public string? RedirectUri { get; set; }
+		public string? Username { get; set; }
+		public string? Password { get; set; }
+	}
 
-	public class Attachment
+
+	public class DownloadAttachmentRequest
 	{
 		public required string MessageId { get; set; }
 		public required string FileName { get; set; }
 	}
-}
 
-public class DownloadAttachmentResponse
-{
-	public required Stream Stream { get; set; }
-	public required string ContentType { get; set; }
-	public required long FileSize { get; set; }
-}
 
-public class AuthUrlResponse
-{
-	public required string State { get; set; }
-	public required string Url { get; set; }
-}
-
-public class ListEmailsResponse
-{
-	public string UniqueId { get; set; } = string.Empty;
-	public string Subject { get; set; } = string.Empty;
-	public string Body { get; set; } = string.Empty;
-	public string HtmlBody { get; set; } = string.Empty;
-	public DateTimeOffset ReceivedTime { get; set; }
-	public IEnumerable<Address> From { get; set; } = [];
-	public IEnumerable<Address> To { get; set; } = [];
-	public IEnumerable<Attachment> Attachments { get; set; } = [];
-
-	public class Address
+	public class CreateArchiveItemFromEmailsRequest
 	{
-		public required string EmailAddress { get; set; }
-		public string? Name { get; set; }
+		public List<string>? MessageIds { get; set; }
 	}
 
-	public class Attachment
+
+	public class CreateBlobsFromAttachmentsRequest
 	{
-		public required string FileName { get; set; }
+		public List<Attachment>? Attachments { get; set; }
+
+		public class Attachment
+		{
+			public required string MessageId { get; set; }
+			public required string FileName { get; set; }
+		}
+	}
+
+
+	public class DownloadAttachmentResponse
+	{
+		public required Stream Stream { get; set; }
 		public required string ContentType { get; set; }
+		public required long FileSize { get; set; }
 	}
-}
 
-public class ListEmailsRequest : EmailSearchCriteria
-{
-	public required string Provider { get; set; }
-}
 
+	public class AuthUrlResponse
+	{
+		public required string State { get; set; }
+		public required string Url { get; set; }
+	}
+
+
+	public class ListEmailsResponse
+	{
+		public string UniqueId { get; set; } = string.Empty;
+		public string Subject { get; set; } = string.Empty;
+		public string Body { get; set; } = string.Empty;
+		public string HtmlBody { get; set; } = string.Empty;
+		public DateTimeOffset ReceivedTime { get; set; }
+		public IEnumerable<Address> From { get; set; } = [];
+		public IEnumerable<Address> To { get; set; } = [];
+		public IEnumerable<Attachment> Attachments { get; set; } = [];
+
+		public class Address
+		{
+			public required string EmailAddress { get; set; }
+			public string? Name { get; set; }
+		}
+
+		public class Attachment
+		{
+			public required string FileName { get; set; }
+			public required string ContentType { get; set; }
+		}
+	}
+
+
+	public class ListEmailsRequest : EmailSearchCriteria
+	{
+		public required string Provider { get; set; }
+	}
+
+	#endregion
+}

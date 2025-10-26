@@ -7,13 +7,13 @@ import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
 import DOMPurify from "dompurify"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faClose, faPaperclip, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 
 
 export const EmailListPage = () => {
-	const { provider, setProvider, login, fetchEmails, emails, fetchFolders, folders, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
+	const { provider, setProvider, login, fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
 
-	const [selectedFolder, setSelectedFolder] = useState<string>("INBOX")
+	console.log("*** *** ***", {folders, selectedFolder})
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -27,29 +27,44 @@ export const EmailListPage = () => {
 	return (
 		<div>
 			<div className="stack-horizontal to-the-left my-4">
-				<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail")}>
-					<option value="gmail">Gmail</option>
-					<option value="fastmail">Fastmail</option>
-				</select>
+				<div className="group">
 
-				<button className="btn" onClick={() => login()}>
-					Login
+					<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail")}>
+						<option value="gmail">Gmail</option>
+						<option value="fastmail">Fastmail</option>
+					</select>
+
+					<button className="btn" onClick={() => login()}>
+						Login
+					</button>
+				</div>
+
+				<div className="group">
+					<select className="input" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
+						{
+							folders === undefined
+								? <option value="">-- Hit refresh --</option>
+								: folders.length === 0
+									? <option value="">-- No folders found --</option>
+									: <option value="">-- Select a folder --</option>
+						}
+						{
+							folders?.map(folder => (
+								<option key={folder} value={folder}>{folder}</option>
+							))
+						}
+					</select>
+					<button className="btn" onClick={() => fetchFolders()}>
+						<FontAwesomeIcon icon={faRefresh} />
+					</button>
+				</div>
+
+				<button className="btn"
+					onClick={() => fetchEmails({ provider, folders: [selectedFolder!], limit: 300 })}
+					disabled={selectedFolder === ""}
+				>
+					Fetch emails
 				</button>
-
-				<button className="btn" onClick={() => fetchFolders()}>
-					List Folders
-				</button>
-
-				<select className="input" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
-					<option value="">-- Select a folder --</option>
-					{
-						folders?.map(folder => (
-							<option key={folder} value={folder}>{folder}</option>
-						))
-					}
-				</select>
-
-				<button className="btn" onClick={() => fetchEmails({ provider, folders: [selectedFolder], limit: 300 })}>Fetch emails</button>
 			</div>
 			<div>
 
