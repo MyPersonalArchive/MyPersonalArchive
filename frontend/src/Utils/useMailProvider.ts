@@ -42,9 +42,6 @@ type FindAttachmentRequest = {
 	since?: string
 }
 
-type FindAttachmentsResponse = {
-	emails: Email[]
-}
 
 interface Attachment {
 	messageId: string
@@ -56,7 +53,7 @@ export function useMailProvider() {
 
 	const [auth, setAuth] = useState<{ isAuthenticated: boolean }>({ isAuthenticated: false })
 	const [emails, setEmails] = useState<Email[]>([])
-	const [folders, setFolders] = useState<string[]>([])
+	const [folders, setFolders] = useState<string[] | undefined>(undefined)
 
 	const apiClient = useApiClient()
 
@@ -117,29 +114,47 @@ export function useMailProvider() {
 	const fetchFolders = async () => {
 		if (!auth) throw new Error("Not authenticated")
 
-		const response = await apiClient.get<string[]>(`/api/email/${provider}/list-folders`, null, { credentials: "include" })
-		setFolders(response)
+		const folders = await apiClient.get<string[]>(`/api/email/${provider}/list-folders`, null, { credentials: "include" })
+		setFolders(folders)
 	}
 
 	const fetchEmails = async (search: FindAttachmentRequest) => {
 		if (!auth) throw new Error("Not authenticated")
 
-		const response = await apiClient.post<FindAttachmentsResponse>(`/api/email/${provider}/list`, search, { credentials: "include" })
-		setEmails((response.emails || []))
+		const emails = await apiClient.post<Email[]>(`/api/email/${provider}/list`, search, { credentials: "include" })
+		setEmails((emails ?? []))
 	}
 
-	const ingestAttachments = async (messageId: string, emailAttachments: EmailAttachment[]) => {
-		console.log("*** 2 *** Ingesting attachments for messageId:", messageId, emailAttachments)
+	const createArchiveItemFromEmails = async (emails: Email[]) => {
+		const body = emails.map(email => ({
+			provider: provider,
+			uniqueId: email.uniqueId
+		}))
+
+		await apiClient.post(`/api/archive/create-archive-item-from-emails`, body, { credentials: "include" })
+	}
+
+	const createBlobsFromAttachments = async (messageId: string, emailAttachments: EmailAttachment[]) => {
 		const body = {
 			attachments: emailAttachments.map(a => ({
 				messageId: messageId,
 				fileName: a.fileName
 			}))
 		}
-		console.log("*** 2 *** Request body:", body)
-		await apiClient.post(`/api/email/${provider}/unallocate-attachment`, body, { credentials: "include" })
-		console.log("*** 3 *** Ingestion request sent")
+		await apiClient.post(`/api/email/${provider}/create-blobs-from-attachments`, body, { credentials: "include" })
 	}
 
-	return { provider, setProvider, login, handleAuthCallback, fetchEmails, ingestAttachments, fetchFolders, emails, folders, auth }
+	return {
+		provider,
+		setProvider,
+		login,
+		handleAuthCallback,
+		fetchEmails,
+		createArchiveItemFromEmails,
+		createBlobsFromAttachments,
+		fetchFolders,
+		emails,
+		folders,
+		auth
+	}
 }

@@ -11,7 +11,7 @@ import { faClose, faPaperclip, faUpRightAndDownLeftFromCenter } from "@fortaweso
 
 
 export const EmailListPage = () => {
-	const { provider, setProvider, login, fetchEmails, emails, fetchFolders, folders, ingestAttachments } = useMailProvider()
+	const { provider, setProvider, login, fetchEmails, emails, fetchFolders, folders, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
 
 	const [selectedFolder, setSelectedFolder] = useState<string>("INBOX")
 
@@ -24,7 +24,6 @@ export const EmailListPage = () => {
 		}
 	}, [selectionOfEmails.selectedItems, emails])
 
-
 	return (
 		<div>
 			<div className="stack-horizontal to-the-left my-4">
@@ -33,18 +32,18 @@ export const EmailListPage = () => {
 					<option value="fastmail">Fastmail</option>
 				</select>
 
-				<button className="btn" onClick={() => {
-					login()
-				}} >Login with {provider}</button>
+				<button className="btn" onClick={() => login()}>
+					Login
+				</button>
 
-				<button className="btn" onClick={() => {
-					fetchFolders()
-				}} >List Folders</button>
+				<button className="btn" onClick={() => fetchFolders()}>
+					List Folders
+				</button>
 
 				<select className="input" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
 					<option value="">-- Select a folder --</option>
 					{
-						folders.map(folder => (
+						folders?.map(folder => (
 							<option key={folder} value={folder}>{folder}</option>
 						))
 					}
@@ -56,25 +55,23 @@ export const EmailListPage = () => {
 
 				<div className="stack-horizontal to-the-left my-4">
 					<div className="text-green-600 bg-gray-900 font-mono text-sm w-full p-2">// TODO: show/hide filters, stored filters and display options</div>
-					{/* <label>
-						<input type="checkbox" />
-						Only show emails since last fetched timestamp
-					</label>
-					<label>
-						<input type="checkbox" />
-						Show newest emails on top
-					</label>
-					<label>
-						<input type="checkbox" />
-						Only show emails with attachments
-					</label>
-					<label>
-						Filter by sender/subject/body etc
-						<input type="text" className="input" />
-					</label>
-					<div>
-						List of folders, other filters and display options go here.
-					</div> */}
+					{/*
+						<label>
+							<input type="checkbox" /> Only show emails since last fetched timestamp
+						</label>
+						<label>
+							<input type="checkbox" /> Show newest emails on top
+						</label>
+						<label>
+							<input type="checkbox" /> Only show emails with attachments
+						</label>
+						<label>
+							Filter by sender/subject/body etc <input type="text" className="input" />
+						</label>
+						<div>
+							List of folders, other filters and display options go here.
+						</div>
+					*/}
 				</div>
 
 				<div className="stack-horizontal to-the-right my-4">
@@ -88,9 +85,9 @@ export const EmailListPage = () => {
 						Select all
 					</label>
 
-					<button className="btn" disabled
-					//TODO: disabled={selectionOfEmails.areNoItemsSelected}
-					//TODO: onClick={createArchiveItemFromSelectedEmails}
+					<button className="btn"
+						disabled={selectionOfEmails.areNoItemsSelected}
+						onClick={() => createArchiveItemFromEmails(emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
 					>
 						{
 							selectionOfEmails.allPossibleItems.size == selectionOfEmails.selectedItems.size
@@ -106,6 +103,7 @@ export const EmailListPage = () => {
 						<Thumbnail
 							key={email.uniqueId}
 							email={email}
+							createArchiveItemFromEmails={createArchiveItemFromEmails}
 							selectionOfEmails={selectionOfEmails}
 							maximize={maximize}
 						/>
@@ -114,8 +112,9 @@ export const EmailListPage = () => {
 						<Preview
 							key={email.uniqueId}
 							email={email}
+							createArchiveItemFromEmails={createArchiveItemFromEmails}
+							createBlobsFromAttachments={createBlobsFromAttachments}
 							provider={provider}
-							ingestAttachments={ingestAttachments}
 							maximize={minimize}
 						/>
 					} />
@@ -129,9 +128,10 @@ export const EmailListPage = () => {
 type ThumbnailProps = {
 	email: Email
 	selectionOfEmails: Selection<string>
+	createArchiveItemFromEmails: (emails: Email[]) => void
 	maximize: (email: Email) => void
 }
-const Thumbnail = ({ email, selectionOfEmails, maximize }: ThumbnailProps) => {
+const Thumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: ThumbnailProps) => {
 	return (
 		<div key={email.uniqueId} className="card">
 			<div className="bg-gray-100 p-2">
@@ -164,8 +164,8 @@ const Thumbnail = ({ email, selectionOfEmails, maximize }: ThumbnailProps) => {
 
 			<div>
 				<div className="stack-horizontal to-the-right p-2">
-					<button className="btn" disabled
-					//TODO: onClick={createArchiveItemFromEmail}
+					<button className="btn"
+						onClick={() => createArchiveItemFromEmails([email])}
 					>
 						Create
 					</button>
@@ -178,20 +178,13 @@ const Thumbnail = ({ email, selectionOfEmails, maximize }: ThumbnailProps) => {
 
 type PreviewProps = {
 	email: Email
+	createArchiveItemFromEmails: (emails: Email[]) => void
+	createBlobsFromAttachments: (messageId: string, attachments: EmailAttachment[]) => void
 	provider: string
-	ingestAttachments: (messageId: string, attachments: EmailAttachment[]) => void
 	maximize: (email: Email) => void
 }
-const Preview = ({ email, ingestAttachments, provider, maximize: minimize }: PreviewProps) => {
-
+const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, provider, maximize: minimize }: PreviewProps) => {
 	return (
-		//TODO: This box should not be larger that screen.
-		//  - Email body should be scrollable if needed.
-		//  - Header with subject, from, date etc should be always visible.
-		//  - Footer with action buttons and attachments should be always visible.
-		//  - Fix top and bottom padding/margin
-		//  - Make sure the email body is not larger than the screen
-		//  - Consider using CSS grid or flexbox to layout the components better
 		<div key={email.uniqueId} className="grid-rows-3">
 			<div className="bg-gray-100 p-4 sticky top-0">
 
@@ -220,12 +213,12 @@ const Preview = ({ email, ingestAttachments, provider, maximize: minimize }: Pre
 				<div className="flex flex-row justify-between">
 
 					<div className="max-h-50 overflow-y-auto">
-						<AttachmentList attachments={email.attachments} email={email} provider={provider} ingestAttachments={ingestAttachments} />
+						<AttachmentList attachments={email.attachments} email={email} provider={provider} ingestAttachments={createBlobsFromAttachments} />
 					</div>
 
 					<div style={{ alignSelf: "flex-end" }}>
-						<button className="btn" disabled
-						//TODO: onClick={createArchiveItemFromEmail}
+						<button className="btn"
+							onClick={() => createArchiveItemFromEmails([email])}
 						>
 							Create
 						</button>
@@ -318,11 +311,9 @@ const Address = ({ address }: AddressProps) => {
 }
 
 
-
 export default function AuthCallback() {
 	const { handleAuthCallback } = useMailProvider()
 	const navigate = useNavigate()
-
 
 	useEffect(() => {
 		(async () => {

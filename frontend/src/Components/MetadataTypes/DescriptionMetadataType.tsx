@@ -38,15 +38,13 @@ const Component = (props: MetadataComponentProps) => {
 	const dispatch = props.dispatch as React.Dispatch<Command>
 
 	return (
-		<>
-			<textarea id="message"
-				rows={4}
-				value={state.notes} onChange={e => dispatch({ action: "SET_NOTES", notes: e.target.value })}
-				className="input w-full"
-				placeholder="Write your notes here..."
-			>
-			</textarea>
-		</>
+		<textarea
+			rows={4}
+			value={state.notes} onChange={e => dispatch({ action: "SET_NOTES", notes: e.target.value })}
+			className="input w-full"
+			placeholder="Write your notes here..."
+		>
+		</textarea>
 	)
 }
 

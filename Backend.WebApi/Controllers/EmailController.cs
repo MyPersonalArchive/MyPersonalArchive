@@ -154,7 +154,7 @@ public class EmailController : ControllerBase
 
 
 	[HttpPost("{provider}/list")]
-	public async Task<IActionResult> List([FromBody] ListEmailsRequest request)
+	public async Task<ActionResult<IEnumerable<ListEmailsResponse>>> List([FromBody] ListEmailsRequest request)
 	{
 		if (!_registry.TryGetProvider(request.Provider, out var prov))
 		{
@@ -191,8 +191,30 @@ public class EmailController : ControllerBase
 			auth = AuthContext.FromBasic(auth.Username, auth.Password);
 		}
 
-		var results = await prov.FindAttachmentsAsync(auth, request);
-		return Ok(new ListEmailsResponse { Emails = [.. results] });
+		var emails = await prov.FindAttachmentsAsync(auth, request);
+		return Ok(emails.Select(email => new ListEmailsResponse
+		{
+			UniqueId = email.UniqueId,
+			Subject = email.Subject,
+			Body = email.Body,
+			HtmlBody = email.HtmlBody,
+			ReceivedTime = email.ReceivedTime,
+			From = email.From.Select(a => new ListEmailsResponse.Address
+			{
+				EmailAddress = a.EmailAddress,
+				Name = a.Name
+			}),
+			To = email.To.Select(a => new ListEmailsResponse.Address
+			{
+				EmailAddress = a.EmailAddress,
+				Name = a.Name
+			}),
+			Attachments = email.Attachments.Select(att => new ListEmailsResponse.Attachment
+			{
+				FileName = att.FileName,
+				ContentType = att.ContentType
+			})
+		}));
 	}
 
 
@@ -237,12 +259,12 @@ public class EmailController : ControllerBase
 			return Unauthorized();
 		}
 
-		if (download.Attachments == null || !download.Attachments.Any())
+		if (request.Attachments == null || !request.Attachments.Any())
 		{
 			return NoContent();
 		}
 
-		foreach (var attachment in download.Attachments)
+		foreach (var attachment in request.Attachments)
 		{
 			try
 			{
@@ -292,7 +314,7 @@ public class DownloadAttachmentRequest
 	public required string FileName { get; set; }
 }
 
-public class UploadAttachmentRequest
+public class CreateBlobsFromAttachmentsRequest
 {
 	public List<Attachment>? Attachments { get; set; }
 
@@ -318,7 +340,26 @@ public class AuthUrlResponse
 
 public class ListEmailsResponse
 {
-	public required Email[] Emails { get; set; }
+	public string UniqueId { get; set; } = string.Empty;
+	public string Subject { get; set; } = string.Empty;
+	public string Body { get; set; } = string.Empty;
+	public string HtmlBody { get; set; } = string.Empty;
+	public DateTimeOffset ReceivedTime { get; set; }
+	public IEnumerable<Address> From { get; set; } = [];
+	public IEnumerable<Address> To { get; set; } = [];
+	public IEnumerable<Attachment> Attachments { get; set; } = [];
+
+	public class Address
+	{
+		public required string EmailAddress { get; set; }
+		public string? Name { get; set; }
+	}
+
+	public class Attachment
+	{
+		public required string FileName { get; set; }
+		public required string ContentType { get; set; }
+	}
 }
 
 public class ListEmailsRequest : EmailSearchCriteria

@@ -58,7 +58,7 @@ const Component = (props: MetadataComponentProps) => {
 			</div>
 
 			<div className="aligned-labels-and-inputs">
-				<label htmlFor="valid-from">Valid to</label>
+				<label htmlFor="valid-to">Valid to</label>
 				<input type="date" id="valid-to" className="input" placeholder="Valid until"
 					value={state.validUntil}
 					onChange={e => dispatch({ action: "SET_VALID_UNTIL", date: e.target.value })}
