@@ -42,44 +42,45 @@ public class EmailController : ControllerBase
 		_resolver = resolver;
 	}
 
-	[HttpGet("{provider}/auth/url")]
-	public ActionResult<AuthUrlResponse> GetAuthUrl(string provider, [FromQuery] string redirectUri)
+	[HttpGet("{providerName}/auth/url")]
+	public ActionResult<AuthUrlResponse> GetAuthUrl(string providerName, [FromQuery] string redirectUri)
 	{
-		if (!_registry.TryGetProvider(provider, out var prov))
-			return BadRequest(new { error = $"Unknown provider: {provider}" });
+		if (!_registry.TryGetProvider(providerName, out var provider))
+			return BadRequest(new { error = $"Unknown provider: {providerName}" });
 
-		if (prov.AuthenticationMode != EmailAuthMode.Oath2)
-			return BadRequest(new { error = $"{provider} does not support OAuth" });
+		if (provider.AuthenticationMode != EmailAuthMode.Oath2)
+			return BadRequest(new { error = $"{providerName} does not support OAuth" });
 
 		//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
 		var rawState = new
 		{
-			provider,
+			provider = providerName,
 			nonce = Guid.NewGuid().ToString("N")
 		};
-
 		var stateJson = JsonSerializer.Serialize(rawState);
 		var encodedState = WebUtility.UrlEncode(stateJson);
 
-		var url = prov.GetAuthorizationUrl(encodedState, redirectUri);
+		var url = provider.GetAuthorizationUrl(encodedState, redirectUri);
 		return Ok(new AuthUrlResponse { Url = url, State = encodedState });
 	}
 
 	[HttpPost("{provider}/auth/exchange")]
 	public async Task<IActionResult> ExchangeToken([FromBody] TokenRequestExchangeRequest token)
 	{
-		if (!_registry.TryGetProvider(token.Provider, out var prov))
+		if (!_registry.TryGetProvider(token.Provider, out var provider))
+		{
 			return BadRequest(new { error = $"Unknown provider: {token.Provider}" });
+		}
 
-		if (prov == null) return NotFound();
+		if (provider == null) return NotFound();    //TODO: Denne kan vel ikke være null pga sjekken over?
 
-		if (prov.AuthenticationMode == EmailAuthMode.Oath2)
+		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(token.Code) || string.IsNullOrEmpty(token.RedirectUri))
 			{
 				return BadRequest(new { error = "missing code or redirectUri" });
 			}
-			var tokens = await prov.ExchangeCodeForTokenAsync(token.Code, token.RedirectUri);
+			var tokens = await provider.ExchangeCodeForTokenAsync(token.Code, token.RedirectUri);
 
 			Response.Cookies.Append(
 			$"auth-{token.Provider}",
@@ -91,7 +92,7 @@ public class EmailController : ControllerBase
 				SameSite = SameSiteMode.Strict
 			});
 		}
-		else if (prov.AuthenticationMode == EmailAuthMode.Basic)
+		else if (provider.AuthenticationMode == EmailAuthMode.Basic)
 		{
 			if (string.IsNullOrEmpty(token.Username) || string.IsNullOrEmpty(token.Password))
 			{
@@ -115,24 +116,20 @@ public class EmailController : ControllerBase
 		return Ok(new { Ok = true });
 	}
 
-	[HttpGet("{provider}/list-folders")]
-
-	public async Task<IActionResult> GetFolders(string provider)
+	[HttpGet("{providerName}/list-folders")]
+	public async Task<IActionResult> GetFolders(string providerName)
 	{
-		if (!_registry.TryGetProvider(provider, out var prov))
-			return BadRequest(new { error = $"Unknown provider: {provider}" });
+		if (!_registry.TryGetProvider(providerName, out var provider))
+		{
+			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+		}
 
-		if (!Request.Cookies.TryGetValue($"auth-{provider}", out var authJson))
+		if (!TryGetAuthContextFromCookies(providerName, out var auth))
 		{
 			return Unauthorized();
 		}
 
-		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
-
-		if (auth == null)
-			return Unauthorized();
-
-		if (prov.AuthenticationMode == EmailAuthMode.Oath2)
+		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(auth?.AccessToken))
 				return BadRequest(new { error = "missing access_token" });
@@ -148,33 +145,25 @@ public class EmailController : ControllerBase
 			auth = AuthContext.FromBasic(auth.Username, auth.Password);
 		}
 
-		return Ok(await prov.GetAvailableFolders(auth));
+		return Ok(await provider.GetAvailableFolders(auth));
 	}
 
 
 
-	[HttpPost("{provider}/list")]
-	public async Task<ActionResult<IEnumerable<ListEmailsResponse>>> List([FromBody] ListEmailsRequest request)
+	[HttpPost("{providerName}/list")]
+	public async Task<ActionResult<IEnumerable<ListEmailsResponse>>> List(string providerName, [FromBody] ListEmailsRequest request)
 	{
-		if (!_registry.TryGetProvider(request.Provider, out var prov))
+		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return BadRequest(new { error = $"Unknown provider: {request.Provider}" });
-
-		}
-		if (!Request.Cookies.TryGetValue($"auth-{request.Provider}", out var authJson))
-		{
-			return Unauthorized();
+			return BadRequest(new { error = $"Unknown provider: {providerName}" });
 		}
 
-		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
-
-		if (auth == null)
+		if (!TryGetAuthContextFromCookies(providerName, out var auth))
 		{
 			return Unauthorized();
-
 		}
 
-		if (prov.AuthenticationMode == EmailAuthMode.Oath2)
+		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(auth?.AccessToken))
 			{
@@ -191,7 +180,7 @@ public class EmailController : ControllerBase
 			auth = AuthContext.FromBasic(auth.Username, auth.Password);
 		}
 
-		var emails = await prov.FindAttachmentsAsync(auth, request);
+		var emails = await provider.FindAttachmentsAsync(auth, request);
 		return Ok(emails.Select(email => new ListEmailsResponse
 		{
 			UniqueId = email.UniqueId,
@@ -218,44 +207,35 @@ public class EmailController : ControllerBase
 	}
 
 
-	[HttpGet("{provider}/download-attachment")]
-	public async Task<IActionResult> DownloadAttachment(string provider, [FromQuery] string messageId, [FromQuery] string fileName)
+	[HttpGet("{providerName}/download-attachment")]
+	public async Task<IActionResult> DownloadAttachment(string providerName, [FromQuery] string messageId, [FromQuery] string fileName)
 	{
-		if (!_registry.TryGetProvider(provider, out var prov))
-			return BadRequest(new { error = $"Unknown provider: {provider}" });
+		if (!_registry.TryGetProvider(providerName, out var provider))
+		{
+			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+		}
 
-		if (!Request.Cookies.TryGetValue($"auth-{provider}", out var authJson))
+		if (!TryGetAuthContextFromCookies(providerName, out var auth))
 		{
 			return Unauthorized();
 		}
 
-		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
-
-		if (auth == null)
-			return Unauthorized();
-
-
-		var attachment = await prov.DownloadAttachmentAsync(auth, messageId, fileName);
+		var attachment = await provider.DownloadAttachmentAsync(auth, messageId, fileName);
 		if (attachment == null) return NotFound();
 
 		return File(attachment.Stream, "application/octet-stream", fileName);
 	}
 
 
-	[HttpPost("{provider}/create-archive-item-from-emails")]
-	public async Task<IActionResult> CreateArchiveItemFromEmails(string provider, [FromBody] CreateArchiveItemFromEmailsRequest request)
+	[HttpPost("{providerName}/create-archive-item-from-emails")]
+	public async Task<IActionResult> CreateArchiveItemFromEmails(string providerName, [FromBody] CreateArchiveItemFromEmailsRequest request)
 	{
-		if (!_registry.TryGetProvider(provider, out var prov))
-			return BadRequest(new { error = $"Unknown provider: {provider}" });
-
-		if (!Request.Cookies.TryGetValue($"auth-{provider}", out var authJson))
+		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return Unauthorized();
+			return BadRequest(new { error = $"Unknown provider: {providerName}" });
 		}
 
-		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
-
-		if (auth == null)
+		if (!TryGetAuthContextFromCookies(providerName, out var auth))
 		{
 			return Unauthorized();
 		}
@@ -276,20 +256,15 @@ public class EmailController : ControllerBase
 	}
 
 
-	[HttpPost("{provider}/create-blobs-from-attachments")]
-	public async Task<IActionResult> CreateBlobsFromAttachments(string provider, [FromBody] CreateBlobsFromAttachmentsRequest request)
+	[HttpPost("{providerName}/create-blobs-from-attachments")]
+	public async Task<IActionResult> CreateBlobsFromAttachments(string providerName, [FromBody] CreateBlobsFromAttachmentsRequest request)
 	{
-		if (!_registry.TryGetProvider(provider, out var prov))
-			return BadRequest(new { error = $"Unknown provider: {provider}" });
-
-		if (!Request.Cookies.TryGetValue($"auth-{provider}", out var authJson))
+		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return Unauthorized();
+			return BadRequest(new { error = $"Unknown provider: {providerName}" });
 		}
 
-		var auth = JsonSerializer.Deserialize<AuthContext>(authJson);
-
-		if (auth == null)
+		if (!TryGetAuthContextFromCookies(providerName, out var auth))
 		{
 			return Unauthorized();
 		}
@@ -303,7 +278,7 @@ public class EmailController : ControllerBase
 		{
 			try
 			{
-				var downloadedAttachment = await prov.DownloadAttachmentAsync(auth, attachment.MessageId, attachment.FileName);
+				var downloadedAttachment = await provider.DownloadAttachmentAsync(auth, attachment.MessageId, attachment.FileName);
 				if (downloadedAttachment == null) return NotFound();
 
 				var blob = new Blob
@@ -335,9 +310,27 @@ public class EmailController : ControllerBase
 	}
 
 
+	private bool TryGetAuthContextFromCookies(string providerName, out AuthContext? auth)
+	{
+		if (!Request.Cookies.TryGetValue($"auth-{providerName}", out var authJson))
+		{
+			auth = null;
+			return false;
+		}
+
+		auth = JsonSerializer.Deserialize<AuthContext>(authJson);
+		if (auth == null)
+		{
+			return false;
+		}
+;
+		return true;
+	}
+
+
 	#region Request and response models
 
-	public class TokenRequestExchangeRequest
+	public record TokenRequestExchangeRequest
 	{
 		public required string Provider { get; set; }
 		public string? Code { get; set; }
@@ -347,20 +340,20 @@ public class EmailController : ControllerBase
 	}
 
 
-	public class DownloadAttachmentRequest
+	public record DownloadAttachmentRequest
 	{
 		public required string MessageId { get; set; }
 		public required string FileName { get; set; }
 	}
 
 
-	public class CreateArchiveItemFromEmailsRequest
+	public record CreateArchiveItemFromEmailsRequest
 	{
 		public List<string>? MessageIds { get; set; }
 	}
 
 
-	public class CreateBlobsFromAttachmentsRequest
+	public record CreateBlobsFromAttachmentsRequest
 	{
 		public List<Attachment>? Attachments { get; set; }
 
@@ -372,7 +365,7 @@ public class EmailController : ControllerBase
 	}
 
 
-	public class DownloadAttachmentResponse
+	public record DownloadAttachmentResponse
 	{
 		public required Stream Stream { get; set; }
 		public required string ContentType { get; set; }
@@ -380,14 +373,14 @@ public class EmailController : ControllerBase
 	}
 
 
-	public class AuthUrlResponse
+	public record AuthUrlResponse
 	{
 		public required string State { get; set; }
 		public required string Url { get; set; }
 	}
 
 
-	public class ListEmailsResponse
+	public record ListEmailsResponse
 	{
 		public string UniqueId { get; set; } = string.Empty;
 		public string Subject { get; set; } = string.Empty;
@@ -398,13 +391,13 @@ public class EmailController : ControllerBase
 		public IEnumerable<Address> To { get; set; } = [];
 		public IEnumerable<Attachment> Attachments { get; set; } = [];
 
-		public class Address
+		public record Address
 		{
 			public required string EmailAddress { get; set; }
 			public string? Name { get; set; }
 		}
 
-		public class Attachment
+		public record Attachment
 		{
 			public required string FileName { get; set; }
 			public required string ContentType { get; set; }
@@ -414,7 +407,7 @@ public class EmailController : ControllerBase
 
 	public class ListEmailsRequest : EmailSearchCriteria
 	{
-		public required string Provider { get; set; }
+		// public required string Provider { get; set; }
 	}
 
 	#endregion
