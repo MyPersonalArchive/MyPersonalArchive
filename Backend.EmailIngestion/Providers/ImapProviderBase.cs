@@ -6,34 +6,38 @@ using Org.BouncyCastle.Math.EC.Rfc7748;
 
 namespace Backend.EmailIngestion.Providers;
 
-public abstract class ImapProviderBase : IEmailProvider
+public abstract class ImapProviderBase
 {
 	public abstract EmailAuthMode AuthenticationMode { get; }
 
 	public abstract string Name { get; }
 
+	public abstract string GetAuthorizationUrl(string state, string redirectUri);
 
-	public async Task<IList<Email>> FindEmailsAsync(AuthContext auth, EmailSearchCriteria searchCriteria)
+	public abstract Task<IAuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
+
+
+	public async Task<IList<Email>> FindEmailsAsync(IAuthContext auth, EmailSearchCriteria searchCriteria)
 	{
 		using var client = await ConnectAsync(auth);
 		return await FindEmailsAsync(client, searchCriteria);
 	}
 
-	public async Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName)
+	public async Task<Attachment?> DownloadAttachmentAsync(IAuthContext auth, string messageId, string fileName)
 	{
 		using var client = await ConnectAsync(auth);
 		return await DownloadAttachmentAsync(client, messageId, fileName);
 	}
 
-	public async Task<IList<string>> GetAvailableFolders(AuthContext auth)
+	public async Task<IList<string>> GetAvailableFolders(IAuthContext auth)
 	{
 		using var client = await ConnectAsync(auth);
 		return await GetAvailableFolders(client);
 	}
 
-	protected abstract Task<IImapClient> ConnectAsync(AuthContext auth);
+	protected abstract Task<IImapClient> ConnectAsync(IAuthContext auth);
 
-	protected async Task<IList<string>> GetAvailableFolders(IImapClient client)
+	private async Task<IList<string>> GetAvailableFolders(IImapClient client)
 	{
 		var root = client.GetFolder(client.PersonalNamespaces[0]);
 		var allFolders = await root.GetSubfoldersAsync(true);
@@ -41,7 +45,7 @@ public abstract class ImapProviderBase : IEmailProvider
 
 	}
 
-	protected async Task<IList<Email>> FindEmailsAsync(IImapClient client, EmailSearchCriteria searchCriteria)
+	private async Task<IList<Email>> FindEmailsAsync(IImapClient client, EmailSearchCriteria searchCriteria)
 	{
 		var results = new List<Email>();
 
@@ -53,13 +57,14 @@ public abstract class ImapProviderBase : IEmailProvider
 			folders = ["INBOX"];
 		}
 
+		var searchQuery = GenerateSearchQuery(searchCriteria);
 		foreach (var folder in folders)
 		{
 			var mailFolder = client.GetFolder(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-			var uids = await mailFolder.SearchAsync(GenerateSearchQuery(searchCriteria));
-			var limitedUids = uids.Reverse().Take(searchCriteria != null ? searchCriteria.Limit : 100).ToList();
+			var uids = await mailFolder.SearchAsync(searchQuery);
+			var limitedUids = uids.Reverse().Take(searchCriteria?.Limit ?? 100).ToList();
 
 			const int batchSize = 50;
 			var messages = new List<IMessageSummary>();
@@ -99,10 +104,11 @@ public abstract class ImapProviderBase : IEmailProvider
 				{
 					if (part.IsAttachment)
 					{
-						email.Attachments.Add(new EmailAttachment(
-							part.FileName ?? "attachment",
-							part.ContentType.MimeType
-						));
+						email.Attachments.Add(new Email.EmailAttachment
+						{
+							FileName = part.FileName ?? "attachment",
+							ContentType = part.ContentType.MimeType
+						});
 					}
 				}
 
@@ -116,7 +122,7 @@ public abstract class ImapProviderBase : IEmailProvider
 		return results;
 	}
 
-	protected async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string messageId, string fileName)
+	private async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string messageId, string fileName)
 	{
 		var inbox = client.Inbox;
 		await inbox.OpenAsync(FolderAccess.ReadOnly);
@@ -165,7 +171,5 @@ public abstract class ImapProviderBase : IEmailProvider
 		return query;
 	}
 
-	public abstract string GetAuthorizationUrl(string state, string redirectUri);
-
-	public abstract Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
+	public abstract bool TryCreateAuthContext(string authJson, out IAuthContext? auth);
 }

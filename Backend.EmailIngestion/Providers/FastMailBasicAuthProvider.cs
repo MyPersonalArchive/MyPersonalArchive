@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -20,17 +21,29 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 		throw new NotSupportedException("FastMail does not support OAuth flow. Use username/app-password.");
 	}
 
-	public override Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri)
+	public override Task<IAuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri)
 	{
 		throw new NotSupportedException("FastMail does not support token exchange.");
 	}
 
 
-	protected override async Task<IImapClient> ConnectAsync(AuthContext auth)
+	protected override async Task<IImapClient> ConnectAsync(IAuthContext auth)
 	{
+		if (auth is not BasicAuthContext basicAuth)
+		{
+			throw new ArgumentException("Invalid auth context for Basic Auth provider.");
+		}
+		
 		var client = new ImapClient();
 		await client.ConnectAsync(_imapHost, _imapPort, SecureSocketOptions.SslOnConnect);
-		await client.AuthenticateAsync(auth.Username, auth.Password);
+		await client.AuthenticateAsync(basicAuth.Username, basicAuth.Password);
 		return client;
 	}
+
+		public override bool TryCreateAuthContext(string authJson, out IAuthContext? auth)
+	{
+		auth = JsonSerializer.Deserialize<BasicAuthContext>(authJson);
+		return auth != null;
+	}
+
 }

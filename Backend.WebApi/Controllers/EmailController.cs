@@ -3,8 +3,10 @@ using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Backend.EmailIngestion;
+using Backend.EmailIngestion.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 
@@ -47,10 +49,10 @@ public class EmailController : ControllerBase
 	public ActionResult<AuthUrlResponse> GetAuthUrl(string providerName, [FromQuery] string redirectUri)
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
-			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+			return BadRequest($"Unknown provider: {providerName}");
 
 		if (provider.AuthenticationMode != EmailAuthMode.Oath2)
-			return BadRequest(new { error = $"{providerName} does not support OAuth" });
+			return BadRequest($"{providerName} does not support OAuth");
 
 		//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
 		var rawState = new
@@ -65,90 +67,73 @@ public class EmailController : ControllerBase
 		return Ok(new AuthUrlResponse { Url = url, State = encodedState });
 	}
 
-	[HttpPost("{provider}/auth/exchange")]
-	public async Task<IActionResult> ExchangeToken([FromBody] TokenRequestExchangeRequest token)
+
+	[HttpPost("{providerName}/auth/exchange")]
+	public async Task<IActionResult> ExchangeToken(string providerName, [FromBody] TokenRequestExchangeRequest token)
 	{
-		if (!_registry.TryGetProvider(token.Provider, out var provider))
+		if (!_registry.TryGetProvider(providerName, out var provider) || provider == null)
 		{
-			return BadRequest(new { error = $"Unknown provider: {token.Provider}" });
+			return BadRequest($"Invalid provider: {providerName}");
 		}
 
-		if (provider == null) return NotFound();    //TODO: Denne kan vel ikke være null pga sjekken over?
+		var cookieOptions = new CookieOptions
+		{
+			HttpOnly = true,
+			Secure = true,
+			SameSite = SameSiteMode.Strict
+		};
 
+		IAuthContext? authCookie = null;
 		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
 		{
 			if (string.IsNullOrEmpty(token.Code) || string.IsNullOrEmpty(token.RedirectUri))
 			{
-				return BadRequest(new { error = "missing code or redirectUri" });
+				return BadRequest("missing code or redirectUri");
 			}
-			var tokens = await provider.ExchangeCodeForTokenAsync(token.Code, token.RedirectUri);
 
-			Response.Cookies.Append(
-			$"auth-{token.Provider}",
-			JsonSerializer.Serialize(tokens),
-			new CookieOptions
-			{
-				HttpOnly = true,
-				Secure = true,
-				SameSite = SameSiteMode.Strict
-			});
+			authCookie = await provider.ExchangeCodeForTokenAsync(token.Code, token.RedirectUri);
 		}
 		else if (provider.AuthenticationMode == EmailAuthMode.Basic)
 		{
 			if (string.IsNullOrEmpty(token.Username) || string.IsNullOrEmpty(token.Password))
 			{
-				return BadRequest(new { error = "missing username or password" });
+				return BadRequest("missing username or password");
 			}
 
-			Response.Cookies.Append(
-			$"auth-{token.Provider}",
-			JsonSerializer.Serialize(new AuthContext
+			authCookie = new BasicAuthContext
 			{
 				Username = token.Username,
 				Password = token.Password
-			}),
-			new CookieOptions
-			{
-				HttpOnly = true,
-				Secure = true,
-				SameSite = SameSiteMode.Strict
-			});
+			};
 		}
+
+		Debug.Assert(authCookie != null, "--- authCookie should not be null here ---");
+Debug.WriteLine($"--- Serialized cookie --- {JsonSerializer.Serialize(authCookie)}");
+
+		Response.Cookies.Append(
+			$"auth-{providerName}",
+			JsonSerializer.Serialize(authCookie),
+			cookieOptions
+		);
 		return Ok(new { Ok = true });
 	}
+
 
 	[HttpGet("{providerName}/list-folders")]
 	public async Task<IActionResult> GetFolders(string providerName)
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(providerName, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth))
 		{
 			return Unauthorized();
 		}
 
-		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
-		{
-			if (string.IsNullOrEmpty(auth?.AccessToken))
-				return BadRequest(new { error = "missing access_token" });
-
-			auth = AuthContext.FromOAuth(auth.AccessToken, auth.RefreshToken);
-		}
-		else
-		{
-			if (string.IsNullOrEmpty(auth.Username) || string.IsNullOrEmpty(auth.Password))
-			{
-				return BadRequest(new { error = "missing username or password" });
-			}
-			auth = AuthContext.FromBasic(auth.Username, auth.Password);
-		}
-
 		return Ok(await provider.GetAvailableFolders(auth));
 	}
-
 
 
 	[HttpPost("{providerName}/list")]
@@ -156,32 +141,15 @@ public class EmailController : ControllerBase
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(providerName, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth))
 		{
 			return Unauthorized();
 		}
 
-		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
-		{
-			if (string.IsNullOrEmpty(auth?.AccessToken))
-			{
-				return BadRequest(new { error = "missing access_token" });
-			}
-			auth = AuthContext.FromOAuth(auth.AccessToken, auth.RefreshToken);
-		}
-		else
-		{
-			if (string.IsNullOrEmpty(auth.Username) || string.IsNullOrEmpty(auth.Password))
-			{
-				return BadRequest(new { error = "missing username or password" });
-			}
-			auth = AuthContext.FromBasic(auth.Username, auth.Password);
-		}
-
-		var emails = await provider.FindEmailsAsync(auth, request);
+		var emails = await provider.FindEmailsAsync(auth, request as EmailSearchCriteria);
 		return Ok(emails.Select(email => new ListEmailsResponse
 		{
 			UniqueId = email.UniqueId,
@@ -213,10 +181,10 @@ public class EmailController : ControllerBase
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(providerName, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth))
 		{
 			return Unauthorized();
 		}
@@ -233,10 +201,10 @@ public class EmailController : ControllerBase
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(providerName, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth))
 		{
 			return Unauthorized();
 		}
@@ -262,10 +230,10 @@ public class EmailController : ControllerBase
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
-			return BadRequest(new { error = $"Unknown provider: {providerName}" });
+			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(providerName, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth))
 		{
 			return Unauthorized();
 		}
@@ -311,21 +279,15 @@ public class EmailController : ControllerBase
 	}
 
 
-	private bool TryGetAuthContextFromCookies(string providerName, out AuthContext? auth)
+	private bool TryGetAuthContextFromCookies(ImapProviderBase provider, out IAuthContext? auth)
 	{
-		if (!Request.Cookies.TryGetValue($"auth-{providerName}", out var authJson))
+		if (!Request.Cookies.TryGetValue($"auth-{provider.Name}", out var authJson))
 		{
 			auth = null;
 			return false;
 		}
 
-		auth = JsonSerializer.Deserialize<AuthContext>(authJson);
-		if (auth == null)
-		{
-			return false;
-		}
-;
-		return true;
+		return provider.TryCreateAuthContext(authJson, out auth);
 	}
 
 
@@ -333,7 +295,7 @@ public class EmailController : ControllerBase
 
 	public record TokenRequestExchangeRequest
 	{
-		public required string Provider { get; set; }
+		// public required string Provider { get; set; }
 		public string? Code { get; set; }
 		public string? RedirectUri { get; set; }
 		public string? Username { get; set; }

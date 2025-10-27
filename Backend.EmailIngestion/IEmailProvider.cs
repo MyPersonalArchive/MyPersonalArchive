@@ -1,11 +1,8 @@
 using MimeKit;
+using System.Text.Json.Serialization;
 
 namespace Backend.EmailIngestion;
 
-public record EmailAttachment(
-	string FileName,
-	string ContentType
-);
 
 public class Email
 {
@@ -23,6 +20,12 @@ public class Email
 		public required string EmailAddress { get; set; }
 		public string? Name { get; set; }
 	}
+
+	public class EmailAttachment
+	{
+		public required string FileName { get; set; }
+		public required string ContentType { get; set; }
+	}
 }
 
 public class Attachment
@@ -33,19 +36,25 @@ public class Attachment
 	public long FileSize { get; set; }
 }
 
-public record AuthContext
+
+[JsonDerivedType(typeof(OAuthContext), typeDiscriminator: "oauth")]
+[JsonDerivedType(typeof(BasicAuthContext), typeDiscriminator: "basic")]
+public interface IAuthContext
 {
-	public string? AccessToken { get; init; }      // For OAuth providers
+	//TODO: make this an interface?
+}
+
+public class OAuthContext : IAuthContext
+{
+	public string? AccessToken { get; init; }
 	public string? RefreshToken { get; init; }
-	public string? Username { get; init; }         // For plain IMAP
-	public string? Password { get; init; }         // For plain IMAP
 	public DateTime ExpiresAt { get; set; }
+}
 
-	public static AuthContext FromOAuth(string accessToken, string? refreshToken = null) =>
-		new AuthContext { AccessToken = accessToken, RefreshToken = refreshToken };
-
-	public static AuthContext FromBasic(string username, string password) =>
-		new AuthContext { Username = username, Password = password };
+public class BasicAuthContext : IAuthContext
+{
+	public required string Username { get; init; }
+	public required string Password { get; init; }
 }
 
 
@@ -63,20 +72,4 @@ public class EmailSearchCriteria
 	public string? To { get; set; }
 	public int Limit { get; set; }
 	public DateTime? Since { get; set; }
-}
-
-public interface IEmailProvider
-{
-	EmailAuthMode AuthenticationMode { get; }
-	string Name { get; }
-
-	string GetAuthorizationUrl(string state, string redirectUri);
-
-	Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
-
-	Task<IList<string>> GetAvailableFolders(AuthContext auth);
-
-	Task<IList<Email>> FindEmailsAsync(AuthContext auth, EmailSearchCriteria searchCriteria);
-
-	Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName);
 }

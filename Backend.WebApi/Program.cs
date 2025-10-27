@@ -108,8 +108,8 @@ public static class Program
 	{
 		var services = builder.Services;
 
-		services.AddSingleton<IEmailProvider, GmailProvider>();
-		services.AddSingleton<IEmailProvider, FastMailBasicAuthProvider>();
+		services.AddSingleton<ImapProviderBase, GmailProvider>();
+		services.AddSingleton<ImapProviderBase, FastMailBasicAuthProvider>();
 		services.AddSingleton<EmailProviderFactory>();
 	}
 

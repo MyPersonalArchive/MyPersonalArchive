@@ -31,7 +31,7 @@ public class GmailProvider : ImapProviderBase
 			$"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={_clientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&scope={scopes}&access_type=offline&prompt=consent&state={state}";
 	}
 
-	public override async Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri)
+	public override async Task<IAuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri)
 	{
 		using var client = new HttpClient();
 		var resp = await client.PostAsync("https://oauth2.googleapis.com/token",
@@ -48,7 +48,7 @@ public class GmailProvider : ImapProviderBase
 		resp.EnsureSuccessStatusCode();
 		var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
 
-		return new AuthContext
+		return new OAuthContext
 		{
 			AccessToken = json.GetProperty("access_token").GetString()!,
 			RefreshToken = json.GetProperty("refresh_token").GetString(),
@@ -57,16 +57,26 @@ public class GmailProvider : ImapProviderBase
 	}
 
 
-	protected override async Task<IImapClient> ConnectAsync(AuthContext auth)
+	protected override async Task<IImapClient> ConnectAsync(IAuthContext auth)
 	{
+		if (auth is not OAuthContext oauth)
+		{
+			throw new ArgumentException("Invalid auth context for OAuth provider.");
+		}
 		var client = new ImapClient();
 		var http = new HttpClient();
-		var info = await http.GetStringAsync($"https://openidconnect.googleapis.com/v1/userinfo?access_token={Uri.EscapeDataString(auth.AccessToken)}");
+		var info = await http.GetStringAsync($"https://openidconnect.googleapis.com/v1/userinfo?access_token={Uri.EscapeDataString(oauth.AccessToken)}");
 		var email = JsonDocument.Parse(info).RootElement.GetProperty("email").GetString();
 
 		await client.ConnectAsync("imap.gmail.com", 993, SecureSocketOptions.SslOnConnect);
-		await client.AuthenticateAsync(new SaslMechanismOAuth2(email, auth.AccessToken));
+		await client.AuthenticateAsync(new SaslMechanismOAuth2(email, oauth.AccessToken));
 
 		return client;
+	}
+
+	public override bool TryCreateAuthContext(string authJson, out IAuthContext? auth)
+	{
+		auth = JsonSerializer.Deserialize<OAuthContext>(authJson);
+		return auth != null;
 	}
 }
