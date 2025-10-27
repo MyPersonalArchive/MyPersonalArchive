@@ -1,7 +1,9 @@
 using MimeKit;
 
+namespace Backend.EmailIngestion;
+
 public record EmailAttachment(
-    string FileName,
+	string FileName,
 	string ContentType
 );
 
@@ -74,7 +76,7 @@ public interface IEmailProvider
 
 	Task<IList<string>> GetAvailableFolders(AuthContext auth);
 
-	Task<IList<Email>> FindAttachmentsAsync(AuthContext auth, EmailSearchCriteria searchCriteria);
+	Task<IList<Email>> FindEmailsAsync(AuthContext auth, EmailSearchCriteria searchCriteria);
 
 	Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName);
 }

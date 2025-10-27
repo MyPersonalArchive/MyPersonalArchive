@@ -4,8 +4,35 @@ using MailKit.Search;
 using MimeKit;
 using Org.BouncyCastle.Math.EC.Rfc7748;
 
-public abstract class ImapProviderBase
+namespace Backend.EmailIngestion.Providers;
+
+public abstract class ImapProviderBase : IEmailProvider
 {
+	public abstract EmailAuthMode AuthenticationMode { get; }
+
+	public abstract string Name { get; }
+
+
+	public async Task<IList<Email>> FindEmailsAsync(AuthContext auth, EmailSearchCriteria searchCriteria)
+	{
+		using var client = await ConnectAsync(auth);
+		return await FindEmailsAsync(client, searchCriteria);
+	}
+
+	public async Task<Attachment?> DownloadAttachmentAsync(AuthContext auth, string messageId, string fileName)
+	{
+		using var client = await ConnectAsync(auth);
+		return await DownloadAttachmentAsync(client, messageId, fileName);
+	}
+
+	public async Task<IList<string>> GetAvailableFolders(AuthContext auth)
+	{
+		using var client = await ConnectAsync(auth);
+		return await GetAvailableFolders(client);
+	}
+
+	protected abstract Task<IImapClient> ConnectAsync(AuthContext auth);
+
 	protected async Task<IList<string>> GetAvailableFolders(IImapClient client)
 	{
 		var root = client.GetFolder(client.PersonalNamespaces[0]);
@@ -14,7 +41,7 @@ public abstract class ImapProviderBase
 
 	}
 
-	protected async Task<IList<Email>> FindAsync(IImapClient client, EmailSearchCriteria searchCriteria)
+	protected async Task<IList<Email>> FindEmailsAsync(IImapClient client, EmailSearchCriteria searchCriteria)
 	{
 		var results = new List<Email>();
 
@@ -56,7 +83,7 @@ public abstract class ImapProviderBase
 					From = message.From
 						.Select(address => address is MailboxAddress mb
 							? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-							: new Email.Address { EmailAddress = address.Name}
+							: new Email.Address { EmailAddress = address.Name }
 						),
 					To = message.To
 						.Select(address => address is MailboxAddress mb
@@ -137,4 +164,8 @@ public abstract class ImapProviderBase
 		}
 		return query;
 	}
+
+	public abstract string GetAuthorizationUrl(string state, string redirectUri);
+
+	public abstract Task<AuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
 }

@@ -61,7 +61,7 @@ export const EmailListPage = () => {
 
 				<button className="btn"
 					onClick={() => fetchEmails({ provider, folders: [selectedFolder!], limit: 300 })}
-					disabled={selectedFolder === ""}
+					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
 				</button>

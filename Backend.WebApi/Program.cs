@@ -10,6 +10,8 @@ using Backend.Core.Providers;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Newtonsoft.Json;
+using Backend.EmailIngestion;
+using Backend.EmailIngestion.Providers;
 
 namespace Backend.WebApi;
 

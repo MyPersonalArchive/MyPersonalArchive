@@ -2,6 +2,7 @@ using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
+using Backend.EmailIngestion;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -180,7 +181,7 @@ public class EmailController : ControllerBase
 			auth = AuthContext.FromBasic(auth.Username, auth.Password);
 		}
 
-		var emails = await provider.FindAttachmentsAsync(auth, request);
+		var emails = await provider.FindEmailsAsync(auth, request);
 		return Ok(emails.Select(email => new ListEmailsResponse
 		{
 			UniqueId = email.UniqueId,
