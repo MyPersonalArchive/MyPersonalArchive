@@ -59,7 +59,7 @@ public class GmailProvider : ImapProviderBase
 
 	protected override async Task<IImapClient> ConnectAsync(IAuthContext auth)
 	{
-		if (auth is not OAuthContext oauth)
+		if (auth is not OAuthContext oauth || oauth.AccessToken == null)
 		{
 			throw new ArgumentException("Invalid auth context for OAuth provider.");
 		}

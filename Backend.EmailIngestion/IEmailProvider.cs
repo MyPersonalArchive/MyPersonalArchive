@@ -41,7 +41,6 @@ public class Attachment
 [JsonDerivedType(typeof(BasicAuthContext), typeDiscriminator: "basic")]
 public interface IAuthContext
 {
-	//TODO: make this an interface?
 }
 
 public class OAuthContext : IAuthContext

@@ -107,9 +107,6 @@ public class EmailController : ControllerBase
 			};
 		}
 
-		Debug.Assert(authCookie != null, "--- authCookie should not be null here ---");
-Debug.WriteLine($"--- Serialized cookie --- {JsonSerializer.Serialize(authCookie)}");
-
 		Response.Cookies.Append(
 			$"auth-{providerName}",
 			JsonSerializer.Serialize(authCookie),
@@ -127,7 +124,7 @@ Debug.WriteLine($"--- Serialized cookie --- {JsonSerializer.Serialize(authCookie
 			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(provider, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
 		{
 			return Unauthorized();
 		}
@@ -144,7 +141,7 @@ Debug.WriteLine($"--- Serialized cookie --- {JsonSerializer.Serialize(authCookie
 			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(provider, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
 		{
 			return Unauthorized();
 		}
@@ -184,7 +181,7 @@ Debug.WriteLine($"--- Serialized cookie --- {JsonSerializer.Serialize(authCookie
 			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(provider, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
 		{
 			return Unauthorized();
 		}
@@ -233,7 +230,7 @@ Debug.WriteLine($"--- Serialized cookie --- {JsonSerializer.Serialize(authCookie
 			return BadRequest($"Unknown provider: {providerName}");
 		}
 
-		if (!TryGetAuthContextFromCookies(provider, out var auth))
+		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
 		{
 			return Unauthorized();
 		}
