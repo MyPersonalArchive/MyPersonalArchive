@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useApiClient } from "./useApiClient"
 
 type OAuthAuth = {
@@ -46,12 +46,26 @@ type FindAttachmentRequest = {
 export function useMailProvider() {
 	const [provider, setProvider] = useState<"gmail" | "fastmail">("gmail")
 
-	const [auth, setAuth] = useState<{ isAuthenticated: boolean }>({ isAuthenticated: false })
+	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 	const [emails, setEmails] = useState<Email[]>([])
 	const [folders, setFolders] = useState<string[] | undefined>(undefined)
 	const [selectedFolder, setSelectedFolder] = useState<string | undefined>(undefined)
 
 	const apiClient = useApiClient()
+
+	useEffect(() => {
+		if (!isAuthenticated)
+			return
+
+		console.log("useEffect on isAuthenticated change to true")
+		fetchFolders()
+	}, [isAuthenticated, provider])
+
+	useEffect(() => {
+		console.log("useEffect on folders change:", folders)
+		setSelectedFolder(folders?.at(0))
+		console.log("Selected folder set to:", folders?.at(0))
+	}, [folders])
 
 	const login = async (): Promise<void> => {
 		if (provider === "gmail") {
@@ -64,7 +78,7 @@ export function useMailProvider() {
 			if (username && password) {
 				await apiClient.post(`/api/email/${provider}/auth/exchange`, { provider, username, password }, { credentials: "include" })
 				localStorage.setItem(`auth-${provider}`, "true")
-				setAuth({ isAuthenticated: true })
+				setIsAuthenticated(true)
 			}
 		}
 	}
@@ -102,32 +116,30 @@ export function useMailProvider() {
 			await apiClient.post(`/api/email/${providerFromState}/auth/exchange`, { provider: providerFromState, code, state, redirectUri }, { credentials: "include" })
 
 			localStorage.setItem(`auth-${providerFromState}`, "true")
-			setAuth({ isAuthenticated: true })
+			setIsAuthenticated(true)
 		}
 		//TODO: Why is fetching folders and setting selectFolder not shown in the UI after auth?
-		await fetchFolders()
+		// await fetchFolders()
 		return null
 	}
 
 	const fetchFolders = async () => {
-		if (!auth) throw new Error("Not authenticated")
+		// if (!isAuthenticated) throw new Error("Not authenticated")
 
 		//TODO: Why is fetching folders and setting selectFolder not shown in the UI after auth?
 		// It works fine when called from refresh!
 
 		// Should this be handled with useEffect on return value?
 
-		console.log("** 1 ** Fetching folders for provider:", provider)
 		const folders = await apiClient.get<string[]>(`/api/email/${provider}/list-folders`, null, { credentials: "include" })
-		console.log("** 2 ** Fetched folders:", folders)
 		setFolders(folders)
-		console.log("** 3 ** Setting selected folder to:", folders?.at(0))
-		setSelectedFolder(folders?.at(0))
-		console.log("** 4 ** Selected folder set to:", selectedFolder)
+		// console.log("** 3 ** Setting selected folder to:", folders?.at(0))
+		// setSelectedFolder(folders?.at(0))
+		// console.log("** 4 ** Selected folder set to:", selectedFolder)
 	}
 
 	const fetchEmails = async (search: FindAttachmentRequest) => {
-		if (!auth) throw new Error("Not authenticated")
+		// if (!isAuthenticated) throw new Error("Not authenticated")
 
 		const emails = await apiClient.post<Email[]>(`/api/email/${provider}/list`, search, { credentials: "include" })
 		setEmails((emails ?? []))
@@ -157,6 +169,7 @@ export function useMailProvider() {
 		setProvider,
 		login,
 		handleAuthCallback,
+		isAuthenticated,
 		fetchEmails,
 		createArchiveItemFromEmails,
 		createBlobsFromAttachments,
@@ -164,7 +177,6 @@ export function useMailProvider() {
 		selectedFolder,
 		setSelectedFolder,
 		emails,
-		folders,
-		auth
+		folders
 	}
 }

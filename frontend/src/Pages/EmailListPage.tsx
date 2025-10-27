@@ -13,7 +13,6 @@ import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from 
 export const EmailListPage = () => {
 	const { provider, setProvider, login, fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
 
-	console.log("*** *** ***", {folders, selectedFolder})
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
