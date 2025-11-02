@@ -84,6 +84,16 @@ const Component = (props: MetadataComponentProps) => {
 	const state = props.state
 	const dispatch = props.dispatch as React.Dispatch<Command>
 
+	const formatLocalDateForInput = (datetimeOffsetString: string) => {
+		// We get the datetimeoffset from the server, and in order to adjust the time based on timezone we calculate the actual local time.
+		// This because the datetime-local input type does not take timezone into account.
+		const date = new Date(datetimeOffsetString);
+		const tzOffset = date.getTimezoneOffset() * 60000;
+		const localISOTime = new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+		return localISOTime;
+	}
+
+
 	return (
 		<>
 			<div className="aligned-labels-and-inputs">
@@ -104,7 +114,7 @@ const Component = (props: MetadataComponentProps) => {
 					type="datetime-local"
 					id="email-date"
 					className="input"
-					value={state.date}
+					value={state.date ? formatLocalDateForInput(state.date) : ""}
 					onChange={e => dispatch({ action: "SET_DATE", date: e.target.value })}
 				/>
 			</div>

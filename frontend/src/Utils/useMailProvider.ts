@@ -146,16 +146,17 @@ export function useMailProvider() {
 	}
 
 	const createArchiveItemFromEmails = async (emails: Email[]) => {
-		const body = emails.map(email => ({
-			provider: provider,
-			uniqueId: email.uniqueId
-		}))
+		const body = {
+			folder: selectedFolder,
+			messageIds: emails.map(email => email.uniqueId)
+		}
 
-		await apiClient.post(`/api/archive/create-archive-item-from-emails`, body, { credentials: "include" })
+		await apiClient.post(`/api/email/${provider}/create-archive-item-from-emails`, body, { credentials: "include" })
 	}
 
 	const createBlobsFromAttachments = async (messageId: string, emailAttachments: EmailAttachment[]) => {
 		const body = {
+			folder: selectedFolder,
 			attachments: emailAttachments.map(a => ({
 				messageId: messageId,
 				fileName: a.fileName
