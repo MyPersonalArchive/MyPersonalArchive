@@ -61,8 +61,8 @@ public abstract class ImapProviderBase
 		var root = client.GetFolder(client.PersonalNamespaces[0]);
 		var allFolders = await root.GetSubfoldersAsync(true);
 		return allFolders.Select(f => f.FullName).ToList();
-
 	}
+
 
 	private async Task<IList<Email>> FindEmailsAsync(IImapClient client, EmailSearchCriteria searchCriteria)
 	{

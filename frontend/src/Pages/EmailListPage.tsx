@@ -69,21 +69,18 @@ export const EmailListPage = () => {
 				<div className="stack-horizontal to-the-left my-4">
 					<div className="text-green-600 bg-gray-900 font-mono text-sm w-full p-2">// TODO: show/hide filters, stored filters and display options</div>
 					{/*
-						<label>
-							<input type="checkbox" /> Only show emails since last fetched timestamp
-						</label>
-						<label>
-							<input type="checkbox" /> Show newest emails on top
-						</label>
-						<label>
-							<input type="checkbox" /> Only show emails with attachments
-						</label>
-						<label>
-							Filter by sender/subject/body etc <input type="text" className="input" />
-						</label>
-						<div>
-							List of folders, other filters and display options go here.
-						</div>
+					Auto load folders on login. Should we store folders and currentFolder per account?
+					Filters
+						- Only show emails since last fetched timestamp [checkbox]
+						- Only show emails with attachments [checkbox]
+						- Filter by sender/subject/body etc [input box]
+						- Download from specific folder(s) [select multiple]
+					Display options
+						- Group by conversation	[checkbox]
+						- Newest on top? [checkbox or sort order selection]
+					Stored filters?
+					Stored email accounts?
+						- instead of just selecting the provider and enter account and login details, set up a list of stored email accounts to select from
 					*/}
 				</div>
 

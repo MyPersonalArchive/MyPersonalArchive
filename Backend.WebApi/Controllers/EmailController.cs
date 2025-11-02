@@ -47,27 +47,27 @@ public class EmailController : ControllerBase
 		_resolver = resolver;
 	}
 
-	[HttpGet("{providerName}/auth/url")]
-	public ActionResult<AuthUrlResponse> GetAuthUrl(string providerName, [FromQuery] string redirectUri)
-	{
-		if (!_registry.TryGetProvider(providerName, out var provider))
-			return BadRequest($"Unknown provider: {providerName}");
+	// [HttpGet("{providerName}/auth/url")]
+	// public ActionResult<AuthUrlResponse> GetAuthUrl(string providerName, [FromQuery] string redirectUri)
+	// {
+	// 	if (!_registry.TryGetProvider(providerName, out var provider))
+	// 		return BadRequest($"Unknown provider: {providerName}");
 
-		if (provider.AuthenticationMode != EmailAuthMode.Oath2)
-			return BadRequest($"{providerName} does not support OAuth");
+	// 	if (provider.AuthenticationMode != EmailAuthMode.Oath2)
+	// 		return BadRequest($"{providerName} does not support OAuth");
 
-		//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
-		var rawState = new
-		{
-			provider = providerName,
-			nonce = Guid.NewGuid().ToString("N")
-		};
-		var stateJson = JsonSerializer.Serialize(rawState);
-		var encodedState = WebUtility.UrlEncode(stateJson);
+	// 	//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
+	// 	var rawState = new
+	// 	{
+	// 		provider = providerName,
+	// 		nonce = Guid.NewGuid().ToString("N")
+	// 	};
+	// 	var stateJson = JsonSerializer.Serialize(rawState);
+	// 	var encodedState = WebUtility.UrlEncode(stateJson);
 
-		var url = provider.GetAuthorizationUrl(encodedState, redirectUri);
-		return Ok(new AuthUrlResponse { Url = url, State = encodedState });
-	}
+	// 	var url = provider.GetAuthorizationUrl(encodedState, redirectUri);
+	// 	return Ok(new AuthUrlResponse { Url = url, State = encodedState });
+	// }
 
 
 	[HttpPost("{providerName}/auth/exchange")]
@@ -88,12 +88,7 @@ public class EmailController : ControllerBase
 		IAuthContext? authCookie = null;
 		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
 		{
-			if (string.IsNullOrEmpty(token.Code) || string.IsNullOrEmpty(token.RedirectUri))
-			{
-				return BadRequest("missing code or redirectUri");
-			}
-
-			authCookie = await provider.ExchangeCodeForTokenAsync(token.Code, token.RedirectUri);
+			throw new NotImplementedException("OAuth exchange not implemented in this endpoint. Use the RemoteAuthenticationController instead.");
 		}
 		else if (provider.AuthenticationMode == EmailAuthMode.Basic)
 		{

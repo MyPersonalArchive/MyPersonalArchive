@@ -32,7 +32,8 @@ public class AuthenticationController : ControllerBase
         _passwordHasher = passwordHasher;
     }
 
-    [AllowAnonymous]
+
+	[AllowAnonymous]
     [HttpPost("SignIn")]
     public async Task<ActionResult<SignInResponse>> SignIn(SignInRequest request)
     {
@@ -75,7 +76,8 @@ public class AuthenticationController : ControllerBase
         return Ok(response);
     }
 
-    [AllowAnonymous]
+
+	[AllowAnonymous]
     [HttpPost("Refresh")]
     public async Task<ActionResult<RefreshResponse>> Refresh()
     {
@@ -119,7 +121,8 @@ public class AuthenticationController : ControllerBase
         return Ok(response);
     }
 
-    [Authorize]
+
+	[Authorize]
     [HttpPost("SignOut")]
     public new async Task<IActionResult> SignOut()  //TODO: Change name or signature to not have to use 'new' here?
     {

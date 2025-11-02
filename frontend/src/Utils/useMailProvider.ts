@@ -67,11 +67,9 @@ export function useMailProvider() {
 		console.log("Selected folder set to:", folders?.at(0))
 	}, [folders])
 
-	const login = async (): Promise<void> => {
+	const login = async () => {
 		if (provider === "gmail") {
-			const redirectUri = window.location.origin + "/auth-callback"
-			const response = await apiClient.get<AuthUrlResponse>(`/api/email/${provider}/auth/url?redirectUri=${encodeURIComponent(redirectUri)}`, null, { credentials: "include" })
-			window.location.href = response!.url // full redirect, no popup
+			window.location.href = `/api/remoteauthentication/start-authentication?provider-name=${provider}&return-url=${encodeURIComponent(window.location.origin + "/email")}`
 		} else if (provider === "fastmail") {
 			const username = prompt("FastMail username:")
 			const password = prompt("FastMail app password:")
