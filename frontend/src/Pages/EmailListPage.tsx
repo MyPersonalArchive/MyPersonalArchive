@@ -59,7 +59,7 @@ export const EmailListPage = () => {
 				</div>
 
 				<button className="btn"
-					onClick={() => fetchEmails({ provider, folders: [selectedFolder!], limit: 300 })}
+					onClick={() => fetchEmails({ provider, folders: [selectedFolder!], limit: 50 })}
 					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
@@ -129,6 +129,7 @@ export const EmailListPage = () => {
 							createArchiveItemFromEmails={createArchiveItemFromEmails}
 							createBlobsFromAttachments={createBlobsFromAttachments}
 							provider={provider}
+							selectedFolder={selectedFolder!}
 							maximize={minimize}
 						/>
 					} />
@@ -195,9 +196,10 @@ type PreviewProps = {
 	createArchiveItemFromEmails: (emails: Email[]) => void
 	createBlobsFromAttachments: (messageId: string, attachments: EmailAttachment[]) => void
 	provider: string
+	selectedFolder: string
 	maximize: (email: Email) => void
 }
-const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, provider, maximize: minimize }: PreviewProps) => {
+const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, provider, selectedFolder, maximize: minimize }: PreviewProps) => {
 	return (
 		<div key={email.uniqueId} className="grid-rows-3">
 			<div className="bg-gray-100 p-4 sticky top-0">
@@ -227,7 +229,7 @@ const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachment
 				<div className="flex flex-row justify-between">
 
 					<div className="max-h-50 overflow-y-auto">
-						<AttachmentList attachments={email.attachments} email={email} provider={provider} ingestAttachments={createBlobsFromAttachments} />
+						<AttachmentList attachments={email.attachments} email={email} provider={provider} selectedFolder={selectedFolder} ingestAttachments={createBlobsFromAttachments} />
 					</div>
 
 					<div style={{ alignSelf: "flex-end" }}>
@@ -249,9 +251,10 @@ type AttachmentListProps = {
 	attachments: EmailAttachment[]
 	email: Email
 	provider: string
+	selectedFolder: string
 	ingestAttachments: (messageId: string, attachments: EmailAttachment[]) => void
 }
-const AttachmentList = ({ attachments, email, provider, ingestAttachments }: AttachmentListProps) => {
+const AttachmentList = ({ attachments, email, provider, selectedFolder, ingestAttachments }: AttachmentListProps) => {
 	const selectionOfAttachments = useSelection<string>(new Set(attachments.map(attachment => attachment.fileName)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
@@ -288,7 +291,7 @@ const AttachmentList = ({ attachments, email, provider, ingestAttachments }: Att
 						<SelectCheckbox selection={selectionOfAttachments} item={attachment.fileName} />
 
 						<FontAwesomeIcon icon={faPaperclip} className="ml-1" />
-						<a href={`/api/email/${provider}/download-attachment?messageId=${email.uniqueId}&fileName=${attachment.fileName}`}
+						<a href={`/api/email/${provider}/download-attachment?messageId=${email.uniqueId}&fileName=${attachment.fileName}&folder=${selectedFolder}`}
 							className="link ml-2"
 						>
 							{attachment.fileName}

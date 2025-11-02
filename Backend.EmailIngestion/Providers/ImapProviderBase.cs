@@ -23,10 +23,29 @@ public abstract class ImapProviderBase
 		return await FindEmailsAsync(client, searchCriteria);
 	}
 
-	public async Task<Attachment?> DownloadAttachmentAsync(IAuthContext auth, string messageId, string fileName)
+	public async Task<IList<Email>> FindEmailsAsync(IAuthContext auth, string folder, List<string> messageIds)
 	{
 		using var client = await ConnectAsync(auth);
-		return await DownloadAttachmentAsync(client, messageId, fileName);
+		var mailFolder = client.GetFolder(folder);
+		await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+
+		var uniqueIds = messageIds
+						.Select(UniqueId.Parse)
+						.ToList();
+
+		var results = new List<Email>();
+		foreach (var uniqueId in uniqueIds)
+		{
+			results.Add(await GetEmail(mailFolder, folder, uniqueId));
+		}
+
+		return results;
+	}
+
+	public async Task<Attachment?> DownloadAttachmentAsync(IAuthContext auth, string folder, string messageId, string fileName)
+	{
+		using var client = await ConnectAsync(auth);
+		return await DownloadAttachmentAsync(client, folder, messageId, fileName);
 	}
 
 	public async Task<IList<string>> GetAvailableFolders(IAuthContext auth)
@@ -80,39 +99,7 @@ public abstract class ImapProviderBase
 
 			foreach (var item in messages)
 			{
-				var message = await mailFolder.GetMessageAsync(item.UniqueId);
-				var email = new Email()
-				{
-					UniqueId = item.UniqueId.Id.ToString(),
-					Subject = message.Subject,
-					From = message.From
-						.Select(address => address is MailboxAddress mb
-							? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-							: new Email.Address { EmailAddress = address.Name }
-						),
-					To = message.To
-						.Select(address => address is MailboxAddress mb
-							? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-							: new Email.Address { EmailAddress = address.Name }
-						),
-					ReceivedTime = message.Date,
-					Body = message.TextBody,
-					HtmlBody = message.HtmlBody
-				};
-
-				foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
-				{
-					if (part.IsAttachment)
-					{
-						email.Attachments.Add(new Email.EmailAttachment
-						{
-							FileName = part.FileName ?? "attachment",
-							ContentType = part.ContentType.MimeType
-						});
-					}
-				}
-
-				results.Add(email);
+				results.Add(await GetEmail(mailFolder, folder, item.UniqueId));
 			}
 		}
 
@@ -122,12 +109,12 @@ public abstract class ImapProviderBase
 		return results;
 	}
 
-	private async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string messageId, string fileName)
+	private async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string folder, string messageId, string fileName)
 	{
-		var inbox = client.Inbox;
-		await inbox.OpenAsync(FolderAccess.ReadOnly);
+		var mailFolder = client.GetFolder(folder);
+		await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-		var message = await inbox.GetMessageAsync(new UniqueId(uint.Parse(messageId)));
+		var message = await mailFolder.GetMessageAsync(new UniqueId(uint.Parse(messageId)));
 
 		foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
 		{
@@ -147,6 +134,42 @@ public abstract class ImapProviderBase
 		}
 
 		return null;
+	}
+
+	private async Task<Email> GetEmail(IMailFolder mailFolder, string folder, UniqueId uniqueId)
+	{
+		var message = await mailFolder.GetMessageAsync(uniqueId);
+		var email = new Email()
+		{
+			UniqueId = uniqueId.Id.ToString(),
+			Subject = message.Subject,
+			From = message.From
+				.Select(address => address is MailboxAddress mb
+					? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+					: new Email.Address { EmailAddress = address.Name }
+				),
+			To = message.To
+				.Select(address => address is MailboxAddress mb
+					? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+					: new Email.Address { EmailAddress = address.Name }
+				),
+			ReceivedTime = message.Date,
+			Body = message.TextBody,
+			HtmlBody = message.HtmlBody
+		};
+
+		foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
+		{
+			if (part.IsAttachment)
+			{
+				email.Attachments.Add(new Email.EmailAttachment
+				{
+					FileName = part.FileName ?? "attachment",
+					ContentType = part.ContentType.MimeType
+				});
+			}
+		}
+		return email;
 	}
 
 	private SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)

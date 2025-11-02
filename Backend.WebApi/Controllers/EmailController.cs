@@ -6,9 +6,11 @@ using Backend.EmailIngestion;
 using Backend.EmailIngestion.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Ocsp;
 using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 //TODO:
 /*
@@ -174,7 +176,7 @@ public class EmailController : ControllerBase
 
 
 	[HttpGet("{providerName}/download-attachment")]
-	public async Task<IActionResult> DownloadAttachment(string providerName, [FromQuery] string messageId, [FromQuery] string fileName)
+	public async Task<IActionResult> DownloadAttachment(string providerName, [FromQuery] string messageId, [FromQuery] string fileName, [FromQuery] string folder)
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
@@ -186,7 +188,7 @@ public class EmailController : ControllerBase
 			return Unauthorized();
 		}
 
-		var attachment = await provider.DownloadAttachmentAsync(auth, messageId, fileName);
+		var attachment = await provider.DownloadAttachmentAsync(auth, folder, messageId, fileName);
 		if (attachment == null) return NotFound();
 
 		return File(attachment.Stream, "application/octet-stream", fileName);
@@ -215,10 +217,51 @@ public class EmailController : ControllerBase
 		// - Get the emails by their IDs, create an ArchiveItem and store it in the database
 		// - Set the email info on the ArchiveItem (subject, date, from, to, body, etc)
 		// - Get the attachments for the emails add them to the ArchiveItem as well
+		var emails = await provider.FindEmailsAsync(auth!, request.Folder, request.MessageIds);
 
-		throw new NotImplementedException();
+		foreach (var email in emails)
+		{
+			var archiveItem = new ArchiveItem
+			{
+				TenantId = _resolver.GetCurrentTenantId()!.Value,
+				Title = email.Subject,
+				CreatedAt = DateTimeOffset.UtcNow,
+				CreatedByUsername = _resolver.GetCurrentUsername(),
+				Tags = [],
+				DocumentDate = email.ReceivedTime,
+				Metadata = (JsonSerializer.SerializeToNode(new
+				{
+					email = new
+					{
+						to = email.To.Select(a => $"{a.Name} <{a.EmailAddress}>"),
+						from = email.From.Select(a => $"{a.Name} <{a.EmailAddress}>"),
+						date = email.ReceivedTime,
+						subject = email.Subject,
+						body = email.Body
+					}
+				}) as JsonObject)!
+			};
 
-		return NoContent();
+			if (email.Attachments.Any())
+			{
+				foreach (var attachment in email.Attachments)
+				{
+					var blob = await DownloadAttachmentAsBlob(archiveItem, request.Folder, email.UniqueId, attachment.FileName, provider, auth!);
+					if (blob != null)
+					{
+						await _dbContext.Blobs.AddAsync(blob);
+						archiveItem.Blobs!.Add(blob);
+					}
+				}					
+			}
+
+			await _dbContext.ArchiveItems.AddAsync(archiveItem);
+		}
+
+		
+		await _dbContext.SaveChangesAsync();
+
+		return Ok();
 	}
 
 
@@ -244,7 +287,7 @@ public class EmailController : ControllerBase
 		{
 			try
 			{
-				var downloadedAttachment = await provider.DownloadAttachmentAsync(auth, attachment.MessageId, attachment.FileName);
+				var downloadedAttachment = await provider.DownloadAttachmentAsync(auth, request.Folder, attachment.MessageId, attachment.FileName);
 				if (downloadedAttachment == null) return NotFound();
 
 				var blob = new Blob
@@ -287,6 +330,35 @@ public class EmailController : ControllerBase
 		return provider.TryCreateAuthContext(authJson, out auth);
 	}
 
+	protected async Task<Blob?> DownloadAttachmentAsBlob(ArchiveItem archiveItem, string folder, string messageId, string fileName, ImapProviderBase provider, IAuthContext auth)
+	{
+		try
+		{
+			var downloadedAttachment = await provider.DownloadAttachmentAsync(auth, folder, messageId, fileName);
+			if (downloadedAttachment == null) return null;
+
+			return new Blob
+			{
+				TenantId = _resolver.GetCurrentTenantId()!.Value,
+				ArchiveItem = archiveItem,
+				FileHash = _fileProvider.ComputeSha256Hash(downloadedAttachment.Stream),
+				MimeType = downloadedAttachment.ContentType,
+				OriginalFilename = fileName,
+				PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType, downloadedAttachment.Stream),
+				FileSize = downloadedAttachment.FileSize,
+				UploadedAt = DateTimeOffset.Now,
+				UploadedByUsername = _resolver.GetCurrentUsername(),
+				StoreRoot = StoreRoot.FileStorage.ToString(),
+				PathInStore = await _fileProvider.Store(fileName, downloadedAttachment.ContentType, downloadedAttachment.Stream)
+			};
+		}
+		catch (Exception)
+		{
+
+		}
+
+		return null;
+	}
 
 	#region Request and response models
 
@@ -309,12 +381,14 @@ public class EmailController : ControllerBase
 
 	public record CreateArchiveItemFromEmailsRequest
 	{
+		public required string Folder { get; set; }
 		public List<string>? MessageIds { get; set; }
 	}
 
 
 	public record CreateBlobsFromAttachmentsRequest
 	{
+		public required string Folder { get; set; }
 		public List<Attachment>? Attachments { get; set; }
 
 		public class Attachment
