@@ -36,7 +36,7 @@ public abstract class ImapProviderBase
 		var results = new List<Email>();
 		foreach (var uniqueId in uniqueIds)
 		{
-			results.Add(await GetEmail(mailFolder, folder, uniqueId));
+			results.Add(await GetEmailAsync(mailFolder, uniqueId));
 		}
 
 		return results;
@@ -99,7 +99,7 @@ public abstract class ImapProviderBase
 
 			foreach (var item in messages)
 			{
-				results.Add(await GetEmail(mailFolder, folder, item.UniqueId));
+				results.Add(await GetEmailAsync(mailFolder, item.UniqueId));
 			}
 		}
 
@@ -136,7 +136,7 @@ public abstract class ImapProviderBase
 		return null;
 	}
 
-	private async Task<Email> GetEmail(IMailFolder mailFolder, string folder, UniqueId uniqueId)
+	private async Task<Email> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
 	{
 		var message = await mailFolder.GetMessageAsync(uniqueId);
 		var email = new Email()
