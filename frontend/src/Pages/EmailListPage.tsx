@@ -5,7 +5,6 @@ import { RoutePaths } from "../RoutePaths"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
-import DOMPurify from "dompurify"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 
@@ -221,7 +220,7 @@ const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachment
 			</div>
 
 			<div className="p-4 overflow-y-scroll">
-				<div className="my-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(email.htmlBody ?? email.body) }}>
+				<div className="my-2" dangerouslySetInnerHTML={{ __html: email.htmlBody ?? email.body }}>
 				</div>
 			</div>
 
@@ -257,12 +256,25 @@ type AttachmentListProps = {
 const AttachmentList = ({ attachments, email, provider, selectedFolder, ingestAttachments }: AttachmentListProps) => {
 	const selectionOfAttachments = useSelection<string>(new Set(attachments.map(attachment => attachment.fileName)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
+
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
 			selectAllCheckboxRef.current.indeterminate = selectionOfAttachments.allPossibleItems.size == 0 || selectionOfAttachments.areOnlySomeItemsSelected
 			selectAllCheckboxRef.current.checked = selectionOfAttachments.allPossibleItems.size > 0 && selectionOfAttachments.areAllItemsSelected
 		}
 	}, [selectionOfAttachments.selectedItems, attachments])
+
+	const downloadAttachment = (attachment: EmailAttachment) => {
+		const params = new URLSearchParams();
+		params.set("messageId", email.uniqueId);
+		params.set("fileName", attachment.fileName);
+		params.set("folder", selectedFolder); // email folders may have spaces, so lets use query params
+
+		return <a href={`/api/email/${provider}/download-attachment?${params.toString()}`}
+		   className="link ml-2">
+			{attachment.fileName}
+		</a>
+	}
 
 	return (
 		attachments.length > 0 && (
@@ -291,11 +303,7 @@ const AttachmentList = ({ attachments, email, provider, selectedFolder, ingestAt
 						<SelectCheckbox selection={selectionOfAttachments} item={attachment.fileName} />
 
 						<FontAwesomeIcon icon={faPaperclip} className="ml-1" />
-						<a href={`/api/email/${provider}/download-attachment?messageId=${email.uniqueId}&fileName=${attachment.fileName}&folder=${selectedFolder}`}
-							className="link ml-2"
-						>
-							{attachment.fileName}
-						</a>
+						{downloadAttachment(attachment)}
 					</div>
 				))}
 			</div>

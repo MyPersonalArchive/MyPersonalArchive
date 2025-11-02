@@ -154,7 +154,7 @@ public class EmailController : ControllerBase
 			UniqueId = email.UniqueId,
 			Subject = email.Subject,
 			Body = email.Body,
-			HtmlBody = email.HtmlBody,
+			HtmlBody = HtmlSanitizer.Sanitize(email.HtmlBody),
 			ReceivedTime = email.ReceivedTime,
 			From = email.From.Select(a => new ListEmailsResponse.Address
 			{
@@ -198,6 +198,11 @@ public class EmailController : ControllerBase
 	[HttpPost("{providerName}/create-archive-item-from-emails")]
 	public async Task<IActionResult> CreateArchiveItemFromEmails(string providerName, [FromBody] CreateArchiveItemFromEmailsRequest request)
 	{
+		if (request.MessageIds == null || !request.MessageIds.Any())
+		{
+			return NoContent();
+		}
+
 		if (!_registry.TryGetProvider(providerName, out var provider))
 		{
 			return BadRequest($"Unknown provider: {providerName}");
@@ -208,15 +213,6 @@ public class EmailController : ControllerBase
 			return Unauthorized();
 		}
 
-		if (request.MessageIds == null || !request.MessageIds.Any())
-		{
-			return NoContent();
-		}
-
-		//TODO: Implement this method
-		// - Get the emails by their IDs, create an ArchiveItem and store it in the database
-		// - Set the email info on the ArchiveItem (subject, date, from, to, body, etc)
-		// - Get the attachments for the emails add them to the ArchiveItem as well
 		var emails = await provider.FindEmailsAsync(auth!, request.Folder, request.MessageIds);
 
 		foreach (var email in emails)
@@ -285,32 +281,10 @@ public class EmailController : ControllerBase
 
 		foreach (var attachment in request.Attachments)
 		{
-			try
+			var blob = await DownloadAttachmentAsBlob(null!, request.Folder, attachment.MessageId, attachment.FileName, provider, auth);
+			if(blob != null)
 			{
-				var downloadedAttachment = await provider.DownloadAttachmentAsync(auth, request.Folder, attachment.MessageId, attachment.FileName);
-				if (downloadedAttachment == null) return NotFound();
-
-				var blob = new Blob
-				{
-					TenantId = _resolver.GetCurrentTenantId()!.Value,
-					ArchiveItem = null,
-					FileHash = _fileProvider.ComputeSha256Hash(downloadedAttachment.Stream),
-					MimeType = downloadedAttachment.ContentType,
-					OriginalFilename = attachment.FileName,
-					PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType, downloadedAttachment.Stream),
-					FileSize = downloadedAttachment.FileSize,
-					UploadedAt = DateTimeOffset.Now,
-					UploadedByUsername = _resolver.GetCurrentUsername(),
-					StoreRoot = StoreRoot.FileStorage.ToString(),
-					PathInStore = await _fileProvider.Store(attachment.FileName, downloadedAttachment.ContentType, downloadedAttachment.Stream)
-				};
-
 				await _dbContext.Blobs.AddAsync(blob);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"--- Empty catch block --- {ex.Message}");
-				//TODO: Why is there an empty catch here? Log error?
 			}
 		}
 
@@ -354,7 +328,7 @@ public class EmailController : ControllerBase
 		}
 		catch (Exception)
 		{
-
+			Debug.WriteLine("Log error here?");
 		}
 
 		return null;
