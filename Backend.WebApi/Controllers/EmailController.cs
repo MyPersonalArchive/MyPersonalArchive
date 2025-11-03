@@ -363,9 +363,9 @@ public class EmailController : ControllerBase
 	public record CreateBlobsFromAttachmentsRequest
 	{
 		public required string Folder { get; set; }
-		public List<Attachment>? Attachments { get; set; }
+		public List<AttachmentReference>? Attachments { get; set; }
 
-		public class Attachment
+		public class AttachmentReference
 		{
 			public required string MessageId { get; set; }
 			public required string FileName { get; set; }
