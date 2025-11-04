@@ -1,6 +1,13 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react-swc"
 import tailwindcss from "@tailwindcss/vite"
+import fs from "fs"
+import https from "https"
+
+// Check if HTTPS certificates exist
+const keyPath = "/data/https/server.key"
+const certPath = "/data/https/server.crt"
+const httpsEnabled = fs.existsSync(keyPath) && fs.existsSync(certPath)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,11 +17,22 @@ export default defineConfig({
 	],
 	server: {
 		host: true,
+		...(httpsEnabled && {
+			https: {
+				key: fs.readFileSync(keyPath),
+				cert: fs.readFileSync(certPath)
+			}
+		}),
 		proxy: {
 			"/api": {
-				target: "http://localhost:5054",
+				target: httpsEnabled ? "https://localhost:5054" : "http://localhost:5054",
 				changeOrigin: true,
-				// secure: false,
+				...(httpsEnabled && {
+					secure: false,
+					agent: new https.Agent({
+						rejectUnauthorized: false
+					})
+				}),
 				ws: true,
 				// configure: (proxy, _options) => {
 				//   proxy.on('error', (err, _req, _res) => {
@@ -29,9 +47,14 @@ export default defineConfig({
 				// },
 			},
 			"/notificationHub": {
-				target: "http://localhost:5054",
+				target: httpsEnabled ? "https://localhost:5054" : "http://localhost:5054",
 				changeOrigin: true,
 				ws: true,
+				...(httpsEnabled && {
+					agent: new https.Agent({
+						rejectUnauthorized: false
+					})
+				}),
 			}
 		}
 	}

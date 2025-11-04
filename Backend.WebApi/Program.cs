@@ -12,97 +12,126 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Newtonsoft.Json;
 using Backend.EmailIngestion;
 using Backend.EmailIngestion.Providers;
+using System.Net;
 
 namespace Backend.WebApi;
 
 public static class Program
 {
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+	private static ILogger _logger = null!;
 
-        // OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
-        // JsonObject is used in our dbContext. Can we instead use JObject? We are not using Newtonsoft there.
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        {
-            Converters = { new JsonObjectConverter() },
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        };
+	private static void Main(string[] args)
+	{
+		var builder = WebApplication.CreateBuilder(args);
+		builder.InitializeLogger();
 
-        // Add services to the container.
-        builder.Services.AddControllers();
+		// OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
+		// JsonObject is used in our dbContext. Can we instead use JObject? We are not using Newtonsoft there.
+		JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+		{
+			Converters = { new JsonObjectConverter() },
+			ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+		};
 
-        builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
-        builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
-        builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
+		// Add services to the container.
+		builder.Services.AddControllers();
 
-        builder.Services.AddHttpContextAccessor();
+		builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
+		builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
+		builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
 
-        builder.Services.AddDbContext<MpaDbContext>();
+		builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
-        builder.Services.AddTransient<PasswordHasher>();
-        builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
+		builder.Services.AddDbContext<MpaDbContext>();
 
-        builder.Services.AddOptions();
+		builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
+		builder.Services.AddTransient<PasswordHasher>();
+		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
 
-        builder.RegisterSignalRServices();
-        builder.RegisterJwtServices();
-        builder.RegisterBackupProviders();
-        builder.RegisterEncryptionServics();
-        builder.RegisterRestoreServices();
-        builder.RegisterSwaggerServices();
+		builder.Services.AddOptions();
+
+		builder.RegisterEndpoints();
+		builder.RegisterSignalRServices();
+		builder.RegisterJwtServices();
+		builder.RegisterBackupProviders();
+		builder.RegisterEncryptionServics();
+		builder.RegisterRestoreServices();
+		builder.RegisterSwaggerServices();
 		builder.RegisterEmailServices();
 
-        // builder.Services.AddScoped<IVersionRepository, VersionRepository>();
+		// builder.Services.AddScoped<IVersionRepository, VersionRepository>();
 		// builder.Services.AddScoped<ISeedService, SeedService>();
 
 		var app = builder.Build();
 
-        app.PrepareDatabase();
-        app.Configure();
+		app.PrepareDatabase();
+		app.Configure();
 
-        app.Run();
-    }
+		app.Run();
+	}
+
+	private static void InitializeLogger(this WebApplicationBuilder builder)
+	{
+		using var serviceProvider = builder.Services.BuildServiceProvider();
+		_logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Backend.WebApi.Program");
+	}
+
+	private static void RegisterEndpoints(this WebApplicationBuilder builder)
+	{
+		builder.WebHost.UseKestrel(options =>
+		{
+			var cert_file = "/data/https/server.pfx";
+			var cert_password = builder.Configuration.GetValue<string>("CertificatePassword")?.TrimEnd('\n', '\r');
+			if (!string.IsNullOrEmpty(cert_password) && File.Exists(cert_file))
+			{
+				options.Listen(IPAddress.Loopback, 5054, listenOptions => { listenOptions.UseHttps(cert_file, cert_password); });
+			}
+			else
+			{
+				_logger.LogWarning("HTTPS certificate not found at {CertFile} or password missing. Starting Kestrel without HTTPS on port 5054.", cert_file);
+				options.Listen(IPAddress.Loopback, 5054);
+			}
+		});
+	}
 
 
-    private static void RegisterSignalRServices(this IHostApplicationBuilder builder)
-    {
-        var services = builder.Services;
+	private static void RegisterSignalRServices(this IHostApplicationBuilder builder)
+	{
+		var services = builder.Services;
 
-        services.AddSignalR(new Action<HubOptions>(hubOptions =>
-        {
-            hubOptions.EnableDetailedErrors = true;
-            hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
-        }));
-        services.AddScoped<SignalRService>();
-    }
-    
-    private static void RegisterBackupProviders(this IHostApplicationBuilder builder)
-    {
-        var services = builder.Services;
+		services.AddSignalR(new Action<HubOptions>(hubOptions =>
+		{
+			hubOptions.EnableDetailedErrors = true;
+			hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
+		}));
+		services.AddScoped<SignalRService>();
+	}
 
-        services.AddSingleton<TenantBackupManager>();
-        services.AddSingleton<BackupProviderFactory>();
+	private static void RegisterBackupProviders(this IHostApplicationBuilder builder)
+	{
+		var services = builder.Services;
 
-        services.AddScoped<BuddyTargetBackupProvider>();
-    }
+		services.AddSingleton<TenantBackupManager>();
+		services.AddSingleton<BackupProviderFactory>();
 
-    private static void RegisterRestoreServices(this IHostApplicationBuilder builder)
-    {
-        var services = builder.Services;
+		services.AddScoped<BuddyTargetBackupProvider>();
+	}
 
-        services.AddSingleton<TenantRestoreManager>();
-    }
+	private static void RegisterRestoreServices(this IHostApplicationBuilder builder)
+	{
+		var services = builder.Services;
 
-    private static void RegisterEncryptionServics(this IHostApplicationBuilder builder)
-    {
-        var services = builder.Services;
+		services.AddSingleton<TenantRestoreManager>();
+	}
 
-        services.AddSingleton<EncryptionProviderFactory>();
+	private static void RegisterEncryptionServics(this IHostApplicationBuilder builder)
+	{
+		var services = builder.Services;
 
-        services.AddScoped<OpenSslAes256Cbc>();
-    }
+		services.AddSingleton<EncryptionProviderFactory>();
+
+		services.AddScoped<OpenSslAes256Cbc>();
+	}
 
 	private static void RegisterEmailServices(this IHostApplicationBuilder builder)
 	{
@@ -114,7 +143,7 @@ public static class Program
 	}
 
 
-    private static void RegisterJwtServices(this WebApplicationBuilder builder)
+	private static void RegisterJwtServices(this WebApplicationBuilder builder)
 	{
 		// Build a temporary serviceprovider to get the JWT configuration 
 		var jwtOptions = WebApplication
@@ -165,112 +194,112 @@ public static class Program
 		builder.Services.AddAuthorization();
 	}
 
-    private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
-    {
-        var services = builder.Services;
+	private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
+	{
+		var services = builder.Services;
 
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
-        {
-            // options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+		services.AddEndpointsApiExplorer();
+		services.AddSwaggerGen(options =>
+		{
+			// options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "Enter 'Bearer {your JWT token}' in the Authorization header."
-            });
+			options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+			{
+				Name = "Authorization",
+				Type = SecuritySchemeType.Http,
+				Scheme = "Bearer",
+				BearerFormat = "JWT",
+				In = ParameterLocation.Header,
+				Description = "Enter 'Bearer {your JWT token}' in the Authorization header."
+			});
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Name = "Authorization",
-                        Type = SecuritySchemeType.Http,
-                        Scheme = "Bearer",
-                        BearerFormat = "JWT",
-                        In = ParameterLocation.Header,
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
+			options.AddSecurityRequirement(new OpenApiSecurityRequirement
+			{
+				{
+					new OpenApiSecurityScheme
+					{
+						Name = "Authorization",
+						Type = SecuritySchemeType.Http,
+						Scheme = "Bearer",
+						BearerFormat = "JWT",
+						In = ParameterLocation.Header,
+						Reference = new OpenApiReference
+						{
+							Type = ReferenceType.SecurityScheme,
+							Id = "Bearer"
+						}
+					},
+					Array.Empty<string>()
+				}
+			});
 
-            options.OperationFilter<SwaggerTenantIdHeaderFilter>();
-        });
-    }
-
-
-    private static void PrepareDatabase(this WebApplication app)
-    {
-        var services = app.Services;
-
-        var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
-        var tenantId = -1;
-        var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts and seeding database
-        dbContext.Database.Migrate();
-
-        if (app.Environment.IsDevelopment())
-        {
-            DemoDataGenerator.Seed(dbConfig);
-        }
-    }
+			options.OperationFilter<SwaggerTenantIdHeaderFilter>();
+		});
+	}
 
 
-    private static void Configure(this WebApplication app)
-    {
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-        
-        app.UseHttpsRedirection();
+	private static void PrepareDatabase(this WebApplication app)
+	{
+		var services = app.Services;
 
-        app.UseAuthentication();
-        app.UseAuthorization();
+		var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
+		var tenantId = -1;
+		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts and seeding database
+		dbContext.Database.Migrate();
 
-        app.UseWebSockets();
-        app.MapHub<NotificationHub>("/notificationHub");
-
-        // app.MapGet("/testUserChannel", async (IHubContext<NotificationHub> hub, string message) =>
-        //     await hub.Clients.All.SendAsync("userChannel", $"Message: {message}"));
-
-        app.UseStaticFiles();
-
-        app.MapFallbackToFile("index.html");
-
-        app.MapControllers();
-    }
+		if (app.Environment.IsDevelopment())
+		{
+			DemoDataGenerator.Seed(dbConfig);
+		}
+	}
 
 
-    public class SwaggerTenantIdHeaderFilter : IOperationFilter
-    {
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        {
-            if (operation.Parameters == null)
-                operation.Parameters = new List<OpenApiParameter>();
+	private static void Configure(this WebApplication app)
+	{
+		if (app.Environment.IsDevelopment())
+		{
+			app.UseSwagger();
+			app.UseSwaggerUI();
+		}
 
-            operation.Parameters.Add(new OpenApiParameter
-            {
-                Name = "X-Tenant-Id",
-                In = ParameterLocation.Header,
-                Required = false,  // Change to 'false' if not required
-                Schema = new OpenApiSchema
-                {
-                    Type = "string",
-                    Default = new Microsoft.OpenApi.Any.OpenApiString("")
-                }
-            });
-        }
-    }
+		app.UseHttpsRedirection();
+
+		app.UseAuthentication();
+		app.UseAuthorization();
+
+		app.UseWebSockets();
+		app.MapHub<NotificationHub>("/notificationHub");
+
+		// app.MapGet("/testUserChannel", async (IHubContext<NotificationHub> hub, string message) =>
+		//     await hub.Clients.All.SendAsync("userChannel", $"Message: {message}"));
+
+		app.UseStaticFiles();
+
+		app.MapFallbackToFile("index.html");
+
+		app.MapControllers();
+	}
+
+
+	public class SwaggerTenantIdHeaderFilter : IOperationFilter
+	{
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		{
+			if (operation.Parameters == null)
+				operation.Parameters = new List<OpenApiParameter>();
+
+			operation.Parameters.Add(new OpenApiParameter
+			{
+				Name = "X-Tenant-Id",
+				In = ParameterLocation.Header,
+				Required = false,  // Change to 'false' if not required
+				Schema = new OpenApiSchema
+				{
+					Type = "string",
+					Default = new Microsoft.OpenApi.Any.OpenApiString("")
+				}
+			});
+		}
+	}
 }
