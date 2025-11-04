@@ -36,11 +36,9 @@ export default tseslint.config(
 				{ allowConstantExport: true },
 			],
 
-			// // Disable the default no-unused-vars as we use unused-imports plugin
-			"no-unused-vars": "warn",
+			// Disable the default no-unused-vars as we use TypeScript's version
+			"no-unused-vars": "off",
 			"@typescript-eslint/no-unused-vars": "warn",
-			"no-unused-imports": "warn",
-			"@typescript-eslint/no-unused-imports": "warn",
 			// "@typescript-eslint/no-unused-vars": "off",
 			// // "react-hooks/exhaustive-deps": "off",
 
