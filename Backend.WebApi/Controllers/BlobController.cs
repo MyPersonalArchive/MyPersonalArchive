@@ -43,42 +43,75 @@ public class BlobController : ControllerBase
     }
 
 
-    [HttpGet]
-    public async Task<ActionResult> Preview(
-        [FromQuery] int blobId,
-        [FromQuery] DimensionEnum dimension,
-        [FromQuery] int pageNumber = 0
-    )
-    {
-        var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-        if (blob == null)
-        {
-            return NotFound();
-        }
+	[HttpGet]
+	public async Task<ActionResult> Preview(
+		[FromQuery] int blobId,
+		[FromQuery] DimensionEnum dimension,
+		[FromQuery] int pageNumber = 0
+	)
+	{
+		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+		if (blob == null)
+		{
+			return NotFound();
+		}
 
-        int maxX, maxY;
-        switch (dimension)
-        {
-            case DimensionEnum.XSmall:
-                maxX = maxY = 95;
-                break;
-            case DimensionEnum.Small:
-                maxX = maxY = 150;
-                break;
-            case DimensionEnum.Medium:
-                maxX = maxY = 300;
-                break;
-            case DimensionEnum.Large:
-                maxX = maxY = 800;
-                break;
-            default:
-                return BadRequest();
-        }
+		int maxX, maxY;
+		switch (dimension)
+		{
+			case DimensionEnum.Thumbnail:
+				maxX = maxY = 150;
+				break;
+			case DimensionEnum.Small:
+				maxX = maxY = 300;
+				break;
+			case DimensionEnum.Full:
+				maxX = maxY = 800;
+				break;
+			default:
+				return BadRequest();
+		}
 
-        var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
-        var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, pageNumber);
-        return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
-    }
+		var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
+		var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, pageNumber);
+		return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
+	}
+	
+	//If we decide to go away from libvips we will remove "Preview" and only have this
+	public async Task<ActionResult> GetFile([FromQuery] int blobId, [FromQuery] DimensionEnum dimension)
+	{
+		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+		if (blob == null)
+		{
+			return NotFound();
+		}
+
+		//User our libvips preview mechanism if image or pdf
+		if(dimension != DimensionEnum.Full && (blob.MimeType.StartsWith("image/") || blob.MimeType == "application/pdf"))
+		{
+			int maxX, maxY;
+			switch (dimension)
+			{
+				case DimensionEnum.Thumbnail:
+					maxX = maxY = 150;
+					break;
+				case DimensionEnum.Small:
+					maxX = maxY = 300;
+					break;
+				case DimensionEnum.Full:
+					maxX = maxY = 800;
+					break;
+				default:
+					return BadRequest();
+			}
+
+			var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
+			var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, 0);
+			return File(previewStream, "image/png", $"{metadata.OriginalFilename}_preview(0).png");
+		}
+
+		return PhysicalFile(blob.PathInStore, blob.MimeType);
+	}
 
     [HttpGet]
     public async Task<ActionResult<UnallocatedBlobHeapResponse>> UnallocatedBlobs(int? limit)
@@ -92,14 +125,15 @@ public class BlobController : ControllerBase
             .Include(blob => blob.UploadedBy)
             .Where(blob => blob.ArchiveItem == null)
             .Select(blob => new UnallocatedBlob
-            {
-                Id = blob.Id,
-                FileName = blob.OriginalFilename,
-                FileSize = blob.FileSize,
-                PageCount = blob.PageCount,
-                UploadedAt = blob.UploadedAt,
-                UploadedByUser = blob.UploadedBy!.Fullname
-            })
+			{
+				Id = blob.Id,
+				FileName = blob.OriginalFilename,
+				FileSize = blob.FileSize,
+				PageCount = blob.PageCount,
+				UploadedAt = blob.UploadedAt,
+				UploadedByUser = blob.UploadedBy!.Fullname,
+				MimeType = blob.MimeType
+			})
             .ToListAsync()) // Cannot orderBy dateTimeOffset without ToListing first
             .OrderByDescending(blob => blob.UploadedAt);
 
@@ -224,13 +258,13 @@ public class BlobController : ControllerBase
         public DateTimeOffset UploadedAt { get; set; }
         public required string UploadedByUser { get; set; }
         public int PageCount { get; set; }
+		public string? MimeType { get; set; }
     }
 
-    public enum DimensionEnum
-    {
-        XSmall = 1,
-        Small = 2,
-        Medium = 3,
-        Large = 4
-    }
+	public enum DimensionEnum
+	{
+		Thumbnail = 1,
+		Small = 2,
+		Full = 3,
+	}
 }

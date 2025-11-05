@@ -14,6 +14,7 @@ import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
 import { DatePicker } from "../Components/DatePicker"
+import { LocalViewer } from "../Components/Viewers/LocalViewer"
 
 type CreateResponse = {
 	id: number
@@ -131,26 +132,44 @@ export const ArchiveItemNewPage = () => {
 				<div>
 					<PreviewList items={blobsFromUnallocated} containerClassName="flex flex-wrap"
 						thumbnailPreviewTemplate={(blob, maximize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
+							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
 								onRemove={removeUnallocatedBlob}
 								onMaximize={() => maximize(blob)} />
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.large} showPageNavigation={false}
+							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
 								onRemove={removeUnallocatedBlob}
 								onMaximize={() => minimize()} />
 						}
 					/>
 
 				</div>
-
-				{
-					localBlobs?.map((blob) => (
-						<div key={blob.fileName} style={{ marginLeft: "5px" }}>
-							<LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
-						</div>
-					))
-				}
+				
+				<PreviewList<{fileName: string, fileData: Blob}> blobs={localBlobs}
+					containerClassName="grid grid-cols-4 gap-4 pt-2"
+					thumbnailPreviewTemplate={
+						(blob, maximize) =>
+							<LocalViewer 
+								key={blob.fileName} 
+								blob={blob.fileData}
+								fileName={blob.fileName}
+								dimension={DimensionEnum.small}
+								removeBlob={removeBlob}
+								onMaximize={() => maximize(blob)}
+							/>
+					}
+					maximizedPreviewTemplate={
+						(blob, minimize) =>
+							<LocalViewer 
+								key={blob.fileName} 
+								blob={blob.fileData}
+								fileName={blob.fileName}
+								dimension={DimensionEnum.full}
+								onMinimize={minimize}
+								removeBlob={removeBlob}
+							/>
+					}
+				/>
 
 				<div className="push-right">
 					<Link className="link align-with-btn" to={-1 as any}>
