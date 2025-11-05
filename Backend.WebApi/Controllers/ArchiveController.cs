@@ -213,7 +213,8 @@ public class ArchiveController : ControllerBase
 			Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
 			{
 				Id = blob.Id,
-				NumberOfPages = blob.PageCount
+				NumberOfPages = blob.PageCount,
+				MimeType = blob.MimeType
 			}).ToList() ?? [],],
 		};
 	}
@@ -375,6 +376,7 @@ public class ArchiveController : ControllerBase
 		{
 			public int Id { get; set; }
 			public int NumberOfPages { get; set; }
+			public string? MimeType { get; set; }
 		}
 	}
 

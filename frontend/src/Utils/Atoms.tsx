@@ -27,6 +27,7 @@ export type UnallocatedBlob = {
     pageCount: number
     uploadedAt: Date
     uploadedByUser: string
+	mimeType?: string
 }
 
 export type StoredFilter = {

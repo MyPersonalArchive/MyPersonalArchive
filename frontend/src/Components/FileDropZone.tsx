@@ -213,7 +213,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 					}
 					maximizedPreviewTemplate={
 						(blob, minimize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
+							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
 								onMinimize={minimize} />
 					}
 				/>

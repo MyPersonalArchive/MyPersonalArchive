@@ -2,6 +2,8 @@ import { InfoPanel } from "./InfoPanel"
 import { Preview, DimensionEnum } from "./PreviewList"
 import { SelectCheckbox, Selection } from "../Utils/Selection"
 import { UnallocatedBlob } from "../Utils/Atoms"
+import { BaseViewer } from "./Viewers/BaseViewer"
+import { ServerViewer } from "./Viewers/ServerViewer"
 
 
 export type BlobListItemProps = {
@@ -15,8 +17,7 @@ export const BlobListItem = ({ blob, attachBlob, deleteBlobs, maximize, selectio
 	return (
 		<div key={blob.id} className="card grid grid-cols-3">
 			<div className="w-[200px] bg-gray-200 py-1 content-center">
-				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.xsmall}
-					onMaximize={maximize} />
+				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail}	onMaximize={maximize} />
 			</div>
 
 			<div className="w-full">

@@ -20,26 +20,40 @@ public static class PreviewGenerator
 
     public static Stream GeneratePreviewOfImage(Stream originalStream, int maxX, int maxY)
     {
-        var previewStream = new MemoryStream(); //This stream will be returned to the caller, and should NOT be disposed here
-        Image.NewFromStream(originalStream)
-            .ThumbnailImage(maxX, maxY)
-            .WriteToStream(previewStream, ".jpg");
+        var previewStream = new MemoryStream();
 
-        //TODO: cache in filesystem?
-        previewStream.Position = 0;
-        return previewStream;
+		using (var image = Image.NewFromStream(originalStream))
+		{
+			var thumb = image.ThumbnailImage(maxX, maxY);
+
+			thumb.WriteToStream(previewStream, ".png", new VOption
+			{
+				{ "compression", 3 },
+				{ "interlace", true }
+			});
+		}
+
+		previewStream.Position = 0;
+		return previewStream;
     }
 
     public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 0)
     {
-        var previewStream = new MemoryStream(); //This stream will be returned to the caller, and should NOT be disposed here
-        Image.PdfloadStream(originalStream, pageNumber)
-            .ThumbnailImage(maxX, maxY)
-            .WriteToStream(previewStream, ".jpg");
+        var previewStream = new MemoryStream();
 
-        //TODO: cache in filesystem?
-        previewStream.Position = 0;
-        return previewStream;
+		using (var image = Image.PdfloadStream(originalStream, page: pageNumber, dpi: 200))
+		{
+			var thumb = image.ThumbnailImage(maxX, maxY);
+
+			thumb.WriteToStream(previewStream, ".png", new VOption
+			{
+				{ "compression", 3 },
+				{ "interlace", true }
+			});
+		}
+
+		previewStream.Position = 0;
+		return previewStream;
     }
 
     public static int GetDocumentPageCount(string mimeType, Stream stream)

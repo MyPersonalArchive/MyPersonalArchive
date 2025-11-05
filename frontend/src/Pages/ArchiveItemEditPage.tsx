@@ -15,6 +15,9 @@ import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
 import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModelDialog"
+import { ServerViewer } from "../Components/Viewers/ServerViewer"
+import { LocalViewer } from "../Components/Viewers/LocalViewer"
+import { StackedView } from "../Components/Viewers/StackedView"
 
 type GetResponse = {
 	id: number
@@ -29,6 +32,13 @@ type GetResponse = {
 type BlobResponse = {
 	id: number
 	numberOfPages: number
+	mimeType?: string
+}
+
+type LocalBlob = {
+	fileName: string
+	fileData: Blob
+	mimeType?: string
 }
 
 
@@ -39,7 +49,7 @@ export const ArchiveItemEditPage = () => {
 	const [label, setLabel] = useState<string>()
 	const [documentDate, setDocumentDate] = useState("")
 	const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
-	const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
+	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
 	const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
@@ -57,7 +67,7 @@ export const ArchiveItemEditPage = () => {
 				setId(item.id)
 				setTitle(item.title)
 				setTags(item.tags)
-				setBlobs(item.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages })))
+				setBlobs(item.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
 				setLabel(item.label)
 				setDocumentDate(item.documentDate)
 
@@ -177,31 +187,49 @@ export const ArchiveItemEditPage = () => {
 
 				<div>
 					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
-						containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
-						containerClassName="flex flex-row justify-center"
+						containerClassName="grid grid-cols-4 gap-4 pt-2"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
+								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
 									onRemove={removeUnallocatedBlob}
 									onMaximize={() => maximize(blob)}
 								/>
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.large}
+
+								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
 									onRemove={removeUnallocatedBlob}
 									onMinimize={() => minimize()}
 								/>
 						}
 					/>
 
-					{
-						localBlobs.map((blob) => (
-							<div key={blob.fileName} style={{ marginLeft: "5px" }}>
-								<LocalFilePreview removeBlob={removeBlob} fileName={blob.fileName} blob={blob.fileData} />
-							</div>
-						))
-					}
+					<PreviewList<LocalBlob> blobs={localBlobs}
+						containerClassName="grid grid-cols-4 gap-4 pt-2"
+						thumbnailPreviewTemplate={
+							(blob, maximize) =>
+								<LocalViewer 
+									key={blob.fileName} 
+									blob={blob.fileData}
+									fileName={blob.fileName}
+									dimension={DimensionEnum.small}
+									removeBlob={removeBlob}
+									onMaximize={() => maximize(blob)}
+								/>
+						}
+						maximizedPreviewTemplate={
+							(blob, minimize) =>
+								<LocalViewer 
+									key={blob.fileName} 
+									blob={blob.fileData}
+									fileName={blob.fileName}
+									dimension={DimensionEnum.full}
+									onMinimize={minimize}
+									removeBlob={removeBlob}
+								/>
+						}
+					/>
 				</div>
 
 				<div className="push-right">
