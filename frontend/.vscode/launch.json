@@ -8,7 +8,7 @@
 			"type": "msedge",
 			"request": "launch",
 			"name": "Launch MS Edge against localhost",
-			"url": "http://localhost:5173",
+			"url": "https://localhost:5173",
 			"webRoot": "${workspaceFolder}/frontend/src",
 			"runtimeExecutable": "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
 			"runtimeArgs": [

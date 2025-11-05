@@ -12,11 +12,6 @@ public abstract class ImapProviderBase
 
 	public abstract string Name { get; }
 
-	public abstract string GetAuthorizationUrl(string state, string redirectUri);
-
-	public abstract Task<IAuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri);
-
-
 	public async Task<IList<Email>> FindEmailsAsync(IAuthContext auth, EmailSearchCriteria searchCriteria)
 	{
 		using var client = await ConnectAsync(auth);

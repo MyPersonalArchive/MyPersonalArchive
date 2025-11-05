@@ -7,12 +7,15 @@ Our mission is to enable people to reliably archive digital artefacts.
 ## Development
 
 When running in Development environment, you can sign in with
-- admin@localhost and p@$$w0rd
-- arjan@localhost and pass
-- stian@localhost and word
+- admin@localhost and p@$$w0rd, can access all tenants (-1, 1 and 2)
+- arjan@localhost and pass, can access tenant 1
+- stian@localhost and word, can access tenant 2
 
 
-## Preparations on MacOS on host
+## Preparations before running on MacOS on host
+
+1. You must aquire a certificate
+2. You must set up needed environment variables on the host
 
 ### Create self-signed root CA
 
@@ -85,3 +88,11 @@ rm server.csr v3.ext
 echo "Done! Files: server.key, server.crt, server.pfx, server.pem"
 ```
 
+## Setup needed environment variables
+```shell
+cat >> ~/.zshrc << EOF
+export MPA_GOOGLE_CLIENT_SECRET="<insert you google client secret here>"
+export MPA_GOOGLE_CLIENT_ID="<insert your google client id here>"
+export MPA_CERTIFICATE_PASSWORD="<insert your certificate password here>"
+EOF
+```

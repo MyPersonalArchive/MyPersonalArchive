@@ -10,7 +10,7 @@
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
-		"ghcr.io/devcontainers-extra/features/node-asdf:0": {
+		"ghcr.io/devcontainers/features/node:1": {
 			"version": "24.11.0"
 		},
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
@@ -25,7 +25,12 @@
 		"JWT_SECRET": "=:|V7hblR0eD+7+S10F6e~4RPc_!87hd*1kashdh_dsada123*",
 		"JWT_ISSUER": "gotnonameapps.com",
 		"AUDIENCE": "gotnonameapps.com",
-		"CertificatePassword": "pass"
+
+		"GOOGLE__CLIENTSECRET": "${localEnv:MPA_GOOGLE_CLIENT_SECRET}",
+		"GOOGLE__CLIENTID": "${localEnv:MPA_GOOGLE_CLIENT_ID}",
+
+		"CERTIFICATEPASSWORD": "${localEnv:MPA_CERTIFICATE_PASSWORD}"
+
 		// "ASPNETCORE_HTTP_PORTS": "",
 		// "ASPNETCORE_HTTPS_PORTS": ""
 	},

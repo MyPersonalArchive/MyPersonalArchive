@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Email, EmailAddress, EmailAttachment, useMailProvider } from "../Utils/useMailProvider"
-import { useNavigate } from "react-router-dom"
-import { RoutePaths } from "../RoutePaths"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
 
 
 export const EmailListPage = () => {
-	const { provider, setProvider, login, fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
+	const { provider, setProvider, login } = useRemoteAuthentication()
+	const { fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
 
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
@@ -27,12 +27,13 @@ export const EmailListPage = () => {
 			<div className="stack-horizontal to-the-left my-4">
 				<div className="group">
 
-					<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail")}>
+					<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail" | "zohomail")}>
 						<option value="gmail">Gmail</option>
 						<option value="fastmail">Fastmail</option>
+						<option value="zohomail">Zoho Mail</option>
 					</select>
 
-					<button className="btn" onClick={() => login()}>
+					<button className="btn" onClick={() => login(window.location.origin + "/email")}>
 						Login
 					</button>
 				</div>
@@ -52,13 +53,13 @@ export const EmailListPage = () => {
 							))
 						}
 					</select>
-					<button className="btn" onClick={() => fetchFolders()}>
+					<button className="btn" onClick={() => fetchFolders(provider)}>
 						<FontAwesomeIcon icon={faRefresh} />
 					</button>
 				</div>
 
 				<button className="btn"
-					onClick={() => fetchEmails({ provider, folders: [selectedFolder!], limit: 50 })}
+					onClick={() => fetchEmails(provider, { folders: [selectedFolder!], limit: 50 })}
 					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
@@ -97,7 +98,7 @@ export const EmailListPage = () => {
 
 					<button className="btn"
 						disabled={selectionOfEmails.areNoItemsSelected}
-						onClick={() => createArchiveItemFromEmails(emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
+						onClick={() => createArchiveItemFromEmails(provider, emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
 					>
 						{
 							selectionOfEmails.allPossibleItems.size == selectionOfEmails.selectedItems.size
@@ -113,7 +114,7 @@ export const EmailListPage = () => {
 						<Thumbnail
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={createArchiveItemFromEmails}
+							createArchiveItemFromEmails={(emails) => createArchiveItemFromEmails(provider, emails)}
 							selectionOfEmails={selectionOfEmails}
 							maximize={maximize}
 						/>
@@ -122,8 +123,8 @@ export const EmailListPage = () => {
 						<Preview
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={createArchiveItemFromEmails}
-							createBlobsFromAttachments={createBlobsFromAttachments}
+							createArchiveItemFromEmails={(emails) => createArchiveItemFromEmails(provider, emails)}
+							createBlobsFromAttachments={(messageId, attachments) => createBlobsFromAttachments(provider, messageId, attachments)}
 							provider={provider}
 							selectedFolder={selectedFolder!}
 							maximize={minimize}
@@ -262,10 +263,10 @@ const AttachmentList = ({ attachments, email, provider, selectedFolder, ingestAt
 	}, [selectionOfAttachments.selectedItems, attachments])
 
 	const downloadAttachment = (attachment: EmailAttachment) => {
-		const params = new URLSearchParams();
-		params.set("messageId", email.uniqueId);
-		params.set("fileName", attachment.fileName);
-		params.set("folder", selectedFolder); // email folders may have spaces, so lets use query params
+		const params = new URLSearchParams()
+		params.set("messageId", email.uniqueId)
+		params.set("fileName", attachment.fileName)
+		params.set("folder", selectedFolder) // email folders may have spaces, so lets use query params
 
 		return <a href={`/api/email/${provider}/download-attachment?${params.toString()}`}
 		   className="link ml-2">
@@ -332,18 +333,3 @@ const Address = ({ address }: AddressProps) => {
 	return <span title={address.emailAddress}>{address.name ?? address.emailAddress}</span>
 }
 
-
-export default function AuthCallback() {
-	const { handleAuthCallback } = useMailProvider()
-	const navigate = useNavigate()
-
-	useEffect(() => {
-		(async () => {
-			await handleAuthCallback()
-			// Redirect user back to app dashboard
-			navigate(RoutePaths.Email)
-		})()
-	}, [])
-
-	return <p>Finalizing authentication...</p>
-}

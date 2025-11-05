@@ -109,10 +109,12 @@ label>input[type="checkbox"] {
 }
 
 .push-left {
+	/* deprecated use "stack-horizontal left-justified my-4" */
 	@apply flex flex-row justify-start my-4 gap-2 items-baseline;
 }
 
 .push-right {
+	/* deprecated use "stack-horizontal right-justified my-4" */
 	@apply flex flex-row justify-end my-4 gap-2 items-baseline;
 }
 

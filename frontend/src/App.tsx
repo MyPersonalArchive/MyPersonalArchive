@@ -78,10 +78,6 @@ const routers = createBrowserRouter([
 					{
 						path: RoutePaths.Email,
 						element: <EmailListPage />
-					},
-					{
-						path: "/auth-callback",
-						element: <AuthCallback />
 					}
 				]
 			}

@@ -19,7 +19,7 @@ public class AuthenticationController : ControllerBase
     private readonly CookieOptions _refreshCookieOptions = new()
     {
         HttpOnly = true,
-        Secure = false, //TODO: Set to true in production
+        Secure = false, //TODO: Set to true if website is served over HTTPS, keep false for local development without certificates
         SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
         Expires = DateTime.UtcNow.AddDays(7), // Cookie expiration
         Path = "/api/authentication/" // Only allow the authentication controller access the cookie

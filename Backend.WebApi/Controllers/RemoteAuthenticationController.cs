@@ -16,6 +16,15 @@ public class RemoteAuthenticationController : ControllerBase
 	private readonly string _baseurl;
 	private readonly string _clientId;
 	private readonly string _clientSecret;
+	
+	private readonly CookieOptions _secureCookieOptions = new()
+	{
+		HttpOnly = true,
+		Secure = true,
+		SameSite = SameSiteMode.Lax,
+		IsEssential = true
+	};
+
 
 	public RemoteAuthenticationController(IConfiguration config)
 	{
@@ -38,7 +47,7 @@ public class RemoteAuthenticationController : ControllerBase
 		if (providerName == "gmail")
 		{
 			var nonce = GenerateNonce();
-			HttpContext.Response.Cookies.Append($"{providerName}-nonce", nonce);
+			HttpContext.Response.Cookies.Append($"{providerName}-nonce", nonce, _secureCookieOptions);
 
 			var callbackUrl = Url.Action(
 									"CallbackFromProvider",
@@ -91,6 +100,8 @@ public class RemoteAuthenticationController : ControllerBase
 			return BadRequest("Invalid nonce");
 		}
 
+		HttpContext.Response.Cookies.Append($"{state.Provider}-nonce", " ", _secureCookieOptions);
+
 		if (string.IsNullOrEmpty(code))
 		{
 			return BadRequest("Missing code");
@@ -130,19 +141,12 @@ public class RemoteAuthenticationController : ControllerBase
 			ExpiresAt = DateTime.UtcNow.AddSeconds(json.GetProperty("expires_in").GetInt32())
 		};
 
-		var cookieOptions = new CookieOptions
-		{
-			HttpOnly = true,
-			Secure = true,
-			SameSite = SameSiteMode.Strict
-		};
-
 		IAuthContext authCookie = authContext;
 
 		Response.Cookies.Append(
 				$"auth-{state.Provider}",
 				JsonSerializer.Serialize(authCookie),
-				cookieOptions
+				_secureCookieOptions
 			);
 
 		return Redirect(state.ReturnUrl);

@@ -16,17 +16,6 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 	public override EmailAuthMode AuthenticationMode => EmailAuthMode.Basic;
 
 
-	public override string GetAuthorizationUrl(string state, string redirectUri)
-	{
-		throw new NotSupportedException("FastMail does not support OAuth flow. Use username/app-password.");
-	}
-
-	public override Task<IAuthContext> ExchangeCodeForTokenAsync(string code, string redirectUri)
-	{
-		throw new NotSupportedException("FastMail does not support token exchange.");
-	}
-
-
 	protected override async Task<IImapClient> ConnectAsync(IAuthContext auth)
 	{
 		if (auth is not BasicAuthContext basicAuth)

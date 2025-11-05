@@ -47,28 +47,6 @@ public class EmailController : ControllerBase
 		_resolver = resolver;
 	}
 
-	// [HttpGet("{providerName}/auth/url")]
-	// public ActionResult<AuthUrlResponse> GetAuthUrl(string providerName, [FromQuery] string redirectUri)
-	// {
-	// 	if (!_registry.TryGetProvider(providerName, out var provider))
-	// 		return BadRequest($"Unknown provider: {providerName}");
-
-	// 	if (provider.AuthenticationMode != EmailAuthMode.Oath2)
-	// 		return BadRequest($"{providerName} does not support OAuth");
-
-	// 	//The random guid (nonce) should be validated on the callback on the client to verify that the state is the same
-	// 	var rawState = new
-	// 	{
-	// 		provider = providerName,
-	// 		nonce = Guid.NewGuid().ToString("N")
-	// 	};
-	// 	var stateJson = JsonSerializer.Serialize(rawState);
-	// 	var encodedState = WebUtility.UrlEncode(stateJson);
-
-	// 	var url = provider.GetAuthorizationUrl(encodedState, redirectUri);
-	// 	return Ok(new AuthUrlResponse { Url = url, State = encodedState });
-	// }
-
 
 	[HttpPost("{providerName}/auth/exchange")]
 	public async Task<IActionResult> ExchangeToken(string providerName, [FromBody] TokenRequestExchangeRequest token)
@@ -81,7 +59,7 @@ public class EmailController : ControllerBase
 		var cookieOptions = new CookieOptions
 		{
 			HttpOnly = true,
-			Secure = true,
+			Secure = false, //TODO: Set to true in production
 			SameSite = SameSiteMode.Strict
 		};
 
@@ -92,6 +70,7 @@ public class EmailController : ControllerBase
 		}
 		else if (provider.AuthenticationMode == EmailAuthMode.Basic)
 		{
+			//TODO: Move this to the RemoteAuthenticationController as well?
 			if (string.IsNullOrEmpty(token.Username) || string.IsNullOrEmpty(token.Password))
 			{
 				return BadRequest("missing username or password");
@@ -299,7 +278,7 @@ public class EmailController : ControllerBase
 		return provider.TryCreateAuthContext(authJson, out auth);
 	}
 
-	protected async Task<Blob?> DownloadAttachmentAsBlob(ArchiveItem archiveItem, string folder, string messageId, string fileName, ImapProviderBase provider, IAuthContext auth)
+	private async Task<Blob?> DownloadAttachmentAsBlob(ArchiveItem archiveItem, string folder, string messageId, string fileName, ImapProviderBase provider, IAuthContext auth)
 	{
 		try
 		{
