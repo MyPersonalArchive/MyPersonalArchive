@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons"
+import { Link } from "react-router-dom"
 
 type DropdownLink = {
 	type: "link"
@@ -60,14 +61,15 @@ export const Dropdown = ({ header, items }: DropdownProps) => {
 					{items.map((item, index) => {
 						switch (item.type) {
 							case "link":
-								return <a className="text-black py-2 px-4 block w-full border-none hover:bg-gray-200 transition-colors duration-300 cursor-pointer"
-									href={item.link}
+								return <Link
 									key={index}
+									to={item.link}
+									className="text-black py-2 px-4 block w-full border-none hover:bg-gray-200 transition-colors duration-300 cursor-pointer"
 									onClick={() => setIsOpen(false)}
 								>
 									{item.label}
-								</a>
-
+								</Link>
+								
 							case "button":
 								return <button className="text-black py-2 px-4 block w-full border-none hover:bg-gray-200 transition-colors duration-300 cursor-pointer"
 									key={index}
