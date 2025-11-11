@@ -24,7 +24,5 @@ public class User : SharedEntity
     [MaxLength(16)]
     public required byte[] Salt { get; set; }
 
-    public ICollection<Token>? Tokens { get; set; }
-
     public ICollection<Tenant> Tenants { get; set; } = [];
 }

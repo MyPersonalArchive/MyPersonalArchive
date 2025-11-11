@@ -113,14 +113,7 @@ public class MpaDbContext : DbContext
 		{
 		});
 
-		modelBuilder.Entity<Token>(builder =>
-		{
-			builder.HasOne(token => token.User)
-				.WithMany(user => user.Tokens)
-				.HasForeignKey(token => token.Username)
-				.HasPrincipalKey(user => user.Username);
-		});
-
+		
 		modelBuilder.Entity<Tag>(builder =>
 		{
 			builder.HasAlternateKey(tag => new { tag.Id, tag.TenantId });
@@ -287,7 +280,6 @@ public class MpaDbContext : DbContext
 	public DbSet<Blob> Blobs { get; set; }
 	public DbSet<Tag> Tags { get; set; }
 	public DbSet<User> Users { get; set; }
-	public DbSet<Token> Tokens { get; set; }
 	public DbSet<Tenant> Tenants { get; set; }
 	public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
 	public DbSet<StoredFilter> StoredFilters { get; set; }

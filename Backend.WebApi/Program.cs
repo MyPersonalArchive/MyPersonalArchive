@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 using Backend.EmailIngestion;
 using Backend.EmailIngestion.Providers;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Backend.WebApi;
 
@@ -170,28 +172,70 @@ public static class Program
 				options.Audience = jwtOptions.Audience;
 				// options.Authority = jwtOptions.???;
 
-				// Enable SignalR authentication via access token query string
-				options.Events = new JwtBearerEvents
-				{
-					OnMessageReceived = context =>
-					{
-						// If the request is for the SignalR hub, read the token from the query string
-						var path = context.HttpContext.Request.Path;
-						if (path.StartsWithSegments("/notificationHub"))
-						{
-							var accessToken = context.Request.Query["access_token"];
-							if (!string.IsNullOrEmpty(accessToken))
-							{
-								context.Token = accessToken;
-							}
-						}
+				// // Enable SignalR authentication via access token query string
+				// options.Events = new JwtBearerEvents
+				// {
+				// 	OnMessageReceived = context =>
+				// 	{
+				// 		// If the request is for the SignalR hub, read the token from the query string
+				// 		var path = context.HttpContext.Request.Path;
+				// 		if (path.StartsWithSegments("/notificationHub"))
+				// 		{
+				// 			var accessToken = context.Request.Query["access_token"];
+				// 			if (!string.IsNullOrEmpty(accessToken))
+				// 			{
+				// 				context.Token = accessToken;
+				// 			}
+				// 		}
 
+				// 		return Task.CompletedTask;
+				// 	}
+				// };
+			})
+			.AddCookie("Cookies", options =>
+			{
+				options.LoginPath = "/api/authentication/signin";
+				options.LogoutPath = "/api/authentication/signout";
+				options.AccessDeniedPath = "/api/authentication/access-denied-redirect";
+				options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+				options.SlidingExpiration = true;
+				options.Cookie.HttpOnly = true;
+				options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+				options.Cookie.SameSite = SameSiteMode.Lax; // Allow cross-site requests
+				options.Cookie.Name = "MyPersonalArchive.Auth";
+				options.Cookie.Path = "/"; // Ensure cookie is sent to all paths
+				options.Events.OnRedirectToLogin = context =>
+				{
+					// For API requests, return 401 instead of redirecting
+					if (context.Request.Path.StartsWithSegments("/api"))
+					{
+						context.Response.StatusCode = 401;
 						return Task.CompletedTask;
 					}
+					context.Response.Redirect(context.RedirectUri);
+					return Task.CompletedTask;
+				};
+				options.Events.OnRedirectToAccessDenied = context =>
+				{
+					// For API requests, return 403 instead of redirecting
+					if (context.Request.Path.StartsWithSegments("/api"))
+					{
+						context.Response.StatusCode = 403;
+						return Task.CompletedTask;
+					}
+					context.Response.Redirect(context.RedirectUri);
+					return Task.CompletedTask;
 				};
 			});
 
-		builder.Services.AddAuthorization();
+		builder.Services.AddAuthorization(options =>
+		{
+			// Default policy that accepts both JWT and Cookie authentication
+			options.DefaultPolicy = new AuthorizationPolicyBuilder()
+				.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, "Cookies")
+				.RequireAuthenticatedUser()
+				.Build();
+		});
 	}
 
 	private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
@@ -261,6 +305,8 @@ public static class Program
 		{
 			app.UseSwagger();
 			app.UseSwaggerUI();
+
+			app.UseDeveloperExceptionPage();
 		}
 
 		app.UseHttpsRedirection();

@@ -1,70 +1,23 @@
-import { useAtomValue, useSetAtom } from "jotai"
-import { accessTokenAtom, loggedInUserAtom, lastSelectedTenantIdAtom } from "./Atoms"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { createQueryString } from "./createQueryString"
 import { useContext } from "react"
-import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdFrame"
-
-
-type RefreshResponse = {
-	username: string
-	fullname: string
-	availableTenantIds: number[]
-	accessToken: string
-}
-
-export const useRefresh = () => {
-	const setLoggedInUser = useSetAtom(loggedInUserAtom)
-	const { switchToTenantId } = useContext(CurrentTenantIdContext)
-	const setAccessToken = useSetAtom(accessTokenAtom)
-	const lastUsedTenantId = useAtomValue(lastSelectedTenantIdAtom)
-	const navigate = useNavigate()
-
-	return async () => {
-		// 401 error - attempting to use refresh token
-		//TODO: Use Token issuer for the refresh url
-		const response = await fetch("/api/authentication/refresh", {
-			method: "POST",
-			credentials: "include", // needed so that http-only cookies are sent with this request (Should it be "include" or "same-origin"?)
-			headers: { "Content-Type": "application/json" }
-		})
-		if (response.status === 403) {
-			const currentPath = window.location.pathname
-
-			navigate(RoutePaths.SignIn + `?redirect=${currentPath}`)
-			return undefined
-		}
-
-		const json = await response.json() as RefreshResponse
-
-		setAccessToken(json.accessToken)
-		const user = { username: json.username, fullname: json.fullname, availableTenantIds: json.availableTenantIds }
-		setLoggedInUser(user)
-		switchToTenantId(lastUsedTenantId!)
-
-		return json
-	}
-}
+import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 
 
 export const useApiClient = () => {
 	const { currentTenantId } = useContext(CurrentTenantIdContext)
-	const accessToken = useAtomValue(accessTokenAtom)
-	const refresh = useRefresh()
-
+	const navigate = useNavigate()
+	
 	const commonHeaders: any = {}
-	if (accessToken !== undefined) {
-		commonHeaders.Authorization = `Bearer ${accessToken}`
-	}
 	if (currentTenantId !== null) {
 		commonHeaders["X-Tenant-Id"] = currentTenantId
 	}
 
-	const interceptedFetch = (url: string, options: RequestInit, retryAfterRefreshingToken = true): Promise<Response> => {
+	const interceptedFetch = (url: string, options: RequestInit): Promise<Response> => {
 		options = {
 			...options,
-			credentials: options.credentials ?? "omit",
+			credentials: options.credentials ?? "same-origin",
 			headers: {
 				...options.headers,
 				...commonHeaders
@@ -72,11 +25,15 @@ export const useApiClient = () => {
 		}
 		return fetch(url, options)
 			.then(async response => {
-				if (response.status === 401 && retryAfterRefreshingToken) {
-					const json = await refresh()
+				// if(response.status === 302) {
+				// 	console.log("Got status 302 - Should redirected to login page?", response)
+				// 	throw new Error("HTTP response status 302 is not handled properly yet")
+				// }
 
-					commonHeaders.Authorization = `Bearer ${json!.accessToken}`
-					return interceptedFetch(url, options, false)
+				if(response.status === 401) {
+					console.log("Unauthorized", response)
+					navigate(RoutePaths.SignIn + "?redirect=/archive/list")
+					console.log("Navigating to sign-in page due to 401 response")
 				}
 
 				return response
@@ -112,7 +69,6 @@ export const useApiClient = () => {
 
 			return interceptedFetch(url + queryString, options)
 				.then(async response => {
-					console.log(response)
 					let filename = ""
 					const contentDisposition = response.headers.get("Content-Disposition")
 

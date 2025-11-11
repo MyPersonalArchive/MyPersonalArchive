@@ -7,27 +7,17 @@ export type User = {
     fullname: string
     availableTenantIds: number[]
 }
-export const loggedInUserAtom = atom<User>()
+export const currentUserAtom = atom<User | undefined>(undefined)
+// export const isAuthenticatedAtom = atom<boolean>(get => get(currentUserInfoAtom) !== undefined)
+
 export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLoggedInUsername", null, undefined, { getOnInit: true })
-
-export const accessTokenAtom = atom<string | undefined>(undefined)
-
+export const lastRememberMeCheckedAtom = atomWithStorage<boolean>("lastRememberMeChecked", false, undefined, { getOnInit: true })
 export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSelectedTenantId", null, undefined, { getOnInit: false })
 
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 export const tagsAtom = atom<string[]>([])
-export const storedFiltersAtom = atom<StoredFilter[]>([])
 
-export const unallocatedBlobsAtom = atom<UnallocatedBlob[]>([])
-export type UnallocatedBlob = {
-    id: number
-    fileName: string
-    fileSize: number
-    pageCount: number
-    uploadedAt: Date
-    uploadedByUser: string
-}
 
 export type StoredFilter = {
     id: number
@@ -36,4 +26,16 @@ export type StoredFilter = {
     metadataTypes: string[]
     tags: string[]
 }
+export const storedFiltersAtom = atom<StoredFilter[]>([])
+
+export type UnallocatedBlob = {
+    id: number
+    fileName: string
+    fileSize: number
+    pageCount: number
+    uploadedAt: Date
+    uploadedByUser: string
+}
+export const unallocatedBlobsAtom = atom<UnallocatedBlob[]>([])
+
 

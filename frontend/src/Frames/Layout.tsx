@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
-import { loggedInUserAtom, User } from "../Utils/Atoms"
+import { currentUserAtom, User } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { PropsWithChildren, useContext } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faBars, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
-import { CurrentTenantIdContext } from "./CurrentTenantIdFrame"
-import { Dropdown, DropdownItem } from "./Dropdown"
+import { CurrentTenantIdContext } from "./CurrentTenantIdContext"
+import { Dropdown, DropdownItem } from "../Components/Dropdown"
 import { StickyFooter, StickyHeader } from "../Components/Sticky"
 
 
@@ -57,7 +57,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 
 const Navbar = () => {
-	const loggedInUser = useAtomValue(loggedInUserAtom)
+	const currentUser = useAtomValue(currentUserAtom)
 	const { currentTenantId, switchToTenantId } = useContext(CurrentTenantIdContext)
 
 	const navigate = useNavigate()
@@ -68,7 +68,7 @@ const Navbar = () => {
 	}
 
 	return (
-		loggedInUser
+		currentUser
 			?
 			<nav className="page-header flex flex-row justify-between py-1">
 				<Dropdown
@@ -86,15 +86,15 @@ const Navbar = () => {
 
 				<Dropdown
 					header={
-						<UserProfileHeader user={loggedInUser} />
+						<UserProfileHeader user={currentUser} />
 					}
 					items={[
 						{ type: "link", label: "Profile", link: RoutePaths.Profile },
 						...(
-							loggedInUser.availableTenantIds.length > 1
+							currentUser.availableTenantIds.length > 1
 								? [
 									{ type: "seperator" },
-									...loggedInUser.availableTenantIds.map((tenantId) => (
+									...currentUser.availableTenantIds.map((tenantId) => (
 										currentTenantId === tenantId
 											? { type: "inactive", label: <>Tenant {tenantId}</> }
 											: { type: "button", label: <>Tenant {tenantId}</>, onClick: () => { switchTenant(tenantId) } }

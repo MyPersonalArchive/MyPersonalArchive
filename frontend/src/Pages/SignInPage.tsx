@@ -3,7 +3,15 @@ import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png"
 import { useAtom, useSetAtom } from "jotai"
-import { accessTokenAtom, lastLoggedInUsernameAtom, loggedInUserAtom } from "../Utils/Atoms"
+import { lastLoggedInUsernameAtom, currentUserAtom, lastRememberMeCheckedAtom } from "../Utils/Atoms"
+
+
+type SignInResponse = {
+	username: string
+	fullname: string
+	availableTenantIds: number[]
+	accessToken: string
+}
 
 
 export const SignInPage = () => {
@@ -11,13 +19,14 @@ export const SignInPage = () => {
 	const passwordInputRef = useRef<HTMLInputElement>(null)
 
 	const [lastLoggedInUsername, setLastLoggedInUsername] = useAtom(lastLoggedInUsernameAtom)
-	const setAccessToken = useSetAtom(accessTokenAtom)
-	const setLoggedInUser = useSetAtom(loggedInUserAtom)
+	const [lastRememberMeChecked, setLastRememberMeChecked] = useAtom(lastRememberMeCheckedAtom)
+	const setCurrentUser = useSetAtom(currentUserAtom)
 
 	const [loginFailed, setLoginError] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const [username, setUsername] = useState(lastLoggedInUsername ?? "")
 	const [password, setPassword] = useState("")
+	const [rememberMe, setRememberMe] = useState(lastRememberMeChecked ?? false)
 
 	const navigate = useNavigate()
 
@@ -34,24 +43,26 @@ export const SignInPage = () => {
 
 		setIsLoading(true)
 
-		const success = await loginAction(username, password)
+		const success = await loginAction(username, password, rememberMe)
 		if (success) {
 			const redirect = new URLSearchParams(window.location.search).get("redirect")
-			navigate(redirect ?? RoutePaths.Archive)
+			navigate(redirect ?? RoutePaths.Index)
 		} else {
 			setIsLoading(false)
 		}
 
 		setLastLoggedInUsername(username)
+		setLastRememberMeChecked(rememberMe)
 		setLoginError(!success)
 	}
 
 
-	const loginAction = async (email: string, password: string) => {
+	const loginAction = async (username: string, password: string, rememberMe: boolean) => {
 		try {
 			const payload = {
-				username: email,
-				password: password
+				username,
+				password,
+				rememberMe
 			}
 			// We're using the fetch API instead of apiClient here because we don't have an access token nor tenantId yet
 			const httpResponse = await fetch("/api/authentication/signin", {
@@ -63,7 +74,7 @@ export const SignInPage = () => {
 				credentials: "include"
 			})
 
-			if (httpResponse.status !== 200) {
+			if (!httpResponse.ok) {
 				// Invalid credentials
 				return false
 			}
@@ -75,11 +86,11 @@ export const SignInPage = () => {
 				fullname: response.fullname,
 				availableTenantIds: response.availableTenantIds
 			}
-			setLoggedInUser(user)
-			setAccessToken(response.accessToken)
+			setCurrentUser(user)
 
 			return true
-		} catch {
+		} catch(exception) {
+			console.error("Sign-in failed due to exception", exception)
 			return false
 		}
 	}
@@ -120,11 +131,14 @@ export const SignInPage = () => {
 								/>
 							</div>
 
-							<div className="aligned-labels-and-inputs">
-								<div></div>
+							<div className="my-4">
 								<div>
 									<label htmlFor="rememberMe">
-										<input className="input" type="checkbox" id="rememberMe" />
+										<input className="input" type="checkbox"
+											id="rememberMe"
+											checked={rememberMe}
+											onChange={event => setRememberMe(event.target.checked)}
+										/>
 										Remember me
 									</label>
 								</div>
@@ -141,12 +155,4 @@ export const SignInPage = () => {
 			</div>
 		</div>
 	)
-}
-
-
-type SignInResponse = {
-	username: string
-	fullname: string
-	availableTenantIds: number[]
-	accessToken: string
 }

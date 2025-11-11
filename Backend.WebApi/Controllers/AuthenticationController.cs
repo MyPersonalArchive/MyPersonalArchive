@@ -1,8 +1,11 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Security.Claims;
 using Backend.Core;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,161 +16,134 @@ namespace Backend.WebApi.Controllers;
 [Route("api/[Controller]")]
 public class AuthenticationController : ControllerBase
 {
-    private readonly MpaDbContext _dbContext;
-    private readonly PasswordHasher _passwordHasher;
-    private const string RefreshTokenKey = "refresh-token";
-    private readonly CookieOptions _refreshCookieOptions = new()
-    {
-        HttpOnly = true,
-        Secure = false, //TODO: Set to true if website is served over HTTPS, keep false for local development without certificates
-        SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
-        Expires = DateTime.UtcNow.AddDays(7), // Cookie expiration
-        Path = "/api/authentication/" // Only allow the authentication controller access the cookie
-    };
+	private readonly MpaDbContext _dbContext;
+	private readonly PasswordHasher _passwordHasher;
 
 
-    public AuthenticationController(MpaDbContext dbContext, PasswordHasher passwordHasher)
-    {
-        _dbContext = dbContext;
-        _passwordHasher = passwordHasher;
-    }
+	public AuthenticationController(MpaDbContext dbContext, PasswordHasher passwordHasher)
+	{
+		_dbContext = dbContext;
+		_passwordHasher = passwordHasher;
+	}
 
 
 	[AllowAnonymous]
-    [HttpPost("SignIn")]
-    public async Task<ActionResult<SignInResponse>> SignIn(SignInRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
-        {
-            return BadRequest("Unable to login");
-        }
+	[HttpPost("SignIn")]
+	public async Task<ActionResult<SignInResponse>> SignIn(SignInRequest request)
+	{
+		if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+		{
+			return BadRequest("Unable to login");
+		}
 
-        var user = await _dbContext.Users
-            .Include(user => user.Tenants)
-            .SingleOrDefaultAsync(user => user.Username == request.Username);
-        if (user == null)
-        {
-            return Unauthorized("Unable to login");
-        }
+		var user = await _dbContext.Users
+			.Include(user => user.Tenants)
+			// .Include(user => user.Tokens)
+			.SingleOrDefaultAsync(user => user.Username == request.Username);
+		if (user == null)
+		{
+			return Unauthorized("Unable to login");
+		}
 
-        if (!_passwordHasher.VerifyPassword(request.Password, user.HashedPassword, user.Salt))
-        {
-            return Unauthorized("Unable to login");
-        }
+		if (!_passwordHasher.VerifyPassword(request.Password, user.HashedPassword, user.Salt))
+		{
+			return Unauthorized("Unable to login");
+		}
 
-        List<Claim> claims = [new(ClaimTypes.Name, user.Fullname), new(ClaimTypes.NameIdentifier, user.Username)];
-        var (accessToken, refreshToken) = _passwordHasher.GenerateTokens(claims);
-        await _dbContext.Tokens.AddAsync(new Token
-        {
-            Username = user.Username,
-            RefreshToken = refreshToken,
-            ExpiresAt = DateTime.Now.Add(PasswordHasher.ExpiryDurationForRefreshTokens),
-        });
-        _dbContext.SaveChanges();
+		var response = new SignInResponse
+		{
+			Username = user.Username,
+			Fullname = user.Fullname,
+			AvailableTenantIds = user.Tenants.Select(tenant => tenant.Id)
+		};
 
-        Response.Cookies.Append(RefreshTokenKey, refreshToken, _refreshCookieOptions);
-        var response = new SignInResponse
-        {
-            Username = user.Username,
-            Fullname = user.Fullname,
-            AvailableTenantIds = user.Tenants.Select(tenant => tenant.Id).ToList(),
-            AccessToken = accessToken
-        };
-        return Ok(response);
-    }
+		var authProperties = new AuthenticationProperties();
+		if (request.RememberMe)
+		{
+			authProperties.IsPersistent = true;
+			authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7); //TODO: consider using 30 days
+		}
 
-
-	[AllowAnonymous]
-    [HttpPost("Refresh")]
-    public async Task<ActionResult<RefreshResponse>> Refresh()
-    {
-        var incomingRefreshToken = Request.Cookies[RefreshTokenKey];
-
-        var tokens = await _dbContext.Tokens
-            .Include(token => token.User!.Tenants)
-            .Where(token => token.RefreshToken == incomingRefreshToken)
-            .ToListAsync();
-
-        var token = tokens.SingleOrDefault(token => token.ExpiresAt >= DateTimeOffset.Now);
-        if (token == null)
-        {
-            return Forbid();
-        }
-
-        var user = token.User ?? throw new NullReferenceException("A Token must always have a user");
-
-        // delete the user's expired refresh tokens
-        var expiredTokens = user.Tokens!.Where(token => token.ExpiresAt < DateTime.Now);
-        _dbContext.Tokens.RemoveRange(expiredTokens);
-
-        List<Claim> claims = [new(ClaimTypes.Name, user.Fullname), new(ClaimTypes.NameIdentifier, user.Username)];
-        var (accessToken, newRefreshToken) = _passwordHasher.GenerateTokens(claims);
-        await _dbContext.Tokens.AddAsync(new Token
-        {
-            Username = user.Username,
-            RefreshToken = newRefreshToken,
-            ExpiresAt = DateTime.Now.AddDays(7)
-        });
-        _dbContext.SaveChanges();
-
-        Response.Cookies.Append(RefreshTokenKey, newRefreshToken, _refreshCookieOptions);
-        var response = new RefreshResponse
-        {
-            Username = user.Username,
-            Fullname = user.Fullname,
-            AvailableTenantIds = user.Tenants.Select(tenant => tenant.Id).ToList(),
-            AccessToken = accessToken
-        };
-        return Ok(response);
-    }
+		var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, user.Username)], "Cookies");
+		await HttpContext.SignInAsync(
+				CookieAuthenticationDefaults.AuthenticationScheme,
+				new ClaimsPrincipal(identity),
+				authProperties
+			);
+		return Ok(response);
+	}
 
 
 	[Authorize]
-    [HttpPost("SignOut")]
-    public new async Task<IActionResult> SignOut()  //TODO: Change name or signature to not have to use 'new' here?
-    {
-        var incomingRefreshToken = Request.Cookies[RefreshTokenKey];
+	[HttpGet("current-user-info")]
+	public async Task<ActionResult<CurrentUserInfoResponse>> CurrentUserInfo()
+	{
+		var username = User.Identity?.Name;
+		if (username == null)
+		{
+			return Unauthorized();
+		}
 
-        // overwrite the refreshToken cookie
-        Response.Cookies.Append(RefreshTokenKey, " ", _refreshCookieOptions);
+		var user = await _dbContext.Users
+			.Include(user => user.Tenants)
+			.SingleOrDefaultAsync(user => user.Username == username);
+		if (user == null)
+		{
+			return Unauthorized();
+		}
 
-        var tokenToRemove = await _dbContext.Tokens.SingleOrDefaultAsync(token => token.RefreshToken == incomingRefreshToken);
-        if (tokenToRemove == null)
-        {
-            return NotFound("Unable to signout user");
-        }
-        _dbContext.Tokens.Remove(tokenToRemove);
-        _dbContext.SaveChanges();
-
-        return Ok();
-    }
-
-
-    public class SignInRequest
-    {
-        [DefaultValue("admin@localhost")]
-        public string? Username { get; set; }
-
-        [DefaultValue("p@$$w0rd")]
-        public string? Password { get; set; }
-    }
+		var response = new CurrentUserInfoResponse
+		{
+			Username = user.Username,
+			Fullname = user.Fullname,
+			AvailableTenantIds = user.Tenants.Select(tenant => tenant.Id)
+		};
+		return Ok(response);
+	}
 
 
-    public class SignInResponse
-    {
-        public required string Username { get; set; }
-        public required string Fullname { get; set; }
-        public required IList<int> AvailableTenantIds { get; set; }
-        public required string AccessToken { get; set; }
-    }
+	[AllowAnonymous]
+	[HttpPost("access-denied-redirect")]
+	public async Task<IActionResult> AccessDeniedredirect()
+	{
+		return Ok(new { message = "Du har ikke noe her å gjøre!" });
+	}
 
 
-    public class RefreshResponse
-    {
-        public required string Username { get; set; }
-        public required string Fullname { get; set; }
-        public required IList<int> AvailableTenantIds { get; set; }
-        public required string AccessToken { get; set; }
-    }
+	[Authorize]
+	[HttpPost("SignOut")]
+	public async Task<IActionResult> SignOutAction([FromQuery] bool signOutUserFromAllDevices = false)
+	{
+		await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+		return Ok(new { });
+	}
+
+
+	#region Request and response models
+
+	public class SignInRequest
+	{
+		public string? Username { get; set; }
+		public string? Password { get; set; }
+		public bool RememberMe { get; set; } = false;
+	}
+
+
+	public class SignInResponse
+	{
+		public required string Username { get; set; }
+		public required string Fullname { get; set; }
+		public required IEnumerable<int> AvailableTenantIds { get; set; }
+		// public required string AccessToken { get; set; }
+	}
+
+
+	public class CurrentUserInfoResponse
+	{
+		public required string Username { get; set; }
+		public required string Fullname { get; set; }
+		public required IEnumerable<int> AvailableTenantIds { get; set; }
+	}
+
+	#endregion
 }
-

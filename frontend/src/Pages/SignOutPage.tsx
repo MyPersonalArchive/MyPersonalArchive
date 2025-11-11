@@ -2,14 +2,13 @@
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import { RoutePaths } from "../RoutePaths"
-import { useAtom, useSetAtom } from "jotai"
-import { accessTokenAtom, loggedInUserAtom } from "../Utils/Atoms"
+import { useAtom } from "jotai"
+import { currentUserAtom } from "../Utils/Atoms"
 import { useApiClient } from "../Utils/useApiClient"
 
 
 export const SignOutPage = () => {
-	const [loggedInUser, setLoggedInUser] = useAtom(loggedInUserAtom)
-	const setAccessToken = useSetAtom(accessTokenAtom)
+	const [currentUser, setCurrentUser] = useAtom(currentUserAtom)
 	const navigate = useNavigate()
 	const apiClient = useApiClient()
 
@@ -20,13 +19,11 @@ export const SignOutPage = () => {
 
 	async function logoutAction() {
 		try {
-			if (loggedInUser !== null) {
-				// const username = loggedInUser.username
+			if (currentUser !== null) {
 				await apiClient.post("/api/authentication/signout", null, { credentials: "include" })    // will trow if not authenticated
 			}
 		} finally {
-			setLoggedInUser(undefined)
-			setAccessToken(undefined)
+			setCurrentUser(undefined)
 			navigate(RoutePaths.Index)
 		}
 	}

@@ -4,7 +4,6 @@ import { useEffect } from "react"
 import { RoutePaths } from "./RoutePaths"
 import { SignOutPage } from "./Pages/SignOutPage"
 import { ArchiveItemListPage } from "./Pages/ArchiveItemListPage"
-import { RequireAuthentication } from "./Frames/RequireAuthentication"
 import { IndexPage } from "./Pages/IndexPage"
 import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
@@ -14,18 +13,21 @@ import { Layout } from "./Frames/Layout"
 import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
+import { RootFrame } from "./Frames/RootFrame"
 import { StoredFilterListPage } from "./Pages/StoredFilterListPage"
-import AuthCallback, { EmailListPage } from "./Pages/EmailListPage"
+import { EmailListPage } from "./Pages/EmailListPage"
 
 
 const routers = createBrowserRouter([
 	{
 		element: (
-			<CurrentTenantIdFrame>
-				<Layout>
-					<Outlet />
-				</Layout>
-			</CurrentTenantIdFrame>
+			<RootFrame>
+				<CurrentTenantIdFrame>
+					<Layout>
+						<Outlet />
+					</Layout>
+				</CurrentTenantIdFrame>
+			</RootFrame>
 		),
 		children: [
 			{
@@ -38,13 +40,11 @@ const routers = createBrowserRouter([
 			},
 			{
 				element: (
-					<RequireAuthentication>
-						<RequireTenant>
-							<PrefetchDataFrame>
-								<Outlet />
-							</PrefetchDataFrame>
-						</RequireTenant>
-					</RequireAuthentication>
+					<RequireTenant>
+						<PrefetchDataFrame>
+							<Outlet />
+						</PrefetchDataFrame>
+					</RequireTenant>
 				),
 				children: [
 					{

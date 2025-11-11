@@ -1,7 +1,7 @@
 import { PropsWithChildren, useContext } from "react"
 import { useAtomValue } from "jotai"
-import { loggedInUserAtom } from "../Utils/Atoms"
-import { CurrentTenantIdContext } from "./CurrentTenantIdFrame"
+import { currentUserAtom } from "../Utils/Atoms"
+import { CurrentTenantIdContext } from "./CurrentTenantIdContext"
 
 
 export const RequireTenant = ({ children }: PropsWithChildren) => {
@@ -18,7 +18,7 @@ export const RequireTenant = ({ children }: PropsWithChildren) => {
 
 
 export const TenantIdSelector = () => {
-	const loggedInUser = useAtomValue(loggedInUserAtom)
+	const currentUser = useAtomValue(currentUserAtom)
 	const { switchToTenantId } = useContext(CurrentTenantIdContext)
 
 	return <div>
@@ -27,7 +27,7 @@ export const TenantIdSelector = () => {
 		</h1>
 		<ul>
 			{
-				loggedInUser?.availableTenantIds.map(tenantId => (
+				currentUser?.availableTenantIds.map(tenantId => (
 					<li key={tenantId}>
 						<button onClick={() => switchToTenantId(tenantId)}>
 							{tenantId}
