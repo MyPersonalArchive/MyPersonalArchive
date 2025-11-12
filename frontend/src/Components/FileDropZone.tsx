@@ -198,7 +198,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 					</div>
 				</div>
 
-				<PreviewList<UnallocatedBlob> blobs={unallocatedHeap}
+				<PreviewList<UnallocatedBlob> items={unallocatedHeap}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
 							<BlobListItem

@@ -129,7 +129,7 @@ export const ArchiveItemNewPage = () => {
 				/>
 
 				<div>
-					<PreviewList blobs={blobsFromUnallocated} containerClassName="flex flex-wrap"
+					<PreviewList items={blobsFromUnallocated} containerClassName="flex flex-wrap"
 						thumbnailPreviewTemplate={(blob, maximize) =>
 							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} showPageNavigation={false}
 								onRemove={removeUnallocatedBlob}

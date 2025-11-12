@@ -111,7 +111,7 @@ export const EmailListPage = () => {
 				</div>
 
 				<PreviewList<Email>
-					blobs={emails}
+					items={emails}
 					thumbnailPreviewTemplate={(email, maximize) =>
 						<Thumbnail
 							key={email.uniqueId}

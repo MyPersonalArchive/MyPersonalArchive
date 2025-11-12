@@ -176,7 +176,7 @@ export const ArchiveItemEditPage = () => {
 				<FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
 
 				<div>
-					<PreviewList<BlobIdAndNumberOfPages> blobs={blobs}
+					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
 						containerStyle={{ display: "flex", flexDirection: "row", justifyContent: "center" }}
 						containerClassName="flex flex-row justify-center"
 						thumbnailPreviewTemplate={

@@ -20,28 +20,28 @@ export interface BlobIdAndNumberOfPages {
 
 
 type PreviewListProps<T> = {
-	blobs: T[]
+	items: T[]
 	containerStyle?: React.CSSProperties
 	containerClassName?: string
 	thumbnailPreviewTemplate: (blob: T, setMaximizeBlob: (blob?: T) => void) => React.ReactNode
 	maximizedPreviewTemplate: (blob: T, minimize: () => void) => React.ReactNode
 }
-export const PreviewList = <T,>({ blobs, containerStyle, containerClassName, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
-	const [maximizedBlob, setMaximizedBlob] = useState<T | undefined>()
+export const PreviewList = <T,>({ items, containerStyle, containerClassName, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
+	const [maximizedItem, setMaximizedItem] = useState<T | undefined>()
 
 	return (
 		<>
 			<div className={classNames("previewlist ", containerClassName)} style={containerStyle}>
 				{
-					blobs.map(blob => thumbnailPreviewTemplate(blob, setMaximizedBlob))
+					items.map(blob => thumbnailPreviewTemplate(blob, setMaximizedItem))
 				}
 			</div>
 			{
-				maximizedBlob !== undefined && <>
-					<div className="overlay-backdrop z-10" onClick={() => setMaximizedBlob(undefined)}>
+				maximizedItem !== undefined && <>
+					<div className="overlay-backdrop z-10" onClick={() => setMaximizedItem(undefined)}>
 						<div className="overlay border border-gray-300 rounded-lg" onClick={event => event.stopPropagation()}>
 							{
-								maximizedPreviewTemplate(maximizedBlob, () => setMaximizedBlob(undefined))
+								maximizedPreviewTemplate(maximizedItem, () => setMaximizedItem(undefined))
 							}
 						</div>
 					</div>
