@@ -18,7 +18,7 @@ export const RequireTenant = ({ children }: PropsWithChildren) => {
 
 
 export const TenantIdSelector = () => {
-	const loggedInUser = useAtomValue(loggedInUserAtom)!
+	const loggedInUser = useAtomValue(loggedInUserAtom)
 	const { switchToTenantId } = useContext(CurrentTenantIdContext)
 
 	return <div>
