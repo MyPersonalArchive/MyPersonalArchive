@@ -2,8 +2,6 @@ import { InfoPanel } from "./InfoPanel"
 import { Preview, DimensionEnum } from "./PreviewList"
 import { SelectCheckbox, Selection } from "../Utils/Selection"
 import { UnallocatedBlob } from "../Utils/Atoms"
-import { BaseViewer } from "./Viewers/BaseViewer"
-import { ServerViewer } from "./Viewers/ServerViewer"
 
 
 export type BlobListItemProps = {

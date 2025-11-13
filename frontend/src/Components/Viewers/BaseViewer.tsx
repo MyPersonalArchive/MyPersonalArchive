@@ -1,9 +1,9 @@
 // ViewerCore.tsx
-import { CSSProperties, ReactNode } from "react";
-import { ImageViewer } from "./ImageViewer";
-import { PdfViewer } from "./PdfViewer";
-import { TextViewer } from "./TextViewer";
-import { DimensionEnum } from "../PreviewList";
+import { CSSProperties, ReactNode } from "react"
+import { ImageViewer } from "./ImageViewer"
+import { PdfViewer } from "./PdfViewer"
+import { TextViewer } from "./TextViewer"
+import { DimensionEnum } from "../PreviewList"
 
 export interface BaseViewerProps {
   src?: string
@@ -55,18 +55,10 @@ export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer, childre
 	let viewer: ReactNode
 
 	// Force ImageViewer if requested (e.g., for PDF previews that are actually images)
-	if (forceImageViewer || mimeType?.startsWith("image/")) {
-		viewer = <ImageViewer src={src} style={viewerStyle} />
-	}
-	else if (isTextType(mimeType!)) {
-		viewer = <TextViewer src={src} style={viewerStyle} />
-	}
-	else if (mimeType === "application/pdf") {
-		viewer = <PdfViewer src={src} style={viewerStyle} />
-	}
-	else {
-		viewer = <div>Preview not supported</div>
-	}
+	if (forceImageViewer || mimeType?.startsWith("image/")) viewer = <ImageViewer src={src} style={viewerStyle} />
+	else if (isTextType(mimeType!)) viewer = <TextViewer src={src} style={viewerStyle} />
+	else if (mimeType === "application/pdf") viewer = <PdfViewer src={src} style={viewerStyle} />
+	else viewer = <div>Preview not supported</div>
 
 	return (
 		<div className="preview" style={getDimensions()}>
