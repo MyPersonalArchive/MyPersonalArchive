@@ -6,7 +6,6 @@ import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "../
 import { tagsAtom } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
-import { LocalFilePreview } from "../Components/LocalFilePreview"
 import { RoutePaths } from "../RoutePaths"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
@@ -15,9 +14,7 @@ import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
 import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModelDialog"
-import { ServerViewer } from "../Components/Viewers/ServerViewer"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
-import { StackedView } from "../Components/Viewers/StackedView"
 
 type GetResponse = {
 	id: number

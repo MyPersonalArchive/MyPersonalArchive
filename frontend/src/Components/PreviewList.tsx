@@ -64,21 +64,21 @@ export const Preview = <T extends BlobIdAndNumberOfPages,>({ blob, dimension, on
 	const controls = () => {
 		return (
 			<>
-			{onMaximize && (
-				<button type="button" onClick={() => onMaximize!(blob)} title="Expand">
-				<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-				</button>
-			)}
-			{onMinimize && (
-				<button type="button" onClick={() => onMinimize!()} title="Minimize">
-				<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-				</button>
-			)}
-			{onRemove && (
-				<button type="button" onClick={() => onRemove!(blob)} title="Delete">
-				<FontAwesomeIcon icon={faTrash} size="1x" />
-				</button>
-			)}
+				{onMaximize && (
+					<button type="button" onClick={() => onMaximize!(blob)} title="Expand">
+						<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+					</button>
+				)}
+				{onMinimize && (
+					<button type="button" onClick={() => onMinimize!()} title="Minimize">
+						<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+					</button>
+				)}
+				{onRemove && (
+					<button type="button" onClick={() => onRemove!(blob)} title="Delete">
+						<FontAwesomeIcon icon={faTrash} size="1x" />
+					</button>
+				)}
 			</>
 		)
 	}
