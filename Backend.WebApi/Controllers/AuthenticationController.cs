@@ -38,7 +38,6 @@ public class AuthenticationController : ControllerBase
 
 		var user = await _dbContext.Users
 			.Include(user => user.Tenants)
-			// .Include(user => user.Tokens)
 			.SingleOrDefaultAsync(user => user.Username == request.Username);
 		if (user == null)
 		{
@@ -64,7 +63,11 @@ public class AuthenticationController : ControllerBase
 			authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7); //TODO: consider using 30 days
 		}
 
-		var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, user.Username)], "Cookies");
+		var identity = new ClaimsIdentity(
+			[
+				new Claim(ClaimTypes.Name, user.Username),
+				new Claim("AllowedTenants", string.Join(",", user.Tenants.Select(tenant => tenant.Id)))
+			], "Cookies");
 		await HttpContext.SignInAsync(
 				CookieAuthenticationDefaults.AuthenticationScheme,
 				new ClaimsPrincipal(identity),
@@ -134,7 +137,6 @@ public class AuthenticationController : ControllerBase
 		public required string Username { get; set; }
 		public required string Fullname { get; set; }
 		public required IEnumerable<int> AvailableTenantIds { get; set; }
-		// public required string AccessToken { get; set; }
 	}
 
 

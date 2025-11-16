@@ -43,6 +43,7 @@ public static class Program
 		builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
 
 		builder.Services.AddHttpContextAccessor();
+		builder.Services.AddSingleton<IAuthorizationHandler, TenantIdRequirementsAuthorizationHandler>();
 
 		builder.Services.AddDbContext<MpaDbContext>();
 
@@ -54,7 +55,7 @@ public static class Program
 
 		builder.RegisterEndpoints();
 		builder.RegisterSignalRServices();
-		builder.RegisterJwtServices();
+		builder.RegisterAuthenticationServices();
 		builder.RegisterBackupProviders();
 		builder.RegisterEncryptionServics();
 		builder.RegisterRestoreServices();
@@ -145,7 +146,7 @@ public static class Program
 	}
 
 
-	private static void RegisterJwtServices(this WebApplicationBuilder builder)
+	private static void RegisterAuthenticationServices(this WebApplicationBuilder builder)
 	{
 		// Build a temporary serviceprovider to get the JWT configuration 
 		var jwtOptions = WebApplication
@@ -230,6 +231,13 @@ public static class Program
 
 		builder.Services.AddAuthorization(options =>
 		{
+			options.AddPolicy("TenantIdPolicy", policy =>
+			{
+				policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, "Cookies");
+				policy.RequireAuthenticatedUser(); // Ensure user is authenticated first
+				policy.Requirements.Add(new TenantIdRequirement());
+			});
+
 			// Default policy that accepts both JWT and Cookie authentication
 			options.DefaultPolicy = new AuthorizationPolicyBuilder()
 				.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme, "Cookies")

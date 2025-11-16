@@ -12,7 +12,7 @@ namespace Backend.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[Controller]/[Action]")]
-[Authorize]
+[Authorize(Policy = "TenantIdPolicy")]
 public class BlobController : ControllerBase
 {
     private readonly MpaDbContext _dbContext;

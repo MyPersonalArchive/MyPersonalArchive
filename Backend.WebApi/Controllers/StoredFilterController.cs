@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[Controller]/[Action]")]
-[Authorize]
+[Authorize(Policy = "TenantIdPolicy")]
 public class StoredFilterController : ControllerBase
 {
 	private readonly MpaDbContext _dbContext;

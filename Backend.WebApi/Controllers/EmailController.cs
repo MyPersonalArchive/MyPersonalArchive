@@ -31,7 +31,7 @@ using System.Text.Json.Nodes;
 
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize]
+[Authorize(Policy = "TenantIdPolicy")]
 public class EmailController : ControllerBase
 {
 	private readonly EmailProviderFactory _registry;

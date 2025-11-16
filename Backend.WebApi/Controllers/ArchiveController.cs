@@ -13,7 +13,7 @@ namespace Backend.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[Controller]/[Action]")]
-[Authorize]
+[Authorize(Policy = "TenantIdPolicy")]
 public class ArchiveController : ControllerBase
 {
 	private readonly JsonSerializerOptions _jsonSerializerOptions = new()

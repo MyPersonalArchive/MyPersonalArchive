@@ -59,6 +59,8 @@ public class MpaDbContext : DbContext
 	private void ConfigureTenantReadIsolation(ModelBuilder modelBuilder)
 	{
 		// Ensure that all entities implementing TenantEntity have a query filter applied to enforce tenant isolation
+		// Tenant isolation ensures that no data leaks between tenants.
+		// Note that tenant isolation does not control access to data. It only ensures that queries are automatically filtered by current tenant ID.
 		foreach (var entityType in modelBuilder.Model.GetEntityTypes())
 		{
 			if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))

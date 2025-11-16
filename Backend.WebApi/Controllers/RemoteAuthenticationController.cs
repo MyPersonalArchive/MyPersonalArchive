@@ -10,7 +10,7 @@ namespace Backend.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[Controller]")]
-// [Authorize]
+[Authorize]
 public class RemoteAuthenticationController : ControllerBase
 {
 	private readonly string _baseurl;

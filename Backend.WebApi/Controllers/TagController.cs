@@ -7,7 +7,7 @@ namespace Backend.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-[Authorize]
+[Authorize(Policy = "TenantIdPolicy")]
 public class TagController : ControllerBase
 {
     private readonly MpaDbContext _dbContext;
