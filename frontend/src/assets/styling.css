@@ -29,16 +29,13 @@
 	& .pdf-viewer-container {
 		border: thin dashed hsl(from black h s l / 50%);
 		border-radius: 4px;
-		box-sizing: border-box;
-		height: calc(100% - 4em); /* Subtract margin from height */
+		height: 100%;
 	}
 
 	/* Text viewer specific styling */
 	& .text-viewer-container {
 		border: thin dashed hsl(from black h s l / 50%);
 		border-radius: 4px;
-		box-sizing: border-box;
-		height: calc(100% - 4em); /* Subtract margin from height */
 	}
 
 	& iframe {
