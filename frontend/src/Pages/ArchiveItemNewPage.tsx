@@ -144,7 +144,7 @@ export const ArchiveItemNewPage = () => {
 
 				</div>
 				
-				<PreviewList<{fileName: string, fileData: Blob}> blobs={localBlobs}
+				<PreviewList<{fileName: string, fileData: Blob}> items={localBlobs}
 					containerClassName="grid grid-cols-4 gap-4 pt-2"
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>

@@ -202,7 +202,7 @@ export const ArchiveItemEditPage = () => {
 						}
 					/>
 
-					<PreviewList<LocalBlob> blobs={localBlobs}
+					<PreviewList<LocalBlob> items={localBlobs}
 						containerClassName="grid grid-cols-4 gap-4 pt-2"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
