@@ -66,6 +66,7 @@ public class AuthenticationController : ControllerBase
 		var identity = new ClaimsIdentity(
 			[
 				new Claim(ClaimTypes.Name, user.Username),
+				new Claim(ClaimTypes.NameIdentifier, user.Fullname),
 				new Claim("AllowedTenants", string.Join(",", user.Tenants.Select(tenant => tenant.Id)))
 			], "Cookies");
 		await HttpContext.SignInAsync(
@@ -107,7 +108,7 @@ public class AuthenticationController : ControllerBase
 
 	[AllowAnonymous]
 	[HttpPost("access-denied-redirect")]
-	public async Task<IActionResult> AccessDeniedredirect()
+	public async Task<IActionResult> AccessDeniedRedirect()
 	{
 		return Ok(new { message = "Du har ikke noe her å gjøre!" });
 	}
