@@ -12,7 +12,7 @@ export const useStoredFiltersPrefetching = () => {
 	useEffect(() => {
 		apiClient.get<StoredFilter[]>("/api/StoredFilter/list")
 			.then(filters => {
-				setStoredFilters(filters)
+				setStoredFilters(filters!)
 			})
 	}, [])
 

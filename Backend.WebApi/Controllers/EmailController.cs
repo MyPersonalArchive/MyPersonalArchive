@@ -49,7 +49,7 @@ public class EmailController : ControllerBase
 
 
 	[HttpPost("{providerName}/auth/exchange")]
-	public async Task<IActionResult> ExchangeToken(string providerName, [FromBody] TokenRequestExchangeRequest token)
+	public IActionResult ExchangeToken(string providerName, [FromBody] TokenRequestExchangeRequest token)
 	{
 		if (!_registry.TryGetProvider(providerName, out var provider) || provider == null)
 		{

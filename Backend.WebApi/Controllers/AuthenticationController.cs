@@ -65,8 +65,8 @@ public class AuthenticationController : ControllerBase
 
 		var identity = new ClaimsIdentity(
 			[
-				new Claim(ClaimTypes.Name, user.Username),
-				new Claim(ClaimTypes.NameIdentifier, user.Fullname),
+				new Claim(ClaimTypes.Name, user.Username),			//TODO: should this be set to user.Fullname?
+				new Claim(ClaimTypes.NameIdentifier, user.Username),
 				new Claim("AllowedTenants", string.Join(",", user.Tenants.Select(tenant => tenant.Id)))
 			], "Cookies");
 		await HttpContext.SignInAsync(

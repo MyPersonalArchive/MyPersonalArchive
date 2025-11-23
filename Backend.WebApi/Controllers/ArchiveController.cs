@@ -304,7 +304,7 @@ public class ArchiveController : ControllerBase
 
 	private async Task<Blob> CreateBlobFromUploadedFile(IFormFile file)
 	{
-		var stream = file.OpenReadStream();
+		using var stream = file.OpenReadStream();
 
 		return new Blob
 		{

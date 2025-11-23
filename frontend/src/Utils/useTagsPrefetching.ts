@@ -15,7 +15,7 @@ export const useTagsPrefetching = () => {
 	useEffect(() => {
 		apiClient.get<string[]>("/api/tag/list")
 			.then(tags => {
-				setTags(tags)
+				setTags(tags!)
 			})
 	}, [])
 
