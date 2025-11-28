@@ -23,7 +23,7 @@ export const BlobListItem = ({ blob, attachBlob, deleteBlobs, maximize, selectio
 			</div>
 
 			<div className="w-[300px] h-full flex flex-col justify-between">
-				<div className="push-right pr-0.5">
+				<div className="push-right pr-2.5">
 					<SelectCheckbox selection={selectionOfBlobs} item={blob.id} />
 				</div>
 

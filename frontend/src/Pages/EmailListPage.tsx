@@ -68,7 +68,7 @@ export const EmailListPage = () => {
 			<div>
 
 				<div className="stack-horizontal to-the-left my-4">
-					<div className="text-green-600 bg-gray-900 font-mono text-sm w-full p-2">// TODO: show/hide filters, stored filters and display options</div>
+					<div className="text-green-600 bg-gray-900 font-mono text-sm w-full p-2">//TODO: show/hide filters, stored filters and display options</div>
 					{/*
 					Auto load folders on login. Should we store folders and currentFolder per account?
 					Filters

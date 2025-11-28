@@ -22,7 +22,7 @@ export const StoredFilterSelector = () => {
 
 	return (
 		<>
-			<div className="push-left">
+			<div className="stack-horizontal to-the-left my-4">
 				{storedFilters?.map((filter) => (
 					<button className={classNames("btn" , {"selected": isChecked(filter)})}
 						key={filter.id}

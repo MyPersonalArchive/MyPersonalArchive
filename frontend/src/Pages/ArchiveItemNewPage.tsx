@@ -75,8 +75,8 @@ export const ArchiveItemNewPage = () => {
 
 	return (
 		<>
-			<form onSubmit={save}>
-				<h1 className="heading-2">
+			<form onSubmit={save} className="container mx-auto px-4 py-6">
+				<h1 className="heading-1">
 					New archive item {title}
 				</h1>
 
@@ -170,7 +170,7 @@ export const ArchiveItemNewPage = () => {
 					}
 				/>
 
-				<div className="push-right">
+				<div className="stack-horizontal to-the-right my-4">
 					<Link className="link align-with-btn" to={-1 as any}>
 						Back
 					</Link>

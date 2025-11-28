@@ -68,12 +68,10 @@ export const ArchiveItemListPage = () => {
 				Archive
 			</h1>
 
-			<div>
-				<FileDropZone onBlobAttached={() => { }} />
-			</div>
+			<FileDropZone onBlobAttached={() => { /* //TODO: Suggest to create an archive item from the attached blob? */ }} />
 
-			<div className="push-right">
-				<Link className="link align-with-btn" to={RoutePaths.Blobs}>Show unallocated blobs</Link>
+			<div className="stack-horizontal to-the-right my-4">
+				<Link className="link align-with-btn" to={RoutePaths.Blobs}>Show blobs</Link>
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
 			</div>
 
@@ -107,7 +105,7 @@ export const ArchiveItemListPage = () => {
 					</tbody>
 				</table>
 			</div>
-			<div className="push-right">
+			<div className="stack-horizontal to-the-right my-4">
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
 			</div>
 		</div>
@@ -171,7 +169,7 @@ const Filter = () => {
 	}
 
 	return (
-		<form onSubmit={search} onReset={reset} className="flex justify-start my-2 gap-2">
+		<form onSubmit={search} onReset={reset} className="stack-horizontal to-the-left my-4">
 			<input className="input"
 				type="text"
 				placeholder="Search by title"

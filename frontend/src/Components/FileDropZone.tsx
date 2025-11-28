@@ -179,7 +179,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 				</h1>
 				<div>
 
-					<div className="push-right">
+					<div className="stack-horizontal to-the-right my-4">
 						<label>
 							<input ref={selectAllCheckboxRef} type="checkbox"
 								checked={selectionOfBlobs.areAllItemsSelected}

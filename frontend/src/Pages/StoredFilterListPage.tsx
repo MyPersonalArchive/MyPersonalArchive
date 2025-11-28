@@ -53,7 +53,7 @@ export const StoredFilterListPage = () => {
 		return (
 			<ModalDialog onClose={() => setOpenDeleteFilterConfirmationDialog(false)}>
 				<DialogHeader>
-					<div className="dialog-header">Delete stored filter?</div>
+					<div className="dialog-header">Delete filter?</div>
 				</DialogHeader>
 				<DialogContent>
 					<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -74,7 +74,7 @@ export const StoredFilterListPage = () => {
 	return (
 		<div className="container mx-auto px-4 py-6">
 			<h1 className="heading-1">
-				Stored filters
+				Filters
 			</h1>
 
 			<NewFilterDialog open={openNewFilterDialog} mode={mode} initialValues={filter} setOpen={setOpenNewFilterDialog} onSave={save} />

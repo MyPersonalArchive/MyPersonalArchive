@@ -144,7 +144,7 @@ export const SignInPage = () => {
 								</div>
 							</div>
 
-							<div className="push-right">
+							<div className="stack-horizontal to-the-right my-4">
 								<button className="btn btn-primary" type="submit">
 									Log in
 								</button>

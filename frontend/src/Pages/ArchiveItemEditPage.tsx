@@ -127,9 +127,9 @@ export const ArchiveItemEditPage = () => {
 
 	return (
 		<>
-			<form onSubmit={save}>
+			<form onSubmit={save} className="container mx-auto px-4 py-6">
 
-				<h1 className="heading-2">
+				<h1 className="heading-1">
 					Edit item
 				</h1>
 
@@ -229,7 +229,7 @@ export const ArchiveItemEditPage = () => {
 					/>
 				</div>
 
-				<div className="push-right">
+				<div className="stack-horizontal to-the-right my-4">
 					<Link className="link align-with-btn" to={-1 as any}>
 						Back
 					</Link>
@@ -250,7 +250,7 @@ export const ArchiveItemEditPage = () => {
 								</div>
 							</DialogHeader>
 							<DialogFooter>
-								<div className="push-right">
+								<div className="stack-horizontal to-the-right my-4">
 									<button className="btn" onClick={(e) => { e.preventDefault(); setOpenDeleteDialog(false) }}>Cancel</button>
 									<button className="btn btn-danger" onClick={deleteItem}>Delete</button>
 								</div>
