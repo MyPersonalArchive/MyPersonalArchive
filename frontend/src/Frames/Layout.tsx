@@ -4,7 +4,7 @@ import { currentUserAtom, User } from "../Utils/Atoms"
 import { useAtomValue } from "jotai"
 import { PropsWithChildren, useContext } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faBars, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
+import { faBars, faGear, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
 import { CurrentTenantIdContext } from "./CurrentTenantIdContext"
 import { Dropdown, DropdownItem } from "../Components/Dropdown"
 import { StickyFooter, StickyHeader } from "../Components/Sticky"
@@ -84,28 +84,40 @@ const Navbar = () => {
 					]}
 				/>
 
-				<Dropdown
-					header={
-						<UserProfileHeader user={currentUser} />
-					}
-					items={[
-						{ type: "link", label: "Profile", link: RoutePaths.Profile },
-						...(
-							currentUser.availableTenantIds.length > 1
-								? [
-									{ type: "seperator" },
-									...currentUser.availableTenantIds.map((tenantId) => (
-										currentTenantId === tenantId
-											? { type: "inactive", label: <>Tenant {tenantId}</> }
-											: { type: "button", label: <>Tenant {tenantId}</>, onClick: () => { switchTenant(tenantId) } }
-									))
-								] as DropdownItem[]
-								: []
-						),
-						{ type: "seperator" },
-						{ type: "link", label: "Log out", link: RoutePaths.SignOut }
-					]}
-				/>
+				<div className="stack-horizontal">
+					<Dropdown
+						header={<>
+							<FontAwesomeIcon icon={faGear} className="mr-1" />
+							Settings
+						</>}
+						items={[
+							{ type: "link", label: <>Filters</>, link: RoutePaths.StoredFilters },
+						]}
+					/>
+
+					<Dropdown
+						header={
+							<UserProfileHeader user={currentUser} />
+						}
+						items={[
+							{ type: "link", label: "Profile", link: RoutePaths.Profile },
+							...(
+								currentUser.availableTenantIds.length > 1
+									? [
+										{ type: "seperator" },
+										...currentUser.availableTenantIds.map((tenantId) => (
+											currentTenantId === tenantId
+												? { type: "inactive", label: <>Tenant {tenantId}</> }
+												: { type: "button", label: <>Tenant {tenantId}</>, onClick: () => { switchTenant(tenantId) } }
+										))
+									] as DropdownItem[]
+									: []
+							),
+							{ type: "seperator" },
+							{ type: "link", label: "Log out", link: RoutePaths.SignOut }
+						]}
+					/>
+				</div>
 			</nav>
 			: <nav className="navbar horizontal-evenly-spaced-flex">
 				<Link to={RoutePaths.SignIn}>Sign in</Link>
