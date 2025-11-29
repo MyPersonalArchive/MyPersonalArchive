@@ -106,11 +106,12 @@ export const useSelection = <T,>(allPossibleItems: Set<T>): Selection<T> => {
 
 type SelectCheckboxProps<T> = {
 	selection: Selection<T>
-	item: T
+	item: T,
+	className?: string
 }
-export const SelectCheckbox = <T,>({ selection, item }: SelectCheckboxProps<T>) => {
+export const SelectCheckbox = <T,>({ selection, item, className }: SelectCheckboxProps<T>) => {
 	return (
-		<input className="input" type="checkbox"
+		<input className={`input ${className}`} type="checkbox"
 			style={{ alignSelf: "end" }}
 			checked={selection.selectedItems.has(item)}
 			onChange={() => selection.toggleSelection(item)} />

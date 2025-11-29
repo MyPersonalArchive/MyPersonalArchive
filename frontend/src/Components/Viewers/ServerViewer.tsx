@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useApiClient } from "../../Utils/useApiClient"
 import { BaseViewer, BaseViewerProps } from "./BaseViewer"
-import { DimensionEnum } from "../PreviewList"
+import { DimensionEnum } from "../Preview"
 
 interface Props extends BaseViewerProps {
 	blobId: number

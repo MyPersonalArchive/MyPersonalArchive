@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
-import { BlobIdAndNumberOfPages, DimensionEnum, Preview, PreviewList } from "./PreviewList"
-import { useSelection } from "../Utils/Selection"
-import { BlobListItem } from "./BlobListItem"
+import { PreviewList } from "./PreviewList"
+import { BlobIdAndNumberOfPages } from "./Preview"
+import { DimensionEnum } from "./Preview"
+import { Preview } from "./Preview"
+import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
+import { formatDate, formatFileSize } from "../Utils/formatUtils"
 
 
 
@@ -201,7 +204,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 				<PreviewList<UnallocatedBlob> items={unallocatedHeap}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
-							<BlobListItem
+							<BlobCard
 								key={blob.id}
 								blob={blob}
 								attachBlob={() => addBlob([blob.id!])}
@@ -217,6 +220,40 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 								onMinimize={minimize} />
 					}
 				/>
+			</div>
+		</div>
+	)
+}
+
+
+type BlobCardProps = {
+	blob: UnallocatedBlob
+	attachBlob: (id: number) => void
+	maximize: (blob: UnallocatedBlob) => void
+	selectionOfBlobs: Selection<number>
+}
+const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
+	return (
+		<div className="card flex flex-row relative w-[900px]">
+
+			<div className="bg-gray-200 p-2 w-50 h-50 flex justify-center">
+				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
+			</div>
+
+			<div className="p-2 grow">
+				<div className="flex flex-col py-2 px-4">
+					<div className="font-bold">{blob.fileName}</div>
+					<div className=" text-sm">{formatDate(new Date(blob.uploadedAt))}</div>
+					<div className=" text-sm">{blob.uploadedByUser}</div>
+					<div className=" text-sm">{formatFileSize(blob.fileSize)}</div>
+				</div>
+
+				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
+
+				<div className="absolute bottom-2 right-2 space-x-2">
+					<button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
+				</div>
+
 			</div>
 		</div>
 	)

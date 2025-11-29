@@ -3,11 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
 import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
-import { DimensionEnum, Preview, PreviewList } from "../Components/PreviewList"
+import { PreviewList } from "../Components/PreviewList"
+import { DimensionEnum } from "../Components/Preview"
+import { Preview } from "../Components/Preview"
 import { FileDropZone } from "../Components/FileDropZone"
-import { useSelection } from "../Utils/Selection"
-import { BlobListItem } from "../Components/BlobListItem"
+import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
+import { formatDate, formatFileSize } from "../Utils/formatUtils"
 
 
 export const BlobListPage = () => {
@@ -61,14 +63,6 @@ export const BlobListPage = () => {
 
 			<Filter />
 
-			<div className="stack-horizontal to-the-left my-4">
-				<label>
-					<input type="checkbox" checked={true} disabled />
-					Show only unallocated blobs
-					<div className="text-green-600 bg-gray-900 font-mono text-sm w-full p-2">//TODO: implement this filter</div>
-				</label>
-			</div>
-
 			<div className="stack-horizontal to-the-right my-4">
 				<label>
 					<input ref={selectAllCheckboxRef} type="checkbox"
@@ -97,7 +91,7 @@ export const BlobListPage = () => {
 
 			<PreviewList<UnallocatedBlob> items={unallocatedHeap}
 				thumbnailPreviewTemplate={
-					(blob, maximize) => <BlobListItem
+					(blob, maximize) => <BlobCard
 						key={blob.id}
 						blob={blob}
 						attachBlob={attachBlob}
@@ -113,6 +107,42 @@ export const BlobListPage = () => {
 				}
 			/>
 
+		</div>
+	)
+}
+
+
+type BlobCardProps = {
+	blob: UnallocatedBlob
+	attachBlob: (id: number) => void
+	deleteBlobs: (blobIds: number[]) => void
+	maximize: (blob: UnallocatedBlob) => void
+	selectionOfBlobs: Selection<number>
+}
+const BlobCard = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }: BlobCardProps) => {
+	return (
+		<div className="card flex flex-row relative">
+			
+			<div className="bg-gray-200 p-2 w-50 h-50 flex justify-center">
+				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
+			</div>
+
+			<div className="p-2 grow">
+				<div className="flex flex-col py-2 px-4">
+					<div className="font-bold">{blob.fileName}</div>
+					<div className=" text-sm">{formatDate(new Date(blob.uploadedAt))}</div>
+					<div className=" text-sm">{blob.uploadedByUser}</div>
+					<div className=" text-sm">{formatFileSize(blob.fileSize)}</div>
+				</div>
+
+				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
+
+				<div className="absolute bottom-2 right-2 space-x-2">
+					<button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
+					<button className="btn" onClick={() => deleteBlobs([blob.id])}>Delete</button>
+				</div>
+
+			</div>
 		</div>
 	)
 }

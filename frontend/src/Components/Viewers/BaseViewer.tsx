@@ -3,7 +3,7 @@ import { CSSProperties, ReactNode } from "react"
 import { ImageViewer } from "./ImageViewer"
 import { PdfViewer } from "./PdfViewer"
 import { TextViewer } from "./TextViewer"
-import { DimensionEnum } from "../PreviewList"
+import { DimensionEnum } from "../Preview"
 
 export interface BaseViewerProps {
   src?: string
