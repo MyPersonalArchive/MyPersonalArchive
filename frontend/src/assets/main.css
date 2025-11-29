@@ -101,10 +101,10 @@ label>input[type="checkbox"] {
 
 
 .aligned-labels-and-inputs {
-	@apply flex flex-row my-4;
+	@apply flex flex-row my-4 items-baseline;
 
 	&>:first-child {
-		@apply w-[5em];
+		@apply w-[8em];
 	}
 }
 
