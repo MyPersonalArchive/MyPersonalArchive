@@ -23,13 +23,13 @@ export const useUnallocatedBlobsPrefetching = () => {
 	useSignalR(message => {
 		switch (message.messageType) {
 			case "AddedBlobs": {
-				console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
+				// console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
 				setUnallocatedBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as UnallocatedBlob[])])
 				break
 			}
 			case "BlobsAllocated":
-			case "BlobDeleted": {
-				console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
+			case "BlobsDeleted": {
+				// console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
 				setUnallocatedBlobs(unallocatedBlobs => unallocatedBlobs.filter(blob => !message.data.includes(blob.id)))
 				break
 			}
