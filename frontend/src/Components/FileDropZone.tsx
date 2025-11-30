@@ -54,40 +54,16 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 	}
 
 	const handleFileChange = (files: File[]) => {
-		if (!files) {
+		if (!files || files.length === 0) {
 			return
 		}
 
-		const filePromises = []
+		const fileDataArray = Array.from(files).map(file => ({
+			fileName: file.name,
+			fileData: file as Blob
+		}))
 
-		for (let i = 0; i < files.length; i++) {
-			const reader = new FileReader()
-
-			const filePromise = new Promise<{ fileName: string, fileData: Blob }>((resolve, reject) => {
-				reader.onload = () => {
-					resolve({
-						fileName: files[i].name,
-						fileData: new Blob([files[i]], { type: files[i].type })
-					})
-				}
-
-				reader.onerror = () => {
-					reject(new Error("Error reading file"))
-				}
-
-				reader.readAsDataURL(files[i])
-			})
-
-			filePromises.push(filePromise)
-		}
-
-		Promise.all(filePromises)
-			.then((fileDataArray) => {
-				uploadBlobs(fileDataArray)
-			})
-			.catch((error) => {
-				console.error("Error reading files:", error)
-			})
+		uploadBlobs(fileDataArray)
 	}
 
 	const handleDragOver = (event: any) => {
@@ -163,7 +139,7 @@ const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: U
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
-			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 ||selectionOfBlobs.areOnlySomeItemsSelected
+			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 || selectionOfBlobs.areOnlySomeItemsSelected
 			selectAllCheckboxRef.current.checked = selectionOfBlobs.allPossibleItems.size > 0 && selectionOfBlobs.areAllItemsSelected
 		}
 	}, [selectionOfBlobs.selectedItems, unallocatedHeap])

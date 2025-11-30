@@ -31,12 +31,13 @@ export const useApiClient = () => {
 				// }
 
 				if(response.status === 401) {
-					console.log("Unauthorized", response)
 					navigate(RoutePaths.SignIn + "?redirect=/archive/list")
-					console.log("Navigating to sign-in page due to 401 response")
 				}
-
 				return response
+			})
+			.catch(error => {
+				console.error("Network or other error during fetch:", error)
+				throw error
 			})
 	}
 
