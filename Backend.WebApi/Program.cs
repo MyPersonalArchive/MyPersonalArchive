@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Core;
+using Backend.Backup;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
@@ -11,12 +12,14 @@ using Newtonsoft.Json;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
+using Backend.WebApi.Managers.Backup;
 using Backend.WebApi.Middleware;
 using Backend.Core.JsonConverters;
 using Backend.WebApi.Cqrs.Infrastructure;
 using MailKit.Net.Imap;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
+using Backend.Backup.Services;
 
 namespace Backend.WebApi;
 
@@ -72,8 +75,6 @@ public static class Program
 		builder.RegisterSignalRServices();
 		builder.RegisterAuthenticationServices();
 		builder.RegisterBackupProviders();
-		builder.RegisterEncryptionServics();
-		builder.RegisterRestoreServices();
 
 
 		// builder.Services.AddScoped<IVersionRepository, VersionRepository>();
@@ -99,14 +100,22 @@ public static class Program
 		{
 			var cert_file = "/data/https/server.pfx";
 			var cert_password = builder.Configuration.GetValue<string>("CertificatePassword")?.TrimEnd('\n', '\r');
+			
+			// Read port from environment variable or default to 5054
+			var portString = Environment.GetEnvironmentVariable("BACKEND_PORT") ?? "5054";
+			var port = int.TryParse(portString, out var parsedPort) ? parsedPort : 5054;
+			
+			// Use IPAddress.Any (0.0.0.0) to allow access from outside the container
+			var bindAddress = IPAddress.Any;
+			
 			if (!string.IsNullOrEmpty(cert_password) && File.Exists(cert_file))
 			{
-				options.Listen(IPAddress.Loopback, 5054, listenOptions => { listenOptions.UseHttps(cert_file, cert_password); });
+				options.Listen(bindAddress, port, listenOptions => { listenOptions.UseHttps(cert_file, cert_password); });
 			}
 			else
 			{
-				_logger.LogWarning("HTTPS certificate not found at {CertFile} or password missing. Starting Kestrel without HTTPS on port 5054.", cert_file);
-				options.Listen(IPAddress.Loopback, 5054);
+				_logger.LogWarning("HTTPS certificate not found at {CertFile} or password missing. Starting Kestrel without HTTPS on port {Port}.", cert_file, port);
+				options.Listen(bindAddress, port);
 			}
 		});
 	}
@@ -126,28 +135,42 @@ public static class Program
 	private static void RegisterBackupProviders(this IHostApplicationBuilder builder)
 	{
 		var services = builder.Services;
+		var appConfig = builder.Configuration.GetSection("AppConfig").Get<AppConfig>();
+		// Use the new backup services extension method
+		services.AddBackupServices(options =>
+		{
+			options.BackupFolder = appConfig?.BackupFolder ?? "./backups";
+			options.DefaultInterval = TimeSpan.FromMinutes(30);
+			options.MaxConcurrentBackups = 3;
+			options.EnableProgressReporting = true;
+		});
 
-		services.AddSingleton<TenantBackupManager>();
-		services.AddSingleton<BackupProviderFactory>();
-
-		services.AddScoped<BuddyTargetBackupProvider>();
+		// Register factories with signaling server URL, ICE servers, and connection pool
+		services.AddSingleton<BackupProviderFactory>(sp => 
+		{
+			var connectionPool = sp.GetRequiredService<WebRTCConnectionPool>();
+			return new BackupProviderFactory(appConfig?.SignalingServerUrl, appConfig?.IceServers, connectionPool);
+		});
+		services.AddSingleton<Func<IServiceScope, int, IBackupProgressReporter>>((sp) => 
+			(scope, tenantId) => new SignalRBackupProgressReporter(scope, tenantId));
+		
+		// Register restore manager with progress reporter factory
+		services.AddSingleton<TenantRestoreManager>(sp =>
+		{
+			var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+			var progressReporterFactory = sp.GetService<Func<IServiceScope, int, IBackupProgressReporter>>();
+			return new TenantRestoreManager(scopeFactory, progressReporterFactory);
+		});
 	}
 
-	private static void RegisterRestoreServices(this IHostApplicationBuilder builder)
-	{
-		var services = builder.Services;
+	// private static void RegisterEmailServices(this IHostApplicationBuilder builder)
+	// {
+	// 	var services = builder.Services;
 
-		services.AddSingleton<TenantRestoreManager>();
-	}
-
-	private static void RegisterEncryptionServics(this IHostApplicationBuilder builder)
-	{
-		var services = builder.Services;
-
-		services.AddSingleton<EncryptionProviderFactory>();
-
-		services.AddScoped<OpenSslAes256Cbc>();
-	}
+	// 	services.AddSingleton<ImapProviderBase, GmailProvider>();
+	// 	services.AddSingleton<ImapProviderBase, FastMailBasicAuthProvider>();
+	// 	services.AddSingleton<EmailProviderFactory>();
+	// }
 
 	private static void RegisterAuthenticationServices(this WebApplicationBuilder builder)
 	{

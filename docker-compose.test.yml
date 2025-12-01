@@ -1,0 +1,30 @@
+version: '3.8'
+
+# Single test instance to pair with your development instance
+# Usage: ./scripts/start-test-instance.sh
+
+services:
+  test-instance:
+    build:
+      context: .
+      dockerfile: Backend.WebApi/Dockerfile.test
+    container_name: mpa-test
+    ports:
+      - "6054:6054"
+    environment:
+      - ASPNETCORE_URLS=http://+:6054
+      - ASPNETCORE_ENVIRONMENT=Development
+      - BACKEND_PORT=6054
+      - JWT_SECRET=test-secret-key-for-p2p-testing-only-not-for-production-use-minimum-32-chars
+      - JWT_ISSUER=test-instance
+      - AUDIENCE=test-instance
+      - AppConfig__DatabaseFolder=/data/Database
+      - AppConfig__BlobFolder=/data/Blobs
+      - AppConfig__BackupFolder=/data/backup
+      - AppConfig__SignalingServerUrl=wss://mpasignalingserver-production.up.railway.app/signaling
+    volumes:
+      - test-instance-data:/data
+    network_mode: bridge
+
+volumes:
+  test-instance-data:

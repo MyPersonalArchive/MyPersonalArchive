@@ -14,6 +14,7 @@ export const RoutePaths = {
 	},
 	StoredFilters: "/filters",
 	Email: "/email",
+	Backup: "/backup",
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic"
 	},

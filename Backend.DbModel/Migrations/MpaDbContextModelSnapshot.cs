@@ -33,6 +33,11 @@ namespace Backend.DbModel.Migrations
                     b.Property<DateTimeOffset?>("DocumentDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
                     b.Property<string>("Metadata")
                         .IsRequired()
                         .HasColumnType("TEXT");

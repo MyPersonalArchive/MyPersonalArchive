@@ -15,6 +15,7 @@ import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { RootFrame } from "./Frames/RootFrame"
 import { EmailListPage } from "./Pages/EmailListPage"
+import { BackupPage } from "./Pages/BackupPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
 
 const router = createBrowserRouter([
@@ -77,6 +78,10 @@ const router = createBrowserRouter([
 					{
 						path: `${RoutePaths.ExternalAuthentication.Basic}/:provider`,
 						element: <BasicAuthenticationPage />
+					},
+					{
+						path: RoutePaths.Backup,
+						element: <BackupPage />
 					},
 					{
 						path: RoutePaths.Settings,

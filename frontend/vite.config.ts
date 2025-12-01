@@ -9,6 +9,10 @@ const keyPath = "/data/https/server.key"
 const certPath = "/data/https/server.crt"
 const httpsEnabled = fs.existsSync(keyPath) && fs.existsSync(certPath)
 
+// Allow configuring backend port via environment variable
+const backendPort = process.env.VITE_BACKEND_PORT || "5054"
+const backendUrl = httpsEnabled ? `https://localhost:${backendPort}` : `http://localhost:${backendPort}`
+
 // https://vite.dev/config/
 export default defineConfig({
 	plugins: [
@@ -25,7 +29,7 @@ export default defineConfig({
 		}),
 		proxy: {
 			"/api": {
-				target: httpsEnabled ? "https://localhost:5054" : "http://localhost:5054",
+				target: backendUrl,
 				changeOrigin: true,
 				...(httpsEnabled && {
 					secure: false,
@@ -47,7 +51,7 @@ export default defineConfig({
 				// },
 			},
 			"/notificationHub": {
-				target: httpsEnabled ? "https://localhost:5054" : "http://localhost:5054",
+				target: backendUrl,
 				changeOrigin: true,
 				ws: true,
 				...(httpsEnabled && {

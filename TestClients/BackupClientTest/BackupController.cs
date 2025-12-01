@@ -47,6 +47,23 @@ public class BackupController : ControllerBase
         }
     }
 
+    [HttpDelete("delete-target-backup")]
+    public IActionResult Delete([FromQuery] int tenantId)
+    {
+        var deleteFiles = new List<string>();
+        var folderPath = $"/data/backup/{tenantId}";
+        if (Directory.Exists(folderPath))
+        {
+            var files = Directory.GetFiles(folderPath);
+            foreach (var file in files)
+            {                
+                System.IO.File.Delete(file);
+                deleteFiles.Add(file);
+            }
+        }
+        return Ok(deleteFiles);
+    }
+
     [HttpGet("list")]
     public IActionResult GetList([FromQuery] int tenantId)
     {
