@@ -3,6 +3,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
+namespace Backend.Crypto;
+
 public class OpenSslAes256Cbc : IEncryptionService
 {
     private const int KeySize = 32;      // 256-bit AES

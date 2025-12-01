@@ -19,6 +19,7 @@ public class ArchiveItem : TenantEntity
     public User? CreatedBy { get; set; }
     public required DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? DocumentDate { get; set; }
+	public DateTimeOffset LastUpdated { get; set; }
 
     public ICollection<Blob>? Blobs { get; set; }
 

@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations.Schema;
 using Backend.DbModel.Database.EntityModels;
 

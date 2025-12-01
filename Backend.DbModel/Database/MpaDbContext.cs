@@ -96,6 +96,11 @@ public class MpaDbContext : DbContext
 				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
 			)
 			.HasColumnType("TEXT");
+		
+		// Configure LastUpdated with default value
+		modelBuilder.Entity<ArchiveItem>()
+			.Property(e => e.LastUpdated)
+			.HasDefaultValueSql("datetime('now')");
 
 		modelBuilder.Entity<BackupDestination>()
 			.Property(e => e.Metadata)
@@ -284,7 +289,6 @@ public class MpaDbContext : DbContext
 	public DbSet<User> Users { get; set; }
 	public DbSet<Tenant> Tenants { get; set; }
 	public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
-
 	public DbSet<BackupDestination> BackupDestinations { get; set; }
 	public DbSet<BackupHistory> BackupHistory { get; set; }
 

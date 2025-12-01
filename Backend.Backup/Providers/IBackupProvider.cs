@@ -5,14 +5,18 @@ namespace Backend.Core.Providers;
 
 public interface IBackupProvider
 {
+	string Name { get; }
     Task Connect(string address);
     Task BackupAsync(int tenantId, string name, Stream fileStream);
-    IAsyncEnumerable<(string name, Stream stream)> RestoreAsync(int tenantId);
+	Task<List<string>> DeleteBackupsAsync(int tenantId);
+    IAsyncEnumerable<(string name, Stream stream)> RestoreAsync(int tenantId, Action<int>? totalFilesCallback = null);
 }
 
 public class BuddyTargetBackupProvider : IBackupProvider
 {
     private HttpClient _httpClient;
+
+    public string Name => "BuddyTarget";
 
     public Task Connect(string address)
     {
@@ -32,11 +36,14 @@ public class BuddyTargetBackupProvider : IBackupProvider
         await _httpClient.PostAsync($"/api/Backup/backup?tenantId={tenantId}&name={name}", content);
     }
 
-    public async IAsyncEnumerable<(string name, Stream stream)> RestoreAsync(int tenantId)
+    public async IAsyncEnumerable<(string name, Stream stream)> RestoreAsync(int tenantId, Action<int>? totalFilesCallback = null)
     {
         var listResponse = await _httpClient.GetAsync($"/api/Backup/list?tenantId={tenantId}");
         var responseBody = await listResponse.Content.ReadAsStringAsync();
         var list = JsonConvert.DeserializeObject<string[]>(responseBody);
+        
+        // Notify caller of total file count
+        totalFilesCallback?.Invoke(list?.Length ?? 0);
 
         foreach (var name in list)
         {
@@ -48,4 +55,11 @@ public class BuddyTargetBackupProvider : IBackupProvider
             yield return (name, stream);
         }
     }
+
+	public async Task<List<string>> DeleteBackupsAsync(int tenantId)
+	{
+		var response = await _httpClient.DeleteAsync($"/api/Backup/delete-target-backup?tenantId={tenantId}");
+		var responseBody = await response.Content.ReadAsStringAsync();
+		return JsonConvert.DeserializeObject<List<string>>(responseBody);
+	}
 }

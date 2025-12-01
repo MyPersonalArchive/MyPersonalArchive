@@ -57,7 +57,8 @@ public class ArchiveController : ControllerBase
 			CreatedAt = DateTimeOffset.Now,
 			DocumentDate = createRequest.DocumentDate,
 			Tags = [.. Tags.Ensure(_dbContext, createRequest.Tags)],
-			Metadata = createRequest.Metadata
+			Metadata = createRequest.Metadata,
+			LastUpdated = DateTimeOffset.Now
 		};
 
 		var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
@@ -107,7 +108,8 @@ public class ArchiveController : ControllerBase
 			CreatedAt = DateTimeOffset.Now,
 			Blobs = blobs,
 			Tags = new List<Tag>(),
-			Metadata = new JsonObject()
+			Metadata = new JsonObject(),
+			LastUpdated = DateTimeOffset.Now
 		};
 
 		_dbContext.ArchiveItems.Add(archiveItem);
@@ -182,6 +184,7 @@ public class ArchiveController : ControllerBase
 		archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
 		archiveItem.Metadata = updateRequest.Metadata;
 		archiveItem.DocumentDate = updateRequest.DocumentDate;
+		archiveItem.LastUpdated = DateTimeOffset.Now;
 
 		await _dbContext.SaveChangesAsync();
 

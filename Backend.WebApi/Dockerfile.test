@@ -1,0 +1,18 @@
+# Backend Dockerfile for isolated testing
+# Uses pre-built binaries from host (built with dotnet publish)
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+
+# Copy pre-built binaries from host
+COPY publish/ .
+
+# Copy pre-built frontend from host
+COPY frontend-dist/ ./wwwroot/
+
+# Create data directory
+RUN mkdir -p /data/Database /data/Blobs /data/backup
+
+# Expose port (will be overridden by environment)
+EXPOSE 5054
+
+ENTRYPOINT ["dotnet", "Backend.WebApi.dll"]

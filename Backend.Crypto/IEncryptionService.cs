@@ -1,3 +1,5 @@
+namespace Backend.Crypto;
+
 public interface IEncryptionService
 {
     MemoryStream Encrypt(Stream inputStream, string password);

@@ -11,7 +11,10 @@ Backend.Api/wwwroot/*
 
 data
 frontend/temp/
+frontend/dist/
+frontend-dist/
 temp/
+publish/
 
 
 TestClients/BackupClientTest/TestFiles/Encrypted/*

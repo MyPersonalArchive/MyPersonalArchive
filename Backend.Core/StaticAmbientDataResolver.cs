@@ -1,11 +1,9 @@
-using Backend.Core.Infrastructure;
-
-namespace Backend.WebApi;
-
+namespace Backend.Core.Infrastructure;
 
 public class StaticAmbientDataResolver : IAmbientDataResolver
 {
     private readonly int _tenantId;
+    
     public StaticAmbientDataResolver(int tenantId)
     {
         _tenantId = tenantId;
@@ -14,5 +12,4 @@ public class StaticAmbientDataResolver : IAmbientDataResolver
     public int? GetCurrentTenantId() => _tenantId;
 
     public string GetCurrentUsername() => "";
-    
 }

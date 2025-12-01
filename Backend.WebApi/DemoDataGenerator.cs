@@ -81,13 +81,15 @@ public class DemoDataGenerator
                 {
                     var title = $"{first} {second} {third}";
                     var tags = data.Tags.OrderBy(x => rng.Next()).Take(rng.Next(0, 7)).ToList();
+                    var createdAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440));
                     var item = new ArchiveItem
                     {
                         Title = title,
                         Tags = Tags.Ensure(dbContext, tags),
                         Blobs = [],
                         CreatedByUsername = data.Usernames.OrderBy(x => rng.Next()).First(),
-                        CreatedAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440)),
+                        CreatedAt = createdAt,
+                        LastUpdated = createdAt,
                         Metadata = []
                     };
 

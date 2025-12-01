@@ -15,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Backend.Crypto\Backend.Crypto.csproj" />
 	</ItemGroup>
 
 </Project>
