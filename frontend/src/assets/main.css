@@ -66,12 +66,12 @@
 
 	&>.input:first-child,
 	&>.btn:first-child {
-		@apply rounded-l;
+		@apply rounded-l-sm;
 	}
 
 	&>.input:last-child,
 	&>.btn:last-child {
-		@apply rounded-r;
+		@apply rounded-r-sm;
 	}
 }
 
@@ -106,16 +106,6 @@ label>input[type="checkbox"] {
 	&>:first-child {
 		@apply w-[8em];
 	}
-}
-
-.push-left {
-	/* deprecated use "stack-horizontal left-justified my-4" */
-	@apply flex flex-row justify-start my-4 gap-2 items-baseline;
-}
-
-.push-right {
-	/* deprecated use "stack-horizontal right-justified my-4" */
-	@apply flex flex-row justify-end my-4 gap-2 items-baseline;
 }
 
 .stack-horizontal {
