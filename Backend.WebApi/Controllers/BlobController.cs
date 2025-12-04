@@ -173,7 +173,7 @@ public class BlobController : ControllerBase
         var message = new Message("BlobsAllocated", blobIds);
         await _signalRService.PublishToTenantChannel(message);
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpPost]
@@ -207,7 +207,7 @@ public class BlobController : ControllerBase
         var message = new Message("AddedBlobs", ToUnallocatedBlob(blobs));
         await _signalRService.PublishToTenantChannel(message);
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete]

@@ -185,7 +185,7 @@ public class ArchiveController : ControllerBase
 		var message = new Message("ArchiveItemUpdated", archiveItem.Id);
 		await _signalRService.PublishToTenantChannel(message);
 
-		return Ok();
+		return NoContent();
 	}
 
 
@@ -298,7 +298,7 @@ public class ArchiveController : ControllerBase
 		var message = new Message("ArchiveItemDeleted", archiveItem.Id);
 		await _signalRService.PublishToUserChannel(message);
 
-		return Ok();
+		return NoContent();
 	}
 
 

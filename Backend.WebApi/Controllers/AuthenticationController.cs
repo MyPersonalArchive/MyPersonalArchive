@@ -119,7 +119,7 @@ public class AuthenticationController : ControllerBase
 	public async Task<IActionResult> SignOutAction([FromQuery] bool signOutUserFromAllDevices = false)
 	{
 		await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-		return Ok(new { });
+		return NoContent();
 	}
 
 
