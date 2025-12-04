@@ -22,7 +22,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 	const apiClient = useApiClient()
 
 	const inputFileRef = useRef<HTMLInputElement | null>(null)
-	const [openUnallocatedBlobs, setOpenUnallocatedBlobs] = useState(false)
+	const [openUnallocatedBlobDialog, setOpenUnallocatedBlobsDialog] = useState(false)
 
 	const uploadBlobs = (blobs: { fileName: string; fileData: Blob }[]): void => {
 		if (onBlobAdded) {
@@ -111,7 +111,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 						<>
 							<i>or</i>
 							<p>
-								<button className="link" type="button" onClick={() => { setOpenUnallocatedBlobs(!openUnallocatedBlobs) }}>
+								<button className="link" type="button" onClick={() => { setOpenUnallocatedBlobsDialog(!openUnallocatedBlobDialog) }}>
 									Choose from unallocted heap.
 								</button>
 							</p>
@@ -119,20 +119,19 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 					}
 				</div>
 			</div>
-			<UnallocatedBlobsDialog openDialog={openUnallocatedBlobs} onBlobAttached={onBlobAttached} onCloseDialog={() => setOpenUnallocatedBlobs(false)} />
+			{
+				openUnallocatedBlobDialog && <UnallocatedBlobsDialog onBlobAttached={onBlobAttached} onCloseDialog={() => setOpenUnallocatedBlobsDialog(false)} />
+			}
 		</div>
 	)
 }
 
 
 type UnallocatedBlobsDialogProps = {
-	openDialog: boolean,
 	onCloseDialog: () => void
 	onBlobAttached: (blob: BlobIdAndNumberOfPages[]) => void
 }
-const UnallocatedBlobsDialog = ({ openDialog, onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
-	if (!openDialog) return null
-
+const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
 	const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
 
 	const selectionOfBlobs = useSelection<number>(new Set(unallocatedHeap.map(blob => blob.id)))
