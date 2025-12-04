@@ -80,7 +80,7 @@ const Navbar = () => {
 						{ type: "link", label: <>Archive</>, link: RoutePaths.Archive },
 						{ type: "link", label: <>Blobs</>, link: RoutePaths.Blobs },
 						{ type: "link", label: <>Filters</>, link: RoutePaths.StoredFilters },
-						{ type: "link", label: <>Email</>, link: RoutePaths.Email },
+						{ type: "link", label: <>Emails</>, link: RoutePaths.Email },
 					]}
 				/>
 

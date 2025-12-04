@@ -6,9 +6,9 @@ import ReceiptMetadataComponent from "./ReceiptMetadataType"
 
 
 export const allMetadataTypes: Array<MetadataType> = [
-    ReceiptMetadataComponent,
-    ExpiryMetadataComponent,
-    DescriptionMetadataType,
+	ReceiptMetadataComponent,
+	ExpiryMetadataComponent,
+	DescriptionMetadataType,
 	EmailMetadataType
 ]
 
