@@ -64,12 +64,12 @@ export const ArchiveItemEditPage = () => {
 	useEffect(() => {
 		apiClient.get<GetResponse>("/api/archive/get", { id: params.id })
 			.then(item => {
-				setId(item.id)
-				setTitle(item.title)
-				setTags(item.tags)
-				setBlobs(item.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
-				setLabel(item.label)
-				setDocumentDate(item.documentDate)
+				setId(item!.id)
+				setTitle(item!.title)
+				setTags(item!.tags)
+				setBlobs(item!.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
+				setLabel(item!.label)
+				setDocumentDate(item!.documentDate)
 
 				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
 			})

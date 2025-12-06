@@ -16,7 +16,7 @@ type ListResponse = {
 	id: number
 	title: string
 	tags: string[]
-	blob: Blob[]
+	blobs: Blob[]
 	createdAt: string
 	documentDate: Date
 }
@@ -51,7 +51,7 @@ export const ArchiveItemListPage = () => {
 			metadataTypes: searchParams.getAll("metadataTypes")
 		}
 		apiClient.get<ListResponse[]>("/api/archive/list", payload)
-			.then(response => setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate }))))
+			.then(response => setArchiveItems(response!.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: new Date(item.documentDate) }))))
 	}, [searchParams])
 
 	useSignalR((message: SignalRMessage) => {
