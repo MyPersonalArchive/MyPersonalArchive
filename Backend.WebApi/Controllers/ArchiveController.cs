@@ -245,6 +245,7 @@ public class ArchiveController : ControllerBase
 
 		return _dbContext.ArchiveItems
 			.Include(archiveItem => archiveItem.Tags)
+			.Include(archiveItem => archiveItem.Blobs)
 			.ConditionalWhere(!string.IsNullOrEmpty(titleFilter), archiveItem => archiveItem.Title.ToLower().Contains(titleFilter))
 			.Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
 			.ToList()
@@ -254,6 +255,7 @@ public class ArchiveController : ControllerBase
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
+				Blobs = archiveItem.Blobs.Select(blob => new ListResponse.Blob(){Id = blob.Id}),
 				CreatedAt = archiveItem.CreatedAt,
 				DocumentDate = archiveItem.DocumentDate
 			})
@@ -332,9 +334,15 @@ public class ArchiveController : ControllerBase
 		public int Id { get; set; }
 		public required string Title { get; set; }
 		public required IEnumerable<string> Tags { get; set; }
+		public required IEnumerable<Blob> Blobs { get; set; }
 		// public required JsonObject Metadata { get; set; }
 		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
+
+		public class Blob
+		{
+			public int Id { get; set; }
+		}
 	}
 
 	public class CreateRequest

@@ -9,11 +9,14 @@ import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
 import { StoredFilterSelector } from "../Components/StoredFilterSelector"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faPaperclip } from "@fortawesome/free-solid-svg-icons"
 
 type ListResponse = {
 	id: number
 	title: string
 	tags: string[]
+	blob: Blob[]
 	createdAt: string
 	documentDate: Date
 }
@@ -21,9 +24,16 @@ type ListResponse = {
 type ArchiveItem = {
 	id: number
 	title: string
+	blobs: Blob[]
 	tags: string[]
 	createdAt: Date
 	documentDate: Date
+}
+
+type Blob = {
+	id: number
+	// numberOfPages: number
+	// mimeType?: string
 }
 
 export const ArchiveItemListPage = () => {
@@ -84,7 +94,6 @@ export const ArchiveItemListPage = () => {
 					<thead>
 						<tr>
 							<th>Title</th>
-							<th>Tags</th>
 							<th>Document date</th>
 							<th>Created</th>
 						</tr>
@@ -121,8 +130,8 @@ const Row = ({ archiveItem }: RowProps) => {
 		<tr>
 			<td>
 				<Link to={`/archive/edit/${archiveItem.id}`} className="text-blue-600 hover:underline">{archiveItem.title}</Link>
-			</td>
-			<td>
+				{archiveItem.blobs.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
+				<br />
 				{
 					archiveItem.tags.map((tag, ix) => (
 						<span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
