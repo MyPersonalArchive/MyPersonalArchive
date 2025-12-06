@@ -157,7 +157,7 @@ public class ArchiveController : ControllerBase
 			}
 
 			//Same as doing unallocate, which puts them back as unallocated blobs
-			await _signalRService.PublishToTenantChannel(new Message("AddedBlobs", BlobController.ToUnallocatedBlob(removedBlobs)));
+			await _signalRService.PublishToTenantChannel(new Message("AddedBlobs", BlobController.ToListBlobResponse(removedBlobs)));
 		}
 
 		foreach (var blob in blobs)

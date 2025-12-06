@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
-import { UnallocatedBlob, unallocatedBlobsAtom } from "../Utils/Atoms"
+import { Blob, blobsAtom } from "../Utils/Atoms"
 import { PreviewList } from "../Components/PreviewList"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
@@ -15,17 +15,18 @@ import { formatDate, formatFileSize } from "../Utils/formatUtils"
 export const BlobListPage = () => {
 	const navigate = useNavigate()
 	const apiClient = useApiClient()
+	const [searchParams] = useSearchParams()
 
-	const unallocatedHeap = useAtomValue(unallocatedBlobsAtom)
+	const blobs = useAtomValue(blobsAtom)
 
-	const selectionOfBlobs = useSelection<number>(new Set(unallocatedHeap.map(blob => blob.id)))
+	const selectionOfBlobs = useSelection<number>(new Set(blobs.map(blob => blob.id)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
 			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 || selectionOfBlobs.areOnlySomeItemsSelected
 			selectAllCheckboxRef.current.checked = selectionOfBlobs.allPossibleItems.size > 0 && selectionOfBlobs.areAllItemsSelected
 		}
-	}, [selectionOfBlobs.selectedItems, unallocatedHeap])
+	}, [selectionOfBlobs.selectedItems, blobs])
 
 	const deleteSelectedUnallocatedBlobs = () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
@@ -89,7 +90,7 @@ export const BlobListPage = () => {
 				</button>
 			</div>
 
-			<PreviewList<UnallocatedBlob> items={unallocatedHeap}
+			<PreviewList<Blob> items={blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
 						key={blob.id}
@@ -113,16 +114,16 @@ export const BlobListPage = () => {
 
 
 type BlobCardProps = {
-	blob: UnallocatedBlob
+	blob: Blob
 	attachBlob: (id: number) => void
 	deleteBlobs: (blobIds: number[]) => void
-	maximize: (blob: UnallocatedBlob) => void
+	maximize: (blob: Blob) => void
 	selectionOfBlobs: Selection<number>
 }
 const BlobCard = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }: BlobCardProps) => {
 	return (
 		<div className="card flex flex-row relative">
-			
+
 			<div className="bg-gray-200 p-2 w-50 h-50 flex justify-center">
 				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
 			</div>
@@ -154,8 +155,8 @@ const Filter = () => {
 	const navigate = useNavigate()
 
 	useEffect(() => {
-		setHideAllocatedBlobs(searchParams.get("hideAllocatedBlobs") === "true")
-	}, [])
+		setHideAllocatedBlobs((searchParams.get("hideAllocatedBlobs") ?? "true") === "true")
+	}, [searchParams])
 
 	useEffect(() => {
 		navigate({

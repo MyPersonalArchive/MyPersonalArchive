@@ -18,7 +18,7 @@ export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 export const tagsAtom = atom<string[]>([])
 
-export type UnallocatedBlob = {
+export type Blob = {
     id: number
     fileName: string
     fileSize: number
@@ -26,8 +26,9 @@ export type UnallocatedBlob = {
     uploadedAt: Date
     uploadedByUser: string
 	mimeType?: string
+	isAllocated: boolean
 }
-export const unallocatedBlobsAtom = atom<UnallocatedBlob[]>([])
+export const blobsAtom = atom<Blob[]>([])
 
 export type StoredFilter = {
     id: number

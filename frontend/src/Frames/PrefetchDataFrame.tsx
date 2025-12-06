@@ -1,12 +1,12 @@
 import { PropsWithChildren } from "react"
 import { useTagsPrefetching } from "../Utils/useTagsPrefetching"
-import { useUnallocatedBlobsPrefetching } from "../Utils/useUnallocatedBlobsPrefetching"
+import { useBlobsPrefetching } from "../Utils/useBlobsPrefetching"
 import { useStoredFiltersPrefetching } from "../Utils/useStoredFiltersPrefetching"
 
 
 export const PrefetchDataFrame = ({ children }: PropsWithChildren) => {
 	useTagsPrefetching()
-	useUnallocatedBlobsPrefetching()
+	useBlobsPrefetching()
 	useStoredFiltersPrefetching()
 
 	return <>
