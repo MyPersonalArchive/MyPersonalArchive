@@ -3,14 +3,26 @@ import { useSignalR } from "./useSignalR"
 import { Blob, blobsAtom } from "./Atoms"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
+import { blob } from "stream/consumers"
 
 type ListResponse = {
-    id: number
-    fileName: string
-    fileSize: number
-    pageCount: number
-    uploadedAt: Date
-    uploadedByUser: string
+	id: number
+	fileName: string
+	fileSize: number
+	pageCount: number
+	uploadedAt: Date
+	uploadedByUser: string
+	mimeType?: string
+	isAllocated: boolean
+}
+
+type GetResponse = {
+	id: number
+	fileName: string
+	fileSize: number
+	pageCount: number
+	uploadedAt: Date
+	uploadedByUser: string
 	mimeType?: string
 	isAllocated: boolean
 }
@@ -30,16 +42,45 @@ export const useBlobsPrefetching = () => {
 	}, [])
 
 	useSignalR(message => {
-		// console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
+		// console.log("*** useBlobsPrefetching, message: ", message)
 		switch (message.messageType) {
 			case "BlobsAdded": {
-				setBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as Blob[])])
+				const blobIds = message.data as number[]
+				Promise
+					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/blob/get", { id })))
+					.then(responses => responses.map(response => ({
+						...response,
+						uploadedAt: new Date(response!.uploadedAt)
+					})) as Blob[])
+					.then(addedBlobs => {
+						setBlobs(blobs => [
+							...blobs,
+							...addedBlobs
+						])
+					})
 				break
 			}
 
-			case "BlobsAllocated":
+			case "BlobsUpdated": {
+				const blobIds = message.data as number[]
+				Promise
+					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/blob/get", { id })))
+					.then(responses => responses.map(response => ({
+						...response,
+						uploadedAt: new Date(response!.uploadedAt)
+					})) as Blob[])
+					.then(addedBlobs => {
+						setBlobs(blobs => [
+							...blobs.filter(blob => !blobIds.includes(blob.id)),
+							...addedBlobs
+						])
+					})
+				break
+			}
+
+			case "BlobsAllocated": //Deprecated, use BlobsUpdated instead
 			case "BlobsDeleted": {
-				setBlobs(unallocatedBlobs => unallocatedBlobs.filter(blob => !message.data.includes(blob.id)))
+				setBlobs(blobs => blobs.filter(blob => !message.data.includes(blob.id)))
 				break
 			}
 		}

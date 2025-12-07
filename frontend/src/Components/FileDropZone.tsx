@@ -163,7 +163,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 								checked={selectionOfBlobs.areAllItemsSelected}
 								onChange={() => selectionOfBlobs.areAllItemsSelected
 									? selectionOfBlobs.clearSelection()
-									: selectionOfBlobs.selectAllItems()
+									: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
 								} />
 							Select all
 						</label>
@@ -171,12 +171,12 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 							disabled={selectionOfBlobs.areNoItemsSelected}
 							onClick={() => addBlob(Array.from(selectionOfBlobs.selectedItems))}
 						>
-							Add selected blobs
+							Add {selectionOfBlobs.selectedItems.size} selected blobs
 						</button>
 					</div>
 				</div>
 
-				<PreviewList<Blob> items={unallocatedHeap}
+				<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
 							<BlobCard

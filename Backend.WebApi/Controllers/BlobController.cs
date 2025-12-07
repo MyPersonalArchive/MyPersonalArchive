@@ -113,6 +113,35 @@ public class BlobController : ControllerBase
 		return PhysicalFile(blob.PathInStore, blob.MimeType);
 	}
 
+
+
+	[HttpGet]
+	public async Task<ActionResult<GetBlobResponse>> Get()
+	{
+		var blob = await _dbContext.Blobs
+			.Include(blob => blob.UploadedBy)
+			.Select(blob => new GetBlobResponse
+			{
+				Id = blob.Id,
+				FileName = blob.OriginalFilename,
+				FileSize = blob.FileSize,
+				PageCount = blob.PageCount,
+				UploadedAt = blob.UploadedAt,
+				UploadedByUser = blob.UploadedBy!.Fullname,
+				MimeType = blob.MimeType,
+				IsAllocated = blob.ArchiveItem != null
+			})
+			.SingleOrDefaultAsync(blob => blob.Id == blob.Id);
+
+		if (blob == null)
+		{
+			return NotFound();
+		}
+
+		return blob;
+	}
+
+
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<ListBlobResponse>>> List()
 	{
@@ -120,7 +149,7 @@ public class BlobController : ControllerBase
 							.Where(blob => blob.ArchiveItem == null)
 							.CountAsync();
 
-		var orphanBlobs = (await _dbContext.Blobs
+		var blobs = (await _dbContext.Blobs
 			.Include(blob => blob.UploadedBy)
 			.Select(blob => new ListBlobResponse
 			{
@@ -137,7 +166,7 @@ public class BlobController : ControllerBase
 			.OrderByDescending(blob => blob.UploadedAt)
 			.ToList();
 
-		return orphanBlobs;
+		return blobs;
 	}
 
 
@@ -161,8 +190,7 @@ public class BlobController : ControllerBase
 		await _dbContext.SaveChangesAsync();
 
 		//Need signalR even to say that this is now allocated
-		var message = new Message("BlobsAllocated", blobIds);
-		await _signalRService.PublishToTenantChannel(message);
+		await _signalRService.PublishToTenantChannel(CreateBlobsUpdatedMessage(blobs));
 
 		return NoContent();
 	}
@@ -195,8 +223,7 @@ public class BlobController : ControllerBase
 		await _dbContext.Blobs.AddRangeAsync(blobs);
 		await _dbContext.SaveChangesAsync();
 
-		var message = new Message("BlobsAdded", ToListBlobResponse(blobs));
-		await _signalRService.PublishToTenantChannel(message);
+		await _signalRService.PublishToTenantChannel(CreateBlobsAddedMessage(blobs));
 
 		return NoContent();
 	}
@@ -215,8 +242,8 @@ public class BlobController : ControllerBase
 
 		await _dbContext.SaveChangesAsync();
 
-		var message = new Message("BlobsDeleted", blobIds);
-		await _signalRService.PublishToTenantChannel(message);
+		// var message = new Message("BlobsDeleted", blobIds);
+		await _signalRService.PublishToTenantChannel(CreateBlobsDeletedMessage(blobs));
 
 		return NoContent();
 	}
@@ -233,6 +260,39 @@ public class BlobController : ControllerBase
 			UploadedByUser = blob.UploadedByUsername
 		}
 		).ToList();
+	}
+
+	#region SignalR message creators
+	private Message CreateBlobsAddedMessage(List<Blob> blobs)
+	{
+		var data = ToListBlobResponse(blobs);
+		return new Message("BlobsAdded", data);
+	}
+
+	private Message CreateBlobsUpdatedMessage(List<Blob> blobs)
+	{
+		var data = blobs.Select(blob => blob.Id).ToList();
+		return new Message("BlobsUpdated", data);
+	}
+
+	private Message CreateBlobsDeletedMessage(List<Blob> blobs)
+	{
+		var data = blobs.Select(blob => blob.Id).ToList();
+		return new Message("BlobsDeleted", data);
+	}
+	#endregion
+
+
+	public class GetBlobResponse
+	{
+		public int Id { get; set; }
+		public string? FileName { get; set; }
+		public long FileSize { get; set; }
+		public DateTimeOffset UploadedAt { get; set; }
+		public required string UploadedByUser { get; set; }
+		public int PageCount { get; set; }
+		public string? MimeType { get; set; }
+		public bool IsAllocated { get; internal set; }
 	}
 
 	public class ListBlobResponse

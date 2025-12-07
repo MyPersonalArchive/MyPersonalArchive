@@ -110,7 +110,7 @@ public class ArchiveController : ControllerBase
 		await _dbContext.SaveChangesAsync();
 
 		await _signalRService.PublishToTenantChannel(new Message("ArchiveItemCreated", archiveItem.Id));
-		await _signalRService.PublishToTenantChannel(new Message("BlobsAllocated", blobIds));
+		await _signalRService.PublishToTenantChannel(new Message("BlobsUpdated", blobIds));		//TODO: use CreateBlobsUpdatedMessage method from BlobController?
 
 		return archiveItem.Id;
 	}

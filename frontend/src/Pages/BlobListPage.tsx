@@ -72,7 +72,7 @@ export const BlobListPage = () => {
 						checked={selectionOfBlobs.areAllItemsSelected}
 						onChange={() => selectionOfBlobs.areAllItemsSelected
 							? selectionOfBlobs.clearSelection()
-							: selectionOfBlobs.selectAllItems()
+							: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
 						} />
 					Select all
 				</label>
@@ -81,14 +81,14 @@ export const BlobListPage = () => {
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={createArchiveItemFromSelectedUnallocatedBlobs}
 				>
-					Create from all selected
+					Create from {selectionOfBlobs.selectedItems.size} selected
 				</button>
 
 				<button className="btn"
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={deleteSelectedUnallocatedBlobs}
 				>
-					Delete all selected
+					Delete {selectionOfBlobs.selectedItems.size} selected
 				</button>
 			</div>
 
