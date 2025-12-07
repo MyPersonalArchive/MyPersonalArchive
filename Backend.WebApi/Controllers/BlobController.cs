@@ -195,7 +195,7 @@ public class BlobController : ControllerBase
 		await _dbContext.Blobs.AddRangeAsync(blobs);
 		await _dbContext.SaveChangesAsync();
 
-		var message = new Message("AddedBlobs", ToListBlobResponse(blobs));
+		var message = new Message("BlobsAdded", ToListBlobResponse(blobs));
 		await _signalRService.PublishToTenantChannel(message);
 
 		return NoContent();

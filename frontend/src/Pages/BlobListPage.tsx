@@ -54,6 +54,8 @@ export const BlobListPage = () => {
 			})
 	}
 
+	const filterFn = (blob: Blob) => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated
+
 	return (
 		<div className="container mx-auto px-4 py-6">
 			<h1 className="heading-1">
@@ -90,7 +92,7 @@ export const BlobListPage = () => {
 				</button>
 			</div>
 
-			<PreviewList<Blob> items={blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)}
+			<PreviewList<Blob> items={blobs.filter(filterFn)}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
 						key={blob.id}

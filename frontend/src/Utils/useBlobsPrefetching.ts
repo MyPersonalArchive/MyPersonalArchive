@@ -4,7 +4,7 @@ import { Blob, blobsAtom } from "./Atoms"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
 
-export type ListBlobResponse = {
+type ListResponse = {
     id: number
     fileName: string
     fileSize: number
@@ -20,7 +20,7 @@ export const useBlobsPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<ListBlobResponse[]>("/api/blob/list")
+		apiClient.get<ListResponse[]>("/api/blob/list")
 			.then(response => {
 				setBlobs(response!.map(blob => ({
 					...blob,
@@ -30,16 +30,15 @@ export const useBlobsPrefetching = () => {
 	}, [])
 
 	useSignalR(message => {
+		// console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
 		switch (message.messageType) {
-			case "AddedBlobs": {
-				// console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
+			case "BlobsAdded": {
 				setBlobs(unallocatedBlobs => [...unallocatedBlobs, ...(message.data as Blob[])])
 				break
 			}
 
 			case "BlobsAllocated":
 			case "BlobsDeleted": {
-				// console.log("*** useUnallocatedBlobsPrefetching, message: ", message)
 				setBlobs(unallocatedBlobs => unallocatedBlobs.filter(blob => !message.data.includes(blob.id)))
 				break
 			}
