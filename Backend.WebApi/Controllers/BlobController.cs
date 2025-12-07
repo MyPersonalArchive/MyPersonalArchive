@@ -18,14 +18,14 @@ public class BlobController : ControllerBase
 	private readonly MpaDbContext _dbContext;
 	private IFileStorageProvider _fileProvider;
 	private readonly AmbientDataResolver _resolver;
-	private readonly SignalRService _signalRService;
+	private readonly BlobService _blobService;
 
-	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver, SignalRService signalRService)
+	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver, BlobService blobService)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;
 		_resolver = resolver;
-		_signalRService = signalRService;
+		_blobService = blobService;
 	}
 
 
@@ -116,7 +116,7 @@ public class BlobController : ControllerBase
 
 
 	[HttpGet]
-	public async Task<ActionResult<GetBlobResponse>> Get()
+	public async Task<ActionResult<GetBlobResponse>> Get(int id)
 	{
 		var blob = await _dbContext.Blobs
 			.Include(blob => blob.UploadedBy)
@@ -131,7 +131,7 @@ public class BlobController : ControllerBase
 				MimeType = blob.MimeType,
 				IsAllocated = blob.ArchiveItem != null
 			})
-			.SingleOrDefaultAsync(blob => blob.Id == blob.Id);
+			.SingleOrDefaultAsync(blob => blob.Id == id);
 
 		if (blob == null)
 		{
@@ -189,8 +189,7 @@ public class BlobController : ControllerBase
 
 		await _dbContext.SaveChangesAsync();
 
-		//Need signalR even to say that this is now allocated
-		await _signalRService.PublishToTenantChannel(CreateBlobsUpdatedMessage(blobs));
+		await _blobService.PublishBlobsUpdatedMessage(blobs);
 
 		return NoContent();
 	}
@@ -223,7 +222,7 @@ public class BlobController : ControllerBase
 		await _dbContext.Blobs.AddRangeAsync(blobs);
 		await _dbContext.SaveChangesAsync();
 
-		await _signalRService.PublishToTenantChannel(CreateBlobsAddedMessage(blobs));
+		await _blobService.PublishBlobsAddedMessage(blobs);
 
 		return NoContent();
 	}
@@ -242,8 +241,7 @@ public class BlobController : ControllerBase
 
 		await _dbContext.SaveChangesAsync();
 
-		// var message = new Message("BlobsDeleted", blobIds);
-		await _signalRService.PublishToTenantChannel(CreateBlobsDeletedMessage(blobs));
+		await _blobService.PublishBlobsDeletedMessage(blobs);
 
 		return NoContent();
 	}
@@ -261,27 +259,6 @@ public class BlobController : ControllerBase
 		}
 		).ToList();
 	}
-
-	#region SignalR message creators
-	private Message CreateBlobsAddedMessage(List<Blob> blobs)
-	{
-		var data = ToListBlobResponse(blobs);
-		return new Message("BlobsAdded", data);
-	}
-
-	private Message CreateBlobsUpdatedMessage(List<Blob> blobs)
-	{
-		var data = blobs.Select(blob => blob.Id).ToList();
-		return new Message("BlobsUpdated", data);
-	}
-
-	private Message CreateBlobsDeletedMessage(List<Blob> blobs)
-	{
-		var data = blobs.Select(blob => blob.Id).ToList();
-		return new Message("BlobsDeleted", data);
-	}
-	#endregion
-
 
 	public class GetBlobResponse
 	{

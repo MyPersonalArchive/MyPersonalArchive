@@ -50,6 +50,7 @@ public static class Program
 		builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
 		builder.Services.AddTransient<PasswordHasher>();
 		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
+		builder.Services.AddScoped<BlobService>();
 
 		builder.Services.AddOptions();
 

@@ -3,7 +3,6 @@ import { useSignalR } from "./useSignalR"
 import { Blob, blobsAtom } from "./Atoms"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
-import { blob } from "stream/consumers"
 
 type ListResponse = {
 	id: number
@@ -42,7 +41,6 @@ export const useBlobsPrefetching = () => {
 	}, [])
 
 	useSignalR(message => {
-		// console.log("*** useBlobsPrefetching, message: ", message)
 		switch (message.messageType) {
 			case "BlobsAdded": {
 				const blobIds = message.data as number[]
@@ -69,16 +67,15 @@ export const useBlobsPrefetching = () => {
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
 					})) as Blob[])
-					.then(addedBlobs => {
+					.then(updatedBlobs => {
 						setBlobs(blobs => [
 							...blobs.filter(blob => !blobIds.includes(blob.id)),
-							...addedBlobs
+							...updatedBlobs
 						])
 					})
 				break
 			}
 
-			case "BlobsAllocated": //Deprecated, use BlobsUpdated instead
 			case "BlobsDeleted": {
 				setBlobs(blobs => blobs.filter(blob => !message.data.includes(blob.id)))
 				break

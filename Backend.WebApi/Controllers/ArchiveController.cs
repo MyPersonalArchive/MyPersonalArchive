@@ -25,13 +25,15 @@ public class ArchiveController : ControllerBase
 	private readonly IFileStorageProvider _fileProvider;
 	private readonly SignalRService _signalRService;
 	private readonly AmbientDataResolver _resolver;
+	private readonly BlobService _blobService;
 
-	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, SignalRService signalRService, AmbientDataResolver resolver)
+	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, SignalRService signalRService, AmbientDataResolver resolver, BlobService blobService)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;
 		_signalRService = signalRService;
 		_resolver = resolver;
+		_blobService = blobService;
 	}
 
 
@@ -110,7 +112,7 @@ public class ArchiveController : ControllerBase
 		await _dbContext.SaveChangesAsync();
 
 		await _signalRService.PublishToTenantChannel(new Message("ArchiveItemCreated", archiveItem.Id));
-		await _signalRService.PublishToTenantChannel(new Message("BlobsUpdated", blobIds));		//TODO: use CreateBlobsUpdatedMessage method from BlobController?
+		await _blobService.PublishBlobsUpdatedMessage(blobs);
 
 		return archiveItem.Id;
 	}
@@ -136,7 +138,7 @@ public class ArchiveController : ControllerBase
 
 		var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
 
-		if (updateRequest.BlobsFromUnallocated != null)
+		if (updateRequest.BlobsFromUnallocated != null && updateRequest.BlobsFromUnallocated.Length > 0)
 		{
 			var unallocatedBlobs = _dbContext.Blobs.Where(blob => blob.ArchiveItem == null && updateRequest.BlobsFromUnallocated.Contains(blob.Id)).ToList();
 			foreach (var blob in unallocatedBlobs)
@@ -144,20 +146,18 @@ public class ArchiveController : ControllerBase
 				blobs.Add(blob);
 			}
 
-			//Same as doing a blob allocate in BlobsController
-			await _signalRService.PublishToTenantChannel(new Message("BlobsAllocated", updateRequest.BlobsFromUnallocated));
+			await _blobService.PublishBlobsUpdatedMessage(unallocatedBlobs);
 		}
 
-		if (updateRequest.RemovedBlobs != null && archiveItem.Blobs != null)
+		if (updateRequest.RemovedBlobs != null && updateRequest.RemovedBlobs.Length > 0 && archiveItem.Blobs != null)
 		{
-			var removedBlobs = archiveItem.Blobs.Where(blob => updateRequest.RemovedBlobs.Contains(blob.Id)).ToList();
+			var removedBlobs = archiveItem.Blobs!.Where(blob => updateRequest.RemovedBlobs.Contains(blob.Id)).ToList();
 			foreach (var blob in removedBlobs)
 			{
 				archiveItem.Blobs.Remove(blob);
 			}
 
-			//Same as doing unallocate, which puts them back as unallocated blobs
-			await _signalRService.PublishToTenantChannel(new Message("AddedBlobs", BlobController.ToListBlobResponse(removedBlobs)));
+			await _blobService.PublishBlobsUpdatedMessage(removedBlobs);
 		}
 
 		foreach (var blob in blobs)
