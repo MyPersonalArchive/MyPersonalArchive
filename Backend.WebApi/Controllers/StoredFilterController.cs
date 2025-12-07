@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Message = Backend.WebApi.Services.SignalRService.Message;
 
+namespace Backend.WebApi.Controllers;
+
 [ApiController]
 [Route("api/[Controller]/[Action]")]
 [Authorize(Policy = "TenantIdPolicy")]

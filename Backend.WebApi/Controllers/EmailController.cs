@@ -12,6 +12,8 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
+namespace Backend.WebApi.Controllers;
+
 //TODO:
 /*
 	- We should know which attachments that has been added to our system so that we dont search/show them again (provider + unique messageId?)

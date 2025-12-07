@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 
+namespace Backend.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
