@@ -108,7 +108,7 @@ public class AuthenticationController : ControllerBase
 
 	[AllowAnonymous]
 	[HttpPost("access-denied-redirect")]
-	public async Task<IActionResult> AccessDeniedRedirect()
+	public IActionResult AccessDeniedRedirect()
 	{
 		return Ok(new { message = "Du har ikke noe her å gjøre!" });
 	}

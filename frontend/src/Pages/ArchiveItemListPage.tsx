@@ -56,12 +56,12 @@ export const ArchiveItemListPage = () => {
 
 	useSignalR((message: SignalRMessage) => {
 		switch (message.data) {
-			case "ArchiveItemCreated":
-			case "ArchiveItemUpdated":
-			case "ArchiveItemDeleted": {
+			case "ArchiveItemsAdded":
+			case "ArchiveItemsUpdated":
+			case "ArchiveItemsDeleted": {
 				apiClient.get<ListResponse[]>("/api/archive/list")
 					.then(response => {
-						setArchiveItems(response.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate })))
+						setArchiveItems(response!.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate })))
 					})
 				break
 			}

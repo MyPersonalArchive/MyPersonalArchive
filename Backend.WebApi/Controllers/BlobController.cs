@@ -1,8 +1,8 @@
-using System.Formats.Asn1;
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
+using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -169,30 +169,6 @@ public class BlobController : ControllerBase
 		return blobs;
 	}
 
-
-	[HttpPut]
-	public async Task<ActionResult> Allocate([FromQuery] int[] blobIds, [FromQuery] int archiveItemId)
-	{
-		var archiveItem = _dbContext.ArchiveItems
-								.Include(archiveItem => archiveItem.Blobs)
-								.SingleOrDefault(archiveItem => archiveItem.Id == archiveItemId);
-		if (archiveItem == null)
-		{
-			return BadRequest();
-		}
-
-		var blobs = _dbContext.Blobs.Where(blob => blobIds.Contains(blob.Id)).ToList();
-		foreach (var blob in blobs)
-		{
-			archiveItem.Blobs!.Add(blob);
-		}
-
-		await _dbContext.SaveChangesAsync();
-
-		await _blobService.PublishBlobsUpdatedMessage(blobs);
-
-		return NoContent();
-	}
 
 	[HttpPost]
 	public async Task<ActionResult> Upload(IFormFileCollection files)

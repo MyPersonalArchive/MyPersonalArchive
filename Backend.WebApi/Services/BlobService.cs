@@ -1,6 +1,9 @@
 using Backend.DbModel.Database.EntityModels;
-using Backend.WebApi;
+using Message = Backend.WebApi.Services.SignalRService.Message;
 
+namespace Backend.WebApi.Services;
+
+[RegisterService(ServiceLifetime.Scoped)]
 public class BlobService
 {
 	private readonly SignalRService _signalRService;

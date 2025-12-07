@@ -1,4 +1,5 @@
 // See https://aka.ms/new-console-template for more information
+using System.Diagnostics;
 using NetVips;
 
 namespace Backend.Core;
@@ -20,6 +21,7 @@ public static class PreviewGenerator
 
     public static Stream GeneratePreviewOfImage(Stream originalStream, int maxX, int maxY)
     {
+		Debug.WriteLine("Generating image preview using libvips");
         var previewStream = new MemoryStream();
 
 		using (var image = Image.NewFromStream(originalStream))
@@ -39,6 +41,7 @@ public static class PreviewGenerator
 
     public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 0)
     {
+		Debug.WriteLine("Generating PDF preview using libvips");
         var previewStream = new MemoryStream();
 
 		using (var image = Image.PdfloadStream(originalStream, page: pageNumber, dpi: 200))
@@ -58,6 +61,7 @@ public static class PreviewGenerator
 
     public static int GetDocumentPageCount(string mimeType, Stream stream)
     {
+		Debug.WriteLine("Getting document page count using libvips");
         stream.Seek(0, SeekOrigin.Begin);
 
         switch (mimeType)

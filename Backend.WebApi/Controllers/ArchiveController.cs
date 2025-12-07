@@ -4,6 +4,7 @@ using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
+using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,16 +24,16 @@ public class ArchiveController : ControllerBase
 
 	private readonly MpaDbContext _dbContext;
 	private readonly IFileStorageProvider _fileProvider;
-	private readonly SignalRService _signalRService;
 	private readonly AmbientDataResolver _resolver;
+	private readonly ArchiveItemService _archiveItemService;
 	private readonly BlobService _blobService;
 
-	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, SignalRService signalRService, AmbientDataResolver resolver, BlobService blobService)
+	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver, ArchiveItemService archiveItemService, BlobService blobService)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;
-		_signalRService = signalRService;
 		_resolver = resolver;
+		_archiveItemService = archiveItemService;
 		_blobService = blobService;
 	}
 
@@ -74,8 +75,7 @@ public class ArchiveController : ControllerBase
 		_dbContext.ArchiveItems.Add(newArchiveItem);
 		await _dbContext.SaveChangesAsync();
 
-		var message = new Message("ArchiveItemCreated", newArchiveItem.Id);
-		await _signalRService.PublishToTenantChannel(message);
+		await _archiveItemService.PublishArchiveItemsAddedMessage([newArchiveItem]);
 
 		return new CreateResponse
 		{
@@ -111,7 +111,7 @@ public class ArchiveController : ControllerBase
 
 		await _dbContext.SaveChangesAsync();
 
-		await _signalRService.PublishToTenantChannel(new Message("ArchiveItemCreated", archiveItem.Id));
+		await _archiveItemService.PublishArchiveItemsAddedMessage([archiveItem]);
 		await _blobService.PublishBlobsUpdatedMessage(blobs);
 
 		return archiveItem.Id;
@@ -182,8 +182,7 @@ public class ArchiveController : ControllerBase
 
 		await _dbContext.SaveChangesAsync();
 
-		var message = new Message("ArchiveItemUpdated", archiveItem.Id);
-		await _signalRService.PublishToTenantChannel(message);
+		await _archiveItemService.PublishArchiveItemsUpdatedMessage([archiveItem]);
 
 		return NoContent();
 	}
@@ -255,7 +254,7 @@ public class ArchiveController : ControllerBase
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
-				Blobs = archiveItem.Blobs.Select(blob => new ListResponse.Blob(){Id = blob.Id}),
+				Blobs = archiveItem.Blobs.Select(blob => new ListResponse.Blob() { Id = blob.Id }),
 				CreatedAt = archiveItem.CreatedAt,
 				DocumentDate = archiveItem.DocumentDate
 			})
@@ -297,8 +296,7 @@ public class ArchiveController : ControllerBase
 		_dbContext.ArchiveItems.Remove(archiveItem);
 		await _dbContext.SaveChangesAsync();
 
-		var message = new Message("ArchiveItemDeleted", archiveItem.Id);
-		await _signalRService.PublishToUserChannel(message);
+		await _archiveItemService.PublishArchiveItemsDeletedMessage([archiveItem]);
 
 		return NoContent();
 	}

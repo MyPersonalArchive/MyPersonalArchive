@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Backend.Core;
 using Backend.DbModel.Database;
 using Backend.WebApi;
+using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Message = Backend.WebApi.Services.SignalRService.Message;
 
 [ApiController]
 [Route("api/[Controller]/[Action]")]

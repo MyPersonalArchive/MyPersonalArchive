@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.SignalR;
 using Backend.Core;
 
-namespace Backend.WebApi;
+namespace Backend.WebApi.Services;
 
+
+[RegisterService(ServiceLifetime.Scoped)]
 public class SignalRService
 {
 	private readonly IHubContext<NotificationHub> _hubContext;
@@ -38,4 +40,21 @@ public class SignalRService
 		await _hubContext.Clients.Users(_username).SendAsync("ReceiveMessage", message);
 	}
 	#endregion
+
+
+	public class Message
+	{
+		public string MessageType { get; private set; }
+		public object Data { get; private set; }
+
+		public Message(object data)
+			: this(data.GetType().Name, data)
+		{ }
+
+		public Message(string messageType, object data)
+		{
+			MessageType = messageType;
+			Data = data;
+		}
+	}
 }
