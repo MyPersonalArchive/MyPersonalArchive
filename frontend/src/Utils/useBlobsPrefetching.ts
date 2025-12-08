@@ -44,6 +44,7 @@ export const useBlobsPrefetching = () => {
 		switch (message.messageType) {
 			case "BlobsAdded": {
 				const blobIds = message.data as number[]
+
 				Promise
 					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/blob/get", { id })))
 					.then(responses => responses.map(response => ({
@@ -61,6 +62,7 @@ export const useBlobsPrefetching = () => {
 
 			case "BlobsUpdated": {
 				const blobIds = message.data as number[]
+
 				Promise
 					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/blob/get", { id })))
 					.then(responses => responses.map(response => ({
@@ -77,7 +79,9 @@ export const useBlobsPrefetching = () => {
 			}
 
 			case "BlobsDeleted": {
-				setBlobs(blobs => blobs.filter(blob => !message.data.includes(blob.id)))
+				const blobIds = message.data as number[]
+
+				setBlobs(blobs => blobs.filter(blob => !blobIds.includes(blob.id)))
 				break
 			}
 		}

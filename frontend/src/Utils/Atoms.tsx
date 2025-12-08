@@ -18,6 +18,17 @@ export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 export const tagsAtom = atom<string[]>([])
 
+export type ArchiveItem = {
+	id: number
+	title: string
+	tags: string[]
+	blobs: {id: number}[]
+	metadataTypes: string[]
+	createdAt: Date
+	documentDate: Date
+}
+export const archiveItemsAtom = atom<ArchiveItem[]>([])
+
 export type Blob = {
     id: number
     fileName: string

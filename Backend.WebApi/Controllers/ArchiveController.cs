@@ -255,6 +255,7 @@ public class ArchiveController : ControllerBase
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
 				Blobs = archiveItem.Blobs.Select(blob => new ListResponse.Blob() { Id = blob.Id }),
+				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
 				CreatedAt = archiveItem.CreatedAt,
 				DocumentDate = archiveItem.DocumentDate
 			})
@@ -333,6 +334,7 @@ public class ArchiveController : ControllerBase
 		public required string Title { get; set; }
 		public required IEnumerable<string> Tags { get; set; }
 		public required IEnumerable<Blob> Blobs { get; set; }
+		public required IEnumerable<string> MetadataTypes { get; set; }
 		// public required JsonObject Metadata { get; set; }
 		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }

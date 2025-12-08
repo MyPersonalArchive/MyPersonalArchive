@@ -1,10 +1,8 @@
 import { FormEvent, useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { useApiClient } from "../Utils/useApiClient"
-import { SignalRMessage, useSignalR } from "../Utils/useSignalR"
 import { TagsInput } from "../Components/TagsInput"
 import { useAtomValue } from "jotai"
-import { tagsAtom } from "../Utils/Atoms"
+import { ArchiveItem, archiveItemsAtom, storedFiltersAtom, tagsAtom } from "../Utils/Atoms"
 import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
@@ -12,64 +10,43 @@ import { StoredFilterSelector } from "../Components/StoredFilterSelector"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPaperclip } from "@fortawesome/free-solid-svg-icons"
 
-type ListResponse = {
-	id: number
-	title: string
-	tags: string[]
-	blobs: Blob[]
-	createdAt: string
-	documentDate: Date
-}
-
-type ArchiveItem = {
-	id: number
-	title: string
-	blobs: Blob[]
-	tags: string[]
-	createdAt: Date
-	documentDate: Date
-}
-
-type Blob = {
-	id: number
-	// numberOfPages: number
-	// mimeType?: string
-}
 
 export const ArchiveItemListPage = () => {
-	const [archiveItems, setArchiveItems] = useState<ArchiveItem[]>()
+	const archiveItems = useAtomValue(archiveItemsAtom)
+	const storedFilters = useAtomValue(storedFiltersAtom)
 	const [searchParams] = useSearchParams()
 
 	const navigate = useNavigate()
-	const apiClient = useApiClient()
-
-	useEffect(() => {
-		const payload = {
-			title: searchParams.get("title") || undefined,
-			tags: searchParams.getAll("tags"),
-			filter: searchParams.get("filter") || undefined,
-			metadataTypes: searchParams.getAll("metadataTypes")
-		}
-		apiClient.get<ListResponse[]>("/api/archive/list", payload)
-			.then(response => setArchiveItems(response!.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: new Date(item.documentDate) }))))
-	}, [searchParams])
-
-	useSignalR((message: SignalRMessage) => {
-		switch (message.data) {
-			case "ArchiveItemsAdded":
-			case "ArchiveItemsUpdated":
-			case "ArchiveItemsDeleted": {
-				apiClient.get<ListResponse[]>("/api/archive/list")
-					.then(response => {
-						setArchiveItems(response!.map(item => ({ ...item, createdAt: new Date(item.createdAt), documentDate: item.documentDate })))
-					})
-				break
-			}
-		}
-	})
 
 	const newArchiveItem = () => {
 		navigate("/archive/new")
+	}
+
+	const filterFn = (item: ArchiveItem) => {
+		// Either get the filter parameters from the stored filter id, OR get them from the query string
+		const storedFilterName = searchParams.get("filter")
+		const storedFilter = storedFilterName ? storedFilters.find(f => f.name === storedFilterName) : undefined
+
+		const titleFilter = storedFilter ? storedFilter.title : searchParams.get("title")
+		if (titleFilter && !item.title.toLowerCase().includes(titleFilter.toLowerCase())) {
+			return false
+		}
+
+		const tagsFilter = storedFilter ? storedFilter.tags : searchParams.getAll("tags") ?? []
+		for (const tag of tagsFilter) {
+			if (!item.tags.includes(tag)) {
+				return false
+			}
+		}
+
+		const metadataTypesFilter = storedFilter ? storedFilter.metadataTypes : searchParams.getAll("metadataTypes") ?? []
+		for (const metadataType of metadataTypesFilter) {
+			if (!item.metadataTypes.includes(metadataType)) {
+				return false
+			}
+		}
+
+		return true
 	}
 
 	return (
@@ -100,7 +77,7 @@ export const ArchiveItemListPage = () => {
 					</thead>
 					<tbody>
 						{
-							archiveItems?.map(item => <Row key={item.id} archiveItem={item} />)
+							archiveItems?.filter(filterFn).toSorted((a, b) => a.title.localeCompare(b.title)).map(item => <Row key={item.id} archiveItem={item} />)
 						}
 						{
 							archiveItems && archiveItems.length === 0 && (
@@ -133,10 +110,14 @@ const Row = ({ archiveItem }: RowProps) => {
 				{archiveItem.blobs.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 				<br />
 				{
-					archiveItem.tags.map((tag, ix) => (
-						<span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
+					archiveItem.tags.map((tag) => (
+						<span key={tag} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
 					))
 				}
+				<br />
+				{archiveItem.metadataTypes.map((type) => (
+					<span key={type} className="inline-block bg-blue-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{type}</span>
+				))}
 			</td>
 			<td>
 				{archiveItem.documentDate ? new Date(archiveItem.documentDate).toLocaleDateString() : ""}
@@ -159,7 +140,7 @@ const Filter = () => {
 	useEffect(() => {
 		setTitle(searchParams.get("title") ?? "")
 		setTags(searchParams.getAll("tags"))
-	}, [])
+	}, [searchParams])
 
 	const search = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
@@ -173,7 +154,7 @@ const Filter = () => {
 		setTitle("")
 		setTags([])
 		navigate({
-			search: createQueryString({ title: "", tags: [] }, { skipEmptyStrings: false })
+			search: createQueryString({ title: "", tags: [] }, { skipEmptyStrings: true })
 		})
 	}
 
