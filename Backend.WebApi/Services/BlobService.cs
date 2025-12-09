@@ -1,3 +1,4 @@
+using Backend.Core;
 using Backend.DbModel.Database.EntityModels;
 using Message = Backend.WebApi.Services.SignalRService.Message;
 

@@ -20,7 +20,7 @@ public class SignalRService
 
 
 	#region SignalR server methods
-	public async Task PublishToSharedChannel(object data) => await PublishToSharedChannel(new Message(data));
+	// public async Task PublishToSharedChannel(object data) => await PublishToSharedChannel(new Message(data));
 	public async Task PublishToSharedChannel(Message message)
 	{
 		await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
@@ -47,9 +47,9 @@ public class SignalRService
 		public string MessageType { get; private set; }
 		public object Data { get; private set; }
 
-		public Message(object data)
-			: this(data.GetType().Name, data)
-		{ }
+		// public Message(object data)
+		// 	: this(data.GetType().Name, data)
+		// { }
 
 		public Message(string messageType, object data)
 		{

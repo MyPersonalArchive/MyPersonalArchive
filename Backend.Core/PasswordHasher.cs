@@ -5,10 +5,11 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Core;
 
-
+[RegisterService(ServiceLifetime.Transient)]
 public class PasswordHasher
 {
 	public static readonly TimeSpan ExpiryDurationForRefreshTokens = TimeSpan.FromDays(7);

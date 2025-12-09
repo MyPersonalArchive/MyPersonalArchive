@@ -14,9 +14,7 @@ using Backend.EmailIngestion;
 using Backend.EmailIngestion.Providers;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Reflection;
-using Backend.WebApi.Services;
 
 namespace Backend.WebApi;
 
@@ -27,7 +25,7 @@ public static class Program
 	private static void Main(string[] args)
 	{
 		var builder = WebApplication.CreateBuilder(args);
-		builder.InitializeLogger();
+		InitializeLogger(builder);
 
 		// OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
 		// JsonObject is used in our dbContext. Can we instead use JObject? We are not using Newtonsoft there.
@@ -52,8 +50,11 @@ public static class Program
 		builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
 		builder.Services.AddTransient<PasswordHasher>();
 		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
-		
-		DiscoverAndRegisterServices(builder.Services, typeof(Program).Assembly);
+
+		var executingAssembly = Assembly.GetExecutingAssembly();
+		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);	//TODO: Include only specific assemblies? All referenced assemblies could be a lot.
+		new ServiceDiscovery(builder.Services, _logger)
+			.DiscoverAndRegisterServices([executingAssembly, ..otherRelevantAssemblies]);
 
 		builder.Services.AddOptions();
 
@@ -75,53 +76,6 @@ public static class Program
 		app.Configure();
 
 		app.Run();
-	}
-
-	private static void DiscoverAndRegisterServices(IServiceCollection services, Assembly assembly)
-	{
-		_logger.LogInformation($"Discovering services with RegisterServiceAttribute in assembly {assembly.FullName}");
-
-		var serviceTypes = assembly.GetTypes()
-			.Where(t => t.GetCustomAttributes<RegisterServiceAttribute>().Any());
-
-		foreach (var serviceType in serviceTypes)
-		{
-			var attribute = serviceType.GetCustomAttribute<RegisterServiceAttribute>();
-			if(attribute == null) continue;
-
-			var interfacetypes = serviceType.GetInterfaces();
-			if (interfacetypes.Length == 0)
-			{
-				// No interfaces, register the class itself
-				_logger.LogInformation($"Registering service {serviceType.FullName} with lifetime {attribute.Lifetime} in assembly {assembly.FullName}");
-				services.RegisterService(serviceType, serviceType, attribute.Lifetime);
-			}
-			else
-			{
-				// Register each interface implemented by the class
-				_logger.LogInformation($"Registering service {serviceType.FullName} with interfaces [{string.Join(", ", interfacetypes.Select(i => i.FullName))}] and lifetime {attribute.Lifetime} in assembly {assembly.FullName}");
-				foreach (var interfaceType in interfacetypes)
-				{
-					services.RegisterService(interfaceType, serviceType, attribute.Lifetime);
-				}
-			}
-		}
-	}
-
-	private static void RegisterService(this IServiceCollection services, Type interfaceType, Type serviceType, ServiceLifetime lifetime)
-	{
-		switch (lifetime)
-		{
-			case ServiceLifetime.Singleton:
-				services.AddSingleton(interfaceType, serviceType);
-				break;
-			case ServiceLifetime.Scoped:
-				services.AddScoped(interfaceType, serviceType);
-				break;
-			case ServiceLifetime.Transient:
-				services.AddTransient(interfaceType, serviceType);
-				break;
-		}
 	}
 
 	private static void InitializeLogger(this WebApplicationBuilder builder)

@@ -1,11 +1,12 @@
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Backend.WebApi;
+namespace Backend.Core;
 
 public class RegisterServiceAttribute : Attribute
 {
 	public readonly ServiceLifetime Lifetime;
-	public string? Key{get;set;}
+	// public string? Key{get;set;}
 
 	public RegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped){
 		Lifetime = lifetime;
