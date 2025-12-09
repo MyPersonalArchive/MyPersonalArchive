@@ -106,9 +106,9 @@ internal class Program
     }
 }
 
-internal class DummyAmbientDataResolver : AmbientDataResolver
+internal class DummyAmbientDataResolver : IAmbientDataResolver
 {
-    public override int? GetCurrentTenantId() => -1;
+    public int? GetCurrentTenantId() => -1;
 
-    public override string GetCurrentUsername() => "Dummy Username";
+    public string GetCurrentUsername() => "Dummy Username";
 }

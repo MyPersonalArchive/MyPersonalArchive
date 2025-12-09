@@ -2,7 +2,7 @@
 
 namespace Backend.Core;
 
-public abstract class AmbientDataResolver
+public interface IAmbientDataResolver
 {
     public abstract int? GetCurrentTenantId();
 

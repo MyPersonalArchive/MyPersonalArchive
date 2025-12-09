@@ -18,6 +18,7 @@ using System.Reflection;
 
 namespace Backend.WebApi;
 
+
 public static class Program
 {
 	private static ILogger _logger = null!;
@@ -47,7 +48,7 @@ public static class Program
 
 		builder.Services.AddDbContext<MpaDbContext>();
 
-		builder.Services.AddScoped<AmbientDataResolver, WebApiAmbientDataResolver>();
+		builder.Services.AddScoped<IAmbientDataResolver, WebApiAmbientDataResolver>();
 		builder.Services.AddTransient<PasswordHasher>();
 		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
 

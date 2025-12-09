@@ -17,10 +17,10 @@ public class BlobController : ControllerBase
 {
 	private readonly MpaDbContext _dbContext;
 	private IFileStorageProvider _fileProvider;
-	private readonly AmbientDataResolver _resolver;
+	private readonly IAmbientDataResolver _resolver;
 	private readonly BlobService _blobService;
 
-	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver, BlobService blobService)
+	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, BlobService blobService)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;

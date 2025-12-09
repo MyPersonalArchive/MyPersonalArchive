@@ -39,9 +39,9 @@ public class EmailController : ControllerBase
 	private readonly EmailProviderFactory _registry;
 	private readonly MpaDbContext _dbContext;
 	private readonly IFileStorageProvider _fileProvider;
-	private readonly AmbientDataResolver _resolver;
+	private readonly IAmbientDataResolver _resolver;
 
-	public EmailController(EmailProviderFactory registry, MpaDbContext dbContext, IFileStorageProvider fileProvider, AmbientDataResolver resolver)
+	public EmailController(EmailProviderFactory registry, MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver)
 	{
 		_registry = registry;
 		_dbContext = dbContext;

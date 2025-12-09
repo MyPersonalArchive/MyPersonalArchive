@@ -3,7 +3,7 @@ using Backend.Core;
 
 namespace Backend.WebApi;
 
-internal class WebApiAmbientDataResolver : AmbientDataResolver
+internal class WebApiAmbientDataResolver : IAmbientDataResolver
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -12,7 +12,7 @@ internal class WebApiAmbientDataResolver : AmbientDataResolver
 		_httpContextAccessor = httpContextAccessor;
 	}
 
-	public override int? GetCurrentTenantId()
+	public int? GetCurrentTenantId()
 	{
 		var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("Unable to read http request headers");
 		httpContext.Request.Headers.TryGetValue("X-Tenant-Id", out var values);
@@ -21,7 +21,7 @@ internal class WebApiAmbientDataResolver : AmbientDataResolver
 		return tenantId == null ? null : int.Parse(tenantId);
 	}
 
-	public override string? GetCurrentUsername()
+	public string? GetCurrentUsername()
 	{
 		var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("Unable to read http request headers");
 		var username = httpContext.User.Claims.SingleOrDefault(claim => ClaimTypes.NameIdentifier == claim.Type)?.Value;

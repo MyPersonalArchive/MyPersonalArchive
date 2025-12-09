@@ -12,10 +12,10 @@ namespace Backend.WebApi;
 [Authorize]
 public class NotificationHub : Hub
 {
-    private readonly AmbientDataResolver _resolver;
+    private readonly IAmbientDataResolver _resolver;
     private readonly MpaDbContext _dbContext;
 
-    public NotificationHub(AmbientDataResolver resolver, MpaDbContext dbContext)
+    public NotificationHub(IAmbientDataResolver resolver, MpaDbContext dbContext)
     {
         _resolver = resolver;
         _dbContext = dbContext;

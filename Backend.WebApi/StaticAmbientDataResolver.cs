@@ -1,6 +1,6 @@
 using Backend.Core;
 
-public class StaticAmbientDataResolver : AmbientDataResolver
+public class StaticAmbientDataResolver : IAmbientDataResolver
 {
     private readonly int _tenantId;
     public StaticAmbientDataResolver(int tenantId)
@@ -8,8 +8,8 @@ public class StaticAmbientDataResolver : AmbientDataResolver
         _tenantId = tenantId;
     }
 
-    public override int? GetCurrentTenantId() => _tenantId;
+    public int? GetCurrentTenantId() => _tenantId;
 
-    public override string GetCurrentUsername() => "";
+    public string GetCurrentUsername() => "";
     
 }

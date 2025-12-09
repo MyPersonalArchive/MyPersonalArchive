@@ -17,9 +17,9 @@ public class StoredFilterController : ControllerBase
 {
 	private readonly MpaDbContext _dbContext;
 	private readonly SignalRService _signalRService;
-	private readonly AmbientDataResolver _resolver;
+	private readonly IAmbientDataResolver _resolver;
 
-	public StoredFilterController(MpaDbContext dbContext, SignalRService signalRService, AmbientDataResolver resolver)
+	public StoredFilterController(MpaDbContext dbContext, SignalRService signalRService, IAmbientDataResolver resolver)
 	{
 		_dbContext = dbContext;
 		_signalRService = signalRService;

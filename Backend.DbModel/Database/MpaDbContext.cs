@@ -16,7 +16,7 @@ public class MpaDbContext : DbContext
 	private readonly DbConfig _dbConfig;
 	private readonly int? _tenantId;
 
-	public MpaDbContext(IOptions<DbConfig> dbConfig, AmbientDataResolver resolver)
+	public MpaDbContext(IOptions<DbConfig> dbConfig, IAmbientDataResolver resolver)
 		: this(dbConfig.Value, resolver.GetCurrentTenantId())
 	{
 	}

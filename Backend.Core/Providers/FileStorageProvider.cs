@@ -21,9 +21,9 @@ public class FileStorageProvider : IFileStorageProvider
     private const string MetadataExtension = ".metadata";
 
     private readonly string _baseFolder;
-    private readonly AmbientDataResolver _resolver;
+    private readonly IAmbientDataResolver _resolver;
 
-    public FileStorageProvider(IOptions<AppConfig> config, AmbientDataResolver resolver)
+    public FileStorageProvider(IOptions<AppConfig> config, IAmbientDataResolver resolver)
     {
         _resolver = resolver;
         _baseFolder = Path.Combine(config.Value.BlobFolder, resolver.GetCurrentTenantId().ToString());

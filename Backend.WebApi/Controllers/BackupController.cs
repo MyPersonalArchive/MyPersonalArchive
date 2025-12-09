@@ -12,14 +12,14 @@ namespace Backend.WebApi.Controllers;
 public class BackupController : ControllerBase
 {
     private readonly TenantBackupManager _tenantBackupManager;
-    private readonly AmbientDataResolver _ambientDataResolver;
+    private readonly IAmbientDataResolver _ambientDataResolver;
     private readonly BackupProviderFactory _backupProviderFactory;
     private readonly EncryptionProviderFactory _encryptionProviderFactory;
     private readonly IOptions<AppConfig> _config;
     private readonly string _backupFolder;
 
     public BackupController(TenantBackupManager tenantBackupManager,
-                            AmbientDataResolver ambientDataResolver,
+                            IAmbientDataResolver ambientDataResolver,
                             BackupProviderFactory backupProviderFactory,
                             EncryptionProviderFactory encryptionProviderFactory,
                             IOptions<AppConfig> config)

@@ -11,7 +11,7 @@ public class SignalRService
 	private readonly int? _tenantId;
 	private readonly string _username;
 
-	public SignalRService(IHubContext<NotificationHub> hubContext, AmbientDataResolver resolver)
+	public SignalRService(IHubContext<NotificationHub> hubContext, IAmbientDataResolver resolver)
 	{
 		_hubContext = hubContext;
 		_tenantId = resolver.GetCurrentTenantId();

@@ -8,9 +8,9 @@ namespace Backend.WebApi.Controllers;
 public class RestoreController : ControllerBase
 {
     private readonly TenantRestoreManager _tenantRestoreManager;
-    private readonly AmbientDataResolver _ambientDataResolver;
+    private readonly IAmbientDataResolver _ambientDataResolver;
 
-    public RestoreController(TenantRestoreManager tenantRestoreManager, AmbientDataResolver ambientDataResolver)
+    public RestoreController(TenantRestoreManager tenantRestoreManager, IAmbientDataResolver ambientDataResolver)
     {
         _tenantRestoreManager = tenantRestoreManager;
         _ambientDataResolver = ambientDataResolver;
