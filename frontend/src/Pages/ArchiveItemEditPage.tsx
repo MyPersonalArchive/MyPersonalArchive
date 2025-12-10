@@ -187,13 +187,15 @@ export const ArchiveItemEditPage = () => {
 
 				<div>
 					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
-						containerClassName="grid grid-cols-4 gap-4 pt-2"
+						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
-									onRemove={removeUnallocatedBlob}
-									onMaximize={() => maximize(blob)}
-								/>
+								<div className="bg-black w-[302px] h-[302px] flex justify-center items-center">
+									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
+										onRemove={removeUnallocatedBlob}
+										onMaximize={() => maximize(blob)}
+									/>
+								</div>
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
@@ -209,8 +211,8 @@ export const ArchiveItemEditPage = () => {
 						containerClassName="grid grid-cols-4 gap-4 pt-2"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<LocalViewer 
-									key={blob.fileName} 
+								<LocalViewer
+									key={blob.fileName}
 									blob={blob.fileData}
 									fileName={blob.fileName}
 									dimension={DimensionEnum.small}
@@ -220,8 +222,8 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<LocalViewer 
-									key={blob.fileName} 
+								<LocalViewer
+									key={blob.fileName}
 									blob={blob.fileData}
 									fileName={blob.fileName}
 									dimension={DimensionEnum.full}

@@ -126,7 +126,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }:
 	return (
 		<div className="card flex flex-row relative">
 
-			<div className="bg-black w-40 h-40 flex justify-center items-center">
+			<div className="bg-black w-[152px] h-[152px] flex justify-center items-center">
 				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
 			</div>
 

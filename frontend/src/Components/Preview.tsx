@@ -48,13 +48,11 @@ export const Preview = <T extends BlobIdAndNumberOfPages,>({ blob, dimension, on
 		)
 	}
 	return (
-		<>
-			{<ServerViewer
-				blobId={blob.id}
-				dimension={dimension}
-				mimeType={blob.mimeType}>
-				{controls()}
-			</ServerViewer>}
-		</>
+		<ServerViewer
+			blobId={blob.id}
+			dimension={dimension}
+			mimeType={blob.mimeType}>
+			{controls()}
+		</ServerViewer>
 	)
 }
