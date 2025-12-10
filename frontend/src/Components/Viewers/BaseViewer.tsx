@@ -26,8 +26,8 @@ export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer, childre
 		switch (dimension) {
 			case DimensionEnum.thumbnail:
 				return {
-					width: "130px",
-					height: "160px",
+					// width: "130px",
+					// height: "160px",
 					maxWidth: "100%",
 					maxHeight: "100%"
 				}
