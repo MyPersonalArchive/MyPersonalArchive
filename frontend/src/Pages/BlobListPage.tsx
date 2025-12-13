@@ -28,33 +28,37 @@ export const BlobListPage = () => {
 		}
 	}, [selectionOfBlobs.selectedItems, blobs])
 
-	const deleteSelectedUnallocatedBlobs = () => {
+	const visibleBlobs = blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)
+	
+	const selectedVisibleBlobs = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
+	
+	const deleteVisibleSelectedBlobs = async () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
 
-		deleteBlobs(Array.from(selectionOfBlobs.selectedItems))
+		const visibleBlobIds = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id)).map(b => b.id)
+		await apiClient.delete("/api/blob/delete", { blobIds: visibleBlobIds })
+
 		selectionOfBlobs.clearSelection()
 	}
 
-	const deleteBlobs = (blobIds: number[]) => {
-		apiClient.delete("/api/blob/delete", { blobIds })
+	const deleteBlob = (blobId: number) => {
+		apiClient.delete("/api/blob/delete", { blobIds: [blobId] })
 	}
 
-	const createArchiveItemFromSelectedUnallocatedBlobs = () => {
-		apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: Array.from(selectionOfBlobs.selectedItems) })
-			.then(newArchiveItemId => {
-				selectionOfBlobs.clearSelection()
-				navigate(`/archive/edit/${newArchiveItemId}`)
-			})
+	const createArchiveItemFromVisibleSelectedBlobs = async () => {
+		if (selectionOfBlobs.areNoItemsSelected) return
+
+		const visibleBlobIds = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id)).map(b => b.id)
+		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: visibleBlobIds })
+
+		selectionOfBlobs.clearSelection()
+		navigate(`/archive/edit/${newArchiveItemId}`)
 	}
 
-	const attachBlob = (id: number) => {
-		apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
-			.then(newArchiveItemId => {
-				navigate(`/archive/edit/${newArchiveItemId}`)
-			})
+	const attachBlob = async (id: number) => {
+		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
+		navigate(`/archive/edit/${newArchiveItemId}`)
 	}
-
-	const filterFn = (blob: Blob) => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated
 
 	return (
 		<div className="container mx-auto px-4 py-6">
@@ -79,26 +83,26 @@ export const BlobListPage = () => {
 
 				<button className="btn"
 					disabled={selectionOfBlobs.areNoItemsSelected}
-					onClick={createArchiveItemFromSelectedUnallocatedBlobs}
+					onClick={createArchiveItemFromVisibleSelectedBlobs}
 				>
-					Create from {selectionOfBlobs.selectedItems.size} selected
+					Create from {selectedVisibleBlobs.length} selected
 				</button>
 
 				<button className="btn"
 					disabled={selectionOfBlobs.areNoItemsSelected}
-					onClick={deleteSelectedUnallocatedBlobs}
+					onClick={deleteVisibleSelectedBlobs}
 				>
-					Delete {selectionOfBlobs.selectedItems.size} selected
+					Delete {selectedVisibleBlobs.length} selected
 				</button>
 			</div>
 
-			<PreviewList<Blob> items={blobs.filter(filterFn)}
+			<PreviewList<Blob> items={visibleBlobs}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
 						key={blob.id}
 						blob={blob}
 						attachBlob={attachBlob}
-						deleteBlobs={deleteBlobs}
+						deleteBlob={deleteBlob}
 						maximize={maximize}
 						selectionOfBlobs={selectionOfBlobs}
 					/>
@@ -118,11 +122,11 @@ export const BlobListPage = () => {
 type BlobCardProps = {
 	blob: Blob
 	attachBlob: (id: number) => void
-	deleteBlobs: (blobIds: number[]) => void
+	deleteBlob: (blobId: number) => void
 	maximize: (blob: Blob) => void
 	selectionOfBlobs: Selection<number>
 }
-const BlobCard = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }: BlobCardProps) => {
+const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
 	return (
 		<div className="card flex flex-row relative">
 
@@ -142,7 +146,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlobs, maximize, selectionOfBlobs }:
 
 				<div className="absolute bottom-2 right-2 space-x-2">
 					<button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
-					<button className="btn" onClick={() => deleteBlobs([blob.id])}>Delete</button>
+					<button className="btn" onClick={() => deleteBlob(blob.id)}>Delete</button>
 				</div>
 
 			</div>
