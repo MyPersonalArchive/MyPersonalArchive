@@ -36,9 +36,13 @@ public static class Program
 			ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 		};
 
-		// Add services to the container.
 		var executingAssembly = Assembly.GetExecutingAssembly();
 		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);	//TODO: Include only specific assemblies? All referenced assemblies could be a lot.
+
+		// Add services to the container.
+		new HandlerDiscovery(builder.Services, _logger)
+			.RegisterCommandAndQueryHandlers([executingAssembly, ..otherRelevantAssemblies]);
+
 		new ServiceDiscovery(builder.Services, _logger)
 			.RegisterServices([executingAssembly, ..otherRelevantAssemblies]);
 
