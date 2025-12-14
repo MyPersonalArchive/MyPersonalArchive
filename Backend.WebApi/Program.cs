@@ -37,6 +37,11 @@ public static class Program
 		};
 
 		// Add services to the container.
+		var executingAssembly = Assembly.GetExecutingAssembly();
+		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);	//TODO: Include only specific assemblies? All referenced assemblies could be a lot.
+		new ServiceDiscovery(builder.Services, _logger)
+			.RegisterServices([executingAssembly, ..otherRelevantAssemblies]);
+
 		builder.Services.AddControllers();
 
 		builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
@@ -51,11 +56,6 @@ public static class Program
 		builder.Services.AddScoped<IAmbientDataResolver, WebApiAmbientDataResolver>();
 		builder.Services.AddTransient<PasswordHasher>();
 		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
-
-		var executingAssembly = Assembly.GetExecutingAssembly();
-		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);	//TODO: Include only specific assemblies? All referenced assemblies could be a lot.
-		new ServiceDiscovery(builder.Services, _logger)
-			.DiscoverAndRegisterServices([executingAssembly, ..otherRelevantAssemblies]);
 
 		builder.Services.AddOptions();
 

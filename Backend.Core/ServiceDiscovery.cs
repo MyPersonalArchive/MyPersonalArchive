@@ -15,7 +15,7 @@ public class ServiceDiscovery
 		_logger = logger;
 	}
 
-	public ServiceDiscovery DiscoverAndRegisterServices(IEnumerable<Assembly> assemblies)
+	public ServiceDiscovery RegisterServices(IEnumerable<Assembly> assemblies)
 	{
 		_logger.LogInformation($"Discovering services with RegisterServiceAttribute in assemblies [{string.Join(", ", assemblies.Select(a => a.FullName))}]");
 
