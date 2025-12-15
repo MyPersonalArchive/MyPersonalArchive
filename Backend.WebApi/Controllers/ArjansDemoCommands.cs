@@ -24,10 +24,22 @@ public class Demo3Query : IQuery<Demo3Query, string>
 {
 	public int MyProperty { get; set; }
 }
+public class Demo4Query : IQuery<Demo4Query, string>
+{
+	public int MyProperty { get; set; }
+	public string? OtherProperty { get; set; }
+	public NestedComplexType? ComplexProperty { get; set; }
+
+	public class NestedComplexType
+	{
+		public string? NestedProperty { get; set; }
+	}
+}
 
 public class Demo2QueryHandler :
 	IAsyncQueryHandler<Demo2Query, string>,
-	IQueryHandler<Demo3Query, string>
+	IQueryHandler<Demo3Query, string>,
+	IQueryHandler<Demo4Query, string>
 {
 	public async Task<string> Handle(Demo2Query query)
 	{
@@ -40,6 +52,11 @@ public class Demo2QueryHandler :
 	{
 		return $"Hello from Demo3QueryHandler! Double of MyProperty value is: {query.MyProperty * 2}";
 	}
+
+	public string Handle(Demo4Query query)
+	{
+		return $"Hello from Demo4QueryHandler! MyProperty: {query.MyProperty}, OtherProperty: {query.OtherProperty}, ComplexProperty.NestedProperty: {query.ComplexProperty?.NestedProperty}";
+	}
 }
 
 
@@ -48,7 +65,7 @@ public class Demo3Command : ICommand<Demo3Command>
 	public int MyProperty { get; set; }
 }
 
-public class Demo3CommandHandler : ICommandHandler<Demo3Command>
+public class Demo3CommandHandler : IAsyncCommandHandler<Demo3Command>
 {
 	public async Task Handle(Demo3Command command)
 	{
