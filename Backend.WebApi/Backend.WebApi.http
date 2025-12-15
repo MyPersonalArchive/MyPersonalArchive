@@ -1,6 +1,52 @@
-@Backend_WebApi_HostAddress = https://localhost:5054
+@Backend_WebApi_HostAddress = https://host.docker.internal:5054
 
-GET {{Backend_WebApi_HostAddress}}/api/storedFilter/list
-Accept: application/json
 
-###
+### Test Demo1Query
+GET {{Backend_WebApi_HostAddress}}/api/query/Demo1Query?MyProperty=10
+
+
+### Test Demo2Query
+GET {{Backend_WebApi_HostAddress}}/api/query/Demo2Query?MyDescription=Hello+world
+
+
+### Test Demo3Query
+GET {{Backend_WebApi_HostAddress}}/api/query/Demo3Query?MyProperty=30
+
+
+### Test Demo4Query
+POST {{Backend_WebApi_HostAddress}}/api/query/Demo4Query
+Content-Type: application/json
+
+{
+  "MyProperty": 123,
+  "OtherProperty": "Hello World",
+  "ComplexProperty": {
+	"NestedProperty": "Nested Value"
+  }
+}
+
+
+### Test Demo3CommandHandler
+POST {{Backend_WebApi_HostAddress}}/api/execute/Demo3Command
+Content-Type: application/json
+
+{
+  "MyProperty": 123,
+  "OtherProperty": "Hello World",
+  "ComplexProperty": {
+	"NestedProperty": "Nested Value"
+  }
+}
+
+
+### Test Demo3CommandHandler
+PUT {{Backend_WebApi_HostAddress}}/api/execute/Demo3Command
+Content-Type: application/json
+
+{
+  "MyProperty": 123,
+  "OtherProperty": "Hello World",
+  "ComplexProperty": {
+	"NestedProperty": "Nested Value"
+  }
+}
