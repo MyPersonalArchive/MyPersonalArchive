@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -32,29 +33,18 @@ public class DispatchController : ControllerBase
 
 		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
 
-		// Get the query type from the handler's interface
-		var queryInterface = queryHandlerType.GetInterfaces()
-			.First(i => i.IsGenericType
-				&& (
-					i.GetGenericTypeDefinition() == typeof(IAsyncQueryHandler<,>)
-					|| i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
-				)
-				&& i.GetGenericArguments()[0].Name.Equals(queryName, StringComparison.OrdinalIgnoreCase)
-			);
-		var queryType = queryInterface.GetGenericArguments()[0];
+		// Get the query handler for current query by the handlers interface
+		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
+		var handler = _services.GetRequiredService(queryHandlerType);
+		var queryType = handlerInterface.GetGenericArguments()[0];
+
+		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
 
 		// Create query instance and map parameters
 		var query = Activator.CreateInstance(queryType);
 		MapParametersToObject(query!, parameters);
 
-		// Get handler from DI container
-		var handler = _services.GetRequiredService(queryHandlerType);
-
-		// Invoke Handle method for the specific query type
-		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
-		
-		// Check if handler is async or sync
-		if (handleMethod.ReturnType.IsGenericType && handleMethod.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+		if (IsHandleMethodAwaitable(handleMethod))
 		{
 			// Async handler
 			var task = (Task)handleMethod.Invoke(handler, [query])!;
@@ -76,13 +66,50 @@ public class DispatchController : ControllerBase
 
 
 	[HttpPost("query/{queryName}")]
-	public IActionResult PostQuery(string queryName)
+	public async Task<IActionResult> PostQuery(string queryName)
 	{
-		throw new NotImplementedException();
+		var queryHandlerType = ResolveQueryHandler(queryName);
+
+		if (queryHandlerType == null)
+		{
+			return BadRequest("Unknown query");
+		}
+
+		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
+
+		// Get the query handler for current query by the handlers interface
+		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
+		var handler = _services.GetRequiredService(queryHandlerType);
+		var queryType = handlerInterface.GetGenericArguments()[0];
+
+		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
+
+		// Create query instance and map parameters
+		var query = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), queryType);
+
+		if (IsHandleMethodAwaitable(handleMethod))
+		{
+			// Async handler
+			var task = (Task)handleMethod.Invoke(handler, [query])!;
+			await task.ConfigureAwait(false);
+
+			// Get result from task
+			var resultProperty = task.GetType().GetProperty("Result");
+			var result = resultProperty!.GetValue(task);
+
+			return Ok(result);
+		}
+		else
+		{
+			// Sync handler
+			var result = handleMethod.Invoke(handler, [query]);
+			return Ok(result);
+		}
 	}
 
+
 	[HttpPost("execute/{commandName}")]
-	public async Task<IActionResult> PostCommand(string commandName, [FromBody] Dictionary<string, object> parameters)
+	public async Task<IActionResult> PostCommand(string commandName)
 	{
 		var commandHandlerType = ResolveCommandHandler(commandName);
 
@@ -93,68 +120,138 @@ public class DispatchController : ControllerBase
 
 		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
 
-		// Get the command type from the handler's interface
-		var commandInterface = commandHandlerType.GetInterfaces()
-			.First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandHandler<>));
-		var commandType = commandInterface.GetGenericArguments()[0];
-
-		// Create command instance and map parameters
-		var command = Activator.CreateInstance(commandType);
-		MapParametersToObject(command!, parameters.ToDictionary(kv => kv.Key, kv => kv.Value.ToString()!)); //TODO: Fix mapping!
-
-		// Get handler from DI container
+		// Get the query handler for current query by the handlers interface
+		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var handler = _services.GetRequiredService(commandHandlerType);
+		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		// Invoke Handle method
-		var handleMethod = commandHandlerType.GetMethod("Handle");
-		var task = (Task)handleMethod!.Invoke(handler, [command])!;
-		await task.ConfigureAwait(false);
+		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
+		// Create query instance and map parameters
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);
 
-		return Ok();
+		// Check if handler is async or sync
+		if (IsHandleMethodAwaitable(handleMethod))
+		{
+			// Async handler
+			var task = (Task)handleMethod.Invoke(handler, [command])!;
+			await task.ConfigureAwait(false);
+		}
+		else
+		{
+			// Sync handler
+			var result = handleMethod.Invoke(handler, [command]);
+		}
+
+		return NoContent();
 	}
 
 
-	[HttpPut("command/{commandName}")]
-	public IActionResult PutCommand(string commandName)
+	[HttpPut("execute/{commandName}")]
+	public async Task<IActionResult> PutCommand(string commandName)
 	{
-		throw new NotImplementedException();
-	}
+		var commandHandlerType = ResolveCommandHandler(commandName);
+
+		if (commandHandlerType == null)
+		{
+			return BadRequest("Unknown command");
+		}
+
+		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
+
+		// Get the query handler for current query by the handlers interface
+		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
+		var handler = _services.GetRequiredService(commandHandlerType);
+		var commandType = handlerInterface.GetGenericArguments()[0];
+
+		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
+		// Create query instance and map parameters
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);
+
+		// Check if handler is async or sync
+		if (IsHandleMethodAwaitable(handleMethod))
+		{
+			// Async handler
+			var task = (Task)handleMethod.Invoke(handler, [command])!;
+			await task.ConfigureAwait(false);
+		}
+		else
+		{
+			// Sync handler
+			var result = handleMethod.Invoke(handler, [command]);
+		}
+
+		return NoContent();	}
 
 	private Type? ResolveQueryHandler(string queryName)
 	{
+		//TODO: Consider caching the results for performance
+		//TODO: How to handle multiple assemblies? All relevant assemblies should be scanned.
+
 		var assembly = typeof(DispatchController).Assembly;
 
 		// Get queryhandlers that can handle the query with the given name
-		var queryHandlerType = assembly.GetTypes()
+		return assembly.GetTypes()
 			.Where(type => type.IsClass && !type.IsAbstract)
 			.Where(type => type.GetInterfaces()
 				.Any(i => i.IsGenericType
 					&& (
-						i.GetGenericTypeDefinition() == typeof(IAsyncQueryHandler<,>) 
+						i.GetGenericTypeDefinition() == typeof(IAsyncQueryHandler<,>)
 						|| i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
 					)
 					&& i.GetGenericArguments()[0].Name.Equals(queryName, StringComparison.OrdinalIgnoreCase)
 				))
 			.SingleOrDefault();
-
-		return queryHandlerType;
 	}
+
 
 	private Type? ResolveCommandHandler(string commandName)
 	{
 		var assembly = typeof(DispatchController).Assembly;
 
 		// Get all types implementing ICommandHandler<TCommand>
-		var commandHandlerTypes = assembly.GetTypes()
+		return assembly.GetTypes()
 			.Where(type => type.IsClass && !type.IsAbstract)
 			.Where(type => type.GetInterfaces()
 				.Any(i => i.IsGenericType
-					&& i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
+					&& (
+						i.GetGenericTypeDefinition() == typeof(IAsyncCommandHandler<>)
+						|| i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
+					)
 					&& i.GetGenericArguments()[0].Name.Equals(commandName, StringComparison.OrdinalIgnoreCase)
 				))
 			.SingleOrDefault();
+	}
 
-		return commandHandlerTypes;
+
+	private static Type GetQueryHandlerInterface(string queryName, Type queryHandlerType)
+	{
+		return queryHandlerType.GetInterfaces()
+			.First(i => i.IsGenericType
+				&& (
+					i.GetGenericTypeDefinition() == typeof(IAsyncQueryHandler<,>)
+					|| i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
+				)
+				&& i.GetGenericArguments()[0].Name.Equals(queryName, StringComparison.OrdinalIgnoreCase)
+			);
+	}
+
+
+	private static Type GetCommandHandlerInterface(string commandName, Type commandHandlerType)
+	{
+		return commandHandlerType.GetInterfaces()
+			.First(i => i.IsGenericType
+				&& (
+					i.GetGenericTypeDefinition() == typeof(IAsyncCommandHandler<>)
+					|| i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
+				)
+				&& i.GetGenericArguments()[0].Name.Equals(commandName, StringComparison.OrdinalIgnoreCase)
+			);
+	}
+
+
+	private static bool IsHandleMethodAwaitable(System.Reflection.MethodInfo handleMethod)
+	{
+		return handleMethod.ReturnType.IsGenericType && handleMethod.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
 	}
 
 
