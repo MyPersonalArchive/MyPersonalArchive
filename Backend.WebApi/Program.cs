@@ -15,6 +15,7 @@ using Backend.EmailIngestion.Providers;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
+using Backend.WebApi.CqrsInfrastructure;
 
 namespace Backend.WebApi;
 

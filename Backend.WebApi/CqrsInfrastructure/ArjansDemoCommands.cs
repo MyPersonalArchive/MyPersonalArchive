@@ -1,5 +1,8 @@
-namespace Backend.WebApi.Controllers;
+namespace Backend.WebApi.CqrsInfrastructure;
 
+[RequireAllowedTenantId]
+// [RequirementFeatureFlag("ArjansDemoCommands")]
+// [RequirementPermission("ArjansDemoCommandsPermission")]
 public class Demo1Query : IQuery<Demo1Query, string>
 {
 	public int MyProperty { get; set; }
@@ -15,15 +18,20 @@ public class Demo1QueryHandler : IAsyncQueryHandler<Demo1Query, string>
 	}
 }
 
+//-------------------------------------------------------------
 
+[RequireAuthentication(UserMustBeAuthorized = true)]
 public class Demo2Query : IQuery<Demo2Query, string>
 {
 	public string? MyDescription { get; set; }
 }
+
 public class Demo3Query : IQuery<Demo3Query, string>
 {
 	public int MyProperty { get; set; }
 }
+
+[RequireAllowedTenantId(UserMustBeAuthorized = false)]
 public class Demo4Query : IQuery<Demo4Query, string>
 {
 	public int MyProperty { get; set; }
@@ -45,7 +53,7 @@ public class Demo2QueryHandler :
 	{
 		// Simulate some asynchronous operation
 		await Task.Delay(100);
-		return $"Hello from Demo2QueryHandler! MyDescription value is: {query.MyDescription}";
+		return $"MyDescription backwards is: {new string(query.MyDescription?.Reverse().ToArray() ?? Array.Empty<char>())}";
 	}
 
 	public string Handle(Demo3Query query)
@@ -59,18 +67,20 @@ public class Demo2QueryHandler :
 	}
 }
 
+//-------------------------------------------------------------
 
-public class Demo3Command : ICommand<Demo3Command>
+[RequireAuthentication]
+public class Demo5Command : ICommand<Demo5Command>
 {
 	public int MyProperty { get; set; }
 }
 
-public class Demo3CommandHandler : IAsyncCommandHandler<Demo3Command>
+public class Demo5CommandHandler : IAsyncCommandHandler<Demo5Command>
 {
-	public async Task Handle(Demo3Command command)
+	public async Task Handle(Demo5Command command)
 	{
 		// Simulate some asynchronous operation
 		await Task.Delay(100);
-		Console.WriteLine($"Hello from Demo3CommandHandler! MyProperty value is: {command.MyProperty}");
+		Console.WriteLine($"Hello from Demo5CommandHandler! MyProperty value is: {command.MyProperty}");
 	}
 }
