@@ -1,21 +1,44 @@
 @Backend_WebApi_HostAddress = https://host.docker.internal:5054
 
 
+### Sign out to clear cookie
+POST {{Backend_WebApi_HostAddress}}/api/authentication/signout
+
+
+
+### Login to get a token
+# @name login
+POST {{Backend_WebApi_HostAddress}}/api/authentication/signin
+Content-Type: application/json
+
+{
+  "Username": "admin@localhost",
+  "Password": "p@$$w0rd"
+}
+
+
 ### Test Demo1Query
 GET {{Backend_WebApi_HostAddress}}/api/query/Demo1Query?MyProperty=10
+X-Tenant-Id: 1
+
 
 
 ### Test Demo2Query
-GET {{Backend_WebApi_HostAddress}}/api/query/Demo2Query?MyDescription=Hello+world
+@username = {{login.response.body.username}}
+@mydescription = Hello {{username}}
+GET {{Backend_WebApi_HostAddress}}/api/query/Demo2Query?MyDescription={{mydescription}}
+
 
 
 ### Test Demo3Query
 GET {{Backend_WebApi_HostAddress}}/api/query/Demo3Query?MyProperty=30
 
 
+
 ### Test Demo4Query
 POST {{Backend_WebApi_HostAddress}}/api/query/Demo4Query
 Content-Type: application/json
+X-Tenant-Id: 1
 
 {
   "MyProperty": 123,
@@ -26,8 +49,9 @@ Content-Type: application/json
 }
 
 
-### Test Demo3CommandHandler
-POST {{Backend_WebApi_HostAddress}}/api/execute/Demo3Command
+
+### Test Demo5CommandHandler
+POST {{Backend_WebApi_HostAddress}}/api/execute/Demo5Command
 Content-Type: application/json
 
 {
@@ -39,8 +63,9 @@ Content-Type: application/json
 }
 
 
-### Test Demo3CommandHandler
-PUT {{Backend_WebApi_HostAddress}}/api/execute/Demo3Command
+
+### Test Demo5CommandHandler
+PUT {{Backend_WebApi_HostAddress}}/api/execute/Demo5Command
 Content-Type: application/json
 
 {

@@ -1,13 +1,14 @@
-using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.WebApi.CqrsInfrastructure;
 
 
 [ApiController]
 [Route("api/")]
+[Authorize]
+[AllowAnonymous]
 public class DispatchController : ControllerBase
 {
 	private readonly ILogger<DispatchController> _logger;
@@ -31,13 +32,17 @@ public class DispatchController : ControllerBase
 			return BadRequest("Unknown query");
 		}
 
-		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
-
 		// Get the query handler for current query by the handlers interface
 		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
-		var handler = _services.GetRequiredService(queryHandlerType);
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
+		var failureReasons = CheckRequirements(queryType);
+		if (failureReasons.Any())
+		{
+			return BadRequest(string.Join("; ", failureReasons));
+		}
+
+		var handler = _services.GetRequiredService(queryHandlerType);
 		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
 
 		// Create query instance and map parameters
@@ -75,13 +80,17 @@ public class DispatchController : ControllerBase
 			return BadRequest("Unknown query");
 		}
 
-		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
-
 		// Get the query handler for current query by the handlers interface
 		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
-		var handler = _services.GetRequiredService(queryHandlerType);
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
+		var failureReasons = CheckRequirements(queryType);
+		if (failureReasons.Any())
+		{
+			return BadRequest(string.Join("; ", failureReasons));
+		}
+
+		var handler = _services.GetRequiredService(queryHandlerType);
 		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
 
 		// Create query instance and map parameters
@@ -118,18 +127,21 @@ public class DispatchController : ControllerBase
 			return BadRequest("Unknown command");
 		}
 
-		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
-
 		// Get the query handler for current query by the handlers interface
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
-		var handler = _services.GetRequiredService(commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
-		// Create query instance and map parameters
-		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);
+		var failureReasons = CheckRequirements(commandType);
+		if (failureReasons.Any())
+		{
+			return BadRequest(string.Join("; ", failureReasons));
+		}
 
-		// Check if handler is async or sync
+		var handler = _services.GetRequiredService(commandHandlerType);
+		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
+
+		// Create query instance and map parameters
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);       // Check if handler is async or sync
 		if (IsHandleMethodAwaitable(handleMethod))
 		{
 			// Async handler
@@ -156,14 +168,19 @@ public class DispatchController : ControllerBase
 			return BadRequest("Unknown command");
 		}
 
-		// check requirements, e.g. authentication, authorization, featureflags, validation, etc.
-
 		// Get the query handler for current query by the handlers interface
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
-		var handler = _services.GetRequiredService(commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
+		var failureReasons = CheckRequirements(commandType);
+		if (failureReasons.Any())
+		{
+			return BadRequest(string.Join("; ", failureReasons));
+		}
+
 		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
+		var handler = _services.GetRequiredService(commandHandlerType);
+
 		// Create query instance and map parameters
 		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);
 
@@ -180,7 +197,9 @@ public class DispatchController : ControllerBase
 			var result = handleMethod.Invoke(handler, [command]);
 		}
 
-		return NoContent();	}
+		return NoContent();
+	}
+
 
 	private Type? ResolveQueryHandler(string queryName)
 	{
@@ -220,6 +239,38 @@ public class DispatchController : ControllerBase
 					&& i.GetGenericArguments()[0].Name.Equals(commandName, StringComparison.OrdinalIgnoreCase)
 				))
 			.SingleOrDefault();
+	}
+
+
+	private IEnumerable<string> CheckRequirements(Type queryOrCommandType)
+	{
+		var currentAttributes = queryOrCommandType.GetCustomAttributes(typeof(IRequirement), true).Cast<IRequirement>();
+		//Mandatory attribute "types": authentication requirement, permission requirement, etc.
+		//Optional attribute "types": tenant requirement, feature flag requirement, etc.
+
+		var requiredAttributes = new Type[] { typeof(RequireAuthenticationAttribute) };
+		var missingRequiredAttributes = requiredAttributes
+			.Where(requiredAttributeType =>
+				!currentAttributes.Any(
+					attr =>
+						attr.GetType().IsAssignableTo(requiredAttributeType)
+					)
+				)
+			.ToList();
+		if (missingRequiredAttributes.Any())
+		{
+			return [$"Missing required requirement attributes: {string.Join(", ", missingRequiredAttributes.Select(t => t.Name))}"];
+		}
+
+		var failureReasons = new List<string>();
+		foreach (IRequirement attr in currentAttributes)
+		{
+			if (attr.TryCheck(HttpContext, _logger, out var failureReason) == false)
+			{
+				failureReasons.Add(failureReason!);
+			}
+		}
+		return failureReasons;
 	}
 
 
@@ -275,8 +326,6 @@ public class DispatchController : ControllerBase
 				}
 				catch
 				{
-					//TODO: How to convert complex types?
-
 					// Skip properties that can't be converted
 				}
 			}
