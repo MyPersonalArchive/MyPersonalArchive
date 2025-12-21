@@ -11,3 +11,10 @@ dotnet ef migrations add NameOfMigration --project=Backend.DbModel --startup-pro
 dotnet ef database update --project=Backend.DbModel
 dotnet ef database update --project=Backend.DbModel --startup-project Backend.WebApi
 ```
+
+## Revert to a previous migration
+```
+dotnet ef database update PreviousMigrationName --project=Backend.DbModel
+dotnet ef database update PreviousMigrationName --project=Backend.DbModel --startup-project Backend.WebApi
+```
+
