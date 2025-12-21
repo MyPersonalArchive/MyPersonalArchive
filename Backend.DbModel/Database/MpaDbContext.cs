@@ -96,6 +96,14 @@ public class MpaDbContext : DbContext
 				v => JsonSerializer.Deserialize<JsonObject>(v, _jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
 			)
 			.HasColumnType("TEXT");
+
+		modelBuilder.Entity<BackupDestination>()
+			.Property(e => e.Metadata)
+			.HasConversion(
+				v => v.ToJsonString(_jsonSerializerOptions),
+				v => JsonSerializer.Deserialize<JsonObject>(v, _jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
+			)
+			.HasColumnType("TEXT");
 	}
 
 	private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)
@@ -117,7 +125,7 @@ public class MpaDbContext : DbContext
 		{
 		});
 
-		
+
 		modelBuilder.Entity<Tag>(builder =>
 		{
 			builder.HasAlternateKey(tag => new { tag.Id, tag.TenantId });
@@ -176,10 +184,10 @@ public class MpaDbContext : DbContext
 		modelBuilder.Entity<StoredFilter>(storedFilters =>
 		{
 			storedFilters.HasData(
-				new StoredFilter { Id = -1, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
-				new StoredFilter { Id = 1, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
-				new StoredFilter { Id = 2, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
-				new StoredFilter { Id = 3, Name="No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] }
+				new StoredFilter { Id = -1, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
+				new StoredFilter { Id = 1, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
+				new StoredFilter { Id = 2, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
+				new StoredFilter { Id = 3, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] }
 			);
 		});
 
@@ -288,7 +296,11 @@ public class MpaDbContext : DbContext
 	public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
 	public DbSet<StoredFilter> StoredFilters { get; set; }
 
+	public DbSet<BackupDestination> BackupDestinations { get; set; }
+	public DbSet<BackupHistory> BackupHistory { get; set; }
 
+
+	#region Design time support for multi-tenant DbContext
 	public class MpaDbModelCacheKeyFactoryDesignTimeSupport : IModelCacheKeyFactory
 	{
 		public object Create(DbContext context, bool designTime)
@@ -299,6 +311,7 @@ public class MpaDbContext : DbContext
 		public object Create(DbContext context)
 			=> Create(context, false);
 	}
+	#endregion
 }
 
 
