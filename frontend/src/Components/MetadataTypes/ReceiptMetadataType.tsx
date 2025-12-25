@@ -2,18 +2,18 @@ import React from "react"
 import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
 
 type Command =
-    | { action: "INIT" }
-    | { action: "METADATA_LOADED", metadata: State }
-    | { action: "SET_AMOUNT", amount: string }
-    | { action: "SET_CURRENCY", currency: string }
-    | { action: "SET_WARRANTY", warranty: string }
-    | { action: "SET_DISPOSITION_STATUS", dispositionStatus: string }
+	| { action: "INIT" }
+	| { action: "METADATA_LOADED", metadata: State }
+	| { action: "SET_AMOUNT", amount: string }
+	| { action: "SET_CURRENCY", currency: string }
+	| { action: "SET_WARRANTY", warranty: string }
+	| { action: "SET_DISPOSITION_STATUS", dispositionStatus: string }
 
 type State = {
-    amount: string
-    currency: string
-    warranty: string
-    dispositionStatus: string
+	amount: string
+	currency: string
+	warranty: string
+	dispositionStatus: string
 }
 
 
@@ -70,7 +70,7 @@ const Component = (props: MetadataComponentProps) => {
 		<>
 			<div className="aligned-labels-and-inputs">
 				<label htmlFor="amount">Amount</label>
-				<div className="flex">
+				<div className="flex group">
 					<input type="text" id="amount"
 						className="input"
 						placeholder="Amount"

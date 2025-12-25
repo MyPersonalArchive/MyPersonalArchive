@@ -73,6 +73,10 @@
 	&>.btn:last-child {
 		@apply rounded-r-sm;
 	}
+
+	&>.input+.input{
+		@apply border-l-0;
+	}
 }
 
 div.input {
