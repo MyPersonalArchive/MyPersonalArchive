@@ -13,8 +13,7 @@ export const ServerViewer = ({ blobId, mimeType, dimension, children }: Props) =
 	const [loading, setLoading] = useState(true)
   
 	// Check if we should force image viewer for PDF thumbnails/small sizes
-	const shouldForceImageViewer = mimeType === "application/pdf" && 
-    (dimension === DimensionEnum.thumbnail || dimension === DimensionEnum.small)
+	const shouldForceImageViewer = mimeType === "application/pdf" && (dimension === DimensionEnum.thumbnail || dimension === DimensionEnum.small)
 
 	useEffect(() => {
 		let cancelled = false

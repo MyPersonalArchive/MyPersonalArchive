@@ -71,7 +71,7 @@ export const ArchiveItemEditPage = () => {
 				setLabel(item!.label)
 				setDocumentDate(item!.documentDate)
 
-				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item.metadata, dispatch: dispatch })
+				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item!.metadata, dispatch: dispatch })
 			})
 	}, [])
 
@@ -190,7 +190,7 @@ export const ArchiveItemEditPage = () => {
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<div className="bg-black w-[302px] h-[302px] flex justify-center items-center">
+								<div className="bg-black rounded-sm w-73 h-73 flex justify-center items-center">
 									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
 										onRemove={removeUnallocatedBlob}
 										onMaximize={() => maximize(blob)}
@@ -199,7 +199,6 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-
 								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
 									onRemove={removeUnallocatedBlob}
 									onMinimize={() => minimize()}

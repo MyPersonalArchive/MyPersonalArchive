@@ -1,5 +1,4 @@
 import React, {useState } from "react"
-import classNames from "classnames"
 
 
 type PreviewListProps<T> = {
@@ -14,7 +13,7 @@ export const PreviewList = <T,>({ items, containerStyle, containerClassName, thu
 
 	return (
 		<>
-			<div className={classNames("previewlist ", containerClassName)} style={containerStyle}>
+			<div className={containerClassName} style={containerStyle}>
 				{
 					items.map(blob => thumbnailPreviewTemplate(blob, setMaximizedItem))
 				}

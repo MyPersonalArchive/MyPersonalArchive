@@ -7,15 +7,13 @@ interface Props {
 
 export const ImageViewer = ({ src, style }: Props) => {
 	return (
-		<div>
-			<img
-				src={src}
-				alt="Preview"
-				style={{
-					objectFit: "fill",
-					...style
-				}}
-			/>
-		</div>
+		<img
+			src={src}
+			alt="Preview"
+			style={{
+				objectFit: "contain",
+				...style
+			}}
+		/>
 	)
 }
