@@ -27,10 +27,28 @@ public class StoredFilterController : ControllerBase
 	}
 
 	[HttpGet]
-	public IEnumerable<StoredFilter> List()
+	public async Task<ActionResult<IEnumerable<ListResponse>>> List()
 	{
-		return _dbContext.StoredFilters;
+		var filters  = _dbContext.StoredFilters
+			.Select(f => new ListResponse
+			{
+				Id = f.Id,
+				Name = f.Name,
+				FilterDefinition = new FilterDefinition
+				{
+					Title = f.Title,
+					Tags = f.Tags,
+					MetadataTypes = f.MetadataTypes
+				}
+			})
+			.ToList();
+		return Ok(filters);
 	}
+
+	// public IEnumerable<StoredFilter> List()
+	// {
+	// 	return _dbContext.StoredFilters;
+	// }
 
 	[HttpPost]
 	public async Task<StoredFilter> Create([FromBody] StoredFilter storedFilter)
@@ -74,4 +92,35 @@ public class StoredFilterController : ControllerBase
 
 		return NoContent();
 	}
+
+
+	#region Request and response models
+	public class ListResponse
+	{
+		public int Id { get; set; }
+		public required string Name { get; set; }
+		public required FilterDefinition FilterDefinition{ get; set; }
+	}
+	
+	public class CreateRequest
+	{
+		public required string Name { get; set; }
+		public required FilterDefinition FilterDefinition { get; set; }
+	}
+
+
+	public class UpdateRequest
+	{
+		public int Id { get; set; }
+		public required string Name { get; set; }
+		public required FilterDefinition FilterDefinition { get; set; }
+	}
+
+	public class FilterDefinition
+	{
+		public string? Title { get; set; }
+		public required string[] Tags { get; set; }
+		public required string[] MetadataTypes { get; set; }
+	}
+	#endregion
 }

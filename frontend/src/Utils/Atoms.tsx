@@ -44,8 +44,10 @@ export const blobsAtom = atom<Blob[]>([])
 export type StoredFilter = {
     id: number
     name: string
-    title: string
-    metadataTypes: string[]
-    tags: string[]
+	filterDefinition: {
+		title: string
+		metadataTypes: string[]
+		tags: string[]
+	}
 }
 export const storedFiltersAtom = atom<StoredFilter[]>([])

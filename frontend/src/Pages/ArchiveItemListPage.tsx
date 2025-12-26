@@ -27,19 +27,19 @@ export const ArchiveItemListPage = () => {
 		const storedFilterName = searchParams.get("filter")
 		const storedFilter = storedFilterName ? storedFilters.find(f => f.name === storedFilterName) : undefined
 
-		const titleFilter = storedFilter ? storedFilter.title : searchParams.get("title")
+		const titleFilter = storedFilter ? storedFilter.filterDefinition.title : searchParams.get("title")
 		if (titleFilter && !item.title.toLowerCase().includes(titleFilter.toLowerCase())) {
 			return false
 		}
 
-		const tagsFilter = storedFilter ? storedFilter.tags : searchParams.getAll("tags") ?? []
+		const tagsFilter = storedFilter ? storedFilter.filterDefinition.tags : searchParams.getAll("tags") ?? []
 		for (const tag of tagsFilter) {
 			if (!item.tags.includes(tag)) {
 				return false
 			}
 		}
 
-		const metadataTypesFilter = storedFilter ? storedFilter.metadataTypes : searchParams.getAll("metadataTypes") ?? []
+		const metadataTypesFilter = storedFilter ? storedFilter.filterDefinition.metadataTypes : searchParams.getAll("metadataTypes") ?? []
 		for (const metadataType of metadataTypesFilter) {
 			if (!item.metadataTypes.includes(metadataType)) {
 				return false
