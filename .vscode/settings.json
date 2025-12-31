@@ -16,5 +16,8 @@
 		"activityBar.background": "#bbb80099",
 		"activityBar.foreground": "#000000",
 		"activityBar.inactiveForeground": "#444444"
+	},
+	"files.associations": {
+		"*.css": "tailwindcss"
 	}
 }
