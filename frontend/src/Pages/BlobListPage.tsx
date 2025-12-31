@@ -61,7 +61,7 @@ export const BlobListPage = () => {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-6">
+		<div className="mx-auto px-4 py-6">
 			<h1 className="heading-1">
 				Blobs
 			</h1>
