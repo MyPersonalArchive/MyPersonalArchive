@@ -9,30 +9,38 @@
 	--color-customblue: hsla(197, 68%, 37%, 10);
 }
 
-.nav-level-1 {
-	@apply border-b border-gray-300;
+ul.nav-level-1 {
+	&>li {
+		@apply border-b border-gray-300;
 
-	&>a.link {
-		@apply	block text-gray-800 no-underline p-3 hover:bg-gray-200 transition-colors;
+		&>a,
+		&>.link {
+			@apply	block text-gray-800 no-underline p-3 hover:bg-gray-200 transition-colors;
+		}
+
+		&>.toggle {
+			@apply w-full bg-transparent border-none text-gray-800 text-left p-3 cursor-pointer hover:bg-gray-200 transition-colors text-base;
+
+			&.active {
+				@apply bg-gray-200;
+			}
+		}
 	}
 
-	&>.toggle {
-		@apply w-full bg-transparent border-none text-gray-800 text-left p-3 cursor-pointer hover:bg-gray-200 transition-colors text-base;
+}
 
-		&.active {
-			@apply bg-gray-200;
+ul.nav-level-2 {
+	/* @apply list-none bg-gray-500; */
+
+	&>li {
+		@apply border-b border-gray-300 last:border-b-0;
+
+		&>a,
+		&>.link {
+			@apply block pl-8 bg-gray-200 text-gray-800 no-underline p-3 hover:bg-gray-300 transition-colors
 		}
 	}
 }
-
-.nav-level-2 {
-	@apply border-b border-gray-300 last:border-b-0;
-
-	&>a.link {
-		@apply block pl-8 bg-gray-200 text-gray-800 no-underline p-3 hover:bg-gray-300 transition-colors
-	}
-}
-
 
 
 

@@ -72,7 +72,7 @@ export const StoredFilterListPage = () => {
 
 
 	return (
-		<div className="mx-auto px-4 py-6">
+		<>
 			<h1 className="heading-1">
 				Filters
 			</h1>
@@ -105,7 +105,7 @@ export const StoredFilterListPage = () => {
 					</tbody>
 				</table>
 			</div>
-		</div>
+		</>
 	)
 }
 

@@ -61,9 +61,9 @@ export const BlobListPage = () => {
 	}
 
 	return (
-		<div className="mx-auto px-4 py-6">
+		<>
 			<h1 className="heading-1">
-				Blobs
+				Documents and media
 			</h1>
 
 			<FileDropZone onBlobAttached={() => { /* //TODO: what? */ }} />
@@ -114,7 +114,7 @@ export const BlobListPage = () => {
 				}
 			/>
 
-		</div>
+		</>
 	)
 }
 
