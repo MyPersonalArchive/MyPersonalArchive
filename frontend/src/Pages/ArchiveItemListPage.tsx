@@ -50,7 +50,7 @@ export const ArchiveItemListPage = () => {
 	}
 
 	return (
-		<div className="mx-auto px-4 py-6">
+		<>
 			<h1 className="heading-1">
 				Archive
 			</h1>
@@ -94,7 +94,7 @@ export const ArchiveItemListPage = () => {
 			<div className="stack-horizontal to-the-right my-4">
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
 			</div>
-		</div>
+		</>
 	)
 }
 

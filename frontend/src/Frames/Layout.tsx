@@ -19,7 +19,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	return (
 		<div className="flex flex-col lg:flex-row lg:flex-wrap min-h-screen">
 			<header className="w-full bg-gray-200 text-gray-800 p-4 text-center shrink-0">
-				<h1 className="text-2xl">Responsive layout playground</h1>
+				<h1 className="text-2xl">
+					My Personal Archive
+				</h1>
 			</header>
 
 			<nav className="lg:w-64 bg-gray-100 relative z-1000 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
@@ -31,34 +33,27 @@ export const Layout = ({ children }: PropsWithChildren) => {
 					☰ Menu
 				</button>
 
-				{/* //TODO: make this links
-						{ type: "link", label: <>Archive</>, link: RoutePaths.Archive },
-						{ type: "link", label: <>Blobs</>, link: RoutePaths.Blobs },
-						{ type: "link", label: <>Filters</>, link: RoutePaths.StoredFilters },
-						{ type: "link", label: <>Emails</>, link: RoutePaths.Email },
-						 */}
+				<ul className={`nav-level-1 ${isNavOpen ? "block" : "hidden"} lg:block list-none bg-gray-100 absolute lg:static top-full left-0 right-0 shadow-md lg:shadow-none`}>
 
-				<ul className={`${isNavOpen ? "block" : "hidden"} lg:block list-none bg-gray-100 absolute lg:static top-full left-0 right-0 shadow-md lg:shadow-none`}>
-
-					<li className="nav-level-1">
-						<Link className="link" to={RoutePaths.Archive}>
+					<li>
+						<Link to={RoutePaths.Archive}>
 							Archive
 						</Link>
 					</li>
 
-					<li className="nav-level-1">
-						<Link className="link" to={RoutePaths.Blobs}>
+					<li>
+						<Link to={RoutePaths.Blobs}>
 							Documents and media
 						</Link>
 					</li>
 
-					<li className="nav-level-1">
-						<Link className="link" to={RoutePaths.Email}>
+					<li>
+						<Link to={RoutePaths.Email}>
 							Email
 						</Link>
 					</li>
 
-					<li className="nav-level-1">
+					<li>
 						<button className={`toggle ${openSubmenu === "external" ? "active" : ""}`}
 							onClick={() => toggleSubmenu("external")}
 						>
@@ -66,52 +61,58 @@ export const Layout = ({ children }: PropsWithChildren) => {
 							<Arrow subMenuIsOpen={openSubmenu === "external"} />
 						</button>
 
-						<ul className={`${openSubmenu === "external" ? "block" : "hidden"} list-none bg-gray-200`}>
-							<li className="nav-level-2">
-								<a className="link" href="#">
+						<ul className={`nav-level-2 ${openSubmenu === "external" ? "block" : "hidden"}`}>
+							<li>
+								<a href="#">
 									my.name@example.com
 								</a>
 							</li>
-							<li className="nav-level-2">
-								<a className="link" href="#">
+							<li>
+								<a href="#">
 									other.email@example.com
 								</a>
 							</li>
-							<li className="nav-level-2">
-								<a className="link" href="#">
+							<li>
+								<a href="#">
 									Dropbox (my.name@example.com)
 								</a>
 							</li>
-							<li className="nav-level-2">
-								<a className="link" href="#">
+							<li>
+								<a href="#">
 									Manage external sources
 								</a>
 							</li>
 						</ul>
 					</li>
 
-					<li className="nav-level-1">
+					<li>
 						<button className={`toggle ${openSubmenu === "profile" ? "active" : ""}`}
 							onClick={() => toggleSubmenu("profile")}
 						>
 							Profile
 							<Arrow subMenuIsOpen={openSubmenu === "profile"} />
 						</button>
-						<ul className={`${openSubmenu === "profile" ? "block" : "hidden"} list-none bg-gray-200`}>
-							<li className="nav-level-2">
-								<Link className="link" to={RoutePaths.Profile}>
+						<ul className={`nav-level-2 ${openSubmenu === "profile" ? "block" : "hidden"}`}>
+							<li>
+								<Link to={RoutePaths.Profile}>
 									My profile
 								</Link>
 							</li>
 
-							<li className="nav-level-2">
-								<Link className="link" to={RoutePaths.StoredFilters}>
+							<li>
+								<Link to={RoutePaths.Tenants}>
+									Switch tenant
+								</Link>
+							</li>
+
+							<li>
+								<Link to={RoutePaths.StoredFilters}>
 									Stored filters
 								</Link>
 							</li>
 
-							<li className="nav-level-2">
-								<Link className="link" to={RoutePaths.SignOut}>
+							<li>
+								<Link to={RoutePaths.SignOut}>
 									Sign out
 								</Link>
 							</li>
@@ -121,7 +122,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 			</nav>
 
 			<div className="flex-1 min-w-0">
-				<main>
+				<main className="px-2 lg:px-6 py-4">
 					{children}
 				</main>
 			</div>

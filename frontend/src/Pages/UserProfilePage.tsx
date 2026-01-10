@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 
 export const UserProfilePage = () => {
 	return (
-		<div className="mx-auto px-4 py-6">
+		<>
 			<h1 className="heading-1">
 				User Profile
 			</h1>
@@ -53,6 +53,6 @@ export const UserProfilePage = () => {
 				</tbody>
 			</table>
 
-		</div>
+		</>
 	)
 }

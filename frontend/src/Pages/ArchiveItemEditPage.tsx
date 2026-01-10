@@ -130,7 +130,7 @@ export const ArchiveItemEditPage = () => {
 
 	return (
 		<>
-			<form onSubmit={save} className="mx-auto px-4 py-6">
+			<form onSubmit={save}>
 
 				<h1 className="heading-1">
 					Edit item

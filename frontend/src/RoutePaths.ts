@@ -7,6 +7,6 @@ export const RoutePaths = {
 	Archive: "/archive/list",
 	Blobs: "/blob/list",
 	StoredFilters: "/filters",
-	Unallocated: "/archive/unallocated",
+	Tenants: "/tenants",
 	Email: "/email"
 }

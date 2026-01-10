@@ -23,7 +23,10 @@ export const EmailListPage = () => {
 	}, [selectionOfEmails.selectedItems, emails])
 
 	return (
-		<div>
+		<>
+			<h1 className="heading-1">
+				Email
+			</h1>
 			<div className="stack-horizontal to-the-left my-4">
 				<div className="group">
 
@@ -132,7 +135,7 @@ export const EmailListPage = () => {
 					} />
 
 			</div>
-		</div >
+		</ >
 	)
 }
 

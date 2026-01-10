@@ -78,7 +78,7 @@ export const ArchiveItemNewPage = () => {
 
 	return (
 		<>
-			<form onSubmit={save} className="mx-auto px-4 py-6">
+			<form onSubmit={save}>
 				<h1 className="heading-1">
 					New archive item {title}
 				</h1>
