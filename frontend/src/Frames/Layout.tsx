@@ -2,10 +2,13 @@
 import { PropsWithChildren, useState } from "react"
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
+import { useAtomValue } from "jotai"
+import { currentUserAtom } from "../Utils/Atoms"
 
 
 
 export const Layout = ({ children }: PropsWithChildren) => {
+	const currentUser = useAtomValue(currentUserAtom)
 	const [isNavOpen, setIsNavOpen] = useState(false)
 	const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
 
@@ -36,88 +39,100 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 				<ul className={`nav-level-1 ${isNavOpen ? "block" : "hidden"} lg:block list-none bg-gray-100 absolute lg:static top-full left-0 right-0 shadow-md lg:shadow-none`}>
 
-					<li>
-						<Link to={RoutePaths.Archive} onClick={closeMenu}>
-							Archive
-						</Link>
-					</li>
+					{!currentUser && <>
+						<li>
+							<Link to={RoutePaths.SignIn} onClick={closeMenu}>
+								Sign in
+							</Link>
+						</li>
+					</>
+					}
 
-					<li>
-						<Link to={RoutePaths.Blobs} onClick={closeMenu}>
-							Documents and media
-						</Link>
-					</li>
+					{currentUser && <>
+						<li>
+							<Link to={RoutePaths.Archive} onClick={closeMenu}>
+								Archive
+							</Link>
+						</li>
 
-					<li>
-						<Link to={RoutePaths.Email} onClick={closeMenu}>
-							Email
-						</Link>
-					</li>
+						<li>
+							<Link to={RoutePaths.Blobs} onClick={closeMenu}>
+								Documents and media
+							</Link>
+						</li>
 
-					<li>
-						<button className={`toggle ${openSubmenu === "external" ? "active" : ""}`}
-							onClick={() => toggleSubmenu("external")}
-						>
-							Connected accounts
-							<Arrow subMenuIsOpen={openSubmenu === "external"} />
-						</button>
+						<li>
+							<Link to={RoutePaths.Email} onClick={closeMenu}>
+								Email
+							</Link>
+						</li>
 
-						<ul className={`nav-level-2 ${openSubmenu === "external" ? "block" : "hidden"}`}>
-							<li>
-								<a href="#" onClick={closeMenu}>
-									peter.pan@zoho.example
-								</a>
-							</li>
-							<li>
-								<a href="#" onClick={closeMenu}>
-									My work mail
-								</a>
-							</li>
-							<li>
-								<a href="#" onClick={closeMenu}>
-									My private mail
-								</a>
-							</li>
-							<li>
-								<a href="#" onClick={closeMenu}>
-									Dropbox (private)
-								</a>
-							</li>
-							<li>
-								<a href="#" onClick={closeMenu}>
-									Onedrive at work
-								</a>
-							</li>
-						</ul>
-					</li>
+						<li>
+							<button className={`toggle ${openSubmenu === "external" ? "active" : ""}`}
+								onClick={() => toggleSubmenu("external")}
+							>
+								Connected accounts
+								<Arrow subMenuIsOpen={openSubmenu === "external"} />
+							</button>
 
-					<li>
-						<button className={`toggle ${openSubmenu === "profile" ? "active" : ""}`}
-							onClick={() => toggleSubmenu("profile")}
-						>
-							Profile
-							<Arrow subMenuIsOpen={openSubmenu === "profile"} />
-						</button>
-						<ul className={`nav-level-2 ${openSubmenu === "profile" ? "block" : "hidden"}`}>
-							<li>
-								<Link to={RoutePaths.Profile} onClick={closeMenu}>
-									My profile
-								</Link>
-							</li>
+							<ul className={`nav-level-2 ${openSubmenu === "external" ? "block" : "hidden"}`}>
+								<li>
+									<a href="#" onClick={closeMenu}>
+										peter.pan@zoho.example
+									</a>
+								</li>
+								<li>
+									<a href="#" onClick={closeMenu}>
+										My work mail
+									</a>
+								</li>
+								<li>
+									<a href="#" onClick={closeMenu}>
+										My private mail
+									</a>
+								</li>
+								<li>
+									<a href="#" onClick={closeMenu}>
+										Dropbox (private)
+									</a>
+								</li>
+								<li>
+									<a href="#" onClick={closeMenu}>
+										Onedrive at work
+									</a>
+								</li>
+							</ul>
+						</li>
 
-							<li>
-								<Link to={RoutePaths.StoredFilters} onClick={closeMenu}>
-									Stored filters
-								</Link>
-							</li>
+						<li>
+							<button className={`toggle ${openSubmenu === "profile" ? "active" : ""}`}
+								onClick={() => toggleSubmenu("profile")}
+							>
+								Profile
+								<Arrow subMenuIsOpen={openSubmenu === "profile"} />
+							</button>
+							<ul className={`nav-level-2 ${openSubmenu === "profile" ? "block" : "hidden"}`}>
+								<li>
+									<Link to={RoutePaths.Profile} onClick={closeMenu}>
+										My profile
+									</Link>
+								</li>
 
-							<li>
-								<Link to={RoutePaths.SignOut} onClick={closeMenu}>
-									Sign out
-								</Link>
-							</li>
-						</ul>
-					</li>
+								<li>
+									<Link to={RoutePaths.StoredFilters} onClick={closeMenu}>
+										Stored filters
+									</Link>
+								</li>
+
+								<li>
+									<Link to={RoutePaths.SignOut} onClick={closeMenu}>
+										Sign out
+									</Link>
+								</li>
+							</ul>
+						</li>
+					</>
+					}
 				</ul>
 			</nav>
 
