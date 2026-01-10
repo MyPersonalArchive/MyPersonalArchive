@@ -1,29 +1,40 @@
-import { Link } from "react-router-dom"
+import { useAtomValue } from "jotai"
+import { Link, useNavigate } from "react-router-dom"
+import { currentUserAtom } from "../Utils/Atoms"
+import { useContext } from "react"
+import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
+import { RoutePaths } from "../RoutePaths"
 
 export const UserProfilePage = () => {
+	const currentUser = useAtomValue(currentUserAtom)
+	const { currentTenantId, switchToTenantId } = useContext(CurrentTenantIdContext)
+	const navigate = useNavigate()
+
+
+	const switchTenant = (tenantId: number) => {
+		switchToTenantId(tenantId)
+		navigate(RoutePaths.Index)
+	}
+
 	return (
 		<>
 			<h1 className="heading-1">
 				User Profile
 			</h1>
 
-			<div className="text-green-600 bg-gray-900 font-mono text-sm w-full p-2">//TODO: not implemented yet</div>
-
 			<div className="aligned-labels-and-inputs">
-				<label htmlFor="title">Display name</label>
-				<input type="text"
-					className="input"
-					id="title" placeholder="" autoFocus required data-1p-ignore
-				/>
-			</div>
-
-			<div className="stack-horizontal to-the-right my-4">
-				<Link className="link align-with-btn" to={-1 as any}>
-					Back
-				</Link>
-				<button className="btn btn-primary" type="submit">
-					Save
-				</button>
+				<label htmlFor="tenant">Current tenant</label>
+				<select className="input" 
+					id="tenant"
+					defaultValue={currentTenantId?.toString()}
+					onChange={(e) => switchTenant(parseInt(e.target.value))}
+				>
+					{currentUser?.availableTenantIds?.map((tenantId) => (
+						<option key={tenantId} value={tenantId}>
+							{tenantId}
+						</option>
+					))}
+				</select>
 			</div>
 
 
@@ -33,22 +44,42 @@ export const UserProfilePage = () => {
 			<table className="w-full table with-column-seperators">
 				<thead>
 					<tr>
+						<th>Display name</th>
 						<th>Account</th>
+						<th>Type</th>
 						<th>Provider</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						<td>peter.pan@zoho.example</td>
+						<td>peter.pan@zoho.example</td>
+						<td>Email (IMAP)</td>
 						<td>Zoho mail</td>
 					</tr>
 					<tr>
+						<td>My work mail</td>
 						<td>peter@work.example</td>
+						<td>Email (IMAP)</td>
 						<td>GMail</td>
 					</tr>
 					<tr>
+						<td>My private mail</td>
 						<td>peter.private@fastmail.example</td>
+						<td>Email (IMAP)</td>
 						<td>Fastmail</td>
+					</tr>
+					<tr>
+						<td>Dropbox (private)</td>
+						<td>peter.private@fastmail.example</td>
+						<td>Files</td>
+						<td>Dropbox</td>
+					</tr>
+					<tr>
+						<td>Onedrive at work</td>
+						<td>peter@work.example</td>
+						<td>Files</td>
+						<td>Onedrive</td>
 					</tr>
 				</tbody>
 			</table>

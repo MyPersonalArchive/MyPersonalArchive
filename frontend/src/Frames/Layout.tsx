@@ -58,29 +58,34 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						<button className={`toggle ${openSubmenu === "external" ? "active" : ""}`}
 							onClick={() => toggleSubmenu("external")}
 						>
-							External
+							Connected accounts
 							<Arrow subMenuIsOpen={openSubmenu === "external"} />
 						</button>
 
 						<ul className={`nav-level-2 ${openSubmenu === "external" ? "block" : "hidden"}`}>
 							<li>
 								<a href="#" onClick={closeMenu}>
-									my.name@example.com
+									peter.pan@zoho.example
 								</a>
 							</li>
 							<li>
 								<a href="#" onClick={closeMenu}>
-									other.email@example.com
+									My work mail
 								</a>
 							</li>
 							<li>
 								<a href="#" onClick={closeMenu}>
-									Dropbox (my.name@example.com)
+									My private mail
 								</a>
 							</li>
 							<li>
 								<a href="#" onClick={closeMenu}>
-									Manage external sources
+									Dropbox (private)
+								</a>
+							</li>
+							<li>
+								<a href="#" onClick={closeMenu}>
+									Onedrive at work
 								</a>
 							</li>
 						</ul>
@@ -97,12 +102,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 							<li>
 								<Link to={RoutePaths.Profile} onClick={closeMenu}>
 									My profile
-								</Link>
-							</li>
-
-							<li>
-								<Link to={RoutePaths.Tenants} onClick={closeMenu}>
-									Switch tenant
 								</Link>
 							</li>
 

@@ -78,10 +78,6 @@ const routers = createBrowserRouter([
 					{
 						path: RoutePaths.Email,
 						element: <EmailListPage />
-					},
-					{
-						path: RoutePaths.Tenants,
-						element: <div>Tenant management page (to be implemented)</div>
 					}
 				]
 			}
