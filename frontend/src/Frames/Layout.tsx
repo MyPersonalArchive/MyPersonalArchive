@@ -13,8 +13,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
 		setOpenSubmenu(openSubmenu === menu ? null : menu)
 	}
 
-
-
+	const closeMenu = () => {
+		setIsNavOpen(false)
+	}
 
 	return (
 		<div className="flex flex-col lg:flex-row lg:flex-wrap min-h-screen">
@@ -36,19 +37,19 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				<ul className={`nav-level-1 ${isNavOpen ? "block" : "hidden"} lg:block list-none bg-gray-100 absolute lg:static top-full left-0 right-0 shadow-md lg:shadow-none`}>
 
 					<li>
-						<Link to={RoutePaths.Archive}>
+						<Link to={RoutePaths.Archive} onClick={closeMenu}>
 							Archive
 						</Link>
 					</li>
 
 					<li>
-						<Link to={RoutePaths.Blobs}>
+						<Link to={RoutePaths.Blobs} onClick={closeMenu}>
 							Documents and media
 						</Link>
 					</li>
 
 					<li>
-						<Link to={RoutePaths.Email}>
+						<Link to={RoutePaths.Email} onClick={closeMenu}>
 							Email
 						</Link>
 					</li>
@@ -63,22 +64,22 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 						<ul className={`nav-level-2 ${openSubmenu === "external" ? "block" : "hidden"}`}>
 							<li>
-								<a href="#">
+								<a href="#" onClick={closeMenu}>
 									my.name@example.com
 								</a>
 							</li>
 							<li>
-								<a href="#">
+								<a href="#" onClick={closeMenu}>
 									other.email@example.com
 								</a>
 							</li>
 							<li>
-								<a href="#">
+								<a href="#" onClick={closeMenu}>
 									Dropbox (my.name@example.com)
 								</a>
 							</li>
 							<li>
-								<a href="#">
+								<a href="#" onClick={closeMenu}>
 									Manage external sources
 								</a>
 							</li>
@@ -94,25 +95,25 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						</button>
 						<ul className={`nav-level-2 ${openSubmenu === "profile" ? "block" : "hidden"}`}>
 							<li>
-								<Link to={RoutePaths.Profile}>
+								<Link to={RoutePaths.Profile} onClick={closeMenu}>
 									My profile
 								</Link>
 							</li>
 
 							<li>
-								<Link to={RoutePaths.Tenants}>
+								<Link to={RoutePaths.Tenants} onClick={closeMenu}>
 									Switch tenant
 								</Link>
 							</li>
 
 							<li>
-								<Link to={RoutePaths.StoredFilters}>
+								<Link to={RoutePaths.StoredFilters} onClick={closeMenu}>
 									Stored filters
 								</Link>
 							</li>
 
 							<li>
-								<Link to={RoutePaths.SignOut}>
+								<Link to={RoutePaths.SignOut} onClick={closeMenu}>
 									Sign out
 								</Link>
 							</li>
@@ -127,7 +128,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				</main>
 			</div>
 
-			<footer className="w-full bg-gray-200 text-gray-800 text-center p-4 mt-auto flex-shrink-0">
+			<footer className="w-full bg-gray-200 text-gray-800 text-center p-4 flex-shrink-0">
 				<p>Footer</p>
 			</footer>
 		</div>
@@ -138,7 +139,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 type ArrowProps = {
 	subMenuIsOpen: boolean
 }
-const Arrow = ({subMenuIsOpen}: ArrowProps) => {
+const Arrow = ({ subMenuIsOpen }: ArrowProps) => {
 	return (
 		<span className={`float-right transition-transform duration-300 inline-block text-xs ${subMenuIsOpen ? "rotate-90" : ""}`}>
 			▶
