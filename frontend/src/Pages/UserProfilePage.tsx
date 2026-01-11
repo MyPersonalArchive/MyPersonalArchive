@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai"
 import { Link, useNavigate } from "react-router-dom"
-import { currentUserAtom } from "../Utils/Atoms"
+import { accountsAtom, currentUserAtom } from "../Utils/Atoms"
 import { useContext } from "react"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { RoutePaths } from "../RoutePaths"
@@ -10,6 +10,7 @@ export const UserProfilePage = () => {
 	const { currentTenantId, switchToTenantId } = useContext(CurrentTenantIdContext)
 	const navigate = useNavigate()
 
+	const accounts = useAtomValue(accountsAtom)
 
 	const switchTenant = (tenantId: number) => {
 		switchToTenantId(tenantId)
@@ -24,7 +25,7 @@ export const UserProfilePage = () => {
 
 			<div className="aligned-labels-and-inputs">
 				<label htmlFor="tenant">Current tenant</label>
-				<select className="input" 
+				<select className="input"
 					id="tenant"
 					defaultValue={currentTenantId?.toString()}
 					onChange={(e) => switchTenant(parseInt(e.target.value))}
@@ -51,36 +52,24 @@ export const UserProfilePage = () => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>peter.pan@zoho.example</td>
-						<td>peter.pan@zoho.example</td>
-						<td>Email (IMAP)</td>
-						<td>Zoho mail</td>
-					</tr>
-					<tr>
-						<td>My work mail</td>
-						<td>peter@work.example</td>
-						<td>Email (IMAP)</td>
-						<td>GMail</td>
-					</tr>
-					<tr>
-						<td>My private mail</td>
-						<td>peter.private@fastmail.example</td>
-						<td>Email (IMAP)</td>
-						<td>Fastmail</td>
-					</tr>
-					<tr>
-						<td>Dropbox (private)</td>
-						<td>peter.private@fastmail.example</td>
-						<td>Files</td>
-						<td>Dropbox</td>
-					</tr>
-					<tr>
-						<td>Onedrive at work</td>
-						<td>peter@work.example</td>
-						<td>Files</td>
-						<td>Onedrive</td>
-					</tr>
+					{
+						accounts.length === 0
+							? (
+								<tr>
+									<td colSpan={4} className="text-center italic text-gray-500 py-4">
+										No connected accounts found
+									</td>
+								</tr>
+							) :
+							accounts.map(account => (
+								<tr key={account.id}>
+									<td>{account.displayName}</td>
+									<td>{account.credentials}</td>
+									<td>{account.type}</td>
+									<td>{account.provider}</td>
+								</tr>
+							))
+					}
 				</tbody>
 			</table>
 

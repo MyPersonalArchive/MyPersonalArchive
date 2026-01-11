@@ -53,9 +53,9 @@ public class RequireAllowedTenantIdAttribute : RequireAuthenticationAttribute, I
 			return false;
 		}
 
-		if (!int.TryParse(tenantIdValue, out var tenantId) || tenantId <= 0)
+		if (!int.TryParse(tenantIdValue, out var tenantId) /*|| tenantId <= 0*/)
 		{
-			failureReason = "X-Tenant-Id header must be a valid positive integer";
+			failureReason = "X-Tenant-Id header must be a valid integer";
 			logger.LogWarning("X-Tenant-Id header invalid: {TenantId}", tenantIdValue);
 			return false;
 		}
@@ -68,8 +68,8 @@ public class RequireAllowedTenantIdAttribute : RequireAuthenticationAttribute, I
 			if (!string.IsNullOrEmpty(allowedTenantsClaim))
 			{
 				var allowedTenants = allowedTenantsClaim.Split(',', StringSplitOptions.RemoveEmptyEntries)
-					.Select(t => int.TryParse(t.Trim(), out var id) ? id : -1)
-					.Where(id => id > 0)
+					.Select(t => int.TryParse(t.Trim(), out var id) ? id : (int?)null)
+					.Where(id => id != null)
 					.ToList();
 
 				if (!allowedTenants.Contains(tenantId))

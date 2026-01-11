@@ -3,7 +3,7 @@ import { PropsWithChildren, useState } from "react"
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtomValue } from "jotai"
-import { currentUserAtom } from "../Utils/Atoms"
+import { accountsAtom, currentUserAtom } from "../Utils/Atoms"
 
 
 
@@ -11,6 +11,8 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
 	const [isNavOpen, setIsNavOpen] = useState(false)
 	const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
+
+	const accounts = useAtomValue(accountsAtom)
 
 	const toggleSubmenu = (menu: string) => {
 		setOpenSubmenu(openSubmenu === menu ? null : menu)
@@ -76,31 +78,21 @@ export const Layout = ({ children }: PropsWithChildren) => {
 							</button>
 
 							<ul className={`nav-level-2 ${openSubmenu === "external" ? "block" : "hidden"}`}>
-								<li>
-									<a href="#" onClick={closeMenu}>
-										peter.pan@zoho.example
-									</a>
-								</li>
-								<li>
-									<a href="#" onClick={closeMenu}>
-										My work mail
-									</a>
-								</li>
-								<li>
-									<a href="#" onClick={closeMenu}>
-										My private mail
-									</a>
-								</li>
-								<li>
-									<a href="#" onClick={closeMenu}>
-										Dropbox (private)
-									</a>
-								</li>
-								<li>
-									<a href="#" onClick={closeMenu}>
-										Onedrive at work
-									</a>
-								</li>
+								{accounts === null || accounts === undefined || accounts.length === 0
+									?
+									<li className="italic text-gray-500 py-2 px-4">
+										No connected accounts
+									</li>
+									: <>
+										{accounts.map(account => (
+											<li key={account.id}>
+												<a href="#" onClick={closeMenu}>
+													{account.displayName}
+												</a>
+											</li>
+										))}
+									</>
+								}
 							</ul>
 						</li>
 
