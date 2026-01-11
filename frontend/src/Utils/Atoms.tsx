@@ -49,3 +49,13 @@ export type StoredFilter = {
     tags: string[]
 }
 export const storedFiltersAtom = atom<StoredFilter[]>([])
+
+export type Account = {
+    id: number
+    displayName: string
+	credentials: string
+    type: string
+    provider: string
+}
+export const accountsAtom = atom<Account[]>([])
+
