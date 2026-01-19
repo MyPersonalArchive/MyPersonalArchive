@@ -1,8 +1,29 @@
 import { useSetAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
-import { StoredFilter, storedFiltersAtom } from "./Atoms"
+import { storedFiltersAtom } from "./Atoms"
 import { useEffect } from "react"
 import { SignalRMessage, useSignalR } from "./useSignalR"
+
+
+type ListResponse = {
+	id: number
+	name: string
+	filterDefinition: {
+		title?: string
+		tags: string[]
+		metadataTypes: string[]
+	}
+}
+
+type GetResponse = {
+	id: number
+	name: string
+	filterDefinition: {
+		title?: string
+		tags: string[]
+		metadataTypes: string[]
+	}
+}
 
 export const useStoredFiltersPrefetching = () => {
 	const setStoredFilters = useSetAtom(storedFiltersAtom)
@@ -10,7 +31,7 @@ export const useStoredFiltersPrefetching = () => {
 
 
 	useEffect(() => {
-		apiClient.get<StoredFilter[]>("/api/StoredFilter/list")
+		apiClient.get<ListResponse[]>("/api/query/ListStoredFilters")
 			.then(filters => {
 				setStoredFilters(filters!)
 			})
@@ -18,16 +39,44 @@ export const useStoredFiltersPrefetching = () => {
 
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
-			case "StoredFilterCreated": {
-				setStoredFilters(filters => [...filters, message.data])
+			case "StoredFiltersAdded": {
+				const storedFilterIds = message.data as number[]
+
+				Promise
+					.all(storedFilterIds.map(id => apiClient.get<GetResponse>("/api/query/GetStoredFilter", { id })))
+					.then(addedFilters => {
+						setStoredFilters(filters => [
+							...filters,
+							...addedFilters.filter(f => f != null).map(f => ({
+								id: f!.id,
+								name: f!.name,
+								filterDefinition: f!.filterDefinition
+							}))
+						])
+					})
 				break
 			}
-			case "StoredFilterDeleted": {
-				setStoredFilters(filters => filters.filter(filter => filter.id !== message.data.id))
+			case "StoredFiltersUpdated": {
+				const storedFilterIds = message.data as number[]
+
+				Promise
+					.all(storedFilterIds.map(id => apiClient.get<GetResponse>("/api/query/GetStoredFilter", { id })))
+					.then(updatedFilters => {
+						setStoredFilters(filters => [
+							...filters.filter(filter => !storedFilterIds.includes(filter.id)),
+							...updatedFilters.filter(f => f != null).map(f => ({
+								id: f!.id,
+								name: f!.name,
+								filterDefinition: f!.filterDefinition
+							}))
+						])
+					})
 				break
 			}
-			case "StoredFilterUpdated": {
-				setStoredFilters(filters => filters.map(filter => filter.id === message.data.id ? message.data : filter))
+			case "StoredFiltersDeleted": {
+				const storedFilterIds = message.data as number[]
+
+				setStoredFilters(filters => filters.filter(filter => !storedFilterIds.includes(filter.id)))
 				break
 			}
 		}
