@@ -20,24 +20,26 @@ export const UserProfilePage = () => {
 	return (
 		<>
 			<h1 className="heading-1">
-				User Profile
+				My profile
 			</h1>
 
-			<div className="aligned-labels-and-inputs">
-				<label htmlFor="tenant">Current tenant</label>
-				<select className="input"
-					id="tenant"
-					defaultValue={currentTenantId?.toString()}
-					onChange={(e) => switchTenant(parseInt(e.target.value))}
-				>
-					{currentUser?.availableTenantIds?.map((tenantId) => (
-						<option key={tenantId} value={tenantId}>
-							{tenantId}
-						</option>
-					))}
-				</select>
-			</div>
-
+			{
+				currentUser !== undefined && currentUser.availableTenantIds.length > 1 &&
+				<div className="aligned-labels-and-inputs">
+					<label htmlFor="tenant">Current tenant</label>
+					<select className="input"
+						id="tenant"
+						defaultValue={currentTenantId?.toString()}
+						onChange={(e) => switchTenant(parseInt(e.target.value))}
+					>
+						{currentUser?.availableTenantIds?.map((tenantId) => (
+							<option key={tenantId} value={tenantId}>
+								{tenantId}
+							</option>
+						))}
+					</select>
+				</div>
+			}
 
 			<h2 className="heading-2 mt-6">
 				Connected Accounts

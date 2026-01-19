@@ -3,9 +3,9 @@ import { atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 
 export type User = {
-    username: string
-    fullname: string
-    availableTenantIds: number[]
+	username: string
+	fullname: string
+	availableTenantIds: number[]
 }
 export const currentUserAtom = atom<User | undefined>(undefined)
 // export const isAuthenticatedAtom = atom<boolean>(get => get(currentUserInfoAtom) !== undefined)
@@ -22,7 +22,7 @@ export type ArchiveItem = {
 	id: number
 	title: string
 	tags: string[]
-	blobs: {id: number}[]
+	blobs: { id: number }[]
 	metadataTypes: string[]
 	createdAt: Date
 	documentDate: Date
@@ -30,34 +30,34 @@ export type ArchiveItem = {
 export const archiveItemsAtom = atom<ArchiveItem[]>([])
 
 export type Blob = {
-    id: number
-    fileName: string
-    fileSize: number
-    pageCount: number
-    uploadedAt: Date
-    uploadedByUser: string
+	id: number
+	fileName: string
+	fileSize: number
+	pageCount: number
+	uploadedAt: Date
+	uploadedByUser: string
 	mimeType?: string
 	isAllocated: boolean
 }
 export const blobsAtom = atom<Blob[]>([])
 
 export type StoredFilter = {
-    id: number
-    name: string
+	id: number
+	name: string
 	filterDefinition: {
 		title?: string
 		tags: string[]
-    metadataTypes: string[]
+		metadataTypes: string[]
 	}
 }
 export const storedFiltersAtom = atom<StoredFilter[]>([])
 
 export type Account = {
-    id: number
-    displayName: string
+	id: number
+	displayName: string
 	credentials: string
-    type: string
-    provider: string
+	type: string
+	provider: string
 }
 export const accountsAtom = atom<Account[]>([])
 
