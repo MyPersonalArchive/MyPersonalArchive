@@ -3,26 +3,27 @@ using Microsoft.AspNetCore.Http.HttpResults;
 namespace Backend.WebApi.CqrsInfrastructure;
 
 [RequireAllowedTenantId]
-public class AccountListQuery : IQuery<AccountListQuery, IEnumerable<AccountListQuery.Result>>
+public class ListAccounts : IQuery<ListAccounts, IEnumerable<ListAccounts.Result>>
 {
-	// No parameters to list commands
+	// No parameters to list accounts
 
 	public class Result
 	{
 		public int Id {get;set;}
-		public string DisplayName {get;set;}
-		public string Credentials {get;set;}
-		public string Type {get;set;}
-		public string Provider {get;set;}
+		public required string DisplayName {get;set;}
+		public required string Credentials {get;set;}
+		public required string Type {get;set;}
+		public required string Provider {get;set;}
 	}
 }
 
 
-public class AccountHandler : IQueryHandler<AccountListQuery, IEnumerable<AccountListQuery.Result>>
+public class AccountHandler : IQueryHandler<ListAccounts, IEnumerable<ListAccounts.Result>>
 {
-	public IEnumerable<AccountListQuery.Result> Handle(AccountListQuery query)
+	public IEnumerable<ListAccounts.Result> Handle(ListAccounts query)
 	{
-		var results = new List<AccountListQuery.Result>
+		//TODO: Replace with real data from database
+		var results = new List<ListAccounts.Result>
 		{
 			new() {
 				Id = 1,

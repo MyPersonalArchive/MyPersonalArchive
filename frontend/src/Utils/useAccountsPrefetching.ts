@@ -10,7 +10,7 @@ export const useAccountsPrefetching = () => {
 
 
 	useEffect(() => {
-		apiClient.get<Account[]>("/api/query/AccountListQuery")
+		apiClient.get<Account[]>("/api/query/ListAccounts")
 			.then(accounts => {
 				setAccounts(accounts!)
 			})
