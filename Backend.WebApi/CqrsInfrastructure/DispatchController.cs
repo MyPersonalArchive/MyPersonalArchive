@@ -14,6 +14,11 @@ public class DispatchController : ControllerBase
 	private readonly ILogger<DispatchController> _logger;
 	private readonly IServiceProvider _services;
 
+	private readonly JsonSerializerOptions _serializerOptions = new()
+	{
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+	};
+
 
 	public DispatchController(IServiceProvider services, ILogger<DispatchController> logger)
 	{
@@ -94,7 +99,7 @@ public class DispatchController : ControllerBase
 		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
 
 		// Create query instance and map parameters
-		var query = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), queryType);
+		var query = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), queryType, _serializerOptions);
 
 		if (IsHandleMethodAwaitable(handleMethod))
 		{
@@ -115,7 +120,6 @@ public class DispatchController : ControllerBase
 			return Ok(result);
 		}
 	}
-
 
 	[HttpPost("execute/{commandName}")]
 	public async Task<IActionResult> PostCommand(string commandName)
@@ -141,7 +145,8 @@ public class DispatchController : ControllerBase
 		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
 
 		// Create query instance and map parameters
-		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);       // Check if handler is async or sync
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, _serializerOptions);
+
 		if (IsHandleMethodAwaitable(handleMethod))
 		{
 			// Async handler
@@ -156,7 +161,6 @@ public class DispatchController : ControllerBase
 
 		return NoContent();
 	}
-
 
 	[HttpPut("execute/{commandName}")]
 	public async Task<IActionResult> PutCommand(string commandName)
@@ -178,13 +182,12 @@ public class DispatchController : ControllerBase
 			return BadRequest(string.Join("; ", failureReasons));
 		}
 
-		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
 		var handler = _services.GetRequiredService(commandHandlerType);
+		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
 
 		// Create query instance and map parameters
-		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType);
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, _serializerOptions);
 
-		// Check if handler is async or sync
 		if (IsHandleMethodAwaitable(handleMethod))
 		{
 			// Async handler
@@ -200,6 +203,47 @@ public class DispatchController : ControllerBase
 		return NoContent();
 	}
 
+	[HttpDelete("execute/{commandName}")]
+	public async Task<IActionResult> DeleteCommand(string commandName, [FromQuery] Dictionary<string, string> parameters)
+	{
+		var commandHandlerType = ResolveCommandHandler(commandName);
+
+		if (commandHandlerType == null)
+		{
+			return BadRequest("Unknown command");
+		}
+
+		// Get the query handler for current query by the handlers interface
+		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
+		var commandType = handlerInterface.GetGenericArguments()[0];
+
+		var failureReasons = CheckRequirements(commandType);
+		if (failureReasons.Any())
+		{
+			return BadRequest(string.Join("; ", failureReasons));
+		}
+
+		var handler = _services.GetRequiredService(commandHandlerType);
+		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
+
+		// Create query instance and map parameters
+		var command = Activator.CreateInstance(commandType);
+		MapParametersToObject(command!, parameters);
+
+		if (IsHandleMethodAwaitable(handleMethod))
+		{
+			// Async handler
+			var task = (Task)handleMethod.Invoke(handler, [command])!;
+			await task.ConfigureAwait(false);
+		}
+		else
+		{
+			// Sync handler
+			var result = handleMethod.Invoke(handler, [command]);
+		}
+
+		return NoContent();
+	}
 
 	private Type? ResolveQueryHandler(string queryName)
 	{
@@ -331,5 +375,4 @@ public class DispatchController : ControllerBase
 			}
 		}
 	}
-
 }
