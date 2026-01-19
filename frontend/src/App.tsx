@@ -16,6 +16,8 @@ import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { RootFrame } from "./Frames/RootFrame"
 import { StoredFilterListPage } from "./Pages/StoredFilterListPage"
 import { EmailListPage } from "./Pages/EmailListPage"
+import { StoredFilterNewPage } from "./Pages/StoredFilterNewPage"
+import { StoredFilterEditPage } from "./Pages/StoredFilterEditPage"
 
 
 const routers = createBrowserRouter([
@@ -74,6 +76,14 @@ const routers = createBrowserRouter([
 					{
 						path: RoutePaths.StoredFilters,
 						element: <StoredFilterListPage />
+					},
+					{
+						path: "filters/edit/:id",
+						element: <StoredFilterEditPage />
+					},
+					{
+						path: "filters/new",
+						element: <StoredFilterNewPage />
 					},
 					{
 						path: RoutePaths.Email,
