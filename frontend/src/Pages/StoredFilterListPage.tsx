@@ -1,20 +1,50 @@
-import { useAtomValue } from "jotai"
-import { StoredFilter, storedFiltersAtom } from "../Utils/Atoms"
+import { useAtom, useAtomValue } from "jotai"
+import { StoredFilter, storedFiltersAtom, tagsAtom } from "../Utils/Atoms"
 import { useApiClient } from "../Utils/useApiClient"
-import { Link, useNavigate } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import { useState } from "react"
+import { TagsInput } from "../Components/TagsInput"
 
 
 export const StoredFilterListPage = () => {
-	const storedFilters = useAtomValue(storedFiltersAtom)
-	const navigate = useNavigate()
+	const [storedFilters, setStoredFilters] = useAtom(storedFiltersAtom)
+	const apiClient = useApiClient()
 
 
-	const newStoredFilter = () => {
-		// Navigate to the new stored filter page
-		navigate("/filters/new")
+	const create = async () => {
+		const newFilter: StoredFilter = {
+			id: crypto.randomUUID(),
+			name: "",
+			filterDefinition: {
+				title: "",
+				tags: [],
+				metadataTypes: []
+			}
+		}
+		setStoredFilters([...storedFilters, newFilter])
 	}
+
+	const change = (oldFilter: StoredFilter, newFilter: StoredFilter) => {
+		const updatedFilters = storedFilters.map(f => f.id === oldFilter.id ? newFilter : f)
+		setStoredFilters(updatedFilters)
+	}
+
+	const remove = (filterToRemove: StoredFilter) => {
+		const updatedFilters = storedFilters.filter(f => f.id !== filterToRemove.id)
+		setStoredFilters(updatedFilters)
+	}
+
+	const save = async () => {
+		try {
+			await apiClient.post("/api/execute/SaveStoredFilters", {
+				storedFilters
+			})
+		} catch (error) {
+			console.error("Failed to save filters:", error)
+		}
+	}
+
 
 	return (
 		<>
@@ -23,7 +53,7 @@ export const StoredFilterListPage = () => {
 			</h1>
 
 			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" onClick={newStoredFilter}>Create new filter</button>
+				<button className="btn" onClick={create}>Create new filter</button>
 			</div>
 
 			<div className="overflow-x-auto my-4">
@@ -39,14 +69,18 @@ export const StoredFilterListPage = () => {
 					</thead>
 					<tbody>
 						{
-							storedFilters?.map(item => <Row key={item.id} filter={item} />)
+							storedFilters?.map(item => <Row key={item.id} filter={item} onChange={change} onRemove={remove}/>)
 						}
 					</tbody>
 				</table>
 			</div>
 
 			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" onClick={newStoredFilter}>Create new filter</button>
+				<button className="btn" onClick={create}>Create new filter</button>
+			</div>
+
+			<div className="stack-horizontal to-the-right my-4">
+				<button className="btn" onClick={save}>Save</button>
 			</div>
 
 		</>
@@ -56,36 +90,42 @@ export const StoredFilterListPage = () => {
 
 type RowProps = {
 	filter: StoredFilter
+	onChange: (oldFilter: StoredFilter, newFilter: StoredFilter) => void
+	onRemove: (filter: StoredFilter) => void
 }
-const Row = ({ filter }: RowProps) => {
-	const apiClient = useApiClient()
+const Row = ({ filter, onChange, onRemove }: RowProps) => {
+	const allTags = useAtomValue(tagsAtom)
 
-	const deleteFilter = (filter?: StoredFilter) => {
-		if (!filter) return
+	const [name, setName] = useState<string>(filter.name)
+	const [title, setTitle] = useState<string>(filter.filterDefinition.title || "")
+	const [tags, setTags] = useState<string[]>(filter.filterDefinition.tags)
+	const [metadataTypes, setMetadataTypes] = useState<string[]>(filter.filterDefinition.metadataTypes)
 
-		if (!window.confirm(`Are you sure you want to delete the filter "${filter.name}"?`)) {
-			return
+	const onBlur = () => {
+		const updatedFilter: StoredFilter = {
+			...filter,
+			name,
+			filterDefinition: {
+				title,
+				tags,
+				metadataTypes
+			}
 		}
-
-		apiClient.delete("/api/execute/DeleteStoredFilter", { id: filter.id })
+		onChange(filter, updatedFilter)
 	}
 
 	return (
 		<tr>
 			<td>
-				<Link to={`/filters/edit/${filter.id}`} className="link">
-					{filter.name}
-				</Link>
+				<input className="input"	 type="text" value={name} onChange={e => setName(e.target.value)} onBlur={onBlur} />
 			</td>
 			<td>
-				{filter.filterDefinition.title}
+				<span>
+					<input className="input" type="text" value={title} onChange={e => setTitle(e.target.value)} onBlur={onBlur} />
+				</span>
 			</td>
 			<td>
-				{
-					filter.filterDefinition.tags.map((tag, ix) => (
-						<span key={ix} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
-					))
-				}
+				<TagsInput tags={tags} autocompleteList={allTags} setTags={(tags => { setTags(tags); onBlur() })} />
 			</td>
 			<td>
 				{
@@ -95,9 +135,7 @@ const Row = ({ filter }: RowProps) => {
 				}
 			</td>
 			<td>
-				{/* <FontAwesomeIcon icon={faGrip} size="1x" /> */}
-
-				<button style={{ marginLeft: "10px" }} className=" text-red-500 cursor-pointer" onClick={() => deleteFilter(filter)}>
+				<button style={{ marginLeft: "10px" }} className=" text-red-500 cursor-pointer" onClick={() => onRemove(filter)}>
 					<FontAwesomeIcon icon={faTrashCan} size="1x" />
 				</button>
 			</td>

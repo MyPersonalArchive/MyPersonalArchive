@@ -1,12 +1,16 @@
-using System.Diagnostics;
-using Backend.DbModel.Database;
 using Backend.WebApi.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Backend.WebApi.CqrsInfrastructure;
 
+
+public class StoredFilter
+{
+	public Guid Id { get; set; }
+	public required string Name { get; set; }
+	public required FilterDefinition FilterDefinition { get; set; }
+}
 
 public class FilterDefinition
 {
@@ -15,159 +19,66 @@ public class FilterDefinition
 	public required string[] MetadataTypes { get; set; }
 }
 
+
 [RequireAllowedTenantId]
-public class CreateStoredFilter : ICommand<CreateStoredFilter>
+public class SaveStoredFilters : ICommand<SaveStoredFilters>
 {
-	public required string Name { get; set; }
-	public required FilterDefinition FilterDefinition { get; set; }
+	public required IEnumerable<StoredFilter> StoredFilters { get; set; }
 }
 
 [RequireAllowedTenantId]
-public class ListStoredFilters : IQuery<ListStoredFilters, IEnumerable<ListStoredFilters.Result>>
+public class GetStoredFilters : IQuery<GetStoredFilters, IEnumerable<StoredFilter>>
 {
-	// No parameters to list stored filters
-
-	public class Result
-	{
-		public int Id { get; set; }
-		public required string Name { get; set; }
-		public required FilterDefinition FilterDefinition { get; set; }
-	}
-}
-
-[RequireAllowedTenantId]
-public class GetStoredFilter : IQuery<GetStoredFilter, GetStoredFilter.Result>
-{
-	public int Id { get; set; }
-
-	public class Result
-	{
-		public int Id { get; set; }
-		public required string Name { get; set; }
-		public required FilterDefinition FilterDefinition { get; set; }
-	}
-}
-
-[RequireAllowedTenantId]
-public class UpdateStoredFilter : ICommand<UpdateStoredFilter>
-{
-	public int Id { get; set; }
-	public required string Name { get; set; }
-	public required FilterDefinition FilterDefinition { get; set; }
-}
-
-[RequireAllowedTenantId]
-public class DeleteStoredFilter : ICommand<DeleteStoredFilter>
-{
-	public int Id { get; set; }
+	// No parameters to get all stored filters
 }
 
 
 public class StoredFilterHandler :
-	IAsyncCommandHandler<CreateStoredFilter>,
-	IAsyncQueryHandler<ListStoredFilters, IEnumerable<ListStoredFilters.Result>>,
-	IAsyncQueryHandler<GetStoredFilter, GetStoredFilter.Result>,
-	IAsyncCommandHandler<UpdateStoredFilter>,
-	IAsyncCommandHandler<DeleteStoredFilter>
+	IAsyncCommandHandler<SaveStoredFilters>,
+	IAsyncQueryHandler<GetStoredFilters, IEnumerable<StoredFilter>>
 {
-	private readonly MpaDbContext _dbContext;
-	private readonly StoredFilterService _storedFilterService;
+	private readonly FilterSettingsService _filterSettingsService;
 
-	public StoredFilterHandler(MpaDbContext dbContext, StoredFilterService storedFilterService)
+	public StoredFilterHandler(FilterSettingsService filterSettingsService)
 	{
-		_dbContext = dbContext;
-		_storedFilterService = storedFilterService;
+		_filterSettingsService = filterSettingsService;
 	}
 
-	public async Task Handle(CreateStoredFilter command)
+	public async Task Handle(SaveStoredFilters command)
 	{
-		// Validate command parameters
-
-		var filter = new StoredFilter
+		var filterSettings = command.StoredFilters.Select(f => new FilterSettings.Filter
 		{
-			Name = command.Name,
-			Title = command.FilterDefinition.Title,
-			Tags = command.FilterDefinition.Tags,
-			MetadataTypes = command.FilterDefinition.MetadataTypes
-		};
-		_dbContext.StoredFilters.Add(filter);
-		await _dbContext.SaveChangesAsync();
-
-		await _storedFilterService.PublishStoredFiltersAddedMessage([filter.Id]);
-	}
-
-	public async Task<IEnumerable<ListStoredFilters.Result>> Handle(ListStoredFilters query)
-	{
-		//TODO: Should this be in the StoredFilterService?
-		return await _dbContext.StoredFilters
-			.Select(sf => new ListStoredFilters.Result
+			Id = f.Id,
+			Name = f.Name,
+			Definition = new FilterSettings.FilterDefinition
 			{
-				Id = sf.Id,
-				Name = sf.Name,
-				FilterDefinition = new FilterDefinition
-				{
-					Title = sf.Title,
-					Tags = sf.Tags ?? Array.Empty<string>(),
-					MetadataTypes = sf.MetadataTypes ?? Array.Empty<string>()
-				}
+				Title = f.FilterDefinition.Title,
+				Tags = f.FilterDefinition.Tags,
+				MetadataTypes = f.FilterDefinition.MetadataTypes
 			}
-			).ToListAsync();
+		}).ToList();
+
+		await _filterSettingsService.StoreFilterSettingsAsync(new FilterSettings
+		{
+			Filters = filterSettings
+		});
 	}
 
-	public async Task<GetStoredFilter.Result> Handle(GetStoredFilter query)
+	public async Task<IEnumerable<StoredFilter>> Handle(GetStoredFilters query)
 	{
-		var storedFilter = await _dbContext.StoredFilters.FindAsync(query.Id);
-		if (storedFilter == null)
-		{
-			throw new Exception($"Stored filter with ID {query.Id} not found.");
-			//TODO: return a 404 instead?
-		}
+		var filterSettings = await _filterSettingsService.GetFilterSettingsAsync();
 
-		return new GetStoredFilter.Result
+		return filterSettings!.Filters.Select(f => new StoredFilter
 		{
-			Id = storedFilter.Id,
-			Name = storedFilter.Name,
+			Id = f.Id,
+			Name = f.Name,
 			FilterDefinition = new FilterDefinition
 			{
-				Title = storedFilter.Title,
-				Tags = storedFilter.Tags ?? Array.Empty<string>(),
-				MetadataTypes = storedFilter.MetadataTypes ?? Array.Empty<string>()
+				Title = f.Definition.Title,
+				Tags = f.Definition.Tags,
+				MetadataTypes = f.Definition.MetadataTypes
 			}
-		};
-	}
-
-	public async Task Handle(UpdateStoredFilter command)
-	{
-		// TODO: Validate command parameters
-
-		var storedFilter = await _dbContext.StoredFilters.FindAsync(command.Id);
-		if (storedFilter == null)
-		{
-			throw new Exception($"Stored filter with ID {command.Id} not found.");
-			//TODO: return a 404 instead?
-		}
-
-		storedFilter.Name = command.Name;
-		storedFilter.Title = command.FilterDefinition.Title;
-		storedFilter.Tags = command.FilterDefinition.Tags;
-		storedFilter.MetadataTypes = command.FilterDefinition.MetadataTypes;
-		await _dbContext.SaveChangesAsync();
-
-		await _storedFilterService.PublishStoredFiltersUpdatedMessage([command.Id]);
-	}
-
-	public async Task Handle(DeleteStoredFilter command)
-	{
-		var storedFilter = await _dbContext.StoredFilters.FindAsync(command.Id);
-		if (storedFilter == null)
-		{
-			throw new Exception($"Stored filter with ID {command.Id} not found.");
-			//TODO: return a 404 instead?
-		}
-		_dbContext.StoredFilters.Remove(storedFilter);
-		await _dbContext.SaveChangesAsync();
-
-		await _storedFilterService.PublishStoredFiltersDeletedMessage([command.Id]);
+		});
 	}
 
 }

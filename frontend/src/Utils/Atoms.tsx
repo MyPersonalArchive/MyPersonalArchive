@@ -1,4 +1,5 @@
 import { HubConnection } from "@microsoft/signalr"
+import { UUID } from "crypto"
 import { atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 
@@ -42,7 +43,7 @@ export type Blob = {
 export const blobsAtom = atom<Blob[]>([])
 
 export type StoredFilter = {
-	id: number
+	id: UUID
 	name: string
 	filterDefinition: {
 		title?: string
