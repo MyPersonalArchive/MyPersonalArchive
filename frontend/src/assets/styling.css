@@ -52,7 +52,7 @@
 			margin: 0 auto;
 			background-color: #f5f5f5;
 		}
-		
+
 		& .pdf-viewer-container {
 			display: flex;
 			justify-content: center;
@@ -133,7 +133,7 @@
 	}
 
 	/* Hide the old button styles when using action bar */
-	&:has(.action-bar) > button {
+	&:has(.action-bar)>button {
 		display: none;
 	}
 }

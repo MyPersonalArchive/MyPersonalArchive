@@ -201,3 +201,22 @@ span.tag {
 body:has(.overlay) {
 	overflow: hidden;
 }
+
+
+@layer components {
+	.row {
+		@apply h-[2.5em] bg-white;
+
+		&.drop-area {
+			background: linear-gradient(45deg,
+					whitesmoke 25%,
+					white 25%,
+					white 50%,
+					whitesmoke 50%,
+					whitesmoke 75%,
+					white 75%
+				);
+			background-size: 40px 40px;
+		}
+	}
+}
