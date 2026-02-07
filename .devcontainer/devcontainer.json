@@ -7,7 +7,6 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
@@ -19,20 +18,18 @@
 			"version": "latest",
 			"dockerDashComposeVersion": "v2"
 		}
+		// "features": {
+		// 	"ghcr.io/devcontainers/features/sshd:1.1.0": {}
+		// }
 	},
 	"containerEnv": {
 		"ASPNETCORE_ENVIRONMENT": "Development",
 		"JWT_SECRET": "=:|V7hblR0eD+7+S10F6e~4RPc_!87hd*1kashdh_dsada123*",
 		"JWT_ISSUER": "gotnonameapps.com",
 		"AUDIENCE": "gotnonameapps.com",
-
 		"GOOGLE__CLIENTSECRET": "${localEnv:MPA_GOOGLE_CLIENT_SECRET}",
 		"GOOGLE__CLIENTID": "${localEnv:MPA_GOOGLE_CLIENT_ID}",
-
 		"CERTIFICATEPASSWORD": "${localEnv:MPA_CERTIFICATE_PASSWORD}"
-
-		// "ASPNETCORE_HTTP_PORTS": "",
-		// "ASPNETCORE_HTTPS_PORTS": ""
 	},
 	"mounts": [
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
@@ -40,16 +37,14 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5173],
 	"portsAttributes": {
-			"5173": {
-				"protocol": "https",
-				"onAutoForward": "notify",
-				"label": "React Application"
-			}
+		"5173": {
+			"protocol": "https",
+			"onAutoForward": "notify",
+			"label": "React Application"
+		}
 	},
-
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "dotnet restore",
-	
+	// "postCreateCommand": "dotnet restore",	
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
@@ -59,7 +54,7 @@
 				"eamodio.gitlens",
 				"ms-azuretools.vscode-docker",
 				"github.vscode-pull-request-github",
-				"humao.rest-client",
+				// "humao.rest-client",
 				"cweijan.vscode-database-client2",
 				"bradlc.vscode-tailwindcss",
 				"dotjoshjohnson.xml"

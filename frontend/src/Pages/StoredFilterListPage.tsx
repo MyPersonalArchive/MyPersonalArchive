@@ -9,22 +9,9 @@ import { StoredFilterRows } from "./StoredFilterRows"
 
 
 export const StoredFilterListPage = () => {
-	const [storedFilters, setStoredFilters] = useAtom(storedFiltersAtom)
+	const [storedFilters, dispatch] = useAtom(storedFiltersAtom)
 	const apiClient = useApiClient()
 
-
-	const create = async () => {
-		const newFilter: StoredFilter = {
-			id: crypto.randomUUID(),
-			name: "",
-			filterDefinition: {
-				title: "",
-				tags: [],
-				metadataTypes: []
-			}
-		}
-		setStoredFilters([...storedFilters, newFilter])
-	}
 
 	// const change = (oldFilter: StoredFilter, newFilter: StoredFilter) => {
 	// 	const updatedFilters = storedFilters.map(f => f.id === oldFilter.id ? newFilter : f)
@@ -54,7 +41,7 @@ export const StoredFilterListPage = () => {
 			</h1>
 
 			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" onClick={create}>Create new filter</button>
+				<button className="btn" onClick={() => dispatch({ action: "ADD_FILTER" })}>Create new filter</button>
 			</div>
 
 			<div className="overflow-x-auto my-4">
@@ -76,13 +63,12 @@ export const StoredFilterListPage = () => {
 			</div>
 
 			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" onClick={create}>Create new filter</button>
+				<button className="btn" onClick={() => dispatch({ action: "ADD_FILTER" })}>Create new filter</button>
 			</div>
 
 			<div className="stack-horizontal to-the-right my-4">
 				<button className="btn" onClick={save}>Save</button>
 			</div>
-
 		</>
 	)
 }

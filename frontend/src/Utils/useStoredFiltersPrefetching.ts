@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
-import { storedFiltersAtom } from "./Atoms"
+import { storedFiltersAtom } from "./Atoms/storedFiltersAtom"
 import { useEffect } from "react"
 import { SignalRMessage, useSignalR } from "./useSignalR"
 import { UUID } from "crypto"
@@ -16,14 +16,14 @@ type GetResponse = {
 }
 
 export const useStoredFiltersPrefetching = () => {
-	const setStoredFilters = useSetAtom(storedFiltersAtom)
+	const dispatch = useSetAtom(storedFiltersAtom)
 	const apiClient = useApiClient()
 
 
 	useEffect(() => {
 		apiClient.get<GetResponse[]>("/api/query/GetStoredFilters")
 			.then(filters => {
-				setStoredFilters(filters!)
+				dispatch({ action: "LOAD", storedFilters: filters! })
 			})
 	}, [])
 
@@ -33,7 +33,7 @@ export const useStoredFiltersPrefetching = () => {
 
 				apiClient.get<GetResponse[]>("/api/query/GetStoredFilters")
 					.then(filters => {
-						setStoredFilters(filters!)
+						dispatch({ action: "LOAD", storedFilters: filters! })
 					})
 				break
 			}
