@@ -1,7 +1,8 @@
 import { useAtom } from "jotai"
 import { MimeTypeConverterArray, useSortableDragDrop } from "../Components/DragDropHelpers"
-import { StoredFilter, storedFiltersAtom } from "../Utils/Atoms"
-import { insertAtIndex, removeAtIndex, moveInArray } from "../Utils/array-helpers"
+import { tagsAtom } from "../Utils/Atoms/tagsAtom"
+import { StoredFilter, storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
+import { insertAtIndex, removeAtIndex } from "../Utils/array-helpers"
 import { Fragment } from "react/jsx-runtime"
 
 type Row<T> = {
@@ -11,17 +12,13 @@ type Row<T> = {
 }
 
 export const StoredFilterRows = () => {
-	const [storedFilters, setStoredFilters] = useAtom(storedFiltersAtom)
+	const [storedFilters, dispatch] = useAtom(storedFiltersAtom)
 
 	const mimeTypeConverters: MimeTypeConverterArray<StoredFilter, number> = [
 		{
 			mimeType: "application/stored-filter+index+json",
 			convertDragDataToPayload: (_, index) => ({ index }),
-			convertDropPayloadToAction: (fromStoredFilterIndex, toStoredFilterIndex, _) => (
-				() => {
-					setStoredFilters(moveInArray(storedFilters, fromStoredFilterIndex, toStoredFilterIndex))
-				}
-			)
+			convertDropPayloadToAction: (fromIndex, toIndex, _) => ({ action: "MOVE_FILTER", fromIndex, toIndex })
 		},
 		{
 			mimeType: "text",
@@ -32,8 +29,7 @@ export const StoredFilterRows = () => {
 		".draghandle",
 		mimeTypeConverters,
 		storedFilters.length,
-		(action: any) => action() // dispatch
-		// (action: any) => { console.log("yay!", action)} // dispatch
+		dispatch
 	)
 
 	let rows: Row<StoredFilter>[] = storedFilters.map((storedFilter, index) => ({ rowType: "item-row", index, data: storedFilter, key: index }))
@@ -47,6 +43,7 @@ export const StoredFilterRows = () => {
 
 	const rowElements = rows.map((row, index) => {
 		const filter = row.data!
+
 		return (
 			<Fragment key={filter.id}>
 				{
@@ -63,9 +60,19 @@ export const StoredFilterRows = () => {
 						>
 							<td className="draghandle">☰</td>
 							<td>
-								{filter.name}
+								<input className="input"
+									type="text"
+									value={filter.name}
+									onChange={e => dispatch({ action: "EDIT_FILTER_NAME", index, name: e.target.value })}
+								/>
 							</td>
-							<td>{filter.filterDefinition.title || ""}</td>
+							<td>
+								<input className="input"
+									type="text"
+									value={filter.filterDefinition.title}
+									onChange={e => dispatch({ action: "EDIT_FILTER_DEFINITION_TITLE", index, title: e.target.value })}
+								/>
+							</td>
 							<td>{filter.filterDefinition.tags.join(", ")}</td>
 							<td>{filter.filterDefinition.metadataTypes.join(", ")}</td>
 							<td className="draghandle">☰</td>
