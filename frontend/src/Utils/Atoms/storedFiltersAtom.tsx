@@ -12,7 +12,6 @@ export type StoredFilter = {
 		metadataTypes: Set<string>
 	}
 }
-// export const storedFiltersAtom = atom<StoredFilter[]>([])
 
 
 type StoredFiltersCommand =
@@ -70,7 +69,6 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 				})
 			)
 
-
 		case "EDIT_FILTER_DEFINITION_TAGS":
 			return changeAtIndex(
 				state,
@@ -83,7 +81,6 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 					}
 				})
 			)
-
 
 		case "EDIT_FILTER_DEFINITION_METADATATYPES":
 			return changeAtIndex(

@@ -1,33 +1,52 @@
 import { useSetAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
-import { Account, accountsAtom } from "./Atoms/accountsAtom"
+import { ExternalAccount, externalAccountsAtom } from "./Atoms/externalAccountsAtom"
 import { useEffect } from "react"
 import { SignalRMessage, useSignalR } from "./useSignalR"
+import { UUID } from "crypto"
 
-export const useAccountsPrefetching = () => {
-	const setAccounts = useSetAtom(accountsAtom)
+type GetResponse = {
+	id: UUID
+	displayName: string
+	type: string
+	credentials: string
+	provider: string
+}
+
+function mapResponseToModel(externalAccounts: GetResponse[] | undefined): ExternalAccount[] {
+	return externalAccounts?.map(backendModel => ({
+		id: backendModel.id,
+		displayName: backendModel.displayName,
+		type: backendModel.type,
+		credentials: backendModel.credentials,
+		provider: backendModel.provider
+	})) ?? []
+}
+
+export const useExternalAccountsPrefetching = () => {
+	const dispatch = useSetAtom(externalAccountsAtom)
 	const apiClient = useApiClient()
 
-
 	useEffect(() => {
-		apiClient.get<Account[]>("/api/query/ListAccounts")
-			.then(accounts => {
-				setAccounts(accounts!)
+		apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
+			.then(accountsFromResponse => {
+				dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(accountsFromResponse) })
+			})
+	}, [])
+	useEffect(() => {
+		apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
+			.then(externalAccountsFromResponse => {
+				dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(externalAccountsFromResponse) })
 			})
 	}, [])
 
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
-			case "AccountCreated": {
-				setAccounts(accounts => [...accounts, message.data])
-				break
-			}
-			case "AccountDeleted": {
-				setAccounts(accounts => accounts.filter(account => account.id !== message.data.id))
-				break
-			}
-			case "AccountUpdated": {
-				setAccounts(accounts => accounts.map(account => account.id === message.data.id ? message.data : account))
+			case "StoredFiltersUpdated": {
+				apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
+					.then(externalAccountsFromResponse => {
+						dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(externalAccountsFromResponse) })
+					})
 				break
 			}
 		}

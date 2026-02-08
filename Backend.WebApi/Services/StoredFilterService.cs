@@ -1,51 +1,50 @@
 using Backend.Core;
-using Backend.DbModel.Database.EntityModels;
-using Message = Backend.WebApi.Services.SignalRService.Message;
+using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class StoredFilterService
+public class StoredFilterService : TenantSettingsServiceBase<StoredFilterSettings>
 {
+	protected override string FileName => "StoredFilterSettings.json";
+
 	private readonly SignalRService _signalRService;
-	public StoredFilterService(SignalRService signalRService)
+
+	public StoredFilterService(IOptions<AppConfig> config, IAmbientDataResolver resolver, SignalRService signalRService)
+		: base(config, resolver)
 	{
 		_signalRService = signalRService;
 	}
 
+
+	public async Task<StoredFilterSettings> GetStoredFilterSettingsAsync()
+	{
+		return await LoadSettingsAsync();
+	}
+
+	public async Task StoreStoredFilterSettingsAsync(StoredFilterSettings settings)
+	{
+		await SaveSettingsAsync(settings);
+		await _signalRService.PublishToTenantChannel(new SignalRService.Message("StoredFiltersUpdated", null));
+	}
+}
+
+
+public class StoredFilterSettings : SettingsBase
+{
+	public List<Filter> Filters { get; set; } = [];
 	
-	#region SignalR message creators
-	public async Task PublishStoredFiltersAddedMessage(IEnumerable<StoredFilter> storedFilters) => await PublishStoredFiltersAddedMessage(storedFilters.Select(storedFilter => storedFilter.Id));
-	public async Task PublishStoredFiltersAddedMessage(IEnumerable<int> storedFilterIds)
+	public class Filter
 	{
-		if(storedFilterIds == null || !storedFilterIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new Message("StoredFiltersAdded", storedFilterIds));
+		public Guid Id { get; set; }
+		public string Name { get; set; }
+		public FilterDefinition Definition { get; set; }
 	}
 
-	public async Task PublishStoredFiltersUpdatedMessage(IEnumerable<StoredFilter> storedFilters) => await PublishStoredFiltersUpdatedMessage(storedFilters.Select(storedFilter => storedFilter.Id));
-	public async Task PublishStoredFiltersUpdatedMessage(IEnumerable<int> storedFilterIds)
+	public class FilterDefinition
 	{
-		if(storedFilterIds == null || !storedFilterIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new Message("StoredFiltersUpdated", storedFilterIds));
+		public string? Title { get; set; }
+		public string[] Tags { get; set; }
+		public string[] MetadataTypes { get; set; }
 	}
-
-	public async Task PublishStoredFiltersDeletedMessage(IEnumerable<StoredFilter> storedFilters) => await PublishStoredFiltersDeletedMessage(storedFilters.Select(storedFilter => storedFilter.Id).ToList());
-	public async Task PublishStoredFiltersDeletedMessage(IEnumerable<int> storedFilterIds)
-	{
-		if(storedFilterIds == null || !storedFilterIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new Message("StoredFiltersDeleted", storedFilterIds));
-	}
-	#endregion
 }

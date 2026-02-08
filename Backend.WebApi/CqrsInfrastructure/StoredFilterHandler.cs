@@ -1,5 +1,4 @@
 using Backend.WebApi.Services;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Backend.WebApi.CqrsInfrastructure;
@@ -37,20 +36,20 @@ public class StoredFilterHandler :
 	IAsyncCommandHandler<SaveStoredFilters>,
 	IAsyncQueryHandler<GetStoredFilters, IEnumerable<StoredFilter>>
 {
-	private readonly FilterSettingsService _filterSettingsService;
+	private readonly StoredFilterService _storedFilterService;
 
-	public StoredFilterHandler(FilterSettingsService filterSettingsService)
+	public StoredFilterHandler(StoredFilterService storedFilterService)
 	{
-		_filterSettingsService = filterSettingsService;
+		_storedFilterService = storedFilterService;
 	}
 
 	public async Task Handle(SaveStoredFilters command)
 	{
-		var filterSettings = command.StoredFilters.Select(f => new FilterSettings.Filter
+		var filters = command.StoredFilters.Select(f => new StoredFilterSettings.Filter
 		{
 			Id = f.Id,
 			Name = f.Name,
-			Definition = new FilterSettings.FilterDefinition
+			Definition = new StoredFilterSettings.FilterDefinition
 			{
 				Title = f.FilterDefinition.Title,
 				Tags = f.FilterDefinition.Tags,
@@ -58,15 +57,15 @@ public class StoredFilterHandler :
 			}
 		}).ToList();
 
-		await _filterSettingsService.StoreFilterSettingsAsync(new FilterSettings
+		await _storedFilterService.StoreStoredFilterSettingsAsync(new StoredFilterSettings
 		{
-			Filters = filterSettings
+			Filters = filters
 		});
 	}
 
 	public async Task<IEnumerable<StoredFilter>> Handle(GetStoredFilters query)
 	{
-		var filterSettings = await _filterSettingsService.GetFilterSettingsAsync();
+		var filterSettings = await _storedFilterService.GetStoredFilterSettingsAsync();
 
 		return filterSettings!.Filters.Select(f => new StoredFilter
 		{
