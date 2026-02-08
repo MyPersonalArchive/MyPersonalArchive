@@ -62,8 +62,8 @@
 		}
 	},
 
-	"postCreateCommand": "chmod u=+rwx .devcontainer/*.sh && .devcontainer/setup-environment.sh && .devcontainer/setup-shell.sh && .devcontainer/setup-project.sh"
+	"postCreateCommand": "chmod u=+rwx .devcontainer/*.sh && .devcontainer/setup-environment.sh && .devcontainer/setup-shell.sh && .devcontainer/setup-project.sh",
 	
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"remoteUser": "root"
 }

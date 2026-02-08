@@ -1,12 +1,13 @@
 #noble = ubuntu, bookworm = debian
 # Use noble because the build-script for libvips below is made for Ubuntu.
-FROM mcr.microsoft.com/devcontainers/dotnet:9.0-noble
-# FROM mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm
+FROM mcr.microsoft.com/devcontainers/dotnet:10.0-noble
+# FROM mcr.microsoft.com/devcontainers/dotnet:9.0-noble
 
 
 COPY docker/build-libvips.sh /docker/build-libvips.sh
 RUN chmod +x /docker/build-libvips.sh
 RUN /docker/build-libvips.sh
+RUN ldconfig
 
 # RUN chown -R vscode:vscode /tmp
 RUN chmod -R 777 /tmp
