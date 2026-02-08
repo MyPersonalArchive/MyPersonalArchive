@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useSetAtom } from "jotai"
-import { tagsAtom } from "./Atoms"
+import { tagsAtom } from "./Atoms/tagsAtom"
 import { useApiClient } from "./useApiClient"
 import { useSignalR } from "./useSignalR"
 

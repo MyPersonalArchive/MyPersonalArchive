@@ -7,9 +7,15 @@ export type ConvertDragDataToPayloadFn<TData, TIndex> = (data: TData, index: TIn
 export type ConvertDropPayloadToActionFn<TIndex, TPayload> = (fromIndex: TIndex, toIndex: TIndex, data: TPayload) => any
 
 export type MimeTypeConverter<TData, TIndex, TPayload> = {
-    mimeType: string
-    convertDragDataToPayload?: ConvertDragDataToPayloadFn<TData, TIndex>
-    convertDropPayloadToAction?: ConvertDropPayloadToActionFn<TIndex, TPayload>
+	mimeType: string
+	convertDragDataToPayload?: ConvertDragDataToPayloadFn<TData, TIndex>
+	convertDropPayloadToAction?: ConvertDropPayloadToActionFn<TIndex, TPayload>
 }
 
 export type MimeTypeConverterArray<TData, TIndex> = Array<MimeTypeConverter<TData, TIndex, any>>
+
+export type Row<T> = {
+	rowType: "item-row" | "drop-row"
+	data: T
+	key: React.Key
+}

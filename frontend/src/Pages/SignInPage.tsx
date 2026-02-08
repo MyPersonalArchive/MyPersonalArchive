@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png"
 import { useAtom, useSetAtom } from "jotai"
-import { lastLoggedInUsernameAtom, currentUserAtom, lastRememberMeCheckedAtom } from "../Utils/Atoms"
+import { lastLoggedInUsernameAtom, lastRememberMeCheckedAtom } from "../Utils/Atoms"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 
 
 type SignInResponse = {
@@ -89,7 +90,7 @@ export const SignInPage = () => {
 			setCurrentUser(user)
 
 			return true
-		} catch(exception) {
+		} catch (exception) {
 			console.error("Sign-in failed due to exception", exception)
 			return false
 		}

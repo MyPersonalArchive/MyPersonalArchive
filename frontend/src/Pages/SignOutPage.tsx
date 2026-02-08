@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom } from "jotai"
-import { currentUserAtom } from "../Utils/Atoms"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { useApiClient } from "../Utils/useApiClient"
 
 

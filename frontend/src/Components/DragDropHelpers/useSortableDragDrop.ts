@@ -1,30 +1,43 @@
 import { useEffect, useRef, useState } from "react"
-import { DispatchFn, DropFn, MimeTypeConverterArray } from "./types"
+import { DispatchFn, MimeTypeConverterArray, Row } from "./types"
 import { JsonStringifyIfNotString } from "./helpers"
+import { insertAtIndex, removeAtIndex } from "../../Utils/array-helpers"
 
-type DragStatus<TIndex> = {
-    fromIndex?: TIndex
-    currentIndex?: TIndex
-    isDragHandle: boolean
+type DragStatus = {
+	fromIndex?: number
+	currentIndex?: number
+	isDragHandle: boolean
 }
 
-const emptyDragOverStatus: DragStatus<any> = { fromIndex: undefined, currentIndex: undefined, isDragHandle: false }
+const emptyDragOverStatus: DragStatus = { fromIndex: undefined, currentIndex: undefined, isDragHandle: false }
 
 
-export const useSortableDragDrop = <TData, TIndex>(
+export const useSortableDragDrop = <TData,>(
 	dragHandleQuerySelector: string,
-	mimeTypeConverters: MimeTypeConverterArray<TData, TIndex>,
-	elementCount: number,
+	mimeTypeConverters: MimeTypeConverterArray<TData, number>,
+	items: Array<TData>,
 	dispatch: DispatchFn
 ) => {
-	const [dragStatus, setDragStatus] = useState<DragStatus<TIndex>>(emptyDragOverStatus)
+	const [dragStatus, setDragStatus] = useState<DragStatus>(emptyDragOverStatus)
 	const draggables = useRef<(HTMLTableRowElement | null)[]>([])
 
 	const droppableTypeConverters = mimeTypeConverters.filter(mimeTypeConverter => typeof mimeTypeConverter.convertDropPayloadToAction === "function")
 
 	useEffect(() => {
-		draggables.current = draggables.current.slice(0, elementCount)
-	}, [elementCount])
+		draggables.current = draggables.current.slice(0, items.length)
+	}, [items.length])
+
+
+	let rows: Row<TData>[] = items.map((item, index) => ({ rowType: "item-row", index, data: item, key: index }))
+
+	if (dragStatus.fromIndex !== undefined && dragStatus.currentIndex !== undefined) {
+		// While in a drag-n-drop: remove the item that is currently being dragged from the list and insert a "drop row" at the position of the current drag over index
+		const { data } = rows[dragStatus.fromIndex]
+		rows = removeAtIndex(rows, dragStatus.fromIndex)
+		rows = insertAtIndex(rows, dragStatus.currentIndex, { rowType: "drop-row", data, key: dragStatus.currentIndex })
+	}
+
+
 
 	const setElementRef = (elmnt: HTMLTableRowElement | null, index: number) => draggables.current[index] = elmnt
 
@@ -45,7 +58,7 @@ export const useSortableDragDrop = <TData, TIndex>(
 		setDragStatus(emptyDragOverStatus)
 	}
 
-	const dragStart = (index: TIndex, data: TData) => (event: React.DragEvent) => {
+	const dragStart = (index: number, data: TData) => (event: React.DragEvent) => {
 		if (!dragStatus.isDragHandle) {
 			event.preventDefault()
 			return
@@ -74,7 +87,7 @@ export const useSortableDragDrop = <TData, TIndex>(
 		event.currentTarget.classList.remove("dragging")
 	}
 
-	const dragOver = (index: TIndex) => (event: React.DragEvent) => {
+	const dragOver = (index: number) => (event: React.DragEvent) => {
 		event.preventDefault()
 		event.stopPropagation()
 
@@ -95,7 +108,7 @@ export const useSortableDragDrop = <TData, TIndex>(
 		}
 	}
 
-	const handleDrop = (toIndex: TIndex) => (event: React.DragEvent) => {
+	const handleDrop = (toIndex: number) => (event: React.DragEvent) => {
 		event.preventDefault()
 
 		droppableTypeConverters
@@ -120,6 +133,7 @@ export const useSortableDragDrop = <TData, TIndex>(
 		dragStart,
 		dragEnd,
 		dragOver,
-		handleDrop
+		handleDrop,
+		rows
 	}
 }

@@ -1,6 +1,6 @@
 import { useAtom } from "jotai"
 import { PropsWithChildren, useEffect } from "react"
-import { currentUserAtom } from "../Utils/Atoms"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 
 
 type CurrentUserInfoResponse = {

@@ -1,6 +1,7 @@
 import { useAtomValue } from "jotai"
 import { Link, useNavigate } from "react-router-dom"
-import { accountsAtom, currentUserAtom } from "../Utils/Atoms"
+import { accountsAtom } from "../Utils/Atoms/accountsAtom"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { useContext } from "react"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { RoutePaths } from "../RoutePaths"
