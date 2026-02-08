@@ -1,4 +1,4 @@
-import { randomUUID, UUID } from "crypto"
+import { UUID } from "crypto"
 import { atomWithReducer } from "jotai/utils"
 import { changeAtIndex, moveInArray, removeAtIndex } from "../array-helpers"
 
@@ -9,13 +9,13 @@ export type StoredFilter = {
 	filterDefinition: {
 		title?: string
 		tags: string[]
-		metadataTypes: string[]
+		metadataTypes: Set<string>
 	}
 }
 // export const storedFiltersAtom = atom<StoredFilter[]>([])
 
 
-type Command =
+type StoredFiltersCommand =
 	| { action: "LOAD", storedFilters: StoredFilter[] }
 	| { action: "ADD_FILTER" }
 	| { action: "REMOVE_FILTER", index: number }
@@ -23,9 +23,9 @@ type Command =
 	| { action: "EDIT_FILTER_NAME", index: number, name: string }
 	| { action: "EDIT_FILTER_DEFINITION_TITLE", index: number, title?: string }
 	| { action: "EDIT_FILTER_DEFINITION_TAGS", index: number, tags: string[] }
-	| { action: "EDIT_FILTER_DEFINITION_METADATATYPES", index: number, metadataTypes: string[] }
+	| { action: "EDIT_FILTER_DEFINITION_METADATATYPES", index: number, metadataTypes: Set<string> }
 
-const reducer = (state: StoredFilter[], command: Command): StoredFilter[] => {
+const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFilter[] => {
 	switch (command.action) {
 		case "LOAD":
 			return [...command.storedFilters]
@@ -38,12 +38,12 @@ const reducer = (state: StoredFilter[], command: Command): StoredFilter[] => {
 
 		case "ADD_FILTER":
 			return [...state, {
-				id: randomUUID(),
+				id: crypto.randomUUID(),
 				name: "",
 				filterDefinition: {
 					title: undefined,
 					tags: [],
-					metadataTypes: []
+					metadataTypes: new Set<string>()
 				}
 			}]
 
@@ -100,4 +100,4 @@ const reducer = (state: StoredFilter[], command: Command): StoredFilter[] => {
 	}
 }
 
-export const storedFiltersAtom = atomWithReducer<StoredFilter[], Command>([], reducer)
+export const storedFiltersAtom = atomWithReducer<StoredFilter[], StoredFiltersCommand>([], reducer)

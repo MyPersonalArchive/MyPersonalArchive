@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/useApiClient"
 import { useAtomValue } from "jotai"
-import { Blob, blobsAtom } from "../Utils/Atoms"
+import { Blob, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "../Components/PreviewList"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
@@ -29,9 +29,9 @@ export const BlobListPage = () => {
 	}, [selectionOfBlobs.selectedItems, blobs])
 
 	const visibleBlobs = blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)
-	
+
 	const selectedVisibleBlobs = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
-	
+
 	const deleteVisibleSelectedBlobs = async () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
 

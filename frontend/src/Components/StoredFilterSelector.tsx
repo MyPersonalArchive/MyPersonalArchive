@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useSearchParams } from "react-router-dom"
 import { faTag } from "@fortawesome/free-solid-svg-icons"
-import { StoredFilter, storedFiltersAtom } from "../Utils/Atoms"
+import { StoredFilter, storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
 import { useAtomValue } from "jotai"
 import classNames from "classnames"
 

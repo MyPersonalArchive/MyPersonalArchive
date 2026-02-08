@@ -1,6 +1,6 @@
 import { PropsWithChildren, useContext } from "react"
 import { useAtomValue } from "jotai"
-import { currentUserAtom } from "../Utils/Atoms"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { CurrentTenantIdContext } from "./CurrentTenantIdContext"
 
 

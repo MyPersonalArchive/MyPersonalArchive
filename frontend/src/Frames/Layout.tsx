@@ -3,7 +3,8 @@ import { PropsWithChildren, useState } from "react"
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtomValue } from "jotai"
-import { accountsAtom, currentUserAtom } from "../Utils/Atoms"
+import { accountsAtom } from "../Utils/Atoms/accountsAtom"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 
 
 

@@ -4,7 +4,7 @@ import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
 import { FileDropZone } from "../Components/FileDropZone"
 import { useApiClient } from "../Utils/useApiClient"
-import { tagsAtom } from "../Utils/Atoms"
+import { tagsAtom } from "../Utils/Atoms/tagsAtom"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
@@ -146,13 +146,13 @@ export const ArchiveItemNewPage = () => {
 					/>
 
 				</div>
-				
-				<PreviewList<{fileName: string, fileData: Blob}> items={localBlobs}
+
+				<PreviewList<{ fileName: string, fileData: Blob }> items={localBlobs}
 					containerClassName="grid grid-cols-4 gap-4 pt-2"
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
-							<LocalViewer 
-								key={blob.fileName} 
+							<LocalViewer
+								key={blob.fileName}
 								blob={blob.fileData}
 								fileName={blob.fileName}
 								dimension={DimensionEnum.small}
@@ -162,8 +162,8 @@ export const ArchiveItemNewPage = () => {
 					}
 					maximizedPreviewTemplate={
 						(blob, minimize) =>
-							<LocalViewer 
-								key={blob.fileName} 
+							<LocalViewer
+								key={blob.fileName}
 								blob={blob.fileData}
 								fileName={blob.fileName}
 								dimension={DimensionEnum.full}
