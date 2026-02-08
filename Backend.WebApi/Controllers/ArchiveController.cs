@@ -246,8 +246,8 @@ public class ArchiveController : ControllerBase
 			.Include(archiveItem => archiveItem.Tags)
 			.Include(archiveItem => archiveItem.Blobs)
 			.ConditionalWhere(!string.IsNullOrEmpty(titleFilter), archiveItem => archiveItem.Title.ToLower().Contains(titleFilter))
-			.Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
 			.ToList()
+			.Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
 			.Where(archiveItem => metadataTypesFilter.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))
 			.Select(archiveItem => new ListResponse
 			{
