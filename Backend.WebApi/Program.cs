@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using Backend.Core.Providers;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+// using Microsoft.OpenApi.Models;
+// using Swashbuckle.AspNetCore.SwaggerGen;
 using Newtonsoft.Json;
 using Backend.EmailIngestion;
 using Backend.EmailIngestion.Providers;
@@ -70,7 +70,7 @@ public static class Program
 		builder.RegisterBackupProviders();
 		builder.RegisterEncryptionServics();
 		builder.RegisterRestoreServices();
-		builder.RegisterSwaggerServices();
+		// builder.RegisterSwaggerServices();
 		builder.RegisterEmailServices();
 
 		// builder.Services.AddScoped<IVersionRepository, VersionRepository>();
@@ -256,49 +256,49 @@ public static class Program
 		});
 	}
 
-	private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
-	{
-		var services = builder.Services;
+	// private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
+	// {
+	// 	var services = builder.Services;
 
-		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-		services.AddEndpointsApiExplorer();
-		services.AddSwaggerGen(options =>
-		{
-			// options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+	// 	// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+	// 	services.AddEndpointsApiExplorer();
+	// 	services.AddSwaggerGen(options =>
+	// 	{
+	// 		// options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 
-			options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-			{
-				Name = "Authorization",
-				Type = SecuritySchemeType.Http,
-				Scheme = "Bearer",
-				BearerFormat = "JWT",
-				In = ParameterLocation.Header,
-				Description = "Enter 'Bearer {your JWT token}' in the Authorization header."
-			});
+	// 		options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+	// 		{
+	// 			Name = "Authorization",
+	// 			Type = SecuritySchemeType.Http,
+	// 			Scheme = "Bearer",
+	// 			BearerFormat = "JWT",
+	// 			In = ParameterLocation.Header,
+	// 			Description = "Enter 'Bearer {your JWT token}' in the Authorization header."
+	// 		});
 
-			options.AddSecurityRequirement(new OpenApiSecurityRequirement
-			{
-				{
-					new OpenApiSecurityScheme
-					{
-						Name = "Authorization",
-						Type = SecuritySchemeType.Http,
-						Scheme = "Bearer",
-						BearerFormat = "JWT",
-						In = ParameterLocation.Header,
-						Reference = new OpenApiReference
-						{
-							Type = ReferenceType.SecurityScheme,
-							Id = "Bearer"
-						}
-					},
-					Array.Empty<string>()
-				}
-			});
+	// 		options.AddSecurityRequirement(new OpenApiSecurityRequirement
+	// 		{
+	// 			{
+	// 				new OpenApiSecurityScheme
+	// 				{
+	// 					Name = "Authorization",
+	// 					Type = SecuritySchemeType.Http,
+	// 					Scheme = "Bearer",
+	// 					BearerFormat = "JWT",
+	// 					In = ParameterLocation.Header,
+	// 					Reference = new OpenApiReference
+	// 					{
+	// 						Type = ReferenceType.SecurityScheme,
+	// 						Id = "Bearer"
+	// 					}
+	// 				},
+	// 				Array.Empty<string>()
+	// 			}
+	// 		});
 
-			options.OperationFilter<SwaggerTenantIdHeaderFilter>();
-		});
-	}
+	// 		options.OperationFilter<SwaggerTenantIdHeaderFilter>();
+	// 	});
+	// }
 
 
 	private static void PrepareDatabase(this WebApplication app)
@@ -321,8 +321,8 @@ public static class Program
 	{
 		if (app.Environment.IsDevelopment())
 		{
-			app.UseSwagger();
-			app.UseSwaggerUI();
+			// app.UseSwagger();
+			// app.UseSwaggerUI();
 
 			app.UseDeveloperExceptionPage();
 		}
@@ -346,24 +346,24 @@ public static class Program
 	}
 
 
-	public class SwaggerTenantIdHeaderFilter : IOperationFilter
-	{
-		public void Apply(OpenApiOperation operation, OperationFilterContext context)
-		{
-			if (operation.Parameters == null)
-				operation.Parameters = new List<OpenApiParameter>();
+	// public class SwaggerTenantIdHeaderFilter : IOperationFilter
+	// {
+	// 	public void Apply(OpenApiOperation operation, OperationFilterContext context)
+	// 	{
+	// 		if (operation.Parameters == null)
+	// 			operation.Parameters = new List<OpenApiParameter>();
 
-			operation.Parameters.Add(new OpenApiParameter
-			{
-				Name = "X-Tenant-Id",
-				In = ParameterLocation.Header,
-				Required = false,  // Change to 'false' if not required
-				Schema = new OpenApiSchema
-				{
-					Type = "string",
-					Default = new Microsoft.OpenApi.Any.OpenApiString("")
-				}
-			});
-		}
-	}
+	// 		operation.Parameters.Add(new OpenApiParameter
+	// 		{
+	// 			Name = "X-Tenant-Id",
+	// 			In = ParameterLocation.Header,
+	// 			Required = false,  // Change to 'false' if not required
+	// 			Schema = new OpenApiSchema
+	// 			{
+	// 				Type = "string",
+	// 				Default = new Microsoft.OpenApi.Any.OpenApiString("")
+	// 			}
+	// 		});
+	// 	}
+	// }
 }
