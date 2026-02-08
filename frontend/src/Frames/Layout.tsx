@@ -3,7 +3,7 @@ import { PropsWithChildren, useState } from "react"
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtomValue } from "jotai"
-import { accountsAtom } from "../Utils/Atoms/accountsAtom"
+import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 
 
@@ -13,7 +13,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	const [isNavOpen, setIsNavOpen] = useState(false)
 	const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
 
-	const accounts = useAtomValue(accountsAtom)
+	const accounts = useAtomValue(externalAccountsAtom)
 
 	const toggleSubmenu = (menu: string) => {
 		setOpenSubmenu(openSubmenu === menu ? null : menu)

@@ -12,14 +12,14 @@ type DragStatus = {
 const emptyDragOverStatus: DragStatus = { fromIndex: undefined, currentIndex: undefined, isDragHandle: false }
 
 
-export const useSortableDragDrop = <TData,>(
+export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 	dragHandleQuerySelector: string,
 	mimeTypeConverters: MimeTypeConverterArray<TData, number>,
 	items: Array<TData>,
 	dispatch: DispatchFn
 ) => {
 	const [dragStatus, setDragStatus] = useState<DragStatus>(emptyDragOverStatus)
-	const draggables = useRef<(HTMLTableRowElement | null)[]>([])
+	const draggables = useRef<(THtmlElement | null)[]>([])
 
 	const droppableTypeConverters = mimeTypeConverters.filter(mimeTypeConverter => typeof mimeTypeConverter.convertDropPayloadToAction === "function")
 
@@ -39,7 +39,7 @@ export const useSortableDragDrop = <TData,>(
 
 
 
-	const setElementRef = (elmnt: HTMLTableRowElement | null, index: number) => draggables.current[index] = elmnt
+	const setElementRef = (elmnt: THtmlElement | null, index: number) => draggables.current[index] = elmnt
 
 	// --- Drag and Drop ---
 	const mouseDown = (event: React.MouseEvent) => {

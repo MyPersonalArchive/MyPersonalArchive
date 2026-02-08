@@ -16,18 +16,16 @@ type GetResponse = {
 }
 
 
-function mapResponseToModel(filters: GetResponse[] | undefined): import("/workspaces/MyPersonalArchive/frontend/src/Utils/Atoms/storedFiltersAtom").StoredFilter[] {
-	return filters?.map(fromBackend => ((backendModel: GetResponse): StoredFilter => {
-		return {
-			id: backendModel.id,
-			name: backendModel.name,
-			filterDefinition: {
-				title: backendModel.filterDefinition.title,
-				tags: backendModel.filterDefinition.tags,
-				metadataTypes: new Set<string>(backendModel.filterDefinition.metadataTypes)
-			}
+function mapResponseToModel(filters: GetResponse[] | undefined): StoredFilter[] {
+	return filters?.map(fromBackend => ({
+		id: fromBackend.id,
+		name: fromBackend.name,
+		filterDefinition: {
+			title: fromBackend.filterDefinition.title,
+			tags: fromBackend.filterDefinition.tags,
+			metadataTypes: new Set<string>(fromBackend.filterDefinition.metadataTypes)
 		}
-	})(fromBackend)) ?? []
+	})) ?? []
 }
 
 // function mapModelToRequest(model: StoredFilter): GetResponse {
@@ -57,7 +55,6 @@ export const useStoredFiltersPrefetching = () => {
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
 			case "StoredFiltersUpdated": {
-
 				apiClient.get<GetResponse[]>("/api/query/GetStoredFilters")
 					.then(filtersFromResponse => {
 						dispatch({ action: "LOAD", storedFilters: mapResponseToModel(filtersFromResponse) })
