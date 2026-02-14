@@ -65,12 +65,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						</li>
 
 						<li>
-							<Link to={RoutePaths.Email} onClick={closeMenu}>
-								Email
-							</Link>
-						</li>
-
-						<li>
 							<button className={`toggle ${openSubmenu === "external" ? "active" : ""}`}
 								onClick={() => toggleSubmenu("external")}
 							>
@@ -87,9 +81,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
 									: <>
 										{accounts.map(account => (
 											<li key={account.id}>
-												<a href="#" onClick={closeMenu}>
+												<Link to={`${RoutePaths.Email}/${account.id}`}>
 													{account.displayName}
-												</a>
+												</Link>
 											</li>
 										))}
 									</>

@@ -45,8 +45,8 @@ public interface IAuthContext
 
 public class OAuthContext : IAuthContext
 {
-	public string? AccessToken { get; init; }
-	public string? RefreshToken { get; init; }
+	public string? AccessToken { get; set; }
+	public string? RefreshToken { get; set; }
 	public DateTime ExpiresAt { get; set; }
 }
 

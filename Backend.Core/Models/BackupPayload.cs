@@ -1,3 +1,5 @@
+namespace Backend.Core.Models;
+
 public class BackupPayload
 {
     public bool Replace { get; set; }

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useApiClient } from "./useApiClient"
-import { ProviderName } from "./useRemoteAuthentication"
+import { UUID } from "crypto"
 
 
 export type Email = {
@@ -42,39 +42,36 @@ export function useMailProvider() {
 
 	const apiClient = useApiClient()
 
-	const fetchFolders = async (provider: ProviderName) => {
-		// if (!isAuthenticated) throw new Error("Not authenticated")
-
-		const folders = await apiClient.get<string[]>(`/api/email/${provider}/list-folders`, null, { credentials: "include" })
+	const fetchFolders = async (externalAccountId: UUID) => {
+		const folders = await apiClient.get<string[]>("/api/query/listFolders", {externalAccountId})
 		setFolders(folders)
 		setSelectedFolder(folders?.at(0))
 	}
 
-	const fetchEmails = async (provider: ProviderName, search: FindAttachmentRequest) => {
-		// if (!isAuthenticated) throw new Error("Not authenticated")
-
-		const emails = await apiClient.post<Email[]>(`/api/email/${provider}/list`, search, { credentials: "include" })
+	const fetchEmails = async (externalAccountId: UUID, search: FindAttachmentRequest) => {
+		const emails = await apiClient.post<Email[]>("/api/query/listEmails", { externalAccountId, criteria:{...search} })
 		setEmails((emails ?? []))
 	}
 
-	const createArchiveItemFromEmails = async (provider: ProviderName, emails: Email[]) => {
-		const body = {
-			folder: selectedFolder,
+	const createArchiveItemFromEmails = async (externalAccountId: UUID, emails: Email[]) => {
+		const params = {
+			externalAccountId,
+			emailFolder: selectedFolder,
 			messageIds: emails.map(email => email.uniqueId)
 		}
-
-		await apiClient.post(`/api/email/${provider}/create-archive-item-from-emails`, body, { credentials: "include" })
+		await apiClient.post<Email[]>("/api/command/createArchiveItemsFromEmails", params)
 	}
 
-	const createBlobsFromAttachments = async (provider: ProviderName, messageId: string, emailAttachments: EmailAttachment[]) => {
-		const body = {
-			folder: selectedFolder,
-			attachments: emailAttachments.map(a => ({
+	const createBlobsFromAttachments = async (externalAccountId: UUID, messageId: string, emailAttachments: EmailAttachment[]) => {
+		const params = {
+			externalAccountId,
+			emailFolder: selectedFolder,
+			attachmentReferences: emailAttachments.map(a => ({
 				messageId: messageId,
 				fileName: a.fileName
 			}))
 		}
-		await apiClient.post(`/api/email/${provider}/create-blobs-from-attachments`, body, { credentials: "include" })
+		await apiClient.post<Email[]>("/api/command/createBlobsFromAttachments", params)
 	}
 
 	return {

@@ -1,16 +1,11 @@
 using Backend.Core;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
 using Backend.EmailIngestion;
-using Backend.EmailIngestion.Providers;
+using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Ocsp;
-using System.Diagnostics;
-using System.Net;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Backend.WebApi.Controllers;
 
@@ -94,221 +89,50 @@ public class EmailController : ControllerBase
 	}
 
 
-	[HttpGet("{providerName}/list-folders")]
-	public async Task<IActionResult> GetFolders(string providerName)
-	{
-		if (!_registry.TryGetProvider(providerName, out var provider))
-		{
-			return BadRequest($"Unknown provider: {providerName}");
-		}
-
-		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
-		{
-			return Unauthorized();
-		}
-
-		return Ok(await provider.GetAvailableFolders(auth));
-	}
-
-
-	[HttpPost("{providerName}/list")]
-	public async Task<ActionResult<IEnumerable<ListEmailsResponse>>> List(string providerName, [FromBody] ListEmailsRequest request)
-	{
-		if (!_registry.TryGetProvider(providerName, out var provider))
-		{
-			return BadRequest($"Unknown provider: {providerName}");
-		}
-
-		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
-		{
-			return Unauthorized();
-		}
-
-		var emails = await provider.FindEmailsAsync(auth, request as EmailSearchCriteria);
-		return Ok(emails.Select(email => new ListEmailsResponse
-		{
-			UniqueId = email.UniqueId,
-			Subject = email.Subject,
-			Body = email.Body,
-			HtmlBody = HtmlSanitizer.Sanitize(email.HtmlBody),
-			ReceivedTime = email.ReceivedTime,
-			From = email.From.Select(a => new ListEmailsResponse.Address
-			{
-				EmailAddress = a.EmailAddress,
-				Name = a.Name
-			}),
-			To = email.To.Select(a => new ListEmailsResponse.Address
-			{
-				EmailAddress = a.EmailAddress,
-				Name = a.Name
-			}),
-			Attachments = email.Attachments.Select(att => new ListEmailsResponse.Attachment
-			{
-				FileName = att.FileName,
-				ContentType = att.ContentType
-			})
-		}));
-	}
-
 
 	[HttpGet("{providerName}/download-attachment")]
-	public async Task<IActionResult> DownloadAttachment(string providerName, [FromQuery] string messageId, [FromQuery] string fileName, [FromQuery] string folder)
+	public async Task<IActionResult> DownloadAttachment(
+													Guid externalAccountId,
+													[FromQuery] string messageId,
+													[FromQuery] string fileName,
+													[FromQuery] string folder,
+													[FromServices] ExternalAccountService externalAccountService,
+													[FromServices] EmailProviderFactory emailProviderFactory
+	)
 	{
-		if (!_registry.TryGetProvider(providerName, out var provider))
+		// --- BEGIN generic code to get the provider and connect ---
+		var externalAccountSettings = await externalAccountService.GetExternalAccountSettingsAsync();
+
+		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id == externalAccountId);
+		if (externalAccount == null)
 		{
-			return BadRequest($"Unknown provider: {providerName}");
+			throw new Exception("External account not found");
 		}
 
-		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
+		if (!emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{
-			return Unauthorized();
+			throw new Exception("Unsupported email provider");
 		}
 
-		var attachment = await provider.DownloadAttachmentAsync(auth, folder, messageId, fileName);
+		var auth = externalAccount.Credentials.Deserialize<OAuthContext>(JsonSerializerOptions.Web);
+
+		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
+		if (refreshedAuth != auth)
+		{
+			externalAccount.Credentials = JsonSerializer.SerializeToElement(refreshedAuth, JsonSerializerOptions.Web);
+			await externalAccountService.Replace(externalAccount);
+		}
+
+		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
+		// --- END generic code to get the provider and connect ---
+
+		var attachment = await provider.DownloadAttachmentAsync(imapClient, folder, messageId, fileName);
 		if (attachment == null) return NotFound();
 
 		return File(attachment.Stream, "application/octet-stream", fileName);
 	}
 
 
-	[HttpPost("{providerName}/create-archive-item-from-emails")]
-	public async Task<IActionResult> CreateArchiveItemFromEmails(string providerName, [FromBody] CreateArchiveItemFromEmailsRequest request)
-	{
-		if (request.MessageIds == null || !request.MessageIds.Any())
-		{
-			return NoContent();
-		}
-
-		if (!_registry.TryGetProvider(providerName, out var provider))
-		{
-			return BadRequest($"Unknown provider: {providerName}");
-		}
-
-		if (!TryGetAuthContextFromCookies(provider, out var auth))
-		{
-			return Unauthorized();
-		}
-
-		var emails = await provider.FindEmailsAsync(auth!, request.Folder, request.MessageIds);
-
-		foreach (var email in emails)
-		{
-			var archiveItem = new ArchiveItem
-			{
-				TenantId = _resolver.GetCurrentTenantId()!.Value,
-				Title = email.Subject,
-				CreatedAt = DateTimeOffset.UtcNow,
-				CreatedByUsername = _resolver.GetCurrentUsername(),
-				Tags = [],
-				DocumentDate = email.ReceivedTime,
-				Metadata = (JsonSerializer.SerializeToNode(new
-				{
-					email = new
-					{
-						to = email.To.Select(a => $"{a.Name} <{a.EmailAddress}>"),
-						from = email.From.Select(a => $"{a.Name} <{a.EmailAddress}>"),
-						date = email.ReceivedTime,
-						subject = email.Subject,
-						body = email.Body
-					}
-				}) as JsonObject)!
-			};
-
-			if (email.Attachments.Any())
-			{
-				foreach (var attachment in email.Attachments)
-				{
-					var blob = await DownloadAttachmentAsBlob(archiveItem, request.Folder, email.UniqueId, attachment.FileName, provider, auth!);
-					if (blob != null)
-					{
-						await _dbContext.Blobs.AddAsync(blob);
-						archiveItem.Blobs!.Add(blob);
-					}
-				}					
-			}
-
-			await _dbContext.ArchiveItems.AddAsync(archiveItem);
-		}
-
-		
-		await _dbContext.SaveChangesAsync();
-
-		return NoContent();
-	}
-
-
-	[HttpPost("{providerName}/create-blobs-from-attachments")]
-	public async Task<IActionResult> CreateBlobsFromAttachments(string providerName, [FromBody] CreateBlobsFromAttachmentsRequest request)
-	{
-		if (!_registry.TryGetProvider(providerName, out var provider))
-		{
-			return BadRequest($"Unknown provider: {providerName}");
-		}
-
-		if (!TryGetAuthContextFromCookies(provider, out var auth) || auth == null)
-		{
-			return Unauthorized();
-		}
-
-		if (request.Attachments == null || !request.Attachments.Any())
-		{
-			return NoContent();
-		}
-
-		foreach (var attachment in request.Attachments)
-		{
-			var blob = await DownloadAttachmentAsBlob(null!, request.Folder, attachment.MessageId, attachment.FileName, provider, auth);
-			if(blob != null)
-			{
-				await _dbContext.Blobs.AddAsync(blob);
-			}
-		}
-
-		await _dbContext.SaveChangesAsync();
-		return NoContent();
-	}
-
-
-	private bool TryGetAuthContextFromCookies(ImapProviderBase provider, out IAuthContext? auth)
-	{
-		if (!Request.Cookies.TryGetValue($"auth-{provider.Name}", out var authJson))
-		{
-			auth = null;
-			return false;
-		}
-
-		return provider.TryCreateAuthContext(authJson, out auth);
-	}
-
-	private async Task<Blob?> DownloadAttachmentAsBlob(ArchiveItem archiveItem, string folder, string messageId, string fileName, ImapProviderBase provider, IAuthContext auth)
-	{
-		try
-		{
-			var downloadedAttachment = await provider.DownloadAttachmentAsync(auth, folder, messageId, fileName);
-			if (downloadedAttachment == null) return null;
-
-			return new Blob
-			{
-				TenantId = _resolver.GetCurrentTenantId()!.Value,
-				ArchiveItem = archiveItem,
-				FileHash = _fileProvider.ComputeSha256Hash(downloadedAttachment.Stream),
-				MimeType = downloadedAttachment.ContentType,
-				OriginalFilename = fileName,
-				PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType, downloadedAttachment.Stream),
-				FileSize = downloadedAttachment.FileSize,
-				UploadedAt = DateTimeOffset.Now,
-				UploadedByUsername = _resolver.GetCurrentUsername(),
-				StoreRoot = StoreRoot.FileStorage.ToString(),
-				PathInStore = await _fileProvider.Store(fileName, downloadedAttachment.ContentType, downloadedAttachment.Stream)
-			};
-		}
-		catch (Exception)
-		{
-			Debug.WriteLine("Log error here?");
-		}
-
-		return null;
-	}
 
 	#region Request and response models
 
@@ -320,79 +144,5 @@ public class EmailController : ControllerBase
 		public string? Username { get; set; }
 		public string? Password { get; set; }
 	}
-
-
-	public record DownloadAttachmentRequest
-	{
-		public required string MessageId { get; set; }
-		public required string FileName { get; set; }
-	}
-
-
-	public record CreateArchiveItemFromEmailsRequest
-	{
-		public required string Folder { get; set; }
-		public List<string>? MessageIds { get; set; }
-	}
-
-
-	public record CreateBlobsFromAttachmentsRequest
-	{
-		public required string Folder { get; set; }
-		public List<AttachmentReference>? Attachments { get; set; }
-
-		public class AttachmentReference
-		{
-			public required string MessageId { get; set; }
-			public required string FileName { get; set; }
-		}
-	}
-
-
-	public record DownloadAttachmentResponse
-	{
-		public required Stream Stream { get; set; }
-		public required string ContentType { get; set; }
-		public required long FileSize { get; set; }
-	}
-
-
-	public record AuthUrlResponse
-	{
-		public required string State { get; set; }
-		public required string Url { get; set; }
-	}
-
-
-	public record ListEmailsResponse
-	{
-		public string UniqueId { get; set; } = string.Empty;
-		public string Subject { get; set; } = string.Empty;
-		public string Body { get; set; } = string.Empty;
-		public string HtmlBody { get; set; } = string.Empty;
-		public DateTimeOffset ReceivedTime { get; set; }
-		public IEnumerable<Address> From { get; set; } = [];
-		public IEnumerable<Address> To { get; set; } = [];
-		public IEnumerable<Attachment> Attachments { get; set; } = [];
-
-		public record Address
-		{
-			public required string EmailAddress { get; set; }
-			public string? Name { get; set; }
-		}
-
-		public record Attachment
-		{
-			public required string FileName { get; set; }
-			public required string ContentType { get; set; }
-		}
-	}
-
-
-	public class ListEmailsRequest : EmailSearchCriteria
-	{
-		// public required string Provider { get; set; }
-	}
-
 	#endregion
 }

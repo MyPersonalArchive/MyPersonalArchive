@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using Backend.Core.Providers;
-// using Microsoft.OpenApi.Models;
-// using Swashbuckle.AspNetCore.SwaggerGen;
 using Newtonsoft.Json;
 using Backend.EmailIngestion;
 using Backend.EmailIngestion.Providers;
@@ -16,6 +14,8 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using Backend.WebApi.CqrsInfrastructure;
+using Backend.WebApi.Middleware;
+using Backend.Core.JsonConverters;
 
 namespace Backend.WebApi;
 
@@ -150,6 +150,7 @@ public static class Program
 	{
 		var services = builder.Services;
 
+		services.AddHttpClient();
 		services.AddSingleton<ImapProviderBase, GmailProvider>();
 		services.AddSingleton<ImapProviderBase, FastMailBasicAuthProvider>();
 		services.AddSingleton<EmailProviderFactory>();
@@ -183,25 +184,6 @@ public static class Program
 				options.Audience = jwtOptions.Audience;
 				// options.Authority = jwtOptions.???;
 
-				// // Enable SignalR authentication via access token query string
-				// options.Events = new JwtBearerEvents
-				// {
-				// 	OnMessageReceived = context =>
-				// 	{
-				// 		// If the request is for the SignalR hub, read the token from the query string
-				// 		var path = context.HttpContext.Request.Path;
-				// 		if (path.StartsWithSegments("/notificationHub"))
-				// 		{
-				// 			var accessToken = context.Request.Query["access_token"];
-				// 			if (!string.IsNullOrEmpty(accessToken))
-				// 			{
-				// 				context.Token = accessToken;
-				// 			}
-				// 		}
-
-				// 		return Task.CompletedTask;
-				// 	}
-				// };
 			})
 			.AddCookie("Cookies", options =>
 			{
@@ -256,50 +238,6 @@ public static class Program
 		});
 	}
 
-	// private static void RegisterSwaggerServices(this IHostApplicationBuilder builder)
-	// {
-	// 	var services = builder.Services;
-
-	// 	// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-	// 	services.AddEndpointsApiExplorer();
-	// 	services.AddSwaggerGen(options =>
-	// 	{
-	// 		// options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-
-	// 		options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-	// 		{
-	// 			Name = "Authorization",
-	// 			Type = SecuritySchemeType.Http,
-	// 			Scheme = "Bearer",
-	// 			BearerFormat = "JWT",
-	// 			In = ParameterLocation.Header,
-	// 			Description = "Enter 'Bearer {your JWT token}' in the Authorization header."
-	// 		});
-
-	// 		options.AddSecurityRequirement(new OpenApiSecurityRequirement
-	// 		{
-	// 			{
-	// 				new OpenApiSecurityScheme
-	// 				{
-	// 					Name = "Authorization",
-	// 					Type = SecuritySchemeType.Http,
-	// 					Scheme = "Bearer",
-	// 					BearerFormat = "JWT",
-	// 					In = ParameterLocation.Header,
-	// 					Reference = new OpenApiReference
-	// 					{
-	// 						Type = ReferenceType.SecurityScheme,
-	// 						Id = "Bearer"
-	// 					}
-	// 				},
-	// 				Array.Empty<string>()
-	// 			}
-	// 		});
-
-	// 		options.OperationFilter<SwaggerTenantIdHeaderFilter>();
-	// 	});
-	// }
-
 
 	private static void PrepareDatabase(this WebApplication app)
 	{
@@ -321,13 +259,13 @@ public static class Program
 	{
 		if (app.Environment.IsDevelopment())
 		{
-			// app.UseSwagger();
-			// app.UseSwaggerUI();
-
 			app.UseDeveloperExceptionPage();
 		}
 
 		app.UseHttpsRedirection();
+
+		app.UseMiddleware<TenantHeaderFromQueryStringMiddleware>((object)new string[] { "/api/RemoteAuthentication/start-authentication" });
+		app.UseMiddleware<TenantHeaderFromStateJsonMiddleware>((object)new string[] { "/api/RemoteAuthentication/callback" });
 
 		app.UseAuthentication();
 		app.UseAuthorization();
@@ -335,35 +273,10 @@ public static class Program
 		app.UseWebSockets();
 		app.MapHub<NotificationHub>("/notificationHub");
 
-		// app.MapGet("/testUserChannel", async (IHubContext<NotificationHub> hub, string message) =>
-		//     await hub.Clients.All.SendAsync("userChannel", $"Message: {message}"));
-
 		app.UseStaticFiles();
 
 		app.MapFallbackToFile("index.html");
 
 		app.MapControllers();
 	}
-
-
-	// public class SwaggerTenantIdHeaderFilter : IOperationFilter
-	// {
-	// 	public void Apply(OpenApiOperation operation, OperationFilterContext context)
-	// 	{
-	// 		if (operation.Parameters == null)
-	// 			operation.Parameters = new List<OpenApiParameter>();
-
-	// 		operation.Parameters.Add(new OpenApiParameter
-	// 		{
-	// 			Name = "X-Tenant-Id",
-	// 			In = ParameterLocation.Header,
-	// 			Required = false,  // Change to 'false' if not required
-	// 			Schema = new OpenApiSchema
-	// 			{
-	// 				Type = "string",
-	// 				Default = new Microsoft.OpenApi.Any.OpenApiString("")
-	// 			}
-	// 		});
-	// 	}
-	// }
 }

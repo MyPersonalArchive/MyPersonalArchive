@@ -2,6 +2,8 @@ using System.Text.Json.Nodes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+namespace Backend.Core.JsonConverters;
+
 public class JsonObjectConverter : JsonConverter<JsonObject>
 {
     public override void WriteJson(JsonWriter writer, JsonObject value, JsonSerializer serializer)

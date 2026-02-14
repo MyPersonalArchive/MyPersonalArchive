@@ -1,3 +1,5 @@
+using Backend.Core.Providers;
+
 public class BackupProviderFactory
 {
     public IBackupProvider? CurrentProvider { get; private set; }

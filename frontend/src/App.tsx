@@ -75,7 +75,7 @@ const routers = createBrowserRouter([
 						element: <StoredFilterListPage />
 					},
 					{
-						path: RoutePaths.Email,
+						path: `${RoutePaths.Email}/:id`,
 						element: <EmailListPage />
 					}
 				]

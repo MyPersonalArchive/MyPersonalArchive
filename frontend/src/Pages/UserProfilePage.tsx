@@ -7,6 +7,9 @@ import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { RoutePaths } from "../RoutePaths"
 import { MimeTypeConverterArray, useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useApiClient } from "../Utils/useApiClient"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
 
 
 const mimeTypeConverters: MimeTypeConverterArray<ExternalAccount, number> = [
@@ -24,11 +27,12 @@ const mimeTypeConverters: MimeTypeConverterArray<ExternalAccount, number> = [
 
 export const UserProfilePage = () => {
 	const currentUser = useAtomValue(currentUserAtom)
+	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 	const { currentTenantId, switchToTenantId } = useContext(CurrentTenantIdContext)
 	const navigate = useNavigate()
 	const apiClient = useApiClient()
+	const { provider, setProvider, login } = useRemoteAuthentication()
 
-	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 
 	const dnd = useSortableDragDrop<ExternalAccount, HTMLDivElement>(
 		".draghandle",
@@ -48,6 +52,7 @@ export const UserProfilePage = () => {
 				externalAccounts: accounts.map((account: ExternalAccount) => ({
 					id: account.id,
 					displayName: account.displayName,
+					emailAddress: account.emailAddress,
 					credentials: account.credentials,
 					type: account.type,
 					provider: account.provider
@@ -56,6 +61,10 @@ export const UserProfilePage = () => {
 		} catch (error) {
 			console.error("Failed to save external accounts:", error)
 		}
+	}
+
+	const connectNewAccount = () => {
+
 	}
 
 
@@ -91,9 +100,9 @@ export const UserProfilePage = () => {
 					<tr>
 						<th className="w-4"></th>
 						<th>Display name</th>
-						<th>Account</th>
-						<th>Type</th>
-						<th>Provider</th>
+						<th>Email address</th>
+						<th>Expires at</th>
+						<th className="w-4"></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -126,9 +135,18 @@ export const UserProfilePage = () => {
 										value={account.displayName}
 										onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", index, displayName: e.target.value })} />
 								</td>
-								<td>{account.credentials}</td>
-								<td>{account.type}</td>
-								<td>{account.provider}</td>
+								<td>{account.emailAddress}</td>
+								<td>
+									{account.credentials.expiresAt}
+									{account.credentials.expiresAt !== undefined && account.credentials.expiresAt < new Date().toISOString() &&
+										<span className="text-red-500 font-bold"> [EXPIRED]</span>
+									}
+								</td>
+								<td>
+									<button style={{ marginLeft: "10px" }} className=" text-red-500 cursor-pointer" onClick={() => dispatch({ action: "REMOVE_ACCOUNT", index })}>
+										<FontAwesomeIcon icon={faTrashCan} size="1x" />
+									</button>
+								</td>
 							</tr>
 							: <tr key={account.id}
 								className="h-10 striped-background"
@@ -146,7 +164,19 @@ export const UserProfilePage = () => {
 			</table>
 
 			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" >New</button>
+				Connect new account:
+				<div className="group">
+					<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail" | "zohomail")}>
+						<option value="gmail">Gmail</option>
+						<option value="fastmail">Fastmail</option>
+						<option value="zohomail">Zoho Mail</option>
+					</select>
+
+					<button className="btn" onClick={() => login(window.location.origin + "/email")}>
+						Authenticate
+					</button>
+				</div>
+
 				<button className="btn" onClick={save}>Save</button>
 			</div>
 

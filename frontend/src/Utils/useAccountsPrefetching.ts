@@ -8,6 +8,7 @@ import { UUID } from "crypto"
 type GetResponse = {
 	id: UUID
 	displayName: string
+	emailAddress: string
 	type: string
 	credentials: string
 	provider: string
@@ -17,6 +18,7 @@ function mapResponseToModel(externalAccounts: GetResponse[] | undefined): Extern
 	return externalAccounts?.map(backendModel => ({
 		id: backendModel.id,
 		displayName: backendModel.displayName,
+		emailAddress: backendModel.emailAddress,
 		type: backendModel.type,
 		credentials: backendModel.credentials,
 		provider: backendModel.provider

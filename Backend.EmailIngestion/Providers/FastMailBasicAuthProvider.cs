@@ -16,7 +16,7 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 	public override EmailAuthMode AuthenticationMode => EmailAuthMode.Basic;
 
 
-	protected override async Task<IImapClient> ConnectAsync(IAuthContext auth)
+	public override async Task<IImapClient> ConnectAsync(IAuthContext auth, string email)
 	{
 		if (auth is not BasicAuthContext basicAuth)
 		{
@@ -29,10 +29,11 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 		return client;
 	}
 
-		public override bool TryCreateAuthContext(string authJson, out IAuthContext? auth)
+
+	override public Task<OAuthContext> RefreshAccessTokenIfNeeded(OAuthContext auth)
 	{
-		auth = JsonSerializer.Deserialize<BasicAuthContext>(authJson);
-		return auth != null;
+		// Basic auth doesn't have access tokens, so we just return the input auth context as is.
+		return Task.FromResult(auth);
 	}
 
 }

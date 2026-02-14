@@ -6,7 +6,8 @@ import { atomWithReducer } from "jotai/utils"
 export type ExternalAccount = {
 	id: UUID
 	displayName: string
-	credentials: string
+	emailAddress: string
+	credentials: any
 	type: string
 	provider: string
 }
@@ -15,7 +16,6 @@ export type ExternalAccount = {
 
 type ExternalAccountsCommand =
 	| { action: "LOAD", externalAccounts: ExternalAccount[] }
-	| { action: "ADD_ACCOUNT" }
 	| { action: "REMOVE_ACCOUNT", index: number }
 	| { action: "MOVE_ACCOUNT", fromIndex: number, toIndex: number }
 	| { action: "EDIT_ACCOUNT_DISPLAYNAME", index: number, displayName: string }
@@ -33,15 +33,6 @@ const reducer = (state: ExternalAccount[], command: ExternalAccountsCommand): Ex
 
 		case "MOVE_ACCOUNT":
 			return moveInArray(state, command.fromIndex, command.toIndex)
-
-		case "ADD_ACCOUNT":
-			return [...state, {
-				id: crypto.randomUUID(),
-				displayName: "",
-				credentials: "",
-				type: "",
-				provider: ""
-			}]
 
 		case "EDIT_ACCOUNT_DISPLAYNAME":
 			return changeAtIndex(

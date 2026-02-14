@@ -1,3 +1,5 @@
+namespace Backend.Core.Models;
+
 public class BackupTableData
 {
     public string Name { get; set; }
