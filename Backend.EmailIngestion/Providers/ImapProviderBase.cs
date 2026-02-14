@@ -12,15 +12,12 @@ public abstract class ImapProviderBase
 
 	public abstract string Name { get; }
 
-	public async Task<IList<Email>> FindEmailsAsync(IAuthContext auth, EmailSearchCriteria searchCriteria)
-	{
-		using var client = await ConnectAsync(auth);
-		return await FindEmailsAsync(client, searchCriteria);
-	}
+	public abstract Task<IImapClient> ConnectAsync(IAuthContext auth, string email);
 
-	public async Task<IList<Email>> FindEmailsAsync(IAuthContext auth, string folder, List<string> messageIds)
+	public abstract Task<OAuthContext> RefreshAccessTokenIfNeeded(OAuthContext auth);
+
+	public async Task<IList<Email>> GetEmailsByIds(IImapClient client, string folder, List<string> messageIds)
 	{
-		using var client = await ConnectAsync(auth);
 		var mailFolder = client.GetFolder(folder);
 		await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
@@ -37,21 +34,7 @@ public abstract class ImapProviderBase
 		return results;
 	}
 
-	public async Task<Attachment?> DownloadAttachmentAsync(IAuthContext auth, string folder, string messageId, string fileName)
-	{
-		using var client = await ConnectAsync(auth);
-		return await DownloadAttachmentAsync(client, folder, messageId, fileName);
-	}
-
-	public async Task<IList<string>> GetAvailableFolders(IAuthContext auth)
-	{
-		using var client = await ConnectAsync(auth);
-		return await GetAvailableFolders(client);
-	}
-
-	protected abstract Task<IImapClient> ConnectAsync(IAuthContext auth);
-
-	private async Task<IList<string>> GetAvailableFolders(IImapClient client)
+	public async Task<IList<string>> GetAvailableFolders(IImapClient client)
 	{
 		var root = client.GetFolder(client.PersonalNamespaces[0]);
 		var allFolders = await root.GetSubfoldersAsync(true);
@@ -59,7 +42,7 @@ public abstract class ImapProviderBase
 	}
 
 
-	private async Task<IList<Email>> FindEmailsAsync(IImapClient client, EmailSearchCriteria searchCriteria)
+	public async Task<IList<Email>> GetEmailsByCriteria(IImapClient client, EmailSearchCriteria searchCriteria)
 	{
 		var results = new List<Email>();
 
@@ -104,7 +87,7 @@ public abstract class ImapProviderBase
 		return results;
 	}
 
-	private async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string folder, string messageId, string fileName)
+	public async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string folder, string messageId, string fileName)
 	{
 		var mailFolder = client.GetFolder(folder);
 		await mailFolder.OpenAsync(FolderAccess.ReadOnly);
@@ -166,7 +149,7 @@ public abstract class ImapProviderBase
 		}
 		return email;
 	}
-
+	
 	private SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
 	{
 		var query = SearchQuery.All;
@@ -188,6 +171,4 @@ public abstract class ImapProviderBase
 		}
 		return query;
 	}
-
-	public abstract bool TryCreateAuthContext(string authJson, out IAuthContext? auth);
 }

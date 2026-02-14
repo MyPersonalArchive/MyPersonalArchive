@@ -85,23 +85,23 @@ public class MpaDbContext : DbContext
 
 	private void ConfigureTypeConversions(ModelBuilder modelBuilder)
 	{
-		var _jsonSerializerOptions = new JsonSerializerOptions
+		var jsonSerializerOptions = new JsonSerializerOptions
 		{
 			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		};
 		modelBuilder.Entity<ArchiveItem>()
 			.Property(e => e.Metadata)
 			.HasConversion(
-				v => v.ToJsonString(_jsonSerializerOptions),
-				v => JsonSerializer.Deserialize<JsonObject>(v, _jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
+				v => v.ToJsonString(jsonSerializerOptions),
+				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
 			)
 			.HasColumnType("TEXT");
 
 		modelBuilder.Entity<BackupDestination>()
 			.Property(e => e.Metadata)
 			.HasConversion(
-				v => v.ToJsonString(_jsonSerializerOptions),
-				v => JsonSerializer.Deserialize<JsonObject>(v, _jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
+				v => v.ToJsonString(jsonSerializerOptions),
+				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
 			)
 			.HasColumnType("TEXT");
 	}

@@ -5,13 +5,20 @@ import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
-import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
+import { useParams } from "react-router-dom"
+import { useAtomValue } from "jotai"
+import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
+import { UUID } from "crypto"
 
 
 export const EmailListPage = () => {
-	const { provider, setProvider, login } = useRemoteAuthentication()
 	const { fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
 
+	const accounts = useAtomValue(externalAccountsAtom)
+	
+	const params = useParams()
+	const externalAccountId = params.id as UUID
+	const externalAccount = accounts.find(account => account.id === externalAccountId)
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -25,21 +32,9 @@ export const EmailListPage = () => {
 	return (
 		<>
 			<h1 className="heading-1">
-				Email
+				Email {externalAccount?.displayName ?? "<unknown account>"}
 			</h1>
 			<div className="stack-horizontal to-the-left my-4">
-				<div className="group">
-
-					<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail" | "zohomail")}>
-						<option value="gmail">Gmail</option>
-						<option value="fastmail">Fastmail</option>
-						<option value="zohomail">Zoho Mail</option>
-					</select>
-
-					<button className="btn" onClick={() => login(window.location.origin + "/email")}>
-						Login
-					</button>
-				</div>
 
 				<div className="group">
 					<select className="input" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
@@ -56,13 +51,13 @@ export const EmailListPage = () => {
 							))
 						}
 					</select>
-					<button className="btn" onClick={() => fetchFolders(provider)}>
+					<button className="btn" onClick={() => fetchFolders(externalAccountId)}>
 						<FontAwesomeIcon icon={faRefresh} />
 					</button>
 				</div>
 
 				<button className="btn"
-					onClick={() => fetchEmails(provider, { folders: [selectedFolder!], limit: 50 })}
+					onClick={() => fetchEmails(externalAccountId, { folders: [selectedFolder!], limit: 50 })}
 					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
@@ -101,7 +96,7 @@ export const EmailListPage = () => {
 
 					<button className="btn"
 						disabled={selectionOfEmails.areNoItemsSelected}
-						onClick={() => createArchiveItemFromEmails(provider, emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
+						onClick={() => createArchiveItemFromEmails(externalAccountId, emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
 					>
 						{
 							selectionOfEmails.allPossibleItems.size == selectionOfEmails.selectedItems.size
@@ -117,7 +112,7 @@ export const EmailListPage = () => {
 						<Thumbnail
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={(emails) => createArchiveItemFromEmails(provider, emails)}
+							createArchiveItemFromEmails={(emails) => {createArchiveItemFromEmails(externalAccountId, emails)}}
 							selectionOfEmails={selectionOfEmails}
 							maximize={maximize}
 						/>
@@ -126,9 +121,8 @@ export const EmailListPage = () => {
 						<Preview
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={(emails) => createArchiveItemFromEmails(provider, emails)}
-							createBlobsFromAttachments={(messageId, attachments) => createBlobsFromAttachments(provider, messageId, attachments)}
-							provider={provider}
+							createArchiveItemFromEmails={(emails) => {createArchiveItemFromEmails(externalAccountId, emails)}}
+							createBlobsFromAttachments={(messageId, attachments) => {createBlobsFromAttachments(externalAccountId, messageId, attachments)}}
 							selectedFolder={selectedFolder!}
 							maximize={minimize}
 						/>
@@ -195,11 +189,11 @@ type PreviewProps = {
 	email: Email
 	createArchiveItemFromEmails: (emails: Email[]) => void
 	createBlobsFromAttachments: (messageId: string, attachments: EmailAttachment[]) => void
-	provider: string
+	externalAccountId: string
 	selectedFolder: string
 	maximize: (email: Email) => void
 }
-const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, provider, selectedFolder, maximize: minimize }: PreviewProps) => {
+const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, externalAccountId, selectedFolder, maximize: minimize }: PreviewProps) => {
 	return (
 		<div key={email.uniqueId} className="grid-rows-3">
 			<div className="bg-gray-100 p-4 sticky top-0">
@@ -229,7 +223,7 @@ const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachment
 				<div className="flex flex-row justify-between">
 
 					<div className="max-h-50 overflow-y-auto">
-						<AttachmentList attachments={email.attachments} email={email} provider={provider} selectedFolder={selectedFolder} ingestAttachments={createBlobsFromAttachments} />
+						<AttachmentList attachments={email.attachments} email={email} externalAccountId={externalAccountId} selectedFolder={selectedFolder} ingestAttachments={createBlobsFromAttachments} />
 					</div>
 
 					<div style={{ alignSelf: "flex-end" }}>
@@ -250,11 +244,11 @@ const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachment
 type AttachmentListProps = {
 	attachments: EmailAttachment[]
 	email: Email
-	provider: string
+	externalAccountId: string
 	selectedFolder: string
 	ingestAttachments: (messageId: string, attachments: EmailAttachment[]) => void
 }
-const AttachmentList = ({ attachments, email, provider, selectedFolder, ingestAttachments }: AttachmentListProps) => {
+const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder, ingestAttachments }: AttachmentListProps) => {
 	const selectionOfAttachments = useSelection<string>(new Set(attachments.map(attachment => attachment.fileName)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 
@@ -271,7 +265,7 @@ const AttachmentList = ({ attachments, email, provider, selectedFolder, ingestAt
 		params.set("fileName", attachment.fileName)
 		params.set("folder", selectedFolder) // email folders may have spaces, so lets use query params
 
-		return <a href={`/api/email/${provider}/download-attachment?${params.toString()}`}
+		return <a href={`/api/email/${externalAccountId}/download-attachment?${params.toString()}`}
 		   className="link ml-2">
 			{attachment.fileName}
 		</a>

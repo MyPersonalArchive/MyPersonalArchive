@@ -49,7 +49,7 @@ public class FileStorageProvider : IFileStorageProvider
             MimeType = mimeType,
             Size = stream.Length,
             OriginalFilename = fileName,
-            Hash = ComputeSha256HashToString(stream),
+			Hash = Convert.ToHexString(ComputeSha256Hash(stream)),
             UploadedAt = DateTimeOffset.Now,
             UploadedBy = username
         }));
@@ -100,11 +100,6 @@ public class FileStorageProvider : IFileStorageProvider
     }
 
     private string GetFolderPath(string uniqueFileName) => Path.Combine(_baseFolder, uniqueFileName[..2], uniqueFileName[..4], uniqueFileName[..6]);
-
-    public string ComputeSha256HashToString(Stream stream)
-    {
-        return Convert.ToHexString(ComputeSha256Hash(stream));
-    }
 
     public byte[] ComputeSha256Hash(Stream stream)
     {

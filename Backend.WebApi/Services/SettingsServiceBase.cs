@@ -46,6 +46,17 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 		});
 		await File.WriteAllTextAsync(path, json);
 	}
+
+	protected async Task ChangeSettingsAsync(Func<T, T> changeDelegate)
+	{
+		// lock (this)
+		// {
+		var fromSettings = await LoadSettingsAsync();
+		var toSettings = changeDelegate(fromSettings);
+		await SaveSettingsAsync(toSettings);
+		// }
+	}
+
 }
 
 

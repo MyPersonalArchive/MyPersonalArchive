@@ -1,4 +1,6 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
+import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
+import { createQueryString } from "./createQueryString"
 import { useApiClient } from "./useApiClient"
 
 
@@ -9,14 +11,22 @@ export function useRemoteAuthentication() {
 	const [provider, setProvider] = useState<ProviderName>("gmail")
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
+	const { currentTenantId } = useContext(CurrentTenantIdContext)
+
 	const apiClient = useApiClient()
 
-	const login = async (returnUrl : string) => {
+	const login = async (returnUrl: string) => {
 		switch (provider) {
 			case "zohomail":
 			case "gmail": {
-				window.location.href = `/api/remoteauthentication/start-authentication?provider-name=${provider}&return-url=${encodeURIComponent(returnUrl)}`
-				// window.location.href = `https://localhost:5054/api/remoteauthentication/start-authentication?provider-name=${provider}&return-url=${encodeURIComponent(returnUrl)}`
+				const payload = {
+					["provider-name"]: provider,
+					["return-url"]: returnUrl,
+					["tenant-id"]: currentTenantId
+				}
+				const queryString = createQueryString(payload)
+
+				window.location.href = "/api/remoteauthentication/start-authentication" + queryString
 				break
 			}
 

@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 
+namespace Backend.Core.Providers;
+
 public interface IBackupProvider
 {
     Task Connect(string address);

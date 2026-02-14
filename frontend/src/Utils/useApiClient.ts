@@ -8,7 +8,7 @@ import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 export const useApiClient = () => {
 	const { currentTenantId } = useContext(CurrentTenantIdContext)
 	const navigate = useNavigate()
-	
+
 	const commonHeaders: any = {}
 	if (currentTenantId !== null) {
 		commonHeaders["X-Tenant-Id"] = currentTenantId
@@ -30,7 +30,7 @@ export const useApiClient = () => {
 				// 	throw new Error("HTTP response status 302 is not handled properly yet")
 				// }
 
-				if(response.status === 401) {
+				if (response.status === 401) {
 					navigate(RoutePaths.SignIn + "?redirect=/archive/list")
 				}
 				return response
@@ -104,7 +104,7 @@ export const useApiClient = () => {
 					return undefined
 				})
 		},
-		
+
 		postFormData: async <T>(url: string, payload: FormData, incomingOptions?: RequestInit) => {
 			const options = {
 				...incomingOptions,
@@ -168,7 +168,41 @@ export const useApiClient = () => {
 					}
 					return undefined
 				})
-		}
+		},
+
+		query: async (commandName: string, payload: any = {}, incomingOptions?: RequestInit) => {
+			// const queryString = createQueryString(payload)
+			const options = {
+				...incomingOptions,
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload)
+			}
+
+			return interceptedFetch("/api/query/" + commandName /*+ queryString*/, options)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error(`Command ${commandName} failed with status ${response.status}`)
+					}
+				})
+		},
+
+		execute: async (commandName: string, payload: any = {}, incomingOptions?: RequestInit) => {
+			// const queryString = createQueryString(payload)
+			const options = {
+				...incomingOptions,
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload)
+			}
+
+			return interceptedFetch("/api/execute/" + commandName /*+ queryString*/, options)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error(`Command ${commandName} failed with status ${response.status}`)
+					}
+				})
+		},
 
 	}
 }
