@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Backend.Core.Authentication;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -13,7 +14,7 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 
 	public override string Name => "fastmail";
 
-	public override EmailAuthMode AuthenticationMode => EmailAuthMode.Basic;
+	public override AuthMode AuthenticationMode => AuthMode.Basic;
 
 
 	public override async Task<IImapClient> ConnectAsync(IAuthContext auth, string email)
@@ -30,7 +31,7 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 	}
 
 
-	override public Task<OAuthContext> RefreshAccessTokenIfNeeded(OAuthContext auth)
+	override public Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth)
 	{
 		// Basic auth doesn't have access tokens, so we just return the input auth context as is.
 		return Task.FromResult(auth);

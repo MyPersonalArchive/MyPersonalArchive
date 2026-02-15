@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { use, useEffect, useRef } from "react"
 import { Email, EmailAddress, EmailAttachment, useMailProvider } from "../Utils/useMailProvider"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
@@ -19,6 +19,12 @@ export const EmailListPage = () => {
 	const params = useParams()
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
+	useEffect(() => {
+		//TODO: reset folders and emails when switching between accounts, to prevent confusion and potential accidental actions on the wrong account
+	}, [externalAccountId])
+	useEffect(() => {
+		//TODO: reset emails when switching between folders, to prevent confusion and potential accidental actions on the wrong folder
+	}, [selectedFolder])
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -32,7 +38,7 @@ export const EmailListPage = () => {
 	return (
 		<>
 			<h1 className="heading-1">
-				Email {externalAccount?.displayName ?? "<unknown account>"}
+				{externalAccount?.displayName ?? "<unknown account>"}
 			</h1>
 			<div className="stack-horizontal to-the-left my-4">
 

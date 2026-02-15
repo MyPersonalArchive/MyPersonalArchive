@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Backend.Core;
 using Microsoft.Extensions.Options;
 
@@ -29,7 +30,7 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 		}
 
 		var json = await File.ReadAllTextAsync(filePath);
-		return System.Text.Json.JsonSerializer.Deserialize<T>(json) ?? new T { SchemaVersion = "1.0" };
+		return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions.Web) ?? new T { SchemaVersion = "1.0" };
 	}
 
 	protected async Task SaveSettingsAsync(T settings)
@@ -40,15 +41,15 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 		}
 		var path = Path.Combine(GetSettingsPath(), FileName);
 
-		var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions
-		{
-			WriteIndented = true
-		});
+		var json = JsonSerializer.Serialize(settings, JsonSerializerOptions.Web);
 		await File.WriteAllTextAsync(path, json);
 	}
 
 	protected async Task ChangeSettingsAsync(Func<T, T> changeDelegate)
 	{
+		// TODO: we should probably have some locking mechanism here to prevent race conditions
+		// Simple locking does not compile here because the method is async
+
 		// lock (this)
 		// {
 		var fromSettings = await LoadSettingsAsync();

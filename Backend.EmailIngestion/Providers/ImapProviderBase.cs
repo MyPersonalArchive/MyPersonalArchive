@@ -1,3 +1,4 @@
+using Backend.Core.Authentication;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -8,13 +9,13 @@ namespace Backend.EmailIngestion.Providers;
 
 public abstract class ImapProviderBase
 {
-	public abstract EmailAuthMode AuthenticationMode { get; }
+	public abstract AuthMode AuthenticationMode { get; }
 
 	public abstract string Name { get; }
 
 	public abstract Task<IImapClient> ConnectAsync(IAuthContext auth, string email);
 
-	public abstract Task<OAuthContext> RefreshAccessTokenIfNeeded(OAuthContext auth);
+	public abstract Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth);
 
 	public async Task<IList<Email>> GetEmailsByIds(IImapClient client, string folder, List<string> messageIds)
 	{

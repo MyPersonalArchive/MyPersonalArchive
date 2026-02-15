@@ -1,4 +1,5 @@
 using Backend.Core;
+using Backend.Core.Authentication;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.EmailIngestion;
@@ -61,11 +62,11 @@ public class EmailController : ControllerBase
 		};
 
 		IAuthContext? authCookie = null;
-		if (provider.AuthenticationMode == EmailAuthMode.Oath2)
+		if (provider.AuthenticationMode == AuthMode.OAuth2)
 		{
 			throw new NotImplementedException("OAuth exchange not implemented in this endpoint. Use the RemoteAuthenticationController instead.");
 		}
-		else if (provider.AuthenticationMode == EmailAuthMode.Basic)
+		else if (provider.AuthenticationMode == AuthMode.Basic)
 		{
 			//TODO: Move this to the RemoteAuthenticationController as well?
 			if (string.IsNullOrEmpty(token.Username) || string.IsNullOrEmpty(token.Password))
@@ -114,12 +115,12 @@ public class EmailController : ControllerBase
 			throw new Exception("Unsupported email provider");
 		}
 
-		var auth = externalAccount.Credentials.Deserialize<OAuthContext>(JsonSerializerOptions.Web);
+		var auth = externalAccount.Credentials;
 
 		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
 		if (refreshedAuth != auth)
 		{
-			externalAccount.Credentials = JsonSerializer.SerializeToElement(refreshedAuth, JsonSerializerOptions.Web);
+			externalAccount.Credentials = refreshedAuth;
 			await externalAccountService.Replace(externalAccount);
 		}
 

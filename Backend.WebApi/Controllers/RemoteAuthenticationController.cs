@@ -1,13 +1,12 @@
-using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
-using Backend.EmailIngestion;
 using System.IdentityModel.Tokens.Jwt;
 using Backend.WebApi.Services;
 using Backend.Core;
 using Microsoft.AspNetCore.WebUtilities;
+using Backend.Core.Authentication;
 
 
 namespace Backend.WebApi.Controllers;
@@ -135,7 +134,7 @@ public class RemoteAuthenticationController : ControllerBase
 			Id = Guid.NewGuid(),
 			DisplayName = emailAddress,
 			EmailAddress = emailAddress,
-			Credentials = JsonSerializer.SerializeToElement(authContext, JsonSerializerOptions.Web),
+			Credentials = authContext,
 			Type = "Email",
 			Provider = state.Provider
 		};
