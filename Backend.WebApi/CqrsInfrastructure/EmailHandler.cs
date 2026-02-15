@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core;
+using Backend.Core.Authentication;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
@@ -64,7 +65,11 @@ public class EmailHandler :
 	private readonly IAmbientDataResolver _resolver;
 	private readonly IFileStorageProvider _fileProvider;
 
-	public EmailHandler(ExternalAccountService externalAccountService, EmailProviderFactory emailProviderFactory, MpaDbContext dbContext, IAmbientDataResolver resolver, IFileStorageProvider fileProvider)
+	public EmailHandler(ExternalAccountService externalAccountService,
+					 EmailProviderFactory emailProviderFactory,
+					 MpaDbContext dbContext,
+					 IAmbientDataResolver resolver,
+					 IFileStorageProvider fileProvider)
 	{
 		_externalAccountService = externalAccountService;
 		_emailProviderFactory = emailProviderFactory;
@@ -90,12 +95,12 @@ public class EmailHandler :
 			throw new Exception("Unsupported email provider");
 		}
 
-		var auth = externalAccount.Credentials.Deserialize<OAuthContext>(JsonSerializerOptions.Web);
+		var auth = externalAccount.Credentials;
 
 		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
 		if (refreshedAuth != auth)
 		{
-			externalAccount.Credentials = JsonSerializer.SerializeToElement(refreshedAuth, JsonSerializerOptions.Web);
+			externalAccount.Credentials = refreshedAuth;
 			await _externalAccountService.Replace(externalAccount);
 		}
 
@@ -122,12 +127,12 @@ public class EmailHandler :
 			throw new Exception("Unsupported email provider");
 		}
 
-		var auth = externalAccount.Credentials.Deserialize<OAuthContext>(JsonSerializerOptions.Web);
+		var auth = externalAccount.Credentials;
 
 		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
 		if (refreshedAuth != auth)
 		{
-			externalAccount.Credentials = JsonSerializer.SerializeToElement(refreshedAuth, JsonSerializerOptions.Web);
+			externalAccount.Credentials = refreshedAuth;
 			await _externalAccountService.Replace(externalAccount);
 		}
 
@@ -160,12 +165,12 @@ public class EmailHandler :
 			throw new Exception("Unsupported email provider");
 		}
 
-		var auth = externalAccount.Credentials.Deserialize<OAuthContext>(JsonSerializerOptions.Web);
+		var auth = externalAccount.Credentials;
 
 		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
 		if (refreshedAuth != auth)
 		{
-			externalAccount.Credentials = JsonSerializer.SerializeToElement(refreshedAuth, JsonSerializerOptions.Web);
+			externalAccount.Credentials = refreshedAuth;
 			await _externalAccountService.Replace(externalAccount);
 		}
 
@@ -242,12 +247,12 @@ public class EmailHandler :
 			throw new Exception("Unsupported email provider");
 		}
 
-		var auth = externalAccount.Credentials.Deserialize<OAuthContext>(JsonSerializerOptions.Web);
+		var auth = externalAccount.Credentials;
 
 		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
 		if (refreshedAuth != auth)
 		{
-			externalAccount.Credentials = JsonSerializer.SerializeToElement(refreshedAuth, JsonSerializerOptions.Web);
+			externalAccount.Credentials = refreshedAuth;
 			await _externalAccountService.Replace(externalAccount);
 		}
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Backend.Core.Authentication;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -16,7 +17,7 @@ public class GmailProvider : ImapProviderBase
 
 	public override string Name => "gmail";
 
-	public override EmailAuthMode AuthenticationMode => EmailAuthMode.Oath2;
+	public override AuthMode AuthenticationMode => AuthMode.OAuth2;
 
 
 	public GmailProvider(IConfiguration config, HttpClient httpClient)
@@ -45,9 +46,9 @@ public class GmailProvider : ImapProviderBase
 	}
 
 
-	public override async Task<OAuthContext> RefreshAccessTokenIfNeeded(OAuthContext auth)
+	public override async Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth)
 	{
-		if (auth.AccessToken == null || auth.ExpiresAt > DateTime.UtcNow)
+		if (auth is not OAuthContext oauth || oauth.AccessToken == null || oauth.ExpiresAt > DateTime.UtcNow)
 		{
 			return auth; // No need to refresh
 		}
@@ -58,7 +59,7 @@ public class GmailProvider : ImapProviderBase
 			{
 				new KeyValuePair<string, string>("client_id", _clientId),
 				new KeyValuePair<string, string>("client_secret", _clientSecret),
-				new KeyValuePair<string, string>("refresh_token", auth.RefreshToken!),
+				new KeyValuePair<string, string>("refresh_token", oauth.RefreshToken!),
 				new KeyValuePair<string, string>("grant_type", "refresh_token"),
 			})
 		};
@@ -77,7 +78,7 @@ public class GmailProvider : ImapProviderBase
 		return new OAuthContext
 		{
 			AccessToken = tokenResponse.AccessToken,
-			RefreshToken = auth.RefreshToken,
+			RefreshToken = oauth.RefreshToken,
 			ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn)
 		};
 	}

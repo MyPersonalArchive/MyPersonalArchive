@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Backend.Core;
+using Backend.Core.Authentication;
+using Backend.EmailIngestion;
 using Microsoft.Extensions.Options;
 
 
@@ -85,7 +87,7 @@ public class ExternalAccountSettings : SettingsBase
 		public Guid Id { get; set; }
 		public required string DisplayName { get; set; }
 		public required string EmailAddress { get; set; }
-		public required JsonElement Credentials { get; set; }
+		public required IAuthContext Credentials { get; set; }
 		public required string Type { get; set; }
 		public required string Provider { get; set; }
 	}

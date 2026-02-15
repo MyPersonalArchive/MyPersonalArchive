@@ -1,5 +1,4 @@
 using MimeKit;
-using System.Text.Json.Serialization;
 
 namespace Backend.EmailIngestion;
 
@@ -37,31 +36,6 @@ public class Attachment
 }
 
 
-[JsonDerivedType(typeof(OAuthContext), typeDiscriminator: "oauth")]
-[JsonDerivedType(typeof(BasicAuthContext), typeDiscriminator: "basic")]
-public interface IAuthContext
-{
-}
-
-public class OAuthContext : IAuthContext
-{
-	public string? AccessToken { get; set; }
-	public string? RefreshToken { get; set; }
-	public DateTime ExpiresAt { get; set; }
-}
-
-public class BasicAuthContext : IAuthContext
-{
-	public required string Username { get; init; }
-	public required string Password { get; init; }
-}
-
-
-public enum EmailAuthMode
-{
-	Oath2,
-	Basic
-}
 
 public class EmailSearchCriteria
 {

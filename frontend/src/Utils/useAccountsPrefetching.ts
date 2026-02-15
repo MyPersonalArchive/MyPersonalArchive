@@ -44,7 +44,7 @@ export const useExternalAccountsPrefetching = () => {
 
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
-			case "StoredFiltersUpdated": {
+			case "ExternalAccountsUpdated": {
 				apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
 					.then(externalAccountsFromResponse => {
 						dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(externalAccountsFromResponse) })
