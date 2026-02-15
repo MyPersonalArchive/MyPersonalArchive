@@ -264,8 +264,13 @@ public static class Program
 
 		app.UseHttpsRedirection();
 
-		app.UseMiddleware<TenantHeaderFromQueryStringMiddleware>((object)new string[] { "/api/RemoteAuthentication/start-authentication" });
-		app.UseMiddleware<TenantHeaderFromStateJsonMiddleware>((object)new string[] { "/api/RemoteAuthentication/callback" });
+		app.UseMiddleware<TenantHeaderFromQueryStringMiddleware>((object)new string[] {
+			"/api/RemoteAuthentication/start-authentication",
+			"/api/email/download-attachment"
+		});
+		app.UseMiddleware<TenantHeaderFromStateJsonMiddleware>((object)new string[] {
+			"/api/RemoteAuthentication/callback"
+		});
 
 		app.UseAuthentication();
 		app.UseAuthorization();

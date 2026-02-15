@@ -1,4 +1,4 @@
-import { use, useEffect, useRef } from "react"
+import { use, useContext, useEffect, useRef } from "react"
 import { Email, EmailAddress, EmailAttachment, useMailProvider } from "../Utils/useMailProvider"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
@@ -9,13 +9,14 @@ import { useParams } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { UUID } from "crypto"
+import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 
 
 export const EmailListPage = () => {
 	const { fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
 
 	const accounts = useAtomValue(externalAccountsAtom)
-	
+
 	const params = useParams()
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
@@ -118,7 +119,7 @@ export const EmailListPage = () => {
 						<Thumbnail
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={(emails) => {createArchiveItemFromEmails(externalAccountId, emails)}}
+							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(externalAccountId, emails) }}
 							selectionOfEmails={selectionOfEmails}
 							maximize={maximize}
 						/>
@@ -127,8 +128,9 @@ export const EmailListPage = () => {
 						<Preview
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={(emails) => {createArchiveItemFromEmails(externalAccountId, emails)}}
-							createBlobsFromAttachments={(messageId, attachments) => {createBlobsFromAttachments(externalAccountId, messageId, attachments)}}
+							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(externalAccountId, emails) }}
+							createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(externalAccountId, messageId, attachments) }}
+							externalAccountId={externalAccountId}
 							selectedFolder={selectedFolder!}
 							maximize={minimize}
 						/>
@@ -227,7 +229,6 @@ const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachment
 
 			<div className="p-4 border-t border-gray-300 sticky bottom-0 bg-white">
 				<div className="flex flex-row justify-between">
-
 					<div className="max-h-50 overflow-y-auto">
 						<AttachmentList attachments={email.attachments} email={email} externalAccountId={externalAccountId} selectedFolder={selectedFolder} ingestAttachments={createBlobsFromAttachments} />
 					</div>
@@ -258,6 +259,8 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 	const selectionOfAttachments = useSelection<string>(new Set(attachments.map(attachment => attachment.fileName)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 
+	const { currentTenantId } = useContext(CurrentTenantIdContext)
+
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
 			selectAllCheckboxRef.current.indeterminate = selectionOfAttachments.allPossibleItems.size == 0 || selectionOfAttachments.areOnlySomeItemsSelected
@@ -267,12 +270,14 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 
 	const downloadAttachment = (attachment: EmailAttachment) => {
 		const params = new URLSearchParams()
+		params.set("externalAccountId", externalAccountId)
+		params.set("tenant-id", `${currentTenantId}`)
 		params.set("messageId", email.uniqueId)
 		params.set("fileName", attachment.fileName)
 		params.set("folder", selectedFolder) // email folders may have spaces, so lets use query params
 
-		return <a href={`/api/email/${externalAccountId}/download-attachment?${params.toString()}`}
-		   className="link ml-2">
+		return <a href={`/api/email/download-attachment?${params.toString()}`}
+			className="link ml-2">
 			{attachment.fileName}
 		</a>
 	}

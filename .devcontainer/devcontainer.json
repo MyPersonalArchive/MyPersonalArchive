@@ -54,7 +54,7 @@
 				"eamodio.gitlens",
 				"ms-azuretools.vscode-docker",
 				"github.vscode-pull-request-github",
-				// "humao.rest-client",
+				"humao.rest-client",
 				"cweijan.vscode-database-client2",
 				"bradlc.vscode-tailwindcss",
 				"dotjoshjohnson.xml"

@@ -29,80 +29,28 @@ namespace Backend.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "TenantIdPolicy")]
+// [Authorize(Policy = "TenantIdPolicy")]
 public class EmailController : ControllerBase
 {
-	private readonly EmailProviderFactory _registry;
-	private readonly MpaDbContext _dbContext;
-	private readonly IFileStorageProvider _fileProvider;
-	private readonly IAmbientDataResolver _resolver;
+	private readonly ExternalAccountService _externalAccountService;
+	private readonly EmailProviderFactory _emailProviderFactory;
 
-	public EmailController(EmailProviderFactory registry, MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver)
+	public EmailController(ExternalAccountService externalAccountService, EmailProviderFactory emailProviderFactory)
 	{
-		_registry = registry;
-		_dbContext = dbContext;
-		_fileProvider = fileProvider;
-		_resolver = resolver;
+		_externalAccountService = externalAccountService;
+		_emailProviderFactory = emailProviderFactory;
 	}
 
 
-	[HttpPost("{providerName}/auth/exchange")]
-	public IActionResult ExchangeToken(string providerName, [FromBody] TokenRequestExchangeRequest token)
-	{
-		if (!_registry.TryGetProvider(providerName, out var provider) || provider == null)
-		{
-			return BadRequest($"Invalid provider: {providerName}");
-		}
-
-		var cookieOptions = new CookieOptions
-		{
-			HttpOnly = true,
-			Secure = false, //TODO: Set to true in production
-			SameSite = SameSiteMode.Strict
-		};
-
-		IAuthContext? authCookie = null;
-		if (provider.AuthenticationMode == AuthMode.OAuth2)
-		{
-			throw new NotImplementedException("OAuth exchange not implemented in this endpoint. Use the RemoteAuthenticationController instead.");
-		}
-		else if (provider.AuthenticationMode == AuthMode.Basic)
-		{
-			//TODO: Move this to the RemoteAuthenticationController as well?
-			if (string.IsNullOrEmpty(token.Username) || string.IsNullOrEmpty(token.Password))
-			{
-				return BadRequest("missing username or password");
-			}
-
-			authCookie = new BasicAuthContext
-			{
-				Username = token.Username,
-				Password = token.Password
-			};
-		}
-
-		Response.Cookies.Append(
-			$"auth-{providerName}",
-			JsonSerializer.Serialize(authCookie),
-			cookieOptions
-		);
-		return Ok(new { Ok = true });
-	}
-
-
-
-	[HttpGet("{providerName}/download-attachment")]
-	public async Task<IActionResult> DownloadAttachment(
-													Guid externalAccountId,
-													[FromQuery] string messageId,
-													[FromQuery] string fileName,
-													[FromQuery] string folder,
-													[FromServices] ExternalAccountService externalAccountService,
-													[FromServices] EmailProviderFactory emailProviderFactory
-	)
+	[Authorize()]
+	[HttpGet("download-attachment")]
+	public async Task<IActionResult> DownloadAttachment([FromQuery] Guid externalAccountId,
+														[FromQuery] string messageId,
+														[FromQuery] string fileName,
+														[FromQuery] string folder)
 	{
 		// --- BEGIN generic code to get the provider and connect ---
-		var externalAccountSettings = await externalAccountService.GetExternalAccountSettingsAsync();
+		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 
 		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id == externalAccountId);
 		if (externalAccount == null)
@@ -110,7 +58,7 @@ public class EmailController : ControllerBase
 			throw new Exception("External account not found");
 		}
 
-		if (!emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
+		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{
 			throw new Exception("Unsupported email provider");
 		}
@@ -121,7 +69,7 @@ public class EmailController : ControllerBase
 		if (refreshedAuth != auth)
 		{
 			externalAccount.Credentials = refreshedAuth;
-			await externalAccountService.Replace(externalAccount);
+			await _externalAccountService.Replace(externalAccount);
 		}
 
 		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
@@ -132,18 +80,4 @@ public class EmailController : ControllerBase
 
 		return File(attachment.Stream, "application/octet-stream", fileName);
 	}
-
-
-
-	#region Request and response models
-
-	public record TokenRequestExchangeRequest
-	{
-		// public required string Provider { get; set; }
-		public string? Code { get; set; }
-		public string? RedirectUri { get; set; }
-		public string? Username { get; set; }
-		public string? Password { get; set; }
-	}
-	#endregion
 }
