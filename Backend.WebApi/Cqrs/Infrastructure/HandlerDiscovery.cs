@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Backend.WebApi.CqrsInfrastructure;
+namespace Backend.WebApi.Cqrs.Infrastructure;
 
 
 public class HandlerDiscovery

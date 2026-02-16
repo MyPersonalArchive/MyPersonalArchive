@@ -7,7 +7,7 @@ using MailKit.Security;
 
 namespace Backend.EmailIngestion.Providers;
 
-public class FastMailBasicAuthProvider : ImapProviderBase
+public class FastMailBasicAuthProvider : AuthProviderBase
 {
 	private readonly string _imapHost = "imap.fastmail.com";
 	private readonly int _imapPort = 993;
@@ -31,7 +31,7 @@ public class FastMailBasicAuthProvider : ImapProviderBase
 	}
 
 
-	override public Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth)
+	public override Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth)
 	{
 		// Basic auth doesn't have access tokens, so we just return the input auth context as is.
 		return Task.FromResult(auth);

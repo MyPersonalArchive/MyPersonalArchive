@@ -1,4 +1,6 @@
-namespace Backend.WebApi.CqrsInfrastructure;
+using Backend.WebApi.Cqrs.Infrastructure;
+
+namespace Backend.WebApi.Cqrs;
 
 [RequireAllowedTenantId]
 // [RequirementFeatureFlag("ArjansDemoCommands")]

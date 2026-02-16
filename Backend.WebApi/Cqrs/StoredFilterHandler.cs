@@ -1,7 +1,8 @@
+using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.WebApi.Services;
 
 
-namespace Backend.WebApi.CqrsInfrastructure;
+namespace Backend.WebApi.Cqrs;
 
 
 public class StoredFilter
