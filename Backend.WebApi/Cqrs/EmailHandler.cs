@@ -5,6 +5,7 @@ using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Backend.EmailIngestion;
+using Backend.EmailIngestion.ImapClientProviders;
 using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.WebApi.Services;
 
@@ -59,13 +60,13 @@ public class EmailHandler :
 	IAsyncCommandHandler<CreateBlobsFromAttachments>
 {
 	private readonly ExternalAccountService _externalAccountService;
-	private readonly AuthProviderFactory _emailProviderFactory;
+	private readonly ImapClientProviderFactory _emailProviderFactory;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly IFileStorageProvider _fileProvider;
 
 	public EmailHandler(ExternalAccountService externalAccountService,
-					 AuthProviderFactory emailProviderFactory,
+					 ImapClientProviderFactory emailProviderFactory,
 					 MpaDbContext dbContext,
 					 IAmbientDataResolver resolver,
 					 IFileStorageProvider fileProvider)
@@ -83,11 +84,8 @@ public class EmailHandler :
 		// --- BEGIN generic code to get the provider and connect ---
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 
-		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id.ToString() == query.ExternalAccountId);
-		if (externalAccount == null)
-		{
-			throw new Exception("External account not found");
-		}
+		var externalAccount = externalAccountSettings.ExternalAccounts
+			.FirstOrDefault(a => a.Id.ToString() == query.ExternalAccountId) ?? throw new Exception("External account not found");
 
 		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{
@@ -115,11 +113,8 @@ public class EmailHandler :
 		// --- BEGIN generic code to get the provider and connect ---
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 
-		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id == query.ExternalAccountId);
-		if (externalAccount == null)
-		{
-			throw new Exception("External account not found");
-		}
+		var externalAccount = externalAccountSettings.ExternalAccounts
+			.FirstOrDefault(a => a.Id == query.ExternalAccountId) ?? throw new Exception("External account not found");
 
 		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{
@@ -153,11 +148,8 @@ public class EmailHandler :
 
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 
-		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id == command.ExternalAccountId);
-		if (externalAccount == null)
-		{
-			throw new Exception("External account not found");
-		}
+		var externalAccount = externalAccountSettings.ExternalAccounts
+			.FirstOrDefault(a => a.Id == command.ExternalAccountId) ?? throw new Exception("External account not found");
 
 		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{
@@ -235,11 +227,8 @@ public class EmailHandler :
 		// --- BEGIN generic code to get the provider and connect ---
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 
-		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id == command.ExternalAccountId);
-		if (externalAccount == null)
-		{
-			throw new Exception("External account not found");
-		}
+		var externalAccount = externalAccountSettings.ExternalAccounts
+			.FirstOrDefault(a => a.Id == command.ExternalAccountId) ?? throw new Exception("External account not found");
 
 		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{

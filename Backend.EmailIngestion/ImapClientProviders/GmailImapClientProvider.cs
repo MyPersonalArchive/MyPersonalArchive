@@ -1,15 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Backend.Core.Authentication;
-using MailKit;
 using MailKit.Net.Imap;
-using MailKit.Search;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 
-namespace Backend.EmailIngestion.Providers;
+namespace Backend.EmailIngestion.ImapClientProviders;
 
-public class GmailOAuthProvider : AuthProviderBase
+public class GmailImapClientProvider : ImapClientProviderBase
 {
 	private readonly string _clientId;
 	private readonly string _clientSecret;
@@ -20,7 +18,7 @@ public class GmailOAuthProvider : AuthProviderBase
 	public override AuthMode AuthenticationMode => AuthMode.OAuth2;
 
 
-	public GmailOAuthProvider(IConfiguration config, HttpClient httpClient)
+	public GmailImapClientProvider(IConfiguration config, HttpClient httpClient)
 	{
 		_clientId = config["Google:ClientId"]!;
 		_clientSecret = config["Google:ClientSecret"]!;
@@ -46,6 +44,7 @@ public class GmailOAuthProvider : AuthProviderBase
 	}
 
 
+//TODO: move this to an auth provider class, since it's not really related to the imap client itself
 	public override async Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth)
 	{
 		if (auth is not OAuthContext oauth || oauth.AccessToken == null || oauth.ExpiresAt > DateTime.UtcNow)
