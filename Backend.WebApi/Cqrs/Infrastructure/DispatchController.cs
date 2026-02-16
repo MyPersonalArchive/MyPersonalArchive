@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.WebApi.CqrsInfrastructure;
+namespace Backend.WebApi.Cqrs.Infrastructure;
 
 
 [ApiController]

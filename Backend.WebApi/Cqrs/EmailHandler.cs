@@ -1,15 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core;
-using Backend.Core.Authentication;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Backend.EmailIngestion;
+using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.WebApi.Services;
 
-namespace Backend.WebApi.CqrsInfrastructure;
-
+namespace Backend.WebApi.Cqrs;
 
 
 [RequireAllowedTenantId]
@@ -60,13 +59,13 @@ public class EmailHandler :
 	IAsyncCommandHandler<CreateBlobsFromAttachments>
 {
 	private readonly ExternalAccountService _externalAccountService;
-	private readonly EmailProviderFactory _emailProviderFactory;
+	private readonly AuthProviderFactory _emailProviderFactory;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly IFileStorageProvider _fileProvider;
 
 	public EmailHandler(ExternalAccountService externalAccountService,
-					 EmailProviderFactory emailProviderFactory,
+					 AuthProviderFactory emailProviderFactory,
 					 MpaDbContext dbContext,
 					 IAmbientDataResolver resolver,
 					 IFileStorageProvider fileProvider)
@@ -107,7 +106,7 @@ public class EmailHandler :
 		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
 		// --- END generic code to get the provider and connect ---
 
-		return await provider.GetAvailableFolders(imapClient);
+		return await imapClient.GetAvailableFolders();
 	}
 
 
@@ -139,7 +138,7 @@ public class EmailHandler :
 		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
 		// --- END generic code to get the provider and connect ---
 
-		return await provider.GetEmailsByCriteria(imapClient, query.Criteria);
+		return await imapClient.GetEmailsByCriteria(query.Criteria);
 	}
 
 
@@ -178,7 +177,7 @@ public class EmailHandler :
 
 		// --- END generic code to get the provider and connect ---
 
-		var emails = await provider.GetEmailsByIds(imapClient, command.EmailFolder, command.MessageIds);
+		var emails = await imapClient.GetEmailsByIds(command.EmailFolder, command.MessageIds);
 
 		foreach (var email in emails)
 		{
@@ -208,7 +207,7 @@ public class EmailHandler :
 				foreach (var attachmentInfo in email.Attachments)
 				{
 					var filename = attachmentInfo.FileName;
-					var attachment = await provider.DownloadAttachmentAsync(imapClient, command.EmailFolder, email.UniqueId, filename);
+					var attachment = await imapClient.DownloadAttachmentAsync(command.EmailFolder, email.UniqueId, filename);
 					if (attachment == null) continue;
 
 					string pathInStore = await _fileProvider.Store(filename, attachment.ContentType, attachment.Stream);
@@ -262,7 +261,7 @@ public class EmailHandler :
 		foreach (var attachmentReference in command.AttachmentReferences)
 		{
 			var filename = attachmentReference.FileName;
-			var attachment = await provider.DownloadAttachmentAsync(imapClient, command.EmailFolder, attachmentReference.MessageId, filename);
+			var attachment = await imapClient.DownloadAttachmentAsync(command.EmailFolder, attachmentReference.MessageId, filename);
 			if (attachment == null) continue;
 
 			string pathInStore = await _fileProvider.Store(filename, attachment.ContentType, attachment.Stream);

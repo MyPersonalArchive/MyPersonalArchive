@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Backend.EmailIngestion.Providers;
 
-public class GmailProvider : ImapProviderBase
+public class GmailOAuthProvider : AuthProviderBase
 {
 	private readonly string _clientId;
 	private readonly string _clientSecret;
@@ -20,7 +20,7 @@ public class GmailProvider : ImapProviderBase
 	public override AuthMode AuthenticationMode => AuthMode.OAuth2;
 
 
-	public GmailProvider(IConfiguration config, HttpClient httpClient)
+	public GmailOAuthProvider(IConfiguration config, HttpClient httpClient)
 	{
 		_clientId = config["Google:ClientId"]!;
 		_clientSecret = config["Google:ClientSecret"]!;

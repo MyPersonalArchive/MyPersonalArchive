@@ -1,23 +1,13 @@
-using Backend.Core.Authentication;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 
-namespace Backend.EmailIngestion.Providers;
+namespace Backend.EmailIngestion;
 
-public abstract class ImapProviderBase
+public static class ImapExtensions
 {
-	public abstract AuthMode AuthenticationMode { get; }
-
-	public abstract string Name { get; }
-
-	public abstract Task<IImapClient> ConnectAsync(IAuthContext auth, string email);
-
-	public abstract Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth);
-
-	public async Task<IList<Email>> GetEmailsByIds(IImapClient client, string folder, List<string> messageIds)
+	public static async Task<IList<Email>> GetEmailsByIds(this IImapClient client, string folder, List<string> messageIds)
 	{
 		var mailFolder = client.GetFolder(folder);
 		await mailFolder.OpenAsync(FolderAccess.ReadOnly);
@@ -35,7 +25,7 @@ public abstract class ImapProviderBase
 		return results;
 	}
 
-	public async Task<IList<string>> GetAvailableFolders(IImapClient client)
+	public static async Task<IList<string>> GetAvailableFolders(this IImapClient client)
 	{
 		var root = client.GetFolder(client.PersonalNamespaces[0]);
 		var allFolders = await root.GetSubfoldersAsync(true);
@@ -43,7 +33,7 @@ public abstract class ImapProviderBase
 	}
 
 
-	public async Task<IList<Email>> GetEmailsByCriteria(IImapClient client, EmailSearchCriteria searchCriteria)
+	public static async Task<IList<Email>> GetEmailsByCriteria(this IImapClient client, EmailSearchCriteria searchCriteria)
 	{
 		var results = new List<Email>();
 
@@ -88,7 +78,7 @@ public abstract class ImapProviderBase
 		return results;
 	}
 
-	public async Task<Attachment?> DownloadAttachmentAsync(IImapClient client, string folder, string messageId, string fileName)
+	public static async Task<Attachment?> DownloadAttachmentAsync(this IImapClient client, string folder, string messageId, string fileName)
 	{
 		var mailFolder = client.GetFolder(folder);
 		await mailFolder.OpenAsync(FolderAccess.ReadOnly);
@@ -115,7 +105,7 @@ public abstract class ImapProviderBase
 		return null;
 	}
 
-	private async Task<Email> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
+	private static async Task<Email> GetEmailAsync(this IMailFolder mailFolder, UniqueId uniqueId)
 	{
 		var message = await mailFolder.GetMessageAsync(uniqueId);
 		var email = new Email()
@@ -150,8 +140,8 @@ public abstract class ImapProviderBase
 		}
 		return email;
 	}
-	
-	private SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
+
+	private static SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
 	{
 		var query = SearchQuery.All;
 		if (criteria?.Subject != null)
@@ -172,4 +162,49 @@ public abstract class ImapProviderBase
 		}
 		return query;
 	}
+}
+
+
+public class Email
+{
+	public string UniqueId { get; set; } = string.Empty;
+	public string Subject { get; set; } = string.Empty;
+	public string Body { get; set; } = string.Empty;
+	public string HtmlBody { get; set; } = string.Empty;
+	public DateTimeOffset ReceivedTime { get; set; }
+	public IEnumerable<Address> From { get; set; } = [];
+	public IEnumerable<Address> To { get; set; } = [];
+	public List<EmailAttachment> Attachments { get; set; } = [];
+
+	public class Address
+	{
+		public required string EmailAddress { get; set; }
+		public string? Name { get; set; }
+	}
+
+	public class EmailAttachment
+	{
+		public required string FileName { get; set; }
+		public required string ContentType { get; set; }
+	}
+}
+
+
+public class Attachment
+{
+	public required Stream Stream { get; set; }
+	public required string ContentType { get; set; }
+	public required string FileName { get; set; }
+	public long FileSize { get; set; }
+}
+
+
+public class EmailSearchCriteria
+{
+	public List<string>? Folders { get; set; }
+	public string? Subject { get; set; }
+	public string? From { get; set; }
+	public string? To { get; set; }
+	public int Limit { get; set; }
+	public DateTime? Since { get; set; }
 }

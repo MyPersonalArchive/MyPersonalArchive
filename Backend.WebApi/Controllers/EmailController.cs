@@ -1,12 +1,7 @@
-using Backend.Core;
-using Backend.Core.Authentication;
-using Backend.Core.Providers;
-using Backend.DbModel.Database;
 using Backend.EmailIngestion;
 using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace Backend.WebApi.Controllers;
 
@@ -33,9 +28,9 @@ namespace Backend.WebApi.Controllers;
 public class EmailController : ControllerBase
 {
 	private readonly ExternalAccountService _externalAccountService;
-	private readonly EmailProviderFactory _emailProviderFactory;
+	private readonly AuthProviderFactory _emailProviderFactory;
 
-	public EmailController(ExternalAccountService externalAccountService, EmailProviderFactory emailProviderFactory)
+	public EmailController(ExternalAccountService externalAccountService, AuthProviderFactory emailProviderFactory)
 	{
 		_externalAccountService = externalAccountService;
 		_emailProviderFactory = emailProviderFactory;
@@ -75,7 +70,7 @@ public class EmailController : ControllerBase
 		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
 		// --- END generic code to get the provider and connect ---
 
-		var attachment = await provider.DownloadAttachmentAsync(imapClient, folder, messageId, fileName);
+		var attachment = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
 		if (attachment == null) return NotFound();
 
 		return File(attachment.Stream, "application/octet-stream", fileName);

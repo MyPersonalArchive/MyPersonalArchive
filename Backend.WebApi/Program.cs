@@ -13,9 +13,9 @@ using Backend.EmailIngestion.Providers;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
-using Backend.WebApi.CqrsInfrastructure;
 using Backend.WebApi.Middleware;
 using Backend.Core.JsonConverters;
+using Backend.WebApi.Cqrs.Infrastructure;
 
 namespace Backend.WebApi;
 
@@ -151,9 +151,9 @@ public static class Program
 		var services = builder.Services;
 
 		services.AddHttpClient();
-		services.AddSingleton<ImapProviderBase, GmailProvider>();
-		services.AddSingleton<ImapProviderBase, FastMailBasicAuthProvider>();
-		services.AddSingleton<EmailProviderFactory>();
+		services.AddSingleton<AuthProviderBase, GmailOAuthProvider>();
+		services.AddSingleton<AuthProviderBase, FastMailBasicAuthProvider>();
+		services.AddSingleton<AuthProviderFactory>();
 	}
 
 
