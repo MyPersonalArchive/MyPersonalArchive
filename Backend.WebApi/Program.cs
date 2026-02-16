@@ -8,8 +8,7 @@ using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using Backend.Core.Providers;
 using Newtonsoft.Json;
-using Backend.EmailIngestion;
-using Backend.EmailIngestion.Providers;
+using Backend.EmailIngestion.ImapClientProviders;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
@@ -151,9 +150,9 @@ public static class Program
 		var services = builder.Services;
 
 		services.AddHttpClient();
-		services.AddSingleton<AuthProviderBase, GmailOAuthProvider>();
-		services.AddSingleton<AuthProviderBase, FastMailBasicAuthProvider>();
-		services.AddSingleton<AuthProviderFactory>();
+		services.AddSingleton<ImapClientProviderBase, GmailImapClientProvider>();
+		services.AddSingleton<ImapClientProviderBase, FastMailImapClientProvider>();
+		services.AddSingleton<ImapClientProviderFactory>();
 	}
 
 

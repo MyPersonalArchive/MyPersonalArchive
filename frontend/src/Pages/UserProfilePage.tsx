@@ -2,7 +2,7 @@ import { useAtom, useAtomValue } from "jotai"
 import { Link, useNavigate } from "react-router-dom"
 import { ExternalAccount, externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
-import { useContext } from "react"
+import { useContext, useState } from "react"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { RoutePaths } from "../RoutePaths"
 import { MimeTypeConverterArray, useSortableDragDrop } from "../Components/DragDropHelpers"
@@ -29,9 +29,9 @@ export const UserProfilePage = () => {
 	const currentUser = useAtomValue(currentUserAtom)
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 	const { currentTenantId, switchToTenantId } = useContext(CurrentTenantIdContext)
+
 	const navigate = useNavigate()
 	const apiClient = useApiClient()
-	const { provider, setProvider, login } = useRemoteAuthentication()
 
 
 	const dnd = useSortableDragDrop<ExternalAccount, HTMLDivElement>(
@@ -61,10 +61,6 @@ export const UserProfilePage = () => {
 		} catch (error) {
 			console.error("Failed to save external accounts:", error)
 		}
-	}
-
-	const connectNewAccount = () => {
-
 	}
 
 
@@ -165,22 +161,37 @@ export const UserProfilePage = () => {
 
 			<div className="stack-horizontal to-the-right my-4">
 				Connect new account:
-				<div className="group">
-					<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail" | "zohomail")}>
-						<option value="gmail">Gmail</option>
-						<option value="fastmail">Fastmail</option>
-						<option value="zohomail">Zoho Mail</option>
-					</select>
-
-					<button className="btn" onClick={() => login(window.location.origin + "/email")}>
-						Authenticate
-					</button>
-				</div>
+				<ConnectNewAccount />
 
 				<button className="btn" onClick={save}>Save</button>
 			</div>
 
 
 		</>
+	)
+}
+
+
+export const ConnectNewAccount = () => {
+	const [provider, setProvider] = useState<"gmail" | "fastmail" | "zohomail">("gmail")
+	const [authType, setAuthType] = useState<"oauth" | "basic">("oauth")
+	const { login } = useRemoteAuthentication()
+
+	//TODO: load EmailProviderSettings from backend and show the available providers and auth types based on that
+	//TODO: show only available auth types for the selected provider (e.g. Fastmail only supports basic auth, so if the user selects Fastmail, hide the option to select OAuth)
+
+	//TODO: Consider Having just one dropdown for provider+auth type combinations instead of two separate dropdowns, since some combinations are not valid (e.g. Fastmail + OAuth)
+	return (
+		<div className="group">
+			<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail" | "zohomail")}>
+				<option value="gmail">Gmail</option>
+				<option value="fastmail">Fastmail</option>
+				<option value="zohomail">Zoho Mail</option>
+			</select>
+
+			<button className="btn" onClick={() => login(provider, authType, window.location.origin + "/email")}>
+				Authenticate
+			</button>
+		</div>
 	)
 }

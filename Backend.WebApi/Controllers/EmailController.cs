@@ -1,4 +1,5 @@
 using Backend.EmailIngestion;
+using Backend.EmailIngestion.ImapClientProviders;
 using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,9 +29,9 @@ namespace Backend.WebApi.Controllers;
 public class EmailController : ControllerBase
 {
 	private readonly ExternalAccountService _externalAccountService;
-	private readonly AuthProviderFactory _emailProviderFactory;
+	private readonly ImapClientProviderFactory _emailProviderFactory;
 
-	public EmailController(ExternalAccountService externalAccountService, AuthProviderFactory emailProviderFactory)
+	public EmailController(ExternalAccountService externalAccountService, ImapClientProviderFactory emailProviderFactory)
 	{
 		_externalAccountService = externalAccountService;
 		_emailProviderFactory = emailProviderFactory;
@@ -47,11 +48,8 @@ public class EmailController : ControllerBase
 		// --- BEGIN generic code to get the provider and connect ---
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 
-		var externalAccount = externalAccountSettings.ExternalAccounts.FirstOrDefault(a => a.Id == externalAccountId);
-		if (externalAccount == null)
-		{
-			throw new Exception("External account not found");
-		}
+		var externalAccount = externalAccountSettings.ExternalAccounts
+			.FirstOrDefault(a => a.Id == externalAccountId) ?? throw new Exception("External account not found");
 
 		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
 		{

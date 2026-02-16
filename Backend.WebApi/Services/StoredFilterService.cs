@@ -1,4 +1,5 @@
 using Backend.Core;
+using Backend.WebApi.Services.Infrastructure;
 using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Services;

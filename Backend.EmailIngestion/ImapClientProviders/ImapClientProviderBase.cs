@@ -1,9 +1,9 @@
 using Backend.Core.Authentication;
 using MailKit.Net.Imap;
 
-namespace Backend.EmailIngestion.Providers;
+namespace Backend.EmailIngestion.ImapClientProviders;
 
-public abstract class AuthProviderBase
+public abstract class ImapClientProviderBase
 {
 	public abstract AuthMode AuthenticationMode { get; }
 

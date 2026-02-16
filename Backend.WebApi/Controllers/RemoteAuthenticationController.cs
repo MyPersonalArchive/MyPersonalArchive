@@ -7,6 +7,7 @@ using Backend.WebApi.Services;
 using Backend.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Backend.Core.Authentication;
+using System.Net.Http.Headers;
 
 
 namespace Backend.WebApi.Controllers;
@@ -16,10 +17,6 @@ namespace Backend.WebApi.Controllers;
 [Authorize(Policy = "TenantIdPolicy")]
 public class RemoteAuthenticationController : ControllerBase
 {
-	private readonly string _baseurl;
-	private readonly string _clientId;
-	private readonly string _clientSecret;
-
 	private readonly CookieOptions _secureCookieOptions = new()
 	{
 		HttpOnly = true,
@@ -28,64 +25,71 @@ public class RemoteAuthenticationController : ControllerBase
 		IsEssential = true
 	};
 
-	private readonly IAmbientDataResolver _ambientDataResolver;
-
-	public RemoteAuthenticationController(IConfiguration config, IAmbientDataResolver ambientDataResolver)
-	{
-		_baseurl = "https://accounts.google.com/o/oauth2/v2/auth";		//TODO: This should not be a provider-specific token endpoint
-		_clientId = config["Google:ClientId"]!;
-		_clientSecret = config["Google:ClientSecret"]!;
-
-		_ambientDataResolver = ambientDataResolver;
-	}
-
 
 	[HttpGet("start-authentication")]
-	public IActionResult StartAuthentication(
+	public async Task<IActionResult> StartAuthentication(
 		[FromQuery(Name = "provider-name")] string providerName,
-		[FromQuery(Name = "return-url")] string returnUrl)
+		[FromQuery(Name = "auth-type")] string authType,
+		[FromQuery(Name = "return-url")] string returnUrl,
+		[FromServices] IAmbientDataResolver ambientDataResolver,
+		[FromServices] EmailProviderService emailProviderService
+	)
 	{
-		// Validate inputs
-		var tenantId = _ambientDataResolver.GetCurrentTenantId();
+		var tenantId = ambientDataResolver.GetCurrentTenantId();
 		if (tenantId == null)
 		{
 			return BadRequest("Missing tenant ID. Tenant ID is required to start authentication.");
 		}
 
+		var emailProviderSettings = await emailProviderService.GetEmailProviderSettingsAsync();
 
-		if (providerName == "gmail")
+		var providerSettings = emailProviderSettings.EmailProviders
+			.FirstOrDefault(p => p.Name == providerName) ?? throw new Exception("Unknown email provider");
+
+		var authTypeSettings = providerSettings.AuthTypes
+			.FirstOrDefault(a => a.GetType().Name.StartsWith(authType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("Unknown auth type");
+
+		switch (authTypeSettings)
 		{
-			var nonce = GenerateNonce();
-			HttpContext.Response.Cookies.Append($"{providerName}-nonce", nonce, _secureCookieOptions);
+			case EmailProviderSettings.OAuthAuthType oauthSettings:
+				return StartAuthenticationWithOAuth(providerName, oauthSettings, returnUrl, tenantId.Value);
 
-			var state = new AuthState
-			{
-				Provider = providerName,
-				Nonce = nonce,
-				ReturnUrl = returnUrl,
-				TenantId = tenantId.Value
-			};
+			case EmailProviderSettings.BasicAuthType:
+				return BadRequest("Basic auth does not support remote authentication flow");
 
-			var parameters = new Dictionary<string, string?>
-			{
-				["response_type"] = "code",
-				["client_id"] = _clientId,
-				["redirect_uri"] = Url.Action("CallbackFromProvider", "RemoteAuthentication", new { }, Request.Scheme),
-				["scope"] = "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email",
-				// ["scope"] = "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
-				["access_type"] = "offline",
-				["prompt"] = "consent",
-				["state"] = JsonSerializer.Serialize(state, JsonSerializerOptions.Web),
-				// ["tenant-id"] = _ambientDataResolver.GetCurrentTenantId()?.ToString()
-			};
-
-			string redirectUrl = QueryHelpers.AddQueryString(_baseurl, parameters);
-			return Redirect(redirectUrl);
+			default:
+				throw new Exception("Unsupported auth type");
 		}
-		else
+	}
+
+	private IActionResult StartAuthenticationWithOAuth(string providerName, EmailProviderSettings.OAuthAuthType oauthSettings, string returnUrl, int tenantId)
+	{
+		var nonce = GenerateNonce();
+		HttpContext.Response.Cookies.Append($"{providerName}+{oauthSettings.Type}-nonce", nonce, _secureCookieOptions);
+
+		var state = new AuthState
 		{
-			return BadRequest($"Unknown provider: {providerName}");
-		}
+			Provider = providerName,
+			AuthenticationType = oauthSettings.Type,
+			Nonce = nonce,
+			ReturnUrl = returnUrl,
+			TenantId = tenantId
+		};
+
+		var parameters = new Dictionary<string, string?>
+		{
+			["response_type"] = "code",
+			["client_id"] = oauthSettings.ClientId,
+			["redirect_uri"] = Url.Action("CallbackFromProvider", "RemoteAuthentication", new { }, Request.Scheme),
+			["scope"] = oauthSettings.Scopes != null ? string.Join(" ", oauthSettings.Scopes) : null,
+			["access_type"] = "offline",
+			["prompt"] = "consent",
+			["state"] = JsonSerializer.Serialize(state, JsonSerializerOptions.Web)
+		};
+
+		string redirectUrl = QueryHelpers.AddQueryString(oauthSettings.AuthEndpoint, parameters);
+		return Redirect(redirectUrl);
+
 	}
 
 
@@ -93,7 +97,8 @@ public class RemoteAuthenticationController : ControllerBase
 	public async Task<IActionResult> CallbackFromProvider(
 		[FromQuery(Name = "state")] string encodedState,
 		[FromQuery] string code,
-		[FromServices] ExternalAccountService externalAccountSettingsService
+		[FromServices] ExternalAccountService externalAccountSettingsService,
+		[FromServices] EmailProviderService emailProviderService
 		)
 	{
 		var state = JsonSerializer.Deserialize<AuthState>(Uri.UnescapeDataString(encodedState), JsonSerializerOptions.Web);
@@ -102,7 +107,7 @@ public class RemoteAuthenticationController : ControllerBase
 			return BadRequest("Invalid state");
 		}
 
-		if (!HttpContext.Request.Cookies.TryGetValue($"{state.Provider}-nonce", out var nonce))
+		if (!HttpContext.Request.Cookies.TryGetValue($"{state.Provider}+{state.AuthenticationType}-nonce", out var nonce))
 		{
 			return BadRequest("Missing nonce cookie");
 		}
@@ -117,17 +122,28 @@ public class RemoteAuthenticationController : ControllerBase
 			return BadRequest("Missing code");
 		}
 
-		var json = await ExchangeAuthorizationCodeForTokens(code);
+		var emailProviderSettings = await emailProviderService.GetEmailProviderSettingsAsync();
+
+		var providerSettings = emailProviderSettings.EmailProviders
+			.FirstOrDefault(p => p.Name == state.Provider) ?? throw new Exception("Unknown email provider");
+
+		var authTypeSettings = providerSettings.AuthTypes
+			.FirstOrDefault(a => a.GetType().Name.StartsWith(state.AuthenticationType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("Unknown auth type");
+
+		if (authTypeSettings is not EmailProviderSettings.OAuthAuthType oauthSettings)
+		{
+			return BadRequest("Invalid auth type in state");
+		}
+
+		var json = await ExchangeAuthorizationCodeForTokens(code, oauthSettings);
 		var authContext = new OAuthContext
 		{
 			AccessToken = json.GetProperty("access_token").GetString()!,
-			RefreshToken = json.GetProperty("refresh_token").GetString(),
+			RefreshToken = json.TryGetProperty("refresh_token", out var rt) ? rt.GetString() : null,
 			ExpiresAt = DateTime.UtcNow.AddSeconds(json.GetProperty("expires_in").GetInt32())
 		};
 
-		var jwtToken = GetJwtToken(json.GetProperty("id_token"));
-		// var fullName = jwtToken.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "<missing name claim>";
-		var emailAddress = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "<missing email claim>";
+		var emailAddress = await ResolveEmailAddress(json, oauthSettings, authContext.AccessToken!);
 
 		var account = new ExternalAccountSettings.Account()
 		{
@@ -144,30 +160,72 @@ public class RemoteAuthenticationController : ControllerBase
 	}
 
 
-	private static JwtSecurityToken GetJwtToken(JsonElement json)
+	private async Task<string> ResolveEmailAddress(JsonElement tokenResponse, EmailProviderSettings.OAuthAuthType oauthSettings, string accessToken)
 	{
-		var tokenHandler = new JwtSecurityTokenHandler();
-		return tokenHandler.ReadJwtToken(json.GetString());
+		// If provider returns an id_token (e.g. Google with OpenID Connect), extract email from JWT
+		if (tokenResponse.TryGetProperty("id_token", out var idToken))
+		{
+			var tokenHandler = new JwtSecurityTokenHandler();
+			var jwtToken = tokenHandler.ReadJwtToken(idToken.GetString());
+			var email = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+			if (email != null) return email;
+		}
+
+		// Otherwise, call the userinfo endpoint (e.g. Zoho)
+		if (!string.IsNullOrEmpty(oauthSettings.UserInfoEndpoint))
+		{
+			using var client = new HttpClient();	//TODO: reuse HttpClient from DI
+			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Zoho-oauthtoken", accessToken);
+			var resp = await client.GetAsync(oauthSettings.UserInfoEndpoint);
+			resp.EnsureSuccessStatusCode();
+			var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
+
+			// Try common claim names for email
+			if (json.TryGetProperty("email", out var emailProp))
+				return emailProp.GetString()!;
+			if (json.TryGetProperty("Email", out var emailProp2))
+				return emailProp2.GetString()!;
+		}
+
+		throw new Exception("Could not resolve email address from OAuth provider. " +
+			"Ensure the provider returns an id_token or configure a UserInfoEndpoint.");
 	}
 
 
-	private async Task<JsonElement> ExchangeAuthorizationCodeForTokens(string code)
+	private async Task<JsonElement> ExchangeAuthorizationCodeForTokens(string code, EmailProviderSettings.OAuthAuthType oauthSettings)
 	{
-		using var client = new HttpClient();
+		using var client = new HttpClient();	//TODO: reuse HttpClient from DI
 
-		var resp = await client.PostAsync(
-			"https://oauth2.googleapis.com/token",      //TODO: This should not be a provider-specific token endpoint
-			new FormUrlEncodedContent(new Dictionary<string, string>
-			{
-				["code"] = code,
-				["client_id"] = _clientId,
-				["client_secret"] = _clientSecret,
-				["redirect_uri"] = Url.Action("CallbackFromProvider", "RemoteAuthentication", new { }, Request.Scheme)!,
-				["grant_type"] = "authorization_code"
-			})
-		);
+		var redirectUri = Url.Action("CallbackFromProvider", "RemoteAuthentication", new { }, Request.Scheme)!;
+		
+		var parameters = new Dictionary<string, string?>
+		{
+			["code"] = code,
+			["client_id"] = oauthSettings.ClientId,
+			["client_secret"] = oauthSettings.ClientSecret,
+			["redirect_uri"] = redirectUri,
+			["grant_type"] = "authorization_code",
+		};
+
+		// Some providers (e.g. Zoho) require params as query string, not form body.
+		// Sending as query params works for both Google and Zoho.
+		var url = QueryHelpers.AddQueryString(oauthSettings.TokenEndpoint, parameters);
+
+		var resp = await client.PostAsync(url, null);
 		resp.EnsureSuccessStatusCode();
-		return JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
+
+		var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
+
+		// Some providers (e.g. Zoho) return HTTP 200 with an error in the body
+		if (json.TryGetProperty("error", out var error))
+		{
+			var errorDesc = json.TryGetProperty("error_description", out var desc) ? desc.GetString() : null;
+			throw new Exception($"OAuth token exchange failed: {error.GetString()}" +
+				(errorDesc != null ? $" - {errorDesc}" : "") +
+				$" (endpoint: {oauthSettings.TokenEndpoint})");
+		}
+
+		return json;
 	}
 
 
@@ -185,6 +243,7 @@ public class RemoteAuthenticationController : ControllerBase
 	class AuthState
 	{
 		public required string Provider { get; set; }
+		public required string AuthenticationType { get; set; }
 		public required string Nonce { get; set; }
 		public required string ReturnUrl { get; set; }
 		public required int TenantId { get; set; }

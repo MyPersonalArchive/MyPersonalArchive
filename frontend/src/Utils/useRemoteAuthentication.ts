@@ -8,19 +8,18 @@ export type ProviderName = "gmail" | "fastmail" | "zohomail"
 
 
 export function useRemoteAuthentication() {
-	const [provider, setProvider] = useState<ProviderName>("gmail")
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
 	const { currentTenantId } = useContext(CurrentTenantIdContext)
 
 	const apiClient = useApiClient()
 
-	const login = async (returnUrl: string) => {
-		switch (provider) {
-			case "zohomail":
-			case "gmail": {
+	const login = async (provider: ProviderName, authType: "oauth" | "basic", returnUrl: string) => {
+		switch (authType) {
+			case "oauth": {
 				const payload = {
 					["provider-name"]: provider,
+					["auth-type"]: "oauth",
 					["return-url"]: returnUrl,
 					["tenant-id"]: currentTenantId
 				}
@@ -30,7 +29,8 @@ export function useRemoteAuthentication() {
 				break
 			}
 
-			case "fastmail": {
+			case "basic": {
+				//TODO: Make a full form for this instead of using prompt
 				const username = prompt("FastMail username:")
 				const password = prompt("FastMail app password:")
 				if (username && password) {
@@ -45,8 +45,6 @@ export function useRemoteAuthentication() {
 
 
 	return {
-		provider,
-		setProvider,
 		login,
 		isAuthenticated
 	}

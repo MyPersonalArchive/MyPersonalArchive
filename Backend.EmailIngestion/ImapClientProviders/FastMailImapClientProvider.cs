@@ -1,13 +1,14 @@
 using System.Text.Json;
 using Backend.Core.Authentication;
+using Backend.EmailIngestion.ImapClientProviders;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MailKit.Security;
 
-namespace Backend.EmailIngestion.Providers;
+namespace Backend.EmailIngestion.ImapClientProviders;
 
-public class FastMailBasicAuthProvider : AuthProviderBase
+public class FastMailImapClientProvider : ImapClientProviderBase
 {
 	private readonly string _imapHost = "imap.fastmail.com";
 	private readonly int _imapPort = 993;
