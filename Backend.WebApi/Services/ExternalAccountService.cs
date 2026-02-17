@@ -1,93 +1,109 @@
 using Backend.Core;
 using Backend.Core.Authentication;
-using Backend.WebApi.Services.Infrastructure;
+using Backend.Core.Infrastructure;
+using Backend.Core.Services.Infrastructure;
+using Backend.WebApi.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 
-namespace Backend.WebApi.Services;
-
-
-[RegisterService(ServiceLifetime.Scoped)]
-public class ExternalAccountService : UserSettingsServiceBase<ExternalAccountSettings>
+namespace Backend.WebApi.Services
 {
-	protected override string FileName => "ExternalAccountSettings.json";
 
-	private readonly SignalRService _signalRService;
-
-	public ExternalAccountService(IOptions<AppConfig> config, IAmbientDataResolver resolver, SignalRService signalRService)
-		: base(config, resolver)
+	[RegisterService(ServiceLifetime.Scoped)]
+	public class ExternalAccountService : UserSettingsServiceBase<ExternalAccountSettings>
 	{
-		_signalRService = signalRService;
-	}
+		protected override string FileName => "ExternalAccountSettings.json";
 
+		private readonly SignalRService _signalRService;
 
-	public async Task<ExternalAccountSettings> GetExternalAccountSettingsAsync()
-	{
-		return await LoadSettingsAsync();
-	}
-
-	public async Task StoreExternalAccountSettingsAsync(ExternalAccountSettings settings)
-	{
-		await SaveSettingsAsync(settings);
-		await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
-	}
-
-	// public async Task ChangeExternalAccountSettingsAsync(Func<ExternalAccountSettings, ExternalAccountSettings> changeDelegate)
-	// {
-	// 	await ChangeSettingsAsync(changeDelegate);
-	// 	await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
-	// }
-
-	public async Task Replace(ExternalAccountSettings.Account account)
-	{
-		await ChangeSettingsAsync(settings =>
+		public ExternalAccountService(IOptions<AppConfig> config, IAmbientDataResolver resolver, SignalRService signalRService)
+			: base(config, resolver)
 		{
-			var index = settings.ExternalAccounts.FindIndex(a => a.Id == account.Id);
-			if (index != -1)
-			{
-				settings.ExternalAccounts[index] = account;
-			}
-			else
-			{
-				settings.ExternalAccounts.Add(account);
-			}
-			return settings;
-		});
-		await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
-	}
+			_signalRService = signalRService;
+		}
 
-	public async Task AddOrReplace(ExternalAccountSettings.Account account)
-	{
-		await ChangeSettingsAsync(settings =>
+
+		public async Task<ExternalAccountSettings> GetExternalAccountSettingsAsync()
 		{
-			// If an account with the same email and provider exists, replace it. Otherwise, add the new account.
-			var index = settings.ExternalAccounts.FindIndex(a => a.EmailAddress == account.EmailAddress && a.Provider == account.Provider);
-			if (index != -1)
+			return await LoadSettingsAsync();
+		}
+
+		public async Task StoreExternalAccountSettingsAsync(ExternalAccountSettings settings)
+		{
+			await SaveSettingsAsync(settings);
+			await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+		}
+
+		// public async Task ChangeExternalAccountSettingsAsync(Func<ExternalAccountSettings, ExternalAccountSettings> changeDelegate)
+		// {
+		// 	await ChangeSettingsAsync(changeDelegate);
+		// 	await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+		// }
+
+		public async Task Replace(ExternalAccountSettings.Account account)
+		{
+			await ChangeSettingsAsync(settings =>
 			{
-				settings.ExternalAccounts[index] = account;
-			}
-			else
+				var index = settings.ExternalAccounts.FindIndex(a => a.Id == account.Id);
+				if (index != -1)
+				{
+					settings.ExternalAccounts[index] = account;
+				}
+				else
+				{
+					settings.ExternalAccounts.Add(account);
+				}
+				return settings;
+			});
+			await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+		}
+
+		public async Task AddOrReplace(ExternalAccountSettings.Account account)
+		{
+			await ChangeSettingsAsync(settings =>
 			{
-				settings.ExternalAccounts.Add(account);
-			}
-			return settings;
-		});
-		await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+				// If an account with the same email and provider exists, replace it. Otherwise, add the new account.
+				var index = settings.ExternalAccounts.FindIndex(a => a.EmailAddress == account.EmailAddress && a.Provider == account.Provider);
+				if (index != -1)
+				{
+					settings.ExternalAccounts[index] = account;
+				}
+				else
+				{
+					settings.ExternalAccounts.Add(account);
+				}
+				return settings;
+			});
+			await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+		}
 	}
-}
 
 
-public class ExternalAccountSettings : SettingsBase
-{
-	public List<Account> ExternalAccounts { get; set; } = [];
-
-	public class Account
+	public class ExternalAccountSettings : SettingsBase
 	{
-		public Guid Id { get; set; }
-		public required string DisplayName { get; set; }
-		public required string EmailAddress { get; set; }
-		public required IAuthContext Credentials { get; set; }
-		public required string Type { get; set; }
-		public required string Provider { get; set; }
+		public List<Account> ExternalAccounts { get; set; } = [];
+
+		public class Account
+		{
+			public Guid Id { get; set; }
+			public required string DisplayName { get; set; }
+			public required string EmailAddress { get; set; }
+			public required string Provider { get; set; }
+			public required string Type { get; set; }
+			public required IAuthContext Credentials { get; set; }
+		}
+	}
+
+
+	public static class ExternalAccountSettingsQueryExtensions
+	{
+		extension(ExternalAccountSettings settings)
+		{
+			public ExternalAccountSettings.Account GetExternalAccount(Guid accountId)
+			{
+				return settings.ExternalAccounts.FirstOrDefault(a => a.Id == accountId) ?? throw new Exception("External account not found");
+			}
+		}
 	}
 }

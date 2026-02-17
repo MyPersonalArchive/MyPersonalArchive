@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Backend.Core;
+namespace Backend.Core.Infrastructure;
 
 public class ServiceDiscovery
 {

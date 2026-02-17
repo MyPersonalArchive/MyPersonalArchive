@@ -1,7 +1,7 @@
-using Backend.Core;
+using Backend.Core.Infrastructure;
 using Microsoft.Extensions.Options;
 
-namespace Backend.WebApi.Services.Infrastructure;
+namespace Backend.Core.Services.Infrastructure;
 
 public abstract class TenantSettingsServiceBase<T> : SettingsServiceBase<T> where T : SettingsBase, new()
 {

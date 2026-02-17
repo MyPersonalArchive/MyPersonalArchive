@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
-using Backend.Core;
 using Backend.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
-using Backend.DbModel.Database.EntityModels;
+using Backend.Core.Infrastructure;
 
-namespace Backend.WebApi;
+namespace Backend.WebApi.SignalR;
 
 
 [Authorize]

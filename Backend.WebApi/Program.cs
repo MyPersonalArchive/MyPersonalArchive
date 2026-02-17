@@ -8,13 +8,15 @@ using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using Backend.Core.Providers;
 using Newtonsoft.Json;
-using Backend.EmailIngestion.ImapClientProviders;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using Backend.WebApi.Middleware;
 using Backend.Core.JsonConverters;
 using Backend.WebApi.Cqrs.Infrastructure;
+using MailKit.Net.Imap;
+using Backend.Core.Infrastructure;
+using Backend.WebApi.SignalR;
 
 namespace Backend.WebApi;
 
@@ -61,7 +63,10 @@ public static class Program
 		builder.Services.AddTransient<PasswordHasher>();
 		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
 
+		builder.Services.AddHttpClient();
 		builder.Services.AddOptions();
+
+		builder.Services.AddScoped<ImapClient>();
 
 		builder.RegisterEndpoints();
 		builder.RegisterSignalRServices();
@@ -69,8 +74,7 @@ public static class Program
 		builder.RegisterBackupProviders();
 		builder.RegisterEncryptionServics();
 		builder.RegisterRestoreServices();
-		// builder.RegisterSwaggerServices();
-		builder.RegisterEmailServices();
+
 
 		// builder.Services.AddScoped<IVersionRepository, VersionRepository>();
 		// builder.Services.AddScoped<ISeedService, SeedService>();
@@ -144,17 +148,6 @@ public static class Program
 
 		services.AddScoped<OpenSslAes256Cbc>();
 	}
-
-	private static void RegisterEmailServices(this IHostApplicationBuilder builder)
-	{
-		var services = builder.Services;
-
-		services.AddHttpClient();
-		services.AddSingleton<ImapClientProviderBase, GmailImapClientProvider>();
-		services.AddSingleton<ImapClientProviderBase, FastMailImapClientProvider>();
-		services.AddSingleton<ImapClientProviderFactory>();
-	}
-
 
 	private static void RegisterAuthenticationServices(this WebApplicationBuilder builder)
 	{

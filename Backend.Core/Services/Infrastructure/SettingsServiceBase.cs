@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Backend.Core;
+using Backend.Core.Infrastructure;
 using Microsoft.Extensions.Options;
 
-namespace Backend.WebApi.Services.Infrastructure;
+namespace Backend.Core.Services.Infrastructure;
 
 public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 {

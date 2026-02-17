@@ -1,4 +1,7 @@
-using Backend.Core;
+using Backend.Core.Infrastructure;
+
+namespace Backend.WebApi;
+
 
 public class StaticAmbientDataResolver : IAmbientDataResolver
 {

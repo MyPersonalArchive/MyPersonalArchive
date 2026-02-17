@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Backend.Core;
+using Backend.Core.Infrastructure;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;

@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Backend.Core;
+namespace Backend.Core.Infrastructure;
 
 public class RegisterServiceAttribute : Attribute
 {

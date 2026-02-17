@@ -1,6 +1,7 @@
-using Backend.Core;
+using Backend.Core.Infrastructure;
 using Backend.DbModel.Database.EntityModels;
-using Message = Backend.WebApi.Services.SignalRService.Message;
+using Backend.WebApi.SignalR;
+using Message = Backend.WebApi.SignalR.SignalRService.Message;
 
 namespace Backend.WebApi.Services;
 

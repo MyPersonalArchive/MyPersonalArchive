@@ -1,9 +1,7 @@
 using Backend.Core;
-using Backend.Core.Providers;
+using Backend.Core.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using System.Net.Http.Headers;
 
 namespace Backend.WebApi.Controllers;
 

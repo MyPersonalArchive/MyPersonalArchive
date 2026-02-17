@@ -1,5 +1,7 @@
 using Backend.Core;
-using Backend.WebApi.Services.Infrastructure;
+using Backend.Core.Infrastructure;
+using Backend.Core.Services.Infrastructure;
+using Backend.WebApi.SignalR;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
@@ -36,7 +38,7 @@ public class EmailProviderSettings : SettingsBase
 
 	public class EmailProvider
 	{
-		public required string Name { get; set; }
+		public required string Provider { get; set; }
 		public required string DisplayName { get; set; }
 		public required string ImapHost { get; set; }
 		public required int ImapPort { get; set; }
@@ -48,6 +50,7 @@ public class EmailProviderSettings : SettingsBase
 	[JsonDerivedType(typeof(BasicAuthType), typeDiscriminator: "basic")]
 	public interface IAuthType
 	{
+		public string Type { get; }
 	}
 
 	public class OAuthAuthType : IAuthType
@@ -64,5 +67,22 @@ public class EmailProviderSettings : SettingsBase
 	public class BasicAuthType : IAuthType
 	{
 		public string Type => "basic";
+	}
+}
+
+
+public static class EmailProviderSettingsQueryExtensions{
+	extension(EmailProviderSettings settings)
+	{
+		public EmailProviderSettings.EmailProvider GetEmailProvider(string providerName)
+		{
+			return settings.EmailProviders.FirstOrDefault(p => p.Provider == providerName) ?? throw new Exception("Unknown email provider");
+		}
+
+		public EmailProviderSettings.IAuthType GetAuthType(string providerName, string authType)
+		{
+			var emailProvider = settings.GetEmailProvider(providerName);
+			return emailProvider.AuthTypes.FirstOrDefault(a => a.Type == authType) ?? throw new Exception("Unknown auth type");
+		}
 	}
 }

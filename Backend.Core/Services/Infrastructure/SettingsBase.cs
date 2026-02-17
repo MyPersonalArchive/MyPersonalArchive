@@ -1,4 +1,4 @@
-namespace Backend.WebApi.Services.Infrastructure;
+namespace Backend.Core.Services.Infrastructure;
 
 public abstract class SettingsBase
 {
