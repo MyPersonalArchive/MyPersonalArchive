@@ -1,6 +1,4 @@
-
-
-namespace Backend.Core;
+namespace Backend.Core.Infrastructure;
 
 public interface IAmbientDataResolver
 {

@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Backend.Core.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Core;

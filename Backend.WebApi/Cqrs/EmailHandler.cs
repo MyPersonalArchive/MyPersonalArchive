@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core;
+using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
@@ -8,6 +9,7 @@ using Backend.EmailIngestion;
 using Backend.EmailIngestion.ImapClientProviders;
 using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.WebApi.Services;
+using MailKit.Net.Imap;
 
 namespace Backend.WebApi.Cqrs;
 
@@ -15,7 +17,7 @@ namespace Backend.WebApi.Cqrs;
 [RequireAllowedTenantId]
 public class ListFolders : IQuery<ListFolders, IEnumerable<string>>
 {
-	public required string ExternalAccountId { get; set; }
+	public required Guid ExternalAccountId { get; set; }
 }
 
 
@@ -60,49 +62,31 @@ public class EmailHandler :
 	IAsyncCommandHandler<CreateBlobsFromAttachments>
 {
 	private readonly ExternalAccountService _externalAccountService;
-	private readonly ImapClientProviderFactory _emailProviderFactory;
+	private readonly EmailProviderService _emailProviderService;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly IFileStorageProvider _fileProvider;
+	private readonly AccessTokenHelper _accessTokenHelper;
 
 	public EmailHandler(ExternalAccountService externalAccountService,
-					 ImapClientProviderFactory emailProviderFactory,
+					 EmailProviderService emailProviderService,
 					 MpaDbContext dbContext,
 					 IAmbientDataResolver resolver,
-					 IFileStorageProvider fileProvider)
+					 IFileStorageProvider fileProvider,
+					 AccessTokenHelper accessTokenHelper)
 	{
 		_externalAccountService = externalAccountService;
-		_emailProviderFactory = emailProviderFactory;
+		_emailProviderService = emailProviderService;
 		_dbContext = dbContext;
 		_resolver = resolver;
 		_fileProvider = fileProvider;
+		_accessTokenHelper = accessTokenHelper;
 	}
 
 
 	public async Task<IEnumerable<string>> Handle(ListFolders query)
 	{
-		// --- BEGIN generic code to get the provider and connect ---
-		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-
-		var externalAccount = externalAccountSettings.ExternalAccounts
-			.FirstOrDefault(a => a.Id.ToString() == query.ExternalAccountId) ?? throw new Exception("External account not found");
-
-		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
-		{
-			throw new Exception("Unsupported email provider");
-		}
-
-		var auth = externalAccount.Credentials;
-
-		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
-		if (refreshedAuth != auth)
-		{
-			externalAccount.Credentials = refreshedAuth;
-			await _externalAccountService.Replace(externalAccount);
-		}
-
-		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
-		// --- END generic code to get the provider and connect ---
+		var imapClient = await GetImapClient(query.ExternalAccountId);
 
 		return await imapClient.GetAvailableFolders();
 	}
@@ -110,28 +94,7 @@ public class EmailHandler :
 
 	public async Task<IEnumerable<Email>> Handle(ListEmails query)
 	{
-		// --- BEGIN generic code to get the provider and connect ---
-		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-
-		var externalAccount = externalAccountSettings.ExternalAccounts
-			.FirstOrDefault(a => a.Id == query.ExternalAccountId) ?? throw new Exception("External account not found");
-
-		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
-		{
-			throw new Exception("Unsupported email provider");
-		}
-
-		var auth = externalAccount.Credentials;
-
-		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
-		if (refreshedAuth != auth)
-		{
-			externalAccount.Credentials = refreshedAuth;
-			await _externalAccountService.Replace(externalAccount);
-		}
-
-		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
-		// --- END generic code to get the provider and connect ---
+		var imapClient = await GetImapClient(query.ExternalAccountId);
 
 		return await imapClient.GetEmailsByCriteria(query.Criteria);
 	}
@@ -144,33 +107,9 @@ public class EmailHandler :
 			return;
 		}
 
-		// --- BEGIN generic code to get the provider and connect ---
-
-		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-
-		var externalAccount = externalAccountSettings.ExternalAccounts
-			.FirstOrDefault(a => a.Id == command.ExternalAccountId) ?? throw new Exception("External account not found");
-
-		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
-		{
-			throw new Exception("Unsupported email provider");
-		}
-
-		var auth = externalAccount.Credentials;
-
-		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
-		if (refreshedAuth != auth)
-		{
-			externalAccount.Credentials = refreshedAuth;
-			await _externalAccountService.Replace(externalAccount);
-		}
-
-		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
-
-		// --- END generic code to get the provider and connect ---
+		var imapClient = await GetImapClient(command.ExternalAccountId);
 
 		var emails = await imapClient.GetEmailsByIds(command.EmailFolder, command.MessageIds);
-
 		foreach (var email in emails)
 		{
 			var archiveItem = new ArchiveItem
@@ -224,28 +163,7 @@ public class EmailHandler :
 			return;
 		}
 
-		// --- BEGIN generic code to get the provider and connect ---
-		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-
-		var externalAccount = externalAccountSettings.ExternalAccounts
-			.FirstOrDefault(a => a.Id == command.ExternalAccountId) ?? throw new Exception("External account not found");
-
-		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
-		{
-			throw new Exception("Unsupported email provider");
-		}
-
-		var auth = externalAccount.Credentials;
-
-		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
-		if (refreshedAuth != auth)
-		{
-			externalAccount.Credentials = refreshedAuth;
-			await _externalAccountService.Replace(externalAccount);
-		}
-
-		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
-		// --- END generic code to get the provider and connect ---
+		var imapClient = await GetImapClient(command.ExternalAccountId);
 
 		foreach (var attachmentReference in command.AttachmentReferences)
 		{
@@ -259,6 +177,29 @@ public class EmailHandler :
 		}
 
 		await _dbContext.SaveChangesAsync();
+	}
+
+
+	private async Task<IImapClient> GetImapClient(Guid externalAccountId)
+	{
+		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
+		var externalAccount = externalAccountSettings.GetExternalAccount(externalAccountId);
+
+		var emailProviderSettings = await _emailProviderService.GetEmailProviderSettingsAsync();
+		var authType = emailProviderSettings.GetAuthType(externalAccount.Provider, externalAccount.Credentials.Type);
+		var emailProvider = emailProviderSettings.GetEmailProvider(externalAccount.Provider);
+
+		var auth = externalAccount.Credentials;
+
+		var refreshedAuth = await _accessTokenHelper.RefreshAccessTokenIfNeeded(auth, authType);
+		if (refreshedAuth != auth)
+		{
+			externalAccount.Credentials = refreshedAuth;
+			await _externalAccountService.Replace(externalAccount);
+		}
+
+		var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
+		return imapClient;
 	}
 
 

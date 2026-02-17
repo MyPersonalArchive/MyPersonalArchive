@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
-using Backend.Core;
+using Backend.Core.Infrastructure;
 
-namespace Backend.WebApi.Services;
+namespace Backend.WebApi.SignalR;
 
 
 [RegisterService(ServiceLifetime.Scoped)]

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Backend.Core.Infrastructure;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 

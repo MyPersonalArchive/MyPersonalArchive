@@ -5,6 +5,7 @@ using Backend.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Backend.DbModel.Database.EntityModels;
+using Backend.Core.Infrastructure;
 
 
 internal class Program

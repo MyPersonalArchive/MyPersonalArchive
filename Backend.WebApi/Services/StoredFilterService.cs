@@ -1,5 +1,7 @@
 using Backend.Core;
-using Backend.WebApi.Services.Infrastructure;
+using Backend.Core.Infrastructure;
+using Backend.Core.Services.Infrastructure;
+using Backend.WebApi.SignalR;
 using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Services;

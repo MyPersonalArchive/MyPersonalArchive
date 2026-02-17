@@ -29,12 +29,14 @@ namespace Backend.WebApi.Controllers;
 public class EmailController : ControllerBase
 {
 	private readonly ExternalAccountService _externalAccountService;
-	private readonly ImapClientProviderFactory _emailProviderFactory;
+	private readonly AccessTokenHelper _accessTokenHelper;
+	private readonly EmailProviderService _emailProviderService;
 
-	public EmailController(ExternalAccountService externalAccountService, ImapClientProviderFactory emailProviderFactory)
+	public EmailController(ExternalAccountService externalAccountService, AccessTokenHelper accessTokenHelper, EmailProviderService emailProviderService)
 	{
 		_externalAccountService = externalAccountService;
-		_emailProviderFactory = emailProviderFactory;
+		_accessTokenHelper = accessTokenHelper;
+		_emailProviderService = emailProviderService;
 	}
 
 
@@ -47,25 +49,22 @@ public class EmailController : ControllerBase
 	{
 		// --- BEGIN generic code to get the provider and connect ---
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
+		var externalAccount = externalAccountSettings.GetExternalAccount(externalAccountId);
 
-		var externalAccount = externalAccountSettings.ExternalAccounts
-			.FirstOrDefault(a => a.Id == externalAccountId) ?? throw new Exception("External account not found");
-
-		if (!_emailProviderFactory.TryGetProvider(externalAccount.Provider, out var provider))
-		{
-			throw new Exception("Unsupported email provider");
-		}
+		var emailProviderSettings = await _emailProviderService.GetEmailProviderSettingsAsync();
+		var authType = emailProviderSettings.GetAuthType(externalAccount.Provider, externalAccount.Type);
+		var emailProvider = emailProviderSettings.GetEmailProvider(externalAccount.Provider);
 
 		var auth = externalAccount.Credentials;
 
-		var refreshedAuth = await provider.RefreshAccessTokenIfNeeded(auth);
+		var refreshedAuth = await _accessTokenHelper.RefreshAccessTokenIfNeeded(auth, authType);
 		if (refreshedAuth != auth)
 		{
 			externalAccount.Credentials = refreshedAuth;
 			await _externalAccountService.Replace(externalAccount);
 		}
 
-		var imapClient = await provider.ConnectAsync(refreshedAuth, externalAccount.EmailAddress);
+		var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
 		// --- END generic code to get the provider and connect ---
 
 		var attachment = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);

@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Backend.WebApi.Services;
-using Backend.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Backend.Core.Authentication;
 using System.Net.Http.Headers;
+using Backend.Core.Infrastructure;
 
 
 namespace Backend.WebApi.Controllers;
@@ -44,7 +44,7 @@ public class RemoteAuthenticationController : ControllerBase
 		var emailProviderSettings = await emailProviderService.GetEmailProviderSettingsAsync();
 
 		var providerSettings = emailProviderSettings.EmailProviders
-			.FirstOrDefault(p => p.Name == providerName) ?? throw new Exception("Unknown email provider");
+			.FirstOrDefault(p => p.Provider == providerName) ?? throw new Exception("Unknown email provider");
 
 		var authTypeSettings = providerSettings.AuthTypes
 			.FirstOrDefault(a => a.GetType().Name.StartsWith(authType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("Unknown auth type");
@@ -125,7 +125,7 @@ public class RemoteAuthenticationController : ControllerBase
 		var emailProviderSettings = await emailProviderService.GetEmailProviderSettingsAsync();
 
 		var providerSettings = emailProviderSettings.EmailProviders
-			.FirstOrDefault(p => p.Name == state.Provider) ?? throw new Exception("Unknown email provider");
+			.FirstOrDefault(p => p.Provider == state.Provider) ?? throw new Exception("Unknown email provider");
 
 		var authTypeSettings = providerSettings.AuthTypes
 			.FirstOrDefault(a => a.GetType().Name.StartsWith(state.AuthenticationType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("Unknown auth type");

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Backend.Core;
+using Backend.Core.Infrastructure;
 
 namespace Backend.WebApi;
 
