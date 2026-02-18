@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.Services;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Backend.EmailIngestion.ImapClientProviders;
 
@@ -16,34 +17,64 @@ public class AccessTokenHelper
 	{
 		_httpClient = httpClient;
 	}
-	
+
 	public async Task<IAuthContext> RefreshAccessTokenIfNeeded(IAuthContext auth, EmailProviderSettings.IAuthType authType)
 	{
-		if (auth is not OAuthContext oauth || oauth.AccessToken == null || oauth.ExpiresAt > DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(2)))
+		if (auth is not OAuthContext oauth || oauth.AccessToken == null || oauth.ExpiresAt > DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)))
 		{
 			return auth; // No need to refresh
 		}
 
-		if(authType is not EmailProviderSettings.OAuthAuthType oauthAuthType)
+		return await ForceRefreshAccessToken(auth, authType);
+	}
+
+
+	/// <summary>
+	/// Unconditionally refreshes the access token, regardless of expiry timestamp.
+	/// Use when the server rejects the token despite our clock saying it's valid.
+	/// </summary>
+	public async Task<IAuthContext> ForceRefreshAccessToken(IAuthContext auth, EmailProviderSettings.IAuthType authType)
+	{
+		if (auth is not OAuthContext oauth)
+		{
+			throw new ArgumentException("Cannot force-refresh a non-OAuth auth context.");
+		}
+
+		if (string.IsNullOrEmpty(oauth.RefreshToken))
+		{
+			throw new InvalidOperationException("No refresh token available. User must re-authenticate.");
+		}
+
+		if (authType is not EmailProviderSettings.OAuthAuthType oauthAuthType)
 		{
 			throw new ArgumentException("Invalid auth type for OAuth token refresh.");
 		}
 		
-		var request = new HttpRequestMessage(HttpMethod.Post, oauthAuthType.TokenEndpoint)
+		// Use query parameters instead of form body - works for both Google and Zoho
+		var parameters = new Dictionary<string, string?>
 		{
-			Content = new FormUrlEncodedContent(new[]
-			{
-				new KeyValuePair<string, string>("client_id", oauthAuthType.ClientId),
-				new KeyValuePair<string, string>("client_secret", oauthAuthType.ClientSecret),
-				new KeyValuePair<string, string>("refresh_token", oauth.RefreshToken!),
-				new KeyValuePair<string, string>("grant_type", "refresh_token"),
-			})
+			["client_id"] = oauthAuthType.ClientId,
+			["client_secret"] = oauthAuthType.ClientSecret,
+			["refresh_token"] = oauth.RefreshToken,
+			["grant_type"] = "refresh_token",
 		};
-
-		using var response = await _httpClient.SendAsync(request);
-		response.EnsureSuccessStatusCode();
+		
+		var url = QueryHelpers.AddQueryString(oauthAuthType.TokenEndpoint, parameters);
+		using var response = await _httpClient.PostAsync(url, null);
 
 		var content = await response.Content.ReadAsStringAsync();
+		var json = JsonDocument.Parse(content).RootElement;
+
+		// Some providers (e.g. Zoho) return HTTP 200 with an error in the body
+		if (json.TryGetProperty("error", out var error))
+		{
+			var errorDesc = json.TryGetProperty("error_description", out var desc) ? desc.GetString() : null;
+			throw new InvalidOperationException($"OAuth token refresh failed: {error.GetString()}" +
+				(errorDesc != null ? $" - {errorDesc}" : ""));
+		}
+
+		response.EnsureSuccessStatusCode();
+
 		var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
 		if (tokenResponse?.AccessToken == null)
