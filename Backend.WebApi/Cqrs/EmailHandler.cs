@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core;
+using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
@@ -10,6 +11,7 @@ using Backend.EmailIngestion.ImapClientProviders;
 using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.WebApi.Services;
 using MailKit.Net.Imap;
+using MailKit.Security;
 
 namespace Backend.WebApi.Cqrs;
 
@@ -198,8 +200,22 @@ public class EmailHandler :
 			await _externalAccountService.Replace(externalAccount);
 		}
 
-		var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
-		return imapClient;
+		try
+		{
+			var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
+			return imapClient;
+		}
+		catch (AuthenticationException) when (refreshedAuth is OAuthContext)
+		{
+			// Token was rejected by the server despite our clock saying it's valid.
+			// This can happen due to clock drift, revocation, or provider-side expiry.
+			// Force a refresh and retry once.
+			var forcedAuth = await _accessTokenHelper.ForceRefreshAccessToken(refreshedAuth, authType);
+			externalAccount.Credentials = forcedAuth;
+			await _externalAccountService.Replace(externalAccount);
+
+			return await ImapClientFactory.ConnectAsync(forcedAuth, externalAccount.EmailAddress, emailProvider);
+		}
 	}
 
 

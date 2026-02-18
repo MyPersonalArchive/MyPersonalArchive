@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -365,7 +366,8 @@ public class DispatchController : ControllerBase
 			{
 				try
 				{
-					var convertedValue = Convert.ChangeType(param.Value, property.PropertyType);
+					var converter = TypeDescriptor.GetConverter(property.PropertyType);
+					object? convertedValue = converter.ConvertFromString(param.Value);
 					property.SetValue(target, convertedValue);
 				}
 				catch

@@ -28,12 +28,6 @@ public class ImapClientFactory
 				throw new ArgumentException("Unsupported auth context type.");
 		}
 
-		
-		//TODO: What if auth fails, and we need to refresh the token?
-		// (The token should've been refreshed before calling this method based on timestamps, but
-		// what if our clock is off compared to the issuers clock, or the token was revoked etc?)
-
-
 		return imapClient;
 	}
 }
