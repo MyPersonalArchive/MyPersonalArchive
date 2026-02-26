@@ -25,12 +25,8 @@ public class EmailProviderService : SystemSettingsServiceBase<EmailProviderSetti
 		return await LoadSettingsAsync();
 	}
 
-	public async Task StoreEmailProviderSettingsAsync(EmailProviderSettings settings)
-	{
-		await SaveSettingsAsync(settings);
-		await _signalRService.PublishToTenantChannel(new SignalRService.Message("EmailProviderSettingsUpdated", null));
-	}
 }
+
 
 public class EmailProviderSettings : SettingsBase
 {

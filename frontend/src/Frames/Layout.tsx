@@ -53,13 +53,13 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 					{currentUser && <>
 						<li>
-							<Link to={RoutePaths.Archive} onClick={closeMenu}>
+							<Link to={RoutePaths.Archive.List} onClick={closeMenu}>
 								Archive
 							</Link>
 						</li>
 
 						<li>
-							<Link to={RoutePaths.Blobs} onClick={closeMenu}>
+							<Link to={RoutePaths.Blob.List} onClick={closeMenu}>
 								Documents and media
 							</Link>
 						</li>
