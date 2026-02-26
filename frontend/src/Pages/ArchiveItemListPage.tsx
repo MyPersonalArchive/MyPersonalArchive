@@ -21,7 +21,7 @@ export const ArchiveItemListPage = () => {
 	const navigate = useNavigate()
 
 	const newArchiveItem = () => {
-		navigate("/archive/new")
+		navigate(RoutePaths.Archive.New)
 	}
 
 	const filterFn = (item: ArchiveItem) => {
@@ -60,7 +60,7 @@ export const ArchiveItemListPage = () => {
 			<FileDropZone onBlobAttached={() => { /* //TODO: Suggest to create an archive item from the attached blob? */ }} />
 
 			<div className="stack-horizontal to-the-right my-4">
-				<Link className="link align-with-btn" to={RoutePaths.Blobs}>Show blobs</Link>
+				<Link className="link align-with-btn" to={RoutePaths.Blob.List}>Show blobs</Link>
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
 			</div>
 
@@ -108,7 +108,7 @@ const Row = ({ archiveItem }: RowProps) => {
 	return (
 		<tr>
 			<td>
-				<Link to={`/archive/edit/${archiveItem.id}`} className="link">{archiveItem.title}</Link>
+				<Link to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`} className="link">{archiveItem.title}</Link>
 				{archiveItem.blobs.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 				<br />
 				{

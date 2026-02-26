@@ -31,7 +31,7 @@ export const useApiClient = () => {
 				// }
 
 				if (response.status === 401) {
-					navigate(RoutePaths.SignIn + "?redirect=/archive/list")
+					navigate(RoutePaths.SignIn + `?redirect=${RoutePaths.Archive.List}`)
 				}
 				return response
 			})

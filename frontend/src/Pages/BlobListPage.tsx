@@ -10,6 +10,7 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
+import { RoutePaths } from "../RoutePaths"
 
 
 export const BlobListPage = () => {
@@ -52,12 +53,12 @@ export const BlobListPage = () => {
 		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: visibleBlobIds })
 
 		selectionOfBlobs.clearSelection()
-		navigate(`/archive/edit/${newArchiveItemId}`)
+		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
 	}
 
 	const attachBlob = async (id: number) => {
 		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
-		navigate(`/archive/edit/${newArchiveItemId}`)
+		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
 	}
 
 	return (

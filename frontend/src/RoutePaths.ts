@@ -4,8 +4,17 @@ export const RoutePaths = {
 	SignIn: "/sign-in",
 	SignOut: "/sign-out",
 	Profile: "/profile",
-	Archive: "/archive/list",
-	Blobs: "/blob/list",
+	Archive:{
+		List: "/archive/list",
+		Edit: "/archive/edit",
+		New: "/archive/new"
+	},
+	Blob: {
+		List: "/blob/list"
+	},
 	StoredFilters: "/filters",
-	Email: "/email"
+	Email: "/email",
+	ExternalAuthentication: {
+		Basic: "/external-authentication/basic"
+	}
 }

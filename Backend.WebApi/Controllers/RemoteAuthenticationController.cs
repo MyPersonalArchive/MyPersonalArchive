@@ -25,6 +25,32 @@ public class RemoteAuthenticationController : ControllerBase
 		IsEssential = true
 	};
 
+	[HttpPost("store-basic-auth")]
+	public async Task<IActionResult> StoreBasicAuth(
+		[FromBody] BasicAuthRequest request,
+		[FromServices] ExternalAccountService externalAccountSettingsService
+	)
+	{
+		var authContext = new BasicAuthContext
+		{
+			Username = request.EmailAddress,
+			Password = request.Password
+		};
+
+		var account = new ExternalAccountSettings.Account()
+		{
+			Id = Guid.NewGuid(),
+			DisplayName = request.EmailAddress,
+			EmailAddress = request.EmailAddress,
+			Credentials = authContext,
+			Type = "Email",
+			Provider = request.Provider
+		};
+		await externalAccountSettingsService.AddOrReplace(account);
+
+		return NoContent();
+	}
+
 
 	[HttpGet("start-authentication")]
 	public async Task<IActionResult> StartAuthentication(
@@ -62,7 +88,10 @@ public class RemoteAuthenticationController : ControllerBase
 		}
 	}
 
-	private IActionResult StartAuthenticationWithOAuth(string providerName, EmailProviderSettings.OAuthAuthType oauthSettings, string returnUrl, int tenantId)
+	private IActionResult StartAuthenticationWithOAuth(string providerName,
+													EmailProviderSettings.OAuthAuthType oauthSettings,
+													string returnUrl,
+													int tenantId)
 	{
 		var nonce = GenerateNonce();
 		HttpContext.Response.Cookies.Append($"{providerName}+{oauthSettings.Type}-nonce", nonce, _secureCookieOptions);
@@ -174,7 +203,7 @@ public class RemoteAuthenticationController : ControllerBase
 		// Otherwise, call the userinfo endpoint (e.g. Zoho)
 		if (!string.IsNullOrEmpty(oauthSettings.UserInfoEndpoint))
 		{
-			using var client = new HttpClient();	//TODO: reuse HttpClient from DI
+			using var client = new HttpClient();    //TODO: reuse HttpClient from DI
 			client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Zoho-oauthtoken", accessToken);
 			var resp = await client.GetAsync(oauthSettings.UserInfoEndpoint);
 			resp.EnsureSuccessStatusCode();
@@ -194,10 +223,10 @@ public class RemoteAuthenticationController : ControllerBase
 
 	private async Task<JsonElement> ExchangeAuthorizationCodeForTokens(string code, EmailProviderSettings.OAuthAuthType oauthSettings)
 	{
-		using var client = new HttpClient();	//TODO: reuse HttpClient from DI
+		using var client = new HttpClient();    //TODO: reuse HttpClient from DI
 
 		var redirectUri = Url.Action("CallbackFromProvider", "RemoteAuthentication", new { }, Request.Scheme)!;
-		
+
 		var parameters = new Dictionary<string, string?>
 		{
 			["code"] = code,
@@ -247,5 +276,13 @@ public class RemoteAuthenticationController : ControllerBase
 		public required string Nonce { get; set; }
 		public required string ReturnUrl { get; set; }
 		public required int TenantId { get; set; }
+	}
+
+	public class BasicAuthRequest
+	{
+		public required string Provider { get; set; }
+		public required string EmailAddress { get; set; }
+		public required string Username { get; set; }
+		public required string Password { get; set; }
 	}
 }

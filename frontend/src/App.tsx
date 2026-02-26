@@ -16,6 +16,7 @@ import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { RootFrame } from "./Frames/RootFrame"
 import { StoredFilterListPage } from "./Pages/StoredFilterListPage"
 import { EmailListPage } from "./Pages/EmailListPage"
+import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
 
 const routers = createBrowserRouter([
 	{
@@ -55,19 +56,19 @@ const routers = createBrowserRouter([
 						element: <UserProfilePage />
 					},
 					{
-						path: RoutePaths.Archive,
+						path: RoutePaths.Archive.List,
 						element: <ArchiveItemListPage />
 					},
 					{
-						path: "archive/edit/:id",
+						path: `${RoutePaths.Archive.Edit}/:id`,
 						element: <ArchiveItemEditPage />
 					},
 					{
-						path: "archive/new",
+						path: RoutePaths.Archive.New,
 						element: <ArchiveItemNewPage />
 					},
 					{
-						path: RoutePaths.Blobs,
+						path: RoutePaths.Blob.List,
 						element: <BlobListPage />
 					},
 					{
@@ -77,6 +78,10 @@ const routers = createBrowserRouter([
 					{
 						path: `${RoutePaths.Email}/:id`,
 						element: <EmailListPage />
+					},
+					{
+						path: `${RoutePaths.ExternalAuthentication.Basic}/:provider`,
+						element: <BasicAuthenticationPage />
 					}
 				]
 			}

@@ -1,8 +1,8 @@
 import { useAtom, useAtomValue } from "jotai"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { ExternalAccount, externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { RoutePaths } from "../RoutePaths"
 import { MimeTypeConverterArray, useSortableDragDrop } from "../Components/DragDropHelpers"
@@ -172,24 +172,58 @@ export const UserProfilePage = () => {
 }
 
 
+type EmailProvider = {
+	provider: string,
+	displayName: string,
+	authTypes: AuthType[]
+}
+
+type AuthType = {
+	type: string
+}
+
+type EmailProviderOption = {
+	provider: string,
+	lookup: string,
+	displayName: string,
+	authType: string
+}
+
+
 export const ConnectNewAccount = () => {
-	const [provider, setProvider] = useState<"gmail" | "fastmail" | "zohomail">("gmail")
-	const [authType, setAuthType] = useState<"oauth" | "basic">("oauth")
+	const [selectedEmailProviderOption, setSelectedEmailProviderOption] = useState<EmailProviderOption | null>(null)
 	const { login } = useRemoteAuthentication()
 
-	//TODO: load EmailProviderSettings from backend and show the available providers and auth types based on that
-	//TODO: show only available auth types for the selected provider (e.g. Fastmail only supports basic auth, so if the user selects Fastmail, hide the option to select OAuth)
+	const apiClient = useApiClient()
+	const [emailProviderOptions, setEmailProviderOptions] = useState<EmailProviderOption[]>([])
 
-	//TODO: Consider Having just one dropdown for provider+auth type combinations instead of two separate dropdowns, since some combinations are not valid (e.g. Fastmail + OAuth)
+	useEffect(() => {
+		apiClient.get<EmailProvider[]>("/api/query/GetEmailProviders")
+			.then(providers => {
+				console.log("Available email providers from backend:", providers)
+				setEmailProviderOptions(providers!.flatMap(p => p.authTypes.map(at => ({
+					provider: p.provider,
+					lookup: `${p.provider}+${at.type}`,
+					displayName: `${p.displayName} (${at.type})`,
+					authType: at.type
+				}))))
+			}).catch(error => {
+				console.error("Failed to load email providers from backend:", error)
+			})
+	}, [])
+
 	return (
 		<div className="group">
-			<select className="input" value={provider} onChange={e => setProvider(e.target.value as "gmail" | "fastmail" | "zohomail")}>
-				<option value="gmail">Gmail</option>
-				<option value="fastmail">Fastmail</option>
-				<option value="zohomail">Zoho Mail</option>
+			<select className="input" value={selectedEmailProviderOption?.lookup || ""} onChange={e => setSelectedEmailProviderOption(emailProviderOptions.find(p => p.lookup === e.target.value) || null)}>
+				{emailProviderOptions.map(p => (
+					<option key={p.lookup} value={p.lookup}>{p.displayName}</option>
+				))}
 			</select>
 
-			<button className="btn" onClick={() => login(provider, authType, window.location.origin + "/email")}>
+			<button className="btn"
+				onClick={() => login(selectedEmailProviderOption!.provider, selectedEmailProviderOption?.authType as ("oauth" | "basic"), window.location.origin + "/email")}
+				disabled={selectedEmailProviderOption === null}
+			>
 				Authenticate
 			</button>
 		</div>
