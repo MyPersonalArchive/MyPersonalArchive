@@ -31,12 +31,6 @@ export const useExternalAccountsPrefetching = () => {
 
 	useEffect(() => {
 		apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
-			.then(accountsFromResponse => {
-				dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(accountsFromResponse) })
-			})
-	}, [])
-	useEffect(() => {
-		apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
 			.then(externalAccountsFromResponse => {
 				dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(externalAccountsFromResponse) })
 			})

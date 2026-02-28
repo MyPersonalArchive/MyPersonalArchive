@@ -9,14 +9,8 @@ public class EmailProvider
 {
 	public required string Provider { get; set; }
 	public required string DisplayName { get; set; }
-	public required IEnumerable<AuthType> AuthTypes { get; set; } = [];
+	public required IEnumerable<string> AuthTypes { get; set; } = [];
 }
-
-public class AuthType
-{
-	public required string Type { get; set; }
-}
-
 
 [RequireAuthentication]
 public class GetEmailProviders : IQuery<GetEmailProviders, IEnumerable<EmailProvider>>
@@ -44,10 +38,7 @@ public class EmailProviderHandler :
 		{
 			Provider = f.Provider,
 			DisplayName = f.DisplayName,
-			AuthTypes = f.AuthTypes.Select(at => new AuthType
-			{
-				Type = at.Type
-			})
+			AuthTypes = f.AuthTypes.Select(at => at.Type)
 		});
 	}
 }

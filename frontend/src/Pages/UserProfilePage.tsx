@@ -2,7 +2,7 @@ import { useAtom, useAtomValue } from "jotai"
 import { useNavigate } from "react-router-dom"
 import { ExternalAccount, externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
-import { useContext, useEffect, useState } from "react"
+import { use, useContext, useState } from "react"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { RoutePaths } from "../RoutePaths"
 import { MimeTypeConverterArray, useSortableDragDrop } from "../Components/DragDropHelpers"
@@ -10,6 +10,8 @@ import { useApiClient } from "../Utils/useApiClient"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
+import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
+import { useEmailProvidersPrefetching } from "../Utils/useEmailProvidersPrefetching"
 
 
 const mimeTypeConverters: MimeTypeConverterArray<ExternalAccount, number> = [
@@ -191,38 +193,37 @@ type EmailProviderOption = {
 
 
 export const ConnectNewAccount = () => {
-	const [selectedEmailProviderOption, setSelectedEmailProviderOption] = useState<EmailProviderOption | null>(null)
+	useEmailProvidersPrefetching()
+	const availableEmailProviders = useAtomValue(emailProvidersAtom).flatMap(p => p.authTypes.map(authType => ({
+		provider: p.provider,
+		lookup: `${p.provider}+${authType}`,
+		displayName: `${p.displayName} (${authType})`,
+		authType: authType
+	})))
+
+	const [selectedEmailProvider, setSelectedEmailProvider] = useState<EmailProviderOption | undefined>(undefined)
 	const { login } = useRemoteAuthentication()
 
-	const apiClient = useApiClient()
-	const [emailProviderOptions, setEmailProviderOptions] = useState<EmailProviderOption[]>([])
+	const getSelectedEmailProvider = () => {
+		return selectedEmailProvider ?? availableEmailProviders[0]
+	}
 
-	useEffect(() => {
-		apiClient.get<EmailProvider[]>("/api/query/GetEmailProviders")
-			.then(providers => {
-				console.log("Available email providers from backend:", providers)
-				setEmailProviderOptions(providers!.flatMap(p => p.authTypes.map(at => ({
-					provider: p.provider,
-					lookup: `${p.provider}+${at.type}`,
-					displayName: `${p.displayName} (${at.type})`,
-					authType: at.type
-				}))))
-			}).catch(error => {
-				console.error("Failed to load email providers from backend:", error)
-			})
-	}, [])
 
 	return (
 		<div className="group">
-			<select className="input" value={selectedEmailProviderOption?.lookup || ""} onChange={e => setSelectedEmailProviderOption(emailProviderOptions.find(p => p.lookup === e.target.value) || null)}>
-				{emailProviderOptions.map(p => (
+			<select
+				className="input"
+				value={getSelectedEmailProvider()?.lookup || ""}
+				onChange={e => setSelectedEmailProvider(availableEmailProviders.find(p => p.lookup === e.target.value))}
+			>
+				{availableEmailProviders.map(p =>
 					<option key={p.lookup} value={p.lookup}>{p.displayName}</option>
-				))}
+				)}
 			</select>
 
 			<button className="btn"
-				onClick={() => login(selectedEmailProviderOption!.provider, selectedEmailProviderOption?.authType as ("oauth" | "basic"), window.location.origin + "/email")}
-				disabled={selectedEmailProviderOption === null}
+				onClick={() => login(getSelectedEmailProvider()!.provider, getSelectedEmailProvider()!.authType, window.location.origin + "/email")}
+				disabled={getSelectedEmailProvider() === undefined}
 			>
 				Authenticate
 			</button>
