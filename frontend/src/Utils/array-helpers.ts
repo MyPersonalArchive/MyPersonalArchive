@@ -1,22 +1,22 @@
 type ReplaceFn<TData> = (data: TData) => TData
 
-// Returns a new array, with the element at pos replaced with replacement item or calling the replacement function on arr[pos]
+// Returns a new array, with the element at index replaced with replacement item or calling the replacement function on arr[index]
 export function changeAtIndex<TData>(inArray: Array<TData>, index: number, replacement: TData | ReplaceFn<TData>) {
 	if (typeof replacement == "function") {
 		replacement = (replacement as ReplaceFn<TData>)(inArray[index])
 	}
 
-	return [...inArray.slice(0, index), replacement, ...inArray.slice(index + 1)]
+	return inArray.with(index, replacement)
 }
 
-// Returns a new array, with the insertion element inserted at pos
+// Returns a new array, with the insertion element inserted at index
 export function insertAtIndex<TData>(inArray: Array<TData>, index: number, insertion: TData) {
-	return [...inArray.slice(0, index), insertion, ...inArray.slice(index)]
+	return inArray.toSpliced(index, 0, insertion)
 }
 
-// Returns a new array, with the element at pos removed
+// Returns a new array, with the element at index removed
 export function removeAtIndex<TData>(inArray: Array<TData>, index: number) {
-	return [...inArray.slice(0, index), ...inArray.slice(index + 1)]
+	return inArray.toSpliced(index, 1)
 }
 
 // Returns a new array, with with an element moved from fromIndex to toIndex
