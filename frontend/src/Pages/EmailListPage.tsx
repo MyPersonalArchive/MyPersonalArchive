@@ -13,19 +13,13 @@ import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 
 
 export const EmailListPage = () => {
-	const { fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider()
-
 	const accounts = useAtomValue(externalAccountsAtom)
 
 	const params = useParams()
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
-	useEffect(() => {
-		//TODO: reset folders and emails when switching between accounts, to prevent confusion and potential accidental actions on the wrong account
-	}, [externalAccountId])
-	useEffect(() => {
-		//TODO: reset emails when switching between folders, to prevent confusion and potential accidental actions on the wrong folder
-	}, [selectedFolder])
+
+	const { fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider(externalAccountId)
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -58,13 +52,13 @@ export const EmailListPage = () => {
 							))
 						}
 					</select>
-					<button className="btn" onClick={() => fetchFolders(externalAccountId)}>
+					<button className="btn" onClick={() => fetchFolders()}>
 						<FontAwesomeIcon icon={faRefresh} />
 					</button>
 				</div>
 
 				<button className="btn"
-					onClick={() => fetchEmails(externalAccountId, { folders: [selectedFolder!], limit: 50 })}
+					onClick={() => fetchEmails({ folders: [selectedFolder!], limit: 50 })}
 					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
@@ -103,7 +97,7 @@ export const EmailListPage = () => {
 
 					<button className="btn"
 						disabled={selectionOfEmails.areNoItemsSelected}
-						onClick={() => createArchiveItemFromEmails(externalAccountId, emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
+						onClick={() => createArchiveItemFromEmails(emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
 					>
 						{
 							selectionOfEmails.allPossibleItems.size == selectionOfEmails.selectedItems.size
@@ -119,7 +113,7 @@ export const EmailListPage = () => {
 						<Thumbnail
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(externalAccountId, emails) }}
+							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
 							selectionOfEmails={selectionOfEmails}
 							maximize={maximize}
 						/>
@@ -128,8 +122,8 @@ export const EmailListPage = () => {
 						<Preview
 							key={email.uniqueId}
 							email={email}
-							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(externalAccountId, emails) }}
-							createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(externalAccountId, messageId, attachments) }}
+							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
+							createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
 							externalAccountId={externalAccountId}
 							selectedFolder={selectedFolder!}
 							maximize={minimize}
