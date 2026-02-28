@@ -9,3 +9,29 @@ export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSele
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 
+
+export type Email = {
+	uniqueId: string
+	subject: string
+	body: string
+	htmlBody: string
+	receivedTime: string
+	from: EmailAddress[]
+	to: EmailAddress[]
+	attachments: EmailAttachment[]
+}
+
+export type EmailAddress = {
+	name?: string
+	emailAddress: string
+}
+
+export type EmailAttachment = {
+	fileName: string
+	contentType: string
+}
+
+export const emailsByExternalAccountAtom = atom<Map<string, Email[]>>(new Map())
+export const foldersByExternalAccountAtom = atom<Map<string, string[] | undefined>>(new Map())
+export const selectedFolderByExternalAccountAtom = atom<Map<string, string | undefined>>(new Map())
+

@@ -1,28 +1,8 @@
-import { useState } from "react"
+import { useAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
 import { UUID } from "crypto"
+import { Email, EmailAttachment, emailsByExternalAccountAtom, foldersByExternalAccountAtom, selectedFolderByExternalAccountAtom } from "./Atoms"
 
-
-export type Email = {
-	uniqueId: string
-	subject: string
-	body: string
-	htmlBody: string
-	receivedTime: string
-	from: EmailAddress[]
-	to: EmailAddress[]
-	attachments: EmailAttachment[]
-}
-
-export type EmailAddress = {
-	name?: string
-	emailAddress: string
-}
-
-export type EmailAttachment = {
-	fileName: string
-	contentType: string
-}
 
 type FindAttachmentRequest = {
 	folders?: string[]
@@ -34,26 +14,29 @@ type FindAttachmentRequest = {
 }
 
 
-export function useMailProvider() {
-
-	const [emails, setEmails] = useState<Email[]>([])
-	const [folders, setFolders] = useState<string[] | undefined>(undefined)
-	const [selectedFolder, setSelectedFolder] = useState<string | undefined>(undefined)
+export function useMailProvider(externalAccountId: UUID) {
+	const [foldersByExternalAccount, setFoldersByExternalAccount] = useAtom(foldersByExternalAccountAtom)
+	const [emailsByExternalAccount, setEmailsByExternalAccount] = useAtom(emailsByExternalAccountAtom)
+	const [selectedFolderByExternalAccount, setSelectedFolderByExternalAccount] = useAtom(selectedFolderByExternalAccountAtom)
 
 	const apiClient = useApiClient()
 
-	const fetchFolders = async (externalAccountId: UUID) => {
+	const folders = foldersByExternalAccount.get(externalAccountId) ?? []
+	const emails = emailsByExternalAccount.get(externalAccountId) ?? []
+	const selectedFolder = selectedFolderByExternalAccount.get(externalAccountId)
+
+	const fetchFolders = async () => {
 		const folders = await apiClient.get<string[]>("/api/query/listFolders", {externalAccountId})
-		setFolders(folders)
-		setSelectedFolder(folders?.at(0))
+		setFoldersByExternalAccount(prev => new Map(prev).set(externalAccountId, folders))
+		setSelectedFolderByExternalAccount(prev => new Map(prev).set(externalAccountId, folders?.at(0)))
 	}
 
-	const fetchEmails = async (externalAccountId: UUID, search: FindAttachmentRequest) => {
+	const fetchEmails = async (search: FindAttachmentRequest) => {
 		const emails = await apiClient.post<Email[]>("/api/query/listEmails", { externalAccountId, criteria:{...search} })
-		setEmails((emails ?? []))
+		setEmailsByExternalAccount(prev => new Map(prev).set(externalAccountId, emails ?? []))
 	}
 
-	const createArchiveItemFromEmails = async (externalAccountId: UUID, emails: Email[]) => {
+	const createArchiveItemFromEmails = async (emails: Email[]) => {
 		const params = {
 			externalAccountId,
 			emailFolder: selectedFolder,
@@ -62,7 +45,7 @@ export function useMailProvider() {
 		await apiClient.post<Email[]>("/api/command/createArchiveItemsFromEmails", params)
 	}
 
-	const createBlobsFromAttachments = async (externalAccountId: UUID, messageId: string, emailAttachments: EmailAttachment[]) => {
+	const createBlobsFromAttachments = async (messageId: string, emailAttachments: EmailAttachment[]) => {
 		const params = {
 			externalAccountId,
 			emailFolder: selectedFolder,
@@ -80,7 +63,7 @@ export function useMailProvider() {
 		createBlobsFromAttachments,
 		fetchFolders,
 		selectedFolder,
-		setSelectedFolder,
+		setSelectedFolder: (folder: string | undefined) => setSelectedFolderByExternalAccount(prev => new Map(prev).set(externalAccountId, folder)),
 		emails,
 		folders
 	}
