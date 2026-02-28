@@ -10,7 +10,7 @@ export function useRemoteAuthentication() {
 
 	const navigate = useNavigate()
 
-	const login = async (provider: string, authType: "oauth" | "basic", returnUrl: string) => {
+	const login = async (provider: string, authType: string, returnUrl: string) => {
 		switch (authType) {
 			case "oauth": {
 				const payload = {
@@ -29,6 +29,9 @@ export function useRemoteAuthentication() {
 				navigate(`${RoutePaths.ExternalAuthentication.Basic}/${provider}`)
 				break
 			}
+
+			default:
+				throw new Error(`Unsupported authentication type: ${authType}`)
 		}
 	}
 
