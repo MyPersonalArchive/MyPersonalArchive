@@ -33,7 +33,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				</h1>
 			</header>
 
-			<nav className="lg:w-64 bg-gray-100 relative z-1000 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
+			<nav className="lg:w-64 bg-gray-100 relative  lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
 				<button
 					className="lg:hidden block w-full bg-gray-200 text-gray-800 border-none p-4 text-base cursor-pointer text-left hover:bg-gray-300 transition-colors"
 					aria-label="Toggle navigation"
