@@ -31,9 +31,19 @@ export function useMailProvider(externalAccountId: UUID) {
 		setSelectedFolderByExternalAccount(prev => new Map(prev).set(externalAccountId, folders?.at(0)))
 	}
 
-	const fetchEmails = async (search: FindAttachmentRequest) => {
-		const emails = await apiClient.post<Email[]>("/api/query/listEmails", { externalAccountId, criteria:{...search} })
-		setEmailsByExternalAccount(prev => new Map(prev).set(externalAccountId, emails ?? []))
+	const fetchEmails = async () => {
+		setEmailsByExternalAccount(prev => new Map(prev).set(externalAccountId, []))
+
+		const { promise } = apiClient.getStream<Email>("/api/Email/GetEmailsStreaming", { externalAccountId, folder: selectedFolder },
+			email => {
+				setEmailsByExternalAccount(prev => {
+					const current = prev.get(externalAccountId) ?? []
+					return new Map(prev).set(externalAccountId, [...current, email])
+				})
+			}
+		)
+
+		await promise
 	}
 
 	const createArchiveItemFromEmails = async (emails: Email[]) => {

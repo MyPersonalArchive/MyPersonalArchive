@@ -60,6 +60,48 @@ export const useApiClient = () => {
 				})
 		},
 
+		getStream: <T>(url: string, payload: any = {}, onItem: (item: T) => void, incomingOptions?: RequestInit) => {
+			const queryString = createQueryString(payload)
+			const options = {
+				...incomingOptions,
+				method: "GET",
+				headers: { "Accept": "text/event-stream" },
+			}
+
+			const controller = new AbortController()
+			const fetchPromise = interceptedFetch(url + queryString, { ...options, signal: controller.signal })
+				.then(async response => {
+					if (response.status !== 200 || !response.body) return
+
+					const reader = response.body.getReader()
+					const decoder = new TextDecoder()
+					let buffer = ""
+
+					while (true) {
+						const { done, value } = await reader.read()
+						if (done) break
+
+						buffer += decoder.decode(value, { stream: true })
+						const parts = buffer.split("\n\n")
+						buffer = parts.pop() ?? ""
+
+						for (const part of parts) {
+							const line = part.trim()
+							if (line.startsWith("data: ")) {
+								const json = line.slice(6)
+								try {
+									onItem(JSON.parse(json) as T)
+								} catch (e) {
+									console.error("Failed to parse SSE data:", e)
+								}
+							}
+						}
+					}
+				})
+
+			return { promise: fetchPromise, abort: () => controller.abort() }
+		},
+
 		getBlob: async (url: string, payload: any = {}, incomingOptions?: RequestInit) => {
 			const queryString = createQueryString(payload)
 			const options = {
