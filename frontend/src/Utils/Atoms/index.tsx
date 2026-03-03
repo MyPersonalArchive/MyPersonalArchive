@@ -31,7 +31,7 @@ export type EmailAttachment = {
 	contentType: string
 }
 
-export const emailsByExternalAccountAtom = atom<Map<string, Email[]>>(new Map())
 export const foldersByExternalAccountAtom = atom<Map<string, string[] | undefined>>(new Map())
 export const selectedFolderByExternalAccountAtom = atom<Map<string, string | undefined>>(new Map())
+export const emailsByExternalAccountAndFolderAtom = atom<Map<string, Map<string, Email[]>>>(new Map())
 
