@@ -3,6 +3,7 @@ using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
 
+
 namespace Backend.EmailIngestion;
 
 public static class IImapExtensions
@@ -27,6 +28,7 @@ public static class IImapExtensions
 			return results;
 		}
 
+		
 		public async Task<IList<string>> GetAvailableFolders()
 		{
 			var root = client.GetFolder(client.PersonalNamespaces[0]);
@@ -80,6 +82,38 @@ public static class IImapExtensions
 			return results;
 		}
 
+
+		public async IAsyncEnumerable<Email> GetEmailsStreaming(string folder)
+		{
+			var mailFolder = client.GetFolder(folder);
+			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+
+			var uids = await mailFolder.SearchAsync((SearchQuery?)SearchQuery.All);
+			var limitedUids = uids.Reverse().Take(100).ToList();
+
+			const int batchSize = 50;
+			var messages = new List<IMessageSummary>();
+
+			//For better performance fetch in batches. This seems to be faster, at least on my account with ALOT of emails.
+			//By requesting just the uniqueId and BodyStructure we don't have to download the message bodies.
+			for (int i = 0; i < limitedUids.Count; i += batchSize)
+			{
+				var batch = limitedUids.Skip(i).Take(batchSize).ToList();
+				var summaries = await mailFolder.FetchAsync(batch, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
+				messages.AddRange(summaries);
+			}
+
+			foreach (var item in messages)
+			{
+				// results.Add(await GetEmailAsync(mailFolder, item.UniqueId));
+				yield return await GetEmailAsync(mailFolder, item.UniqueId);
+			}
+
+			await client.DisconnectAsync(true);
+			client.Dispose();
+		}
+
+
 		public async Task<Attachment?> DownloadAttachmentAsync(string folder, string messageId, string fileName)
 		{
 			var mailFolder = client.GetFolder(folder);
@@ -107,6 +141,7 @@ public static class IImapExtensions
 			return null;
 		}
 	}
+
 
 	private static async Task<Email> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
 	{
@@ -143,6 +178,7 @@ public static class IImapExtensions
 		}
 		return email;
 	}
+
 
 	private static SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
 	{
