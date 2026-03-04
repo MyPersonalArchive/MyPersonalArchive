@@ -28,14 +28,16 @@ public class ArchiveController : ControllerBase
 	private readonly IAmbientDataResolver _resolver;
 	private readonly ArchiveItemService _archiveItemService;
 	private readonly BlobService _blobService;
+	private readonly StoredFilterService _storedFilterService;
 
-	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, ArchiveItemService archiveItemService, BlobService blobService)
+	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, ArchiveItemService archiveItemService, BlobService blobService, StoredFilterService storedFilterService)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;
 		_resolver = resolver;
 		_archiveItemService = archiveItemService;
 		_blobService = blobService;
+		_storedFilterService = storedFilterService;
 	}
 
 
@@ -229,7 +231,8 @@ public class ArchiveController : ControllerBase
 		if (!string.IsNullOrEmpty(filterRequest.Filter))
 		{
 			var storedFilterName = filterRequest.Filter;
-			var filter = await _dbContext.StoredFilters.Where(f => f.Name == storedFilterName).FirstOrDefaultAsync();
+			var filters = await _storedFilterService.GetStoredFilterSettingsAsync();
+			var filter = filters.Filters.FirstOrDefault(f => f.Name == storedFilterName);
 			if (filter == null)
 			{
 				//If the filter name is not found, return empty result
@@ -237,9 +240,9 @@ public class ArchiveController : ControllerBase
 			}
 			else
 			{
-				titleFilter = filter.Title?.ToLowerInvariant() ?? "";
-				tagsFilter = filter.Tags ?? [];
-				metadataTypesFilter = filter.MetadataTypes ?? [];
+				titleFilter = filter.Definition.Title?.ToLowerInvariant() ?? "";
+				tagsFilter = filter.Definition.Tags ?? [];
+				metadataTypesFilter = filter.Definition.MetadataTypes ?? [];
 			}
 		}
 

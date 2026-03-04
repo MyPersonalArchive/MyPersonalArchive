@@ -131,7 +131,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				</main>
 			</div>
 
-			<footer className="w-full bg-gray-200 text-gray-800 text-center p-4 flex-shrink-0">
+			<footer className="w-full bg-gray-200 text-gray-800 text-center p-4 flex-0">
 				<p>Footer</p>
 			</footer>
 		</div>
