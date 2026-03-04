@@ -40,14 +40,14 @@ public class StoredFilterSettings : SettingsBase
 	public class Filter
 	{
 		public Guid Id { get; set; }
-		public string Name { get; set; }
-		public FilterDefinition Definition { get; set; }
+		public required string Name { get; set; }
+		public required FilterDefinition Definition { get; set; }
 	}
 
 	public class FilterDefinition
 	{
 		public string? Title { get; set; }
-		public string[] Tags { get; set; }
-		public string[] MetadataTypes { get; set; }
+		public required string[] Tags { get; set; }
+		public required string[] MetadataTypes { get; set; }
 	}
 }

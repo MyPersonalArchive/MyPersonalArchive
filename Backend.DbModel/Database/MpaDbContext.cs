@@ -181,16 +181,6 @@ public class MpaDbContext : DbContext
 			);
 		});
 
-		modelBuilder.Entity<StoredFilter>(storedFilters =>
-		{
-			storedFilters.HasData(
-				new StoredFilter { Id = -1, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
-				new StoredFilter { Id = 1, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
-				new StoredFilter { Id = 2, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] },
-				new StoredFilter { Id = 3, Name = "No filters", TenantId = -1, Title = "", Tags = [], MetadataTypes = [] }
-			);
-		});
-
 		modelBuilder.Entity<User>(users =>
 		{
 			users.HasData(
@@ -294,7 +284,6 @@ public class MpaDbContext : DbContext
 	public DbSet<User> Users { get; set; }
 	public DbSet<Tenant> Tenants { get; set; }
 	public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
-	public DbSet<StoredFilter> StoredFilters { get; set; }
 
 	public DbSet<BackupDestination> BackupDestinations { get; set; }
 	public DbSet<BackupHistory> BackupHistory { get; set; }
