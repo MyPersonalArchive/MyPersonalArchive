@@ -11,7 +11,6 @@ export type ExternalAccount = {
 	type: string
 	provider: string
 }
-// export const externalAccountsAtom = atom<ExternalAccount[]>([])
 
 
 type ExternalAccountsCommand =

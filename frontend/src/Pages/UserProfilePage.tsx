@@ -174,16 +174,6 @@ export const UserProfilePage = () => {
 }
 
 
-type EmailProvider = {
-	provider: string,
-	displayName: string,
-	authTypes: AuthType[]
-}
-
-type AuthType = {
-	type: string
-}
-
 type EmailProviderOption = {
 	provider: string,
 	lookup: string,
@@ -212,7 +202,7 @@ export const ConnectNewAccount = () => {
 	return (
 		<div className="group">
 			<select
-				className="input"
+				className="input w-45"
 				value={getSelectedEmailProvider()?.lookup || ""}
 				onChange={e => setSelectedEmailProvider(availableEmailProviders.find(p => p.lookup === e.target.value))}
 			>
@@ -225,7 +215,7 @@ export const ConnectNewAccount = () => {
 				onClick={() => login(getSelectedEmailProvider()!.provider, getSelectedEmailProvider()!.authType, window.location.origin + "/email")}
 				disabled={getSelectedEmailProvider() === undefined}
 			>
-				Authenticate
+				Add
 			</button>
 		</div>
 	)
