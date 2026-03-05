@@ -13,6 +13,11 @@ ul.nav-level-1 {
 	&>li {
 		@apply border-b border-gray-300;
 
+		&>span.heading {
+			@apply	block text-gray-800 no-underline p-3;
+		}
+
+
 		&>a,
 		&>.link {
 			@apply	block text-gray-800 no-underline p-3 hover:bg-gray-200 transition-colors;
@@ -37,7 +42,7 @@ ul.nav-level-2 {
 
 		&>a,
 		&>.link {
-			@apply block pl-8 bg-gray-200 text-gray-800 no-underline p-3 hover:bg-gray-300 transition-colors
+			@apply block pl-8 bg-gray-100 text-gray-800 no-underline p-3 hover:bg-gray-200 transition-colors
 		}
 	}
 }

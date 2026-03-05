@@ -1,20 +1,21 @@
 import { useContext, useEffect, useRef } from "react"
 import { useMailProvider } from "../Utils/useMailProvider"
-import { Email, EmailAddress, EmailAttachment } from "../Utils/Atoms"
+import { Email, EmailAddress, EmailAttachment, isPreferencesOpenAtom } from "../Utils/Atoms"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { useParams } from "react-router-dom"
-import { useAtomValue } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { UUID } from "crypto"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 
 
 export const EmailListPage = () => {
-	const accounts = useAtomValue(externalAccountsAtom)
+	const [accounts, dispatch] = useAtom(externalAccountsAtom)
+	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
 
 	const params = useParams()
 	const externalAccountId = params.id as UUID
@@ -34,7 +35,12 @@ export const EmailListPage = () => {
 	return (
 		<>
 			<h1 className="heading-1">
-				{externalAccount?.displayName ?? "<unknown account>"}
+				{isPreferencesOpen
+					? <input className=""
+						value={externalAccount?.displayName ?? "<unknown account>"}
+						onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", index: accounts.findIndex(account => account.id === externalAccountId), displayName: e.target.value })}
+					/>
+					: externalAccount?.displayName ?? "<unknown account>"}
 			</h1>
 			<div className="stack-horizontal to-the-left my-4">
 
