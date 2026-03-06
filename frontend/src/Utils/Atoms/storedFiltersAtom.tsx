@@ -6,17 +6,19 @@ import { changeAtIndex, moveInArray, removeAtIndex } from "../array-helpers"
 export type StoredFilter = {
 	id: UUID
 	name: string
-	filterDefinition: {
-		title?: string
-		tags: string[]
-		metadataTypes: Set<string>
-	}
+	filterDefinition: FilterDefinition
+}
+
+export type FilterDefinition = {
+	title?: string
+	tags: string[]
+	metadataTypes: Set<string>
 }
 
 
 type StoredFiltersCommand =
 	| { action: "LOAD", storedFilters: StoredFilter[] }
-	| { action: "ADD_FILTER" }
+	| { action: "ADD_FILTER", name: string, filterDefinition?: FilterDefinition }
 	| { action: "REMOVE_FILTER", index: number }
 	| { action: "MOVE_FILTER", fromIndex: number, toIndex: number }
 	| { action: "EDIT_FILTER_NAME", index: number, name: string }
@@ -38,11 +40,11 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 		case "ADD_FILTER":
 			return [...state, {
 				id: crypto.randomUUID(),
-				name: "",
+				name: command.name,
 				filterDefinition: {
-					title: undefined,
-					tags: [],
-					metadataTypes: new Set<string>()
+					title: command.filterDefinition?.title,
+					tags: command.filterDefinition?.tags ?? [],
+					metadataTypes: command.filterDefinition?.metadataTypes ?? new Set<string>()
 				}
 			}]
 

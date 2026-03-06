@@ -34,9 +34,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
 		setIsNavOpen(false)
 	}
 
-	const createAccount = () => {
-		navigate(RoutePaths.Profile)
-	}
+	// const createAccount = () => {
+	// 	navigate(RoutePaths.Profile)
+	// }
 
 	return (
 		<div className="flex flex-col lg:flex-row lg:flex-wrap min-h-screen">
@@ -89,29 +89,23 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						<li>
 							<span className="heading relative">
 								Connected accounts
-								{/* {
-									isPreferencesOpen &&
-									<button className="cursor-pointer ml-2.5" onClick={() => createAccount()}>
-										<FontAwesomeIcon className="absolute right-3 top-1/2 transform -translate-y-1/2" icon={faPlus} />
-									</button>
-								} */}
+								{
+									// !isPreferencesOpen &&
+									// <button className="cursor-pointer ml-2.5" onClick={() => createAccount()}>
+									// 	<FontAwesomeIcon className="absolute right-3 top-1/2 transform -translate-y-1/2" icon={faPlus} />
+									// </button>
+								}
 							</span>
 
 							<ul className={"nav-level-2"}>
 							</ul>
 						</li>
 
-						{accounts === null || accounts === undefined || accounts.length === 0
-							?
-							<li className="italic text-gray-500 py-2 px-4">
+						{accounts === undefined || accounts.length === 0
+							? <li className="italic text-gray-500 py-2 px-4">
 								No connected accounts
 							</li>
-							: <>
-								{isPreferencesOpen
-									? <SortableAccountList />
-									: <ClickableAccountList />
-								}
-							</>
+							: <AccountList />
 						}
 
 						<li>
@@ -172,6 +166,15 @@ const Arrow = ({ subMenuIsOpen }: ArrowProps) => {
 }
 
 
+const AccountList = () => {
+	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
+
+	return isPreferencesOpen
+		? <EditableAccountList />
+		: <ClickableAccountList />
+}
+
+
 const ClickableAccountList = () => {
 	const accounts = useAtomValue(externalAccountsAtom)
 
@@ -200,7 +203,7 @@ const mimeTypeConverters: MimeTypeConverterArray<ExternalAccount, number> = [
 	}
 ]
 
-const SortableAccountList = () => {
+const EditableAccountList = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 
 	const dnd = useSortableDragDrop<ExternalAccount, HTMLLIElement>(

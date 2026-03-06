@@ -78,6 +78,9 @@ ul.nav-level-2 {
 .btn {
 	@apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 transition;
 
+	&.btn-wide {
+		@apply px-8;
+	}
 	&.btn-primary {
 		@apply bg-blue-600 text-white hover:bg-blue-700;
 	}

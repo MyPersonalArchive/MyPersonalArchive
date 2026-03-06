@@ -56,7 +56,7 @@ export const StoredFilterListPage = () => {
 
 			<div className="overflow-x-auto my-4 gap-4 flex flex-wrap">
 				<StoredFilterRows />
-				<button className="card btn h-70 w-70" onClick={() => dispatch({ action: "ADD_FILTER" })}>
+				<button className="card btn h-70 w-70" onClick={() => dispatch({ action: "ADD_FILTER", name: "New filter" })}>
 					Create new filter
 				</button>
 			</div>
