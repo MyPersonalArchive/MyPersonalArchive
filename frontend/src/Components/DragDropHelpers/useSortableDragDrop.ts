@@ -7,6 +7,7 @@ type DragStatus = {
 	fromIndex?: number
 	currentIndex?: number
 	isDragHandle: boolean
+	draggedRect?: DOMRect
 }
 
 const emptyDragOverStatus: DragStatus = { fromIndex: undefined, currentIndex: undefined, isDragHandle: false }
@@ -40,7 +41,7 @@ export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 
 
 	const setElementRef = (elmnt: THtmlElement | null, index: number) => draggables.current[index] = elmnt
-
+	
 	// --- Drag and Drop ---
 	const mouseDown = (event: React.MouseEvent) => {
 		const target = event.target as Element
@@ -69,6 +70,7 @@ export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 			...dragStatus,
 			fromIndex: index,
 			currentIndex: undefined,
+			draggedRect: (event.currentTarget as HTMLElement).getBoundingClientRect(),
 		})
 
 		mimeTypeConverters
@@ -120,7 +122,7 @@ export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 				const rawData = JSON.parse(event.dataTransfer.getData(converter.mimeType))
 				const fromIndex = rawData.index
 				const action = converter.convertDropPayloadToAction!(fromIndex, toIndex, rawData)
-
+	
 				dispatch(action)
 			})
 	}
@@ -128,6 +130,7 @@ export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 	return {
 		setElementRef,
 		dragStatus,
+		draggedRect: dragStatus.draggedRect,
 		mouseDown,
 		mouseUp,
 		dragStart,

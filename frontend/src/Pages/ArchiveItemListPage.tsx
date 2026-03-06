@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
-import { useAtomValue } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { ArchiveItem, archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
 import { tagsAtom } from "../Utils/Atoms/tagsAtom"
@@ -10,7 +10,8 @@ import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
 import { StoredFilterSelector } from "../Components/StoredFilterSelector"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPaperclip } from "@fortawesome/free-solid-svg-icons"
+import { faPaperclip, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { isPreferencesOpenAtom } from "../Utils/Atoms"
 
 
 export const ArchiveItemListPage = () => {
@@ -133,13 +134,16 @@ const Row = ({ archiveItem }: RowProps) => {
 
 
 const Filter = () => {
+	const dispath = useSetAtom(storedFiltersAtom)
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
 	const allTags = useAtomValue(tagsAtom)
+	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
 	const [searchParams] = useSearchParams()
 	const navigate = useNavigate()
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setTitle(searchParams.get("title") ?? "")
 		setTags(searchParams.getAll("tags"))
 	}, [searchParams])
@@ -175,6 +179,11 @@ const Filter = () => {
 			<button type="reset" className="btn">
 				Reset
 			</button>
+			{ isPreferencesOpen &&
+				<button type="button" className="btn" onClick={() => dispath({ action: "ADD_FILTER", name: "New filter", filterDefinition: { title, tags, metadataTypes: new Set<string>() } })}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+			}
 		</form>
 	)
 }
