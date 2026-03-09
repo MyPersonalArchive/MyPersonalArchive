@@ -1,15 +1,15 @@
 
 import { PropsWithChildren, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue } from "jotai"
 import { atomWithStorage } from "jotai/utils"
-import { ExternalAccount, externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
+import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSliders, faGripVertical, faTrashCan, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { isPreferencesOpenAtom } from "../Utils/Atoms"
-import { MimeTypeConverterArray, useSortableDragDrop } from "../Components/DragDropHelpers"
+import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
 import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
@@ -23,7 +23,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	const [isPreferencesOpen, setIsPreferencesOpen] = useAtom(isPreferencesOpenAtom)
 	const [openSubmenu, setOpenSubmenu] = useAtom(openSubMenuAtom)
 
-	const navigate = useNavigate()
 	const accounts = useAtomValue(externalAccountsAtom)
 
 	const toggleSubmenu = (menu: string) => {
@@ -109,31 +108,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						}
 
 						<li>
-							<button className={`toggle ${openSubmenu === "profile" ? "active" : ""}`}
-								onClick={() => toggleSubmenu("profile")}
-							>
-								Profile
-								<Arrow subMenuIsOpen={openSubmenu === "profile"} />
-							</button>
-							<ul className={`nav-level-2 ${openSubmenu === "profile" ? "block" : "hidden"}`}>
-								<li>
-									<Link to={RoutePaths.Profile} onClick={closeMenu}>
-										My profile
-									</Link>
-								</li>
-
-								<li>
-									<Link to={RoutePaths.StoredFilters} onClick={closeMenu}>
-										Stored filters
-									</Link>
-								</li>
-
-								<li>
-									<Link to={RoutePaths.SignOut} onClick={closeMenu}>
-										Sign out
-									</Link>
-								</li>
-							</ul>
+							<Link to={RoutePaths.Profile}>
+								My profile
+							</Link>
 						</li>
 					</>
 					}
@@ -190,25 +167,12 @@ const ClickableAccountList = () => {
 }
 
 
-
-const mimeTypeConverters: MimeTypeConverterArray<ExternalAccount, number> = [
-	{
-		mimeType: "application/external-account+index+json",
-		convertDragDataToPayload: (_, index) => ({ index }),
-		convertDropPayloadToAction: (fromIndex, toIndex, _) => ({ action: "MOVE_ACCOUNT", fromIndex, toIndex })
-	},
-	{
-		mimeType: "text",
-		convertDragDataToPayload: (externalAccount, _) => `${externalAccount.displayName}`,
-	}
-]
-
 const EditableAccountList = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 
 	const dnd = useSortableDragDrop<ExternalAccount, HTMLLIElement>(
 		".draghandle",
-		mimeTypeConverters,
+		externalAccountsMimeTypeConverters,
 		accounts,
 		dispatch
 	)

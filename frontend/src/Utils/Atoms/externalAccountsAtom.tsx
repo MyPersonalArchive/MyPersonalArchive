@@ -1,6 +1,7 @@
 import { UUID } from "crypto"
 import { changeAtIndex, moveInArray, removeAtIndex } from "../array-helpers"
 import { atomWithReducer } from "jotai/utils"
+import { MimeTypeConverterArray } from "../../Components/DragDropHelpers"
 
 
 export type ExternalAccount = {
@@ -11,6 +12,19 @@ export type ExternalAccount = {
 	type: string
 	provider: string
 }
+
+
+export const externalAccountsMimeTypeConverters: MimeTypeConverterArray<ExternalAccount, number> = [
+	{
+		mimeType: "application/external-account+index+json",
+		convertDragDataToPayload: (_, index) => ({ index }),
+		convertDropPayloadToAction: (fromIndex, toIndex, _) => ({ action: "MOVE_ACCOUNT", fromIndex, toIndex })
+	},
+	{
+		mimeType: "text",
+		convertDragDataToPayload: (externalAccount, _) => `${externalAccount.displayName}`,
+	}
+]
 
 
 type ExternalAccountsCommand =

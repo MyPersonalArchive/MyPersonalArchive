@@ -106,18 +106,18 @@ const StoredFilterRows = () => {
 						<input className="input"
 							type="text"
 							value={filter.name}
-							onChange={e => dispatch({ action: "EDIT_FILTER_NAME", index, name: e.target.value })} />
+							onChange={e => dispatch({ action: "EDIT_FILTER_NAME", id: filter.id, name: e.target.value })} />
 					</div>
 					<div>
 						<input className="input"
 							type="text"
 							value={filter.filterDefinition.title}
-							onChange={e => dispatch({ action: "EDIT_FILTER_DEFINITION_TITLE", index, title: e.target.value })} />
+							onChange={e => dispatch({ action: "EDIT_FILTER_DEFINITION_TITLE", id: filter.id, title: e.target.value })} />
 					</div>
 					<div>
 						<TagsInput
 							tags={filter.filterDefinition.tags}
-							setTags={newTags => dispatch({ action: "EDIT_FILTER_DEFINITION_TAGS", index, tags: newTags })}
+							setTags={newTags => dispatch({ action: "EDIT_FILTER_DEFINITION_TAGS", id: filter.id, tags: newTags })}
 							autocompleteList={allTags} />
 					</div>
 					<div>
@@ -136,7 +136,7 @@ const StoredFilterRows = () => {
 												else
 													filter.filterDefinition.metadataTypes.add(path as string)
 
-												dispatch({ action: "EDIT_FILTER_DEFINITION_METADATATYPES", index, metadataTypes: new Set(filter.filterDefinition.metadataTypes) })
+												dispatch({ action: "EDIT_FILTER_DEFINITION_METADATATYPES", id: filter.id, metadataTypes: new Set(filter.filterDefinition.metadataTypes) })
 											} } />
 										{displayName}
 									</label>
@@ -144,7 +144,7 @@ const StoredFilterRows = () => {
 						</div>
 					</div>
 					<div>
-						<button style={{ marginLeft: "10px" }} className=" text-red-500 cursor-pointer" onClick={() => dispatch({ action: "REMOVE_FILTER", index })}>
+						<button style={{ marginLeft: "10px" }} className=" text-red-500 cursor-pointer" onClick={() => dispatch({ action: "REMOVE_FILTER", id: filter.id })}>
 							<FontAwesomeIcon icon={faTrashCan} size="1x" />
 						</button>
 					</div>

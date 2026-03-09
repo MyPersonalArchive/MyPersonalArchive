@@ -9,6 +9,12 @@ export function changeAtIndex<TData>(inArray: Array<TData>, index: number, repla
 	return inArray.with(index, replacement)
 }
 
+export function changeAtKey<TData>(inArray: Array<TData>, predicate: (item: TData) => boolean, replacement: TData | ReplaceFn<TData>) {
+	const index = inArray.findIndex(predicate)
+	if (index === -1) return inArray
+	return changeAtIndex(inArray, index, replacement)
+}
+
 // Returns a new array, with the insertion element inserted at index
 export function insertAtIndex<TData>(inArray: Array<TData>, index: number, insertion: TData) {
 	return inArray.toSpliced(index, 0, insertion)
@@ -17,6 +23,12 @@ export function insertAtIndex<TData>(inArray: Array<TData>, index: number, inser
 // Returns a new array, with the element at index removed
 export function removeAtIndex<TData>(inArray: Array<TData>, index: number) {
 	return inArray.toSpliced(index, 1)
+}
+
+export function removeAtKey<TData>(inArray: Array<TData>, predicate: (item: TData) => boolean) {
+	const index = inArray.findIndex(predicate)
+	if (index === -1) return inArray
+	return removeAtIndex(inArray, index)
 }
 
 // Returns a new array, with with an element moved from fromIndex to toIndex
