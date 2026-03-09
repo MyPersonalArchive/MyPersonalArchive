@@ -1,5 +1,5 @@
 import { UUID } from "crypto"
-import { changeAtIndex, moveInArray, removeAtIndex } from "../array-helpers"
+import { changeAtIndex, changeAtKey, moveInArray, removeAtIndex, removeAtKey } from "../array-helpers"
 import { atomWithReducer } from "jotai/utils"
 import { MimeTypeConverterArray } from "../../Components/DragDropHelpers"
 
@@ -29,12 +29,12 @@ export const externalAccountsMimeTypeConverters: MimeTypeConverterArray<External
 
 type ExternalAccountsCommand =
 	| { action: "LOAD", externalAccounts: ExternalAccount[] }
-	| { action: "REMOVE_ACCOUNT", index: number }
+	| { action: "REMOVE_ACCOUNT", id: UUID }
 	| { action: "MOVE_ACCOUNT", fromIndex: number, toIndex: number }
-	| { action: "EDIT_ACCOUNT_DISPLAYNAME", index: number, displayName: string }
-	| { action: "EDIT_ACCOUNT_CREDENTIALS", index: number, credentials?: string }
-	| { action: "EDIT_ACCOUNT_TYPE", index: number, type?: string }
-	| { action: "EDIT_ACCOUNT_PROVIDER", index: number, provider?: string }
+	| { action: "EDIT_ACCOUNT_DISPLAYNAME", id: UUID, displayName: string }
+	| { action: "EDIT_ACCOUNT_CREDENTIALS", id: UUID, credentials?: string }
+	| { action: "EDIT_ACCOUNT_TYPE", id: UUID, type?: string }
+	| { action: "EDIT_ACCOUNT_PROVIDER", id: UUID, provider?: string }
 
 const reducer = (state: ExternalAccount[], command: ExternalAccountsCommand): ExternalAccount[] => {
 	switch (command.action) {
@@ -42,15 +42,15 @@ const reducer = (state: ExternalAccount[], command: ExternalAccountsCommand): Ex
 			return [...command.externalAccounts]
 
 		case "REMOVE_ACCOUNT":
-			return removeAtIndex(state, command.index)
+			return removeAtKey(state, account => account.id === command.id)
 
 		case "MOVE_ACCOUNT":
 			return moveInArray(state, command.fromIndex, command.toIndex)
 
 		case "EDIT_ACCOUNT_DISPLAYNAME":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				account => account.id === command.id,
 				account => ({
 					...account,
 					displayName: command.displayName
@@ -58,9 +58,9 @@ const reducer = (state: ExternalAccount[], command: ExternalAccountsCommand): Ex
 			)
 
 		case "EDIT_ACCOUNT_CREDENTIALS":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				account => account.id === command.id,
 				account => ({
 					...account,
 					credentials: command.credentials ?? account.credentials
@@ -68,9 +68,9 @@ const reducer = (state: ExternalAccount[], command: ExternalAccountsCommand): Ex
 			)
 
 		case "EDIT_ACCOUNT_TYPE":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				account => account.id === command.id,
 				account => ({
 					...account,
 					type: command.type ?? account.type
@@ -78,9 +78,9 @@ const reducer = (state: ExternalAccount[], command: ExternalAccountsCommand): Ex
 			)
 
 		case "EDIT_ACCOUNT_PROVIDER":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				account => account.id === command.id,
 				account => ({
 					...account,
 					provider: command.provider ?? account.provider

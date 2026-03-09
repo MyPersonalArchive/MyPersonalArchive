@@ -38,7 +38,7 @@ export const EmailListPage = () => {
 				{isPreferencesOpen
 					? <input className=""
 						value={externalAccount?.displayName ?? "<unknown account>"}
-						onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", index: accounts.findIndex(account => account.id === externalAccountId), displayName: e.target.value })}
+						onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
 					/>
 					: externalAccount?.displayName ?? "<unknown account>"}
 			</h1>
@@ -65,7 +65,7 @@ export const EmailListPage = () => {
 				</div>
 
 				<button className="btn"
-					onClick={() => fetchEmails({ folders: [selectedFolder!], limit: 50 })}
+					onClick={() => fetchEmails()}
 					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
