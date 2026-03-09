@@ -1,17 +1,12 @@
-import { FormEvent, useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { TagsInput } from "../Components/TagsInput"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtomValue } from "jotai"
 import { ArchiveItem, archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
-import { tagsAtom } from "../Utils/Atoms/tagsAtom"
-import { createQueryString } from "../Utils/createQueryString"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
-import { StoredFilterSelector } from "../Components/StoredFilterSelector"
+import { StoredFilterSelector } from "../Components/Filter/StoredFilterSelector"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPaperclip, faPlus } from "@fortawesome/free-solid-svg-icons"
-import { isPreferencesOpenAtom } from "../Utils/Atoms"
+import { faPaperclip, faMagnifyingGlass, faXmark } from "@fortawesome/free-solid-svg-icons"
 
 
 export const ArchiveItemListPage = () => {
@@ -65,9 +60,9 @@ export const ArchiveItemListPage = () => {
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
 			</div>
 
-			<Filter />
-
+			{/* <Search /> */}
 			<StoredFilterSelector />
+
 
 			<div className="overflow-x-auto my-4">
 				<table className="w-full table with-column-seperators">
@@ -133,57 +128,32 @@ const Row = ({ archiveItem }: RowProps) => {
 }
 
 
-const Filter = () => {
-	const dispath = useSetAtom(storedFiltersAtom)
-	const [title, setTitle] = useState<string>("")
-	const [tags, setTags] = useState<string[]>([])
-	const allTags = useAtomValue(tagsAtom)
-	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
-	const [searchParams] = useSearchParams()
-	const navigate = useNavigate()
+const Search = () => {
+	const [searchParams, setSearchParams] = useSearchParams()
 
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setTitle(searchParams.get("title") ?? "")
-		setTags(searchParams.getAll("tags"))
-	}, [searchParams])
-
-	const search = (event: FormEvent<HTMLFormElement>) => {
+	const search = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		navigate({
-			search: createQueryString({ title, tags: tags.map(tag => tag.trim()) }, { skipEmptyStrings: true })
-		})
 	}
 
-	const reset = (event: FormEvent<HTMLFormElement>) => {
+	const reset = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		setTitle("")
-		setTags([])
-		navigate({
-			search: createQueryString({ title: "", tags: [] }, { skipEmptyStrings: true })
-		})
+		setSearchParams({})
 	}
 
 	return (
 		<form onSubmit={search} onReset={reset} className="stack-horizontal to-the-left my-4">
-			<input className="input"
-				type="text"
-				placeholder="Search by title"
-				value={title}
-				onChange={event => setTitle(event.target.value)}
-			/>
-			<TagsInput placeholder="Search by tags" tags={tags} setTags={setTags} autocompleteList={allTags} />
-			<button type="submit" className="btn btn-primary" >
-				Search
-			</button>
-			<button type="reset" className="btn">
-				Reset
-			</button>
-			{ isPreferencesOpen &&
-				<button type="button" className="btn" onClick={() => dispath({ action: "ADD_FILTER", name: "New filter", filterDefinition: { title, tags, metadataTypes: new Set<string>() } })}>
-					<FontAwesomeIcon icon={faPlus} />
+			<div className="group">
+				<input className="input"
+					type="text"
+					placeholder="Search for anything"
+				/>
+				<button type="reset" className="btn">
+					<FontAwesomeIcon icon={faXmark} className="mr-1" />
 				</button>
-			}
+				<button type="submit" className="btn btn-primary">
+					<FontAwesomeIcon icon={faMagnifyingGlass} className="mr-1" />
+				</button>
+			</div>
 		</form>
 	)
 }

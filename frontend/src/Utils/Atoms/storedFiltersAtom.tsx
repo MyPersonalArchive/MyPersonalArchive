@@ -1,6 +1,8 @@
 import { UUID } from "crypto"
 import { atomWithReducer } from "jotai/utils"
-import { changeAtIndex, moveInArray, removeAtIndex } from "../array-helpers"
+import { changeAtIndex, changeAtKey, moveInArray, removeAtIndex, removeAtKey } from "../array-helpers"
+import { MimeTypeConverterArray } from "../../Components/DragDropHelpers"
+import { replace } from "react-router-dom"
 
 
 export type StoredFilter = {
@@ -16,15 +18,34 @@ export type FilterDefinition = {
 }
 
 
+export const storedFiltersMimeTypeConverters: MimeTypeConverterArray<StoredFilter, number> = [
+	{
+		mimeType: "application/stored-filter+index+json",
+		convertDragDataToPayload: (_, index) => ({ index }),
+		convertDropPayloadToAction: (fromIndex, toIndex, _) => ({ action: "MOVE_FILTER", fromIndex, toIndex })
+	},
+	{
+		mimeType: "application/stored-filter-definition+json",
+		convertDragDataToPayload: (filter, _) => (filter),
+		convertDropPayloadToAction: (_1, _2, filter) => ({ action: "ADD_FILTER", name: `Copy of ${filter.name}`, filterDefinition: filter.filterDefinition })
+	},
+	{
+		mimeType: "text",
+		convertDragDataToPayload: (storedFilter, _) => `${storedFilter.name}`,
+	}
+]
+
+
 type StoredFiltersCommand =
 	| { action: "LOAD", storedFilters: StoredFilter[] }
 	| { action: "ADD_FILTER", name: string, filterDefinition?: FilterDefinition }
-	| { action: "REMOVE_FILTER", index: number }
+	| { action: "REMOVE_FILTER", id: UUID }
+	| { action: "CLEAR_FILTER", id: UUID }
 	| { action: "MOVE_FILTER", fromIndex: number, toIndex: number }
-	| { action: "EDIT_FILTER_NAME", index: number, name: string }
-	| { action: "EDIT_FILTER_DEFINITION_TITLE", index: number, title?: string }
-	| { action: "EDIT_FILTER_DEFINITION_TAGS", index: number, tags: string[] }
-	| { action: "EDIT_FILTER_DEFINITION_METADATATYPES", index: number, metadataTypes: Set<string> }
+	| { action: "EDIT_FILTER_NAME", id: UUID, name: string }
+	| { action: "EDIT_FILTER_DEFINITION_TITLE", id: UUID, title?: string }
+	| { action: "EDIT_FILTER_DEFINITION_TAGS", id: UUID, tags: string[] }
+	| { action: "EDIT_FILTER_DEFINITION_METADATATYPES", id: UUID, metadataTypes: Set<string> }
 
 const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFilter[] => {
 	switch (command.action) {
@@ -32,12 +53,27 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			return [...command.storedFilters]
 
 		case "REMOVE_FILTER":
-			return removeAtIndex(state, command.index)
+			return removeAtKey(state, filter => filter.id === command.id)
+
+		case "CLEAR_FILTER":
+			return changeAtKey(
+				state,
+				filter => filter.id === command.id,
+				filter => ({
+					...filter,
+					filterDefinition: {
+						title: "",
+						tags: [],
+						metadataTypes: new Set<string>()
+					}
+				})
+			)
 
 		case "MOVE_FILTER":
 			return moveInArray(state, command.fromIndex, command.toIndex)
 
 		case "ADD_FILTER":
+			console.log("Adding filter with definition", command.filterDefinition)
 			return [...state, {
 				id: crypto.randomUUID(),
 				name: command.name,
@@ -49,9 +85,9 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			}]
 
 		case "EDIT_FILTER_NAME":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				filter => filter.id === command.id,
 				filter => ({
 					...filter,
 					name: command.name
@@ -59,9 +95,9 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			)
 
 		case "EDIT_FILTER_DEFINITION_TITLE":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				filter => filter.id === command.id,
 				filter => ({
 					...filter,
 					filterDefinition: {
@@ -72,9 +108,9 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			)
 
 		case "EDIT_FILTER_DEFINITION_TAGS":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				filter => filter.id === command.id,
 				filter => ({
 					...filter,
 					filterDefinition: {
@@ -85,9 +121,9 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			)
 
 		case "EDIT_FILTER_DEFINITION_METADATATYPES":
-			return changeAtIndex(
+			return changeAtKey(
 				state,
-				command.index,
+				filter => filter.id === command.id,
 				filter => ({
 					...filter,
 					filterDefinition: {
