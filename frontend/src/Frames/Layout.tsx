@@ -15,27 +15,16 @@ import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
 import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
 
 
-const openSubMenuAtom = atomWithStorage<string | null>("openSubMenu", null, undefined, { getOnInit: true })
-
 export const Layout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
 	const [isNavOpen, setIsNavOpen] = useState(false)
 	const [isPreferencesOpen, setIsPreferencesOpen] = useAtom(isPreferencesOpenAtom)
-	const [openSubmenu, setOpenSubmenu] = useAtom(openSubMenuAtom)
 
 	const accounts = useAtomValue(externalAccountsAtom)
-
-	const toggleSubmenu = (menu: string) => {
-		setOpenSubmenu(openSubmenu === menu ? null : menu)
-	}
 
 	const closeMenu = () => {
 		setIsNavOpen(false)
 	}
-
-	// const createAccount = () => {
-	// 	navigate(RoutePaths.Profile)
-	// }
 
 	return (
 		<div className="flex flex-col lg:flex-row lg:flex-wrap min-h-screen">
@@ -131,17 +120,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 }
 
 
-type ArrowProps = {
-	subMenuIsOpen: boolean
-}
-const Arrow = ({ subMenuIsOpen }: ArrowProps) => {
-	return (
-		<span className={`float-right transition-transform duration-300 inline-block text-xs ${subMenuIsOpen ? "rotate-90" : ""}`}>
-			▶
-		</span>
-	)
-}
-
 
 const AccountList = () => {
 	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
@@ -199,10 +177,10 @@ const EditableAccountList = () => {
 							<input className=""
 								type="text"
 								value={account.displayName}
-								onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", index, displayName: e.target.value })} />
+								onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: account.id, displayName: e.target.value })} />
 						</span>
 						<span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-800">
-							<button className=" text-red-500 cursor-pointer ml-2.5" onClick={() => dispatch({ action: "REMOVE_ACCOUNT", index })}>
+							<button className=" text-red-500 cursor-pointer ml-2.5" onClick={() => dispatch({ action: "REMOVE_ACCOUNT", id: account.id })}>
 								<FontAwesomeIcon icon={faTrashCan} size="1x" />
 							</button>
 						</span>
