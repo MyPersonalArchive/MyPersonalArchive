@@ -50,7 +50,7 @@ const ClickableStoredFilters = () => {
 const EditableStoredFilters = () => {
 	const [storedFilters, dispatch] = useAtom(storedFiltersAtom)
 	const [searchParams] = useSearchParams()
-	// const [selectedFilterIndex, setSelectedFilterIndex] = useState<number>(storedFilters.findIndex(filter => filter.name === searchParams.get("filter")))
+
 	const [selectedFilterId, setSelectedFilterId] = useState<UUID | undefined>(storedFilters.find(filter => filter.name === searchParams.get("filter"))?.id ?? undefined)
 
 	const dnd = useSortableDragDrop<StoredFilter, HTMLDivElement>(
@@ -90,7 +90,7 @@ const EditableStoredFilters = () => {
 							onChange={e => dispatch({ action: "EDIT_FILTER_NAME", id: filter.id, name: e.target.value })}
 							onFocus={() => setSelectedFilterId(filter.id)}
 						/>
-						{/* {filter.name} */}
+
 						<button className=" text-red-500 cursor-pointer absolute right-3 top-1/2 -translate-y-1/2"
 							onClick={() => dispatch({ action: "REMOVE_FILTER", id: filter.id })}
 							onFocus={() => setSelectedFilterId(filter.id)}

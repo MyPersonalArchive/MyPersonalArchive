@@ -1,8 +1,8 @@
 import { UUID } from "crypto"
 import { atomWithReducer } from "jotai/utils"
-import { changeAtIndex, changeAtKey, moveInArray, removeAtIndex, removeAtKey } from "../array-helpers"
+import { changeAtKey, moveInArray, removeAtKey } from "../array-helpers"
 import { MimeTypeConverterArray } from "../../Components/DragDropHelpers"
-import { replace } from "react-router-dom"
+
 
 
 export type StoredFilter = {
@@ -73,7 +73,7 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			return moveInArray(state, command.fromIndex, command.toIndex)
 
 		case "ADD_FILTER":
-			console.log("Adding filter with definition", command.filterDefinition)
+
 			return [...state, {
 				id: crypto.randomUUID(),
 				name: command.name,
