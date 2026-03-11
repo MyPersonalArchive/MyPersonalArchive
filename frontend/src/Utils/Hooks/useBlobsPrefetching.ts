@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useSignalR } from "./useSignalR"
-import { Blob, blobsAtom } from "./Atoms/blobsAtom"
+import { Blob, blobsAtom } from "../Atoms/blobsAtom"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
 

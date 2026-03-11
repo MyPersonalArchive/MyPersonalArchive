@@ -1,9 +1,9 @@
 import { PropsWithChildren } from "react"
-import { useTagsPrefetching } from "../Utils/useTagsPrefetching"
-import { useBlobsPrefetching } from "../Utils/useBlobsPrefetching"
-import { useStoredFiltersPrefetching } from "../Utils/useStoredFiltersPrefetching"
-import { useArchiveItemsPrefetching } from "../Utils/useArchiveItemsPrefetching"
-import { useExternalAccountsPrefetching } from "../Utils/useAccountsPrefetching"
+import { useTagsPrefetching } from "../Utils/Hooks/useTagsPrefetching"
+import { useBlobsPrefetching } from "../Utils/Hooks/useBlobsPrefetching"
+import { useStoredFiltersPrefetching } from "../Utils/Hooks/useStoredFiltersPrefetching"
+import { useArchiveItemsPrefetching } from "../Utils/Hooks/useArchiveItemsPrefetching"
+import { useExternalAccountsPrefetching } from "../Utils/Hooks/useAccountsPrefetching"
 
 
 export const PrefetchDataFrame = ({ children }: PropsWithChildren) => {

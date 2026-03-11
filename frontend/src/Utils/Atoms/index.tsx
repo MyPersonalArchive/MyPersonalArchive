@@ -9,7 +9,7 @@ export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSele
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 
-export const isPreferencesOpenAtom = atom<boolean>()
+export const isPreferencesOpenAtom = atom<boolean>(false)
 
 
 

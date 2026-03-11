@@ -1,24 +1,24 @@
 
-import { PropsWithChildren, useState } from "react"
+import { PropsWithChildren, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue } from "jotai"
-import { atomWithStorage } from "jotai/utils"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSliders, faGripVertical, faTrashCan, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { isPreferencesOpenAtom } from "../Utils/Atoms"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
-import { useEmailProvidersPrefetching } from "../Utils/useEmailProvidersPrefetching"
+import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
-import { useRemoteAuthentication } from "../Utils/useRemoteAuthentication"
+import { useRemoteAuthentication } from "../Utils/Hooks/useRemoteAuthentication"
+import { usePreferences } from "../Utils/Hooks/usePreferences"
 
 
 export const Layout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
 	const [isNavOpen, setIsNavOpen] = useState(false)
-	const [isPreferencesOpen, setIsPreferencesOpen] = useAtom(isPreferencesOpenAtom)
+	const { isPreferencesOpen, openPreferences, closePreferences } = usePreferences()
 
 	const accounts = useAtomValue(externalAccountsAtom)
 
@@ -35,7 +35,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				<button
 					className={`p-1 rounded hover:bg-gray-300 transition-colors ${isPreferencesOpen ? "text-blue-600" : ""}`}
 					aria-label="Toggle preferences"
-					onClick={() => setIsPreferencesOpen(v => !v)}
+					onClick={() => isPreferencesOpen ? closePreferences() : openPreferences()}
 				>
 					<FontAwesomeIcon icon={faSliders} size="lg" />
 				</button>

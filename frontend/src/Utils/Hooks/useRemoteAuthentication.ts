@@ -1,8 +1,8 @@
 import { useContext } from "react"
-import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
-import { createQueryString } from "./createQueryString"
+import { CurrentTenantIdContext } from "../../Frames/CurrentTenantIdContext"
+import { createQueryString } from "../createQueryString"
 import { useNavigate } from "react-router-dom"
-import { RoutePaths } from "../RoutePaths"
+import { RoutePaths } from "../../RoutePaths"
 
 
 export function useRemoteAuthentication() {

@@ -87,12 +87,12 @@ const EditableStoredFilters = () => {
 							type="text"
 							value={filter.name}
 							size={Math.max(3, filter.name.length)}
-							onChange={e => dispatch({ action: "EDIT_FILTER_NAME", id: index, name: e.target.value })}
+							onChange={e => dispatch({ action: "EDIT_FILTER_NAME", id: filter.id, name: e.target.value })}
 							onFocus={() => setSelectedFilterId(filter.id)}
 						/>
 						{/* {filter.name} */}
 						<button className=" text-red-500 cursor-pointer absolute right-3 top-1/2 -translate-y-1/2"
-							onClick={() => dispatch({ action: "REMOVE_FILTER", index })}
+							onClick={() => dispatch({ action: "REMOVE_FILTER", id: filter.id })}
 							onFocus={() => setSelectedFilterId(filter.id)}
 						>
 							<FontAwesomeIcon icon={faTrashCan} size="1x" />

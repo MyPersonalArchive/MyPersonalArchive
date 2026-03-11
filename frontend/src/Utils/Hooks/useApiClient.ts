@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom"
-import { RoutePaths } from "../RoutePaths"
-import { createQueryString } from "./createQueryString"
+import { RoutePaths } from "../../RoutePaths"
+import { createQueryString } from "../createQueryString"
 import { useContext } from "react"
-import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
+import { CurrentTenantIdContext } from "../../Frames/CurrentTenantIdContext"
 
 
 export const useApiClient = () => {
