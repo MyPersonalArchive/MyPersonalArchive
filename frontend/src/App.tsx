@@ -14,7 +14,6 @@ import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { RootFrame } from "./Frames/RootFrame"
-import { StoredFilterListPage } from "./Pages/StoredFilterListPage"
 import { EmailListPage } from "./Pages/EmailListPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
 
@@ -70,10 +69,6 @@ const routers = createBrowserRouter([
 					{
 						path: RoutePaths.Blob.List,
 						element: <BlobListPage />
-					},
-					{
-						path: RoutePaths.StoredFilters,
-						element: <StoredFilterListPage />
 					},
 					{
 						path: `${RoutePaths.Email}/:id`,

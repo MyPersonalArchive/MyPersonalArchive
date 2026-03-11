@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useApiClient } from "../../Utils/useApiClient"
+import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { BaseViewer, BaseViewerProps } from "./BaseViewer"
 import { DimensionEnum } from "../Preview"
 

@@ -1,8 +1,8 @@
 import { HttpTransportType, HubConnectionBuilder, LogLevel } from "@microsoft/signalr"
 import { useContext, useEffect, useRef } from "react"
-import { signalRConnectionAtom } from "../Utils/Atoms"
+import { signalRConnectionAtom } from "../Atoms"
 import { useAtom } from "jotai"
-import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
+import { CurrentTenantIdContext } from "../../Frames/CurrentTenantIdContext"
 
 
 export type SignalRMessage = {

@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useSignalR } from "./useSignalR"
-import { ArchiveItem, archiveItemsAtom } from "./Atoms/archiveItemsAtom"
+import { ArchiveItem, archiveItemsAtom } from "../Atoms/archiveItemsAtom"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
 

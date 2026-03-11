@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { TagsInput } from "../Components/TagsInput"
-import { useApiClient } from "../Utils/useApiClient"
+import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { PreviewList } from "../Components/PreviewList"
 import { BlobIdAndNumberOfPages } from "../Components/Preview"
 import { DimensionEnum } from "../Components/Preview"

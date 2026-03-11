@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
-import { StoredFilter, storedFiltersAtom } from "./Atoms/storedFiltersAtom"
+import { StoredFilter, storedFiltersAtom } from "../Atoms/storedFiltersAtom"
 import { useEffect } from "react"
 import { SignalRMessage, useSignalR } from "./useSignalR"
 import { UUID } from "crypto"

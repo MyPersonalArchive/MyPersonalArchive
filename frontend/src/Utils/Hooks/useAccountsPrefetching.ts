@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
-import { ExternalAccount, externalAccountsAtom } from "./Atoms/externalAccountsAtom"
+import { ExternalAccount, externalAccountsAtom } from "../Atoms/externalAccountsAtom"
 import { useEffect } from "react"
 import { SignalRMessage, useSignalR } from "./useSignalR"
 import { UUID } from "crypto"

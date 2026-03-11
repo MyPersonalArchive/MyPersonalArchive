@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom } from "jotai"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
-import { useApiClient } from "../Utils/useApiClient"
+import { useApiClient } from "../Utils/Hooks/useApiClient"
 
 
 export const SignOutPage = () => {

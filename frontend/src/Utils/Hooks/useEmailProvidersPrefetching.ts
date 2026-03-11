@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
-import { EmailProvider, emailProvidersAtom } from "./Atoms/emailProvidersAtom"
+import { EmailProvider, emailProvidersAtom } from "../Atoms/emailProvidersAtom"
 import { useEffect } from "react"
 import { SignalRMessage, useSignalR } from "./useSignalR"
 

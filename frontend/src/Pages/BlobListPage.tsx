@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { useApiClient } from "../Utils/useApiClient"
+import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtomValue } from "jotai"
 import { Blob, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "../Components/PreviewList"
