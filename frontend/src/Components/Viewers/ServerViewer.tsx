@@ -11,7 +11,7 @@ export const ServerViewer = ({ blobId, mimeType, dimension, children }: Props) =
 	const apiClient = useApiClient()
 	const [srcData, setSrcData] = useState<string>("")
 	const [loading, setLoading] = useState(true)
-  
+
 	// Check if we should force image viewer for PDF thumbnails/small sizes
 	const shouldForceImageViewer = mimeType === "application/pdf" && (dimension === DimensionEnum.thumbnail || dimension === DimensionEnum.small)
 
@@ -20,7 +20,7 @@ export const ServerViewer = ({ blobId, mimeType, dimension, children }: Props) =
 
 		const fetchFile = async () => {
 			try {
-				const response = await apiClient.getBlob(`/api/blob/GetFile?blobId=${blobId}&dimension=${dimension}`, {})
+				const response = await apiClient.getBlob("/api/blob/GetFile", { blobId, dimension })
 				if (!cancelled) {
 					const blobUrl = URL.createObjectURL(response.blob)
 					setSrcData(blobUrl)
@@ -43,11 +43,11 @@ export const ServerViewer = ({ blobId, mimeType, dimension, children }: Props) =
 
 	if (loading) return <div>Loading file...</div>
 
-	return <BaseViewer 
-		src={srcData} 
-		mimeType={mimeType} 
-		dimension={dimension} 
+	return <BaseViewer
+		src={srcData}
+		mimeType={mimeType}
+		dimension={dimension}
 		forceImageViewer={shouldForceImageViewer}
-		children={children} 
+		children={children}
 	/>
 }
