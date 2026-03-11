@@ -77,12 +77,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						<li>
 							<span className="heading relative">
 								Connected accounts
-								{
-									// !isPreferencesOpen &&
-									// <button className="cursor-pointer ml-2.5" onClick={() => createAccount()}>
-									// 	<FontAwesomeIcon className="absolute right-3 top-1/2 transform -translate-y-1/2" icon={faPlus} />
-									// </button>
-								}
+
 							</span>
 
 							<ul className={"nav-level-2"}>
@@ -235,7 +230,7 @@ export const ConnectNewAccount = () => {
 			<div className="link w-[256px] relative">
 				<select
 					className="input w-44 ml-4"
-					value={getSelectedEmailProvider()?.lookup || undefined}
+					value={getSelectedEmailProvider()?.lookup}
 					onChange={e => setSelectedEmailProvider(availableEmailProviders.find(p => p.lookup === e.target.value))}
 				>
 					<option>-- Add account --</option>
