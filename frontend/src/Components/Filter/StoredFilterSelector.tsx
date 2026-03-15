@@ -4,9 +4,9 @@ import { faGripVertical, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-
 import { storedFiltersMimeTypeConverters, StoredFilter, storedFiltersAtom } from "../../Utils/Atoms/storedFiltersAtom"
 import { useAtom, useAtomValue } from "jotai"
 import classNames from "classnames"
-import { isPreferencesOpenAtom } from "../../Utils/Atoms"
+import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
 import { useDrop, useSortableDragDrop } from "../DragDropHelpers"
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useState } from "react"
 import { createQueryString } from "../../Utils/createQueryString"
 import { TagsInput } from "../TagsInput"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
@@ -14,9 +14,9 @@ import { UUID } from "crypto"
 
 
 export const StoredFilterSelector = () => {
-	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
+	const {preferencesIsOpen} = useAtomValue(layoutStateAtom)
 
-	return isPreferencesOpen
+	return preferencesIsOpen
 		? <EditableStoredFilters />
 		: <ClickableStoredFilters />
 }

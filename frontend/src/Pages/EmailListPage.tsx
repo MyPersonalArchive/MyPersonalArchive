@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react"
 import { useMailProvider } from "../Utils/Hooks/useMailProvider"
-import { Email, EmailAddress, EmailAttachment, isPreferencesOpenAtom } from "../Utils/Atoms"
+import { Email, EmailAddress, EmailAttachment } from "../Utils/Atoms"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
@@ -11,12 +11,13 @@ import { useAtom, useAtomValue } from "jotai"
 import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { UUID } from "crypto"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
+import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 
 
 export const EmailListPage = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
-	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
-
+	const {preferencesIsOpen} = useAtomValue(layoutStateAtom)
+	
 	const params = useParams()
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
@@ -35,7 +36,7 @@ export const EmailListPage = () => {
 	return (
 		<>
 			<h1 className="heading-1">
-				{isPreferencesOpen
+				{preferencesIsOpen
 					? <input className=""
 						value={externalAccount?.displayName ?? "<unknown account>"}
 						onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
