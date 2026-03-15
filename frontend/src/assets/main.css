@@ -4,16 +4,54 @@
 @import "tailwindcss";
 @import "./table.css";
 
+@font-face {
+        font-family: "Monaspace Neon";
+        src: url("./MonaspaceNeonVar.woff2") format("woff2"),
+             url("./MonaspaceNeonVar.woff") format("woff");
+        font-weight: 100 900;
+        font-style: normal;
+}
+
+@font-face {
+        font-family: "Monaspace Argon";
+        src: url("./MonaspaceArgonVar.woff2") format("woff2"),
+             url("./MonaspaceArgonVar.woff") format("woff");
+        font-weight: 100 900;
+        font-style: normal;
+}
+
+@font-face {
+        font-family: "Monaspace Xenon";
+        src: url("./MonaspaceXenonVar.woff2") format("woff2"),
+             url("./MonaspaceXenonVar.woff") format("woff");
+        font-weight: 100 900;
+        font-style: normal;
+}
+
+@font-face {
+        font-family: "Monaspace Radon";
+        src: url("./MonaspaceRadonVar.woff2") format("woff2"),
+             url("./MonaspaceRadonVar.woff") format("woff");
+        font-weight: 100 900;
+        font-style: normal;
+}
+
+@font-face {
+        font-family: "Monaspace Krypton";
+        src: url("./MonaspaceKryptonVar.woff2") format("woff2"),
+             url("./MonaspaceKryptonVar.woff") format("woff");
+        font-weight: 100 900;
+        font-style: normal;
+}
 
 @theme {
 	--color-customblue: hsla(197, 68%, 37%, 10);
+	--font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
-
-
 
 div#root {
 	@apply grid h-dvh font-sans;
-	@apply grid-rows-[56px_1fr] grid-cols-[220px_1fr];
+	@apply grid-rows-[56px_1fr] grid-cols-[280px_1fr];
 	@apply [grid-template-areas:'header_header'_'nav_main'];
 	@apply max-sm:grid-cols-1 max-sm:[grid-template-areas:'header'_'main'];
 }
@@ -72,10 +110,6 @@ header#topHeader .logo {
 	@apply bg-[#f3f6fa];
 }
 
-/* .profile-dropdown a svg {
-	@apply w-4 h-4 shrink-0 text-[#666];
-} */
-
 .profile-dropdown .divider {
 	@apply h-px bg-[#e8ecf0] my-1;
 }
@@ -84,14 +118,10 @@ header#topHeader .logo {
 	@apply text-[#c0392b];
 }
 
-/* .profile-dropdown .danger svg {
-	@apply text-[#c0392b];
-} */
-
 /* ── Side nav ── */
 nav#sideNav {
 	@apply [grid-area:nav] bg-[hsl(210,29%,30%)] text-[#d4f5e4] flex flex-col items-stretch pt-4 overflow-y-auto;
-	@apply max-sm:fixed max-sm:top-14 max-sm:left-0 max-sm:w-[260px] max-sm:h-[calc(100dvh-56px)] max-sm:z-100 max-sm:-translate-x-full max-sm:transition-transform max-sm:duration-[250ms] max-sm:ease-in-out max-sm:shadow-[4px_0_16px_rgba(0,0,0,.3)];
+	@apply max-sm:fixed max-sm:top-14 max-sm:left-0 max-sm:w-[280] max-sm:h-[calc(100dvh-56px)] max-sm:z-100 max-sm:-translate-x-full max-sm:transition-transform max-sm:duration-[250ms] max-sm:ease-in-out max-sm:shadow-[4px_0_16px_rgba(0,0,0,.3)];
 }
 
 nav#sideNav.open {
@@ -117,10 +147,6 @@ nav#sideNav .nav-link:hover,
 nav#sideNav .nav-link.active {
 	@apply bg-white/12 border-l-[#7ef4b4] text-white;
 }
-
-/* nav#sideNav a svg {
-	@apply w-5 h-5 shrink-0;
-} */
 
 /* ── Main ── */
 main {
