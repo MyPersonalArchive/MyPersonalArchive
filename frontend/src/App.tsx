@@ -17,7 +17,7 @@ import { RootFrame } from "./Frames/RootFrame"
 import { EmailListPage } from "./Pages/EmailListPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
 
-const routers = createBrowserRouter([
+const router = createBrowserRouter([
 	{
 		element: (
 			<RootFrame>
@@ -91,8 +91,6 @@ export const App = () => {
 	}, [])
 
 	return (
-		<>
-			<RouterProvider router={routers} />
-		</>
+		<RouterProvider router={router} />
 	)
 }

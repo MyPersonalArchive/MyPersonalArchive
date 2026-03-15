@@ -1,140 +1,174 @@
 
-import { PropsWithChildren, useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { PropsWithChildren, useState } from "react"
+import { Link, NavLink } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
-import { useAtom, useAtomValue } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSliders, faGripVertical, faTrashCan, faPlus } from "@fortawesome/free-solid-svg-icons"
-import { isPreferencesOpenAtom } from "../Utils/Atoms"
+import { faGripVertical, faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSlidersH, faSliders, faGear } from "@fortawesome/free-solid-svg-icons"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
 import { useRemoteAuthentication } from "../Utils/Hooks/useRemoteAuthentication"
-import { usePreferences } from "../Utils/Hooks/usePreferences"
+import classNames from "classnames"
+import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
+
 
 
 export const Layout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
-	const [isNavOpen, setIsNavOpen] = useState(false)
-	const { isPreferencesOpen, openPreferences, closePreferences } = usePreferences()
-
-	const accounts = useAtomValue(externalAccountsAtom)
-
-	const closeMenu = () => {
-		setIsNavOpen(false)
-	}
+	const [{navIsOpen, profileDropdownIsOpen, preferencesIsOpen}, dispatchLayoutCommand] = useAtom(layoutStateAtom)
 
 	return (
-		<div className="flex flex-col lg:flex-row lg:flex-wrap min-h-screen">
-			<header className="w-full bg-gray-200 text-gray-800 p-4 shrink-0 flex items-center">
-				<h1 className="text-2xl flex-1 text-center">
-					My Personal Archive
-				</h1>
-				<button
-					className={`p-1 rounded hover:bg-gray-300 transition-colors ${isPreferencesOpen ? "text-blue-600" : ""}`}
-					aria-label="Toggle preferences"
-					onClick={() => isPreferencesOpen ? closePreferences() : openPreferences()}
+		<>
+			<header id="topHeader">
+				<button className="menu-btn" id="menuBtn"
+					aria-label="Open navigation"
+					aria-expanded={navIsOpen}
+					aria-controls="sideNav"
+					onClick={() => dispatchLayoutCommand({ action: "TOGGLE_NAV"})}
 				>
-					<FontAwesomeIcon icon={faSliders} size="lg" />
+					<FontAwesomeIcon icon={faBars} />
 				</button>
+
+				<span className="logo">My Personal Archive</span>
+
+				<div className="flex-1"></div>
+
+				<div className="profile">
+					{!currentUser &&
+						<Link className="profile-btn"
+							id="profileBtn"
+							to={RoutePaths.SignIn}
+						>
+							<div className="profile-avatar">
+								<FontAwesomeIcon icon={faUser} />
+							</div>
+							Sign in
+						</Link>
+					}
+					{currentUser &&
+						<>
+							<button className="profile-btn"
+								// id="profileBtn"
+								aria-haspopup="true"
+								aria-expanded={profileDropdownIsOpen}
+								aria-controls="profileDropdown"
+								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PROFILE_DROPDOWN" })}
+							>
+								<div className="profile-avatar">
+									<FontAwesomeIcon icon={faUser} />
+								</div>
+								{currentUser?.fullname}
+								<FontAwesomeIcon icon={faChevronDown} />
+							</button>
+
+							<div className={classNames("profile-dropdown", { "open": profileDropdownIsOpen })}
+								role="menu"
+								id="profileDropdown"
+							>
+								<div className="profile-dropdown-header">
+									<strong>{currentUser?.fullname}</strong>
+									<span>{currentUser?.username}</span>
+								</div>
+								<Link role="menuitem"
+									to={RoutePaths.Profile}
+									onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
+								>
+									<FontAwesomeIcon icon={faUser} />
+									My profile
+								</Link>
+								<div className="divider"></div>
+								<Link
+									to={RoutePaths.SignOut} role="menuitem"
+									onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
+									className="danger"
+								>
+									<FontAwesomeIcon icon={faRightFromBracket} />
+									Sign Out
+								</Link>
+							</div>
+						</>
+					}
+				</div>
 			</header>
 
-			<nav className="lg:w-64 bg-gray-100 relative  lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
-				<button
-					className="lg:hidden block w-full bg-gray-200 text-gray-800 border-none p-4 text-base cursor-pointer text-left hover:bg-gray-300 transition-colors"
-					aria-label="Toggle navigation"
-					onClick={() => setIsNavOpen(!isNavOpen)}
-				>
-					☰ Menu
-				</button>
+			<div className={classNames("nav-overlay", { "open": navIsOpen })}></div>
 
-				<ul className={`nav-level-1 ${isNavOpen ? "block" : "hidden"} lg:block list-none bg-gray-100 absolute lg:static top-full left-0 right-0 shadow-md lg:shadow-none`}>
-
-					{!currentUser && <>
-						<li>
-							<Link to={RoutePaths.SignIn} onClick={closeMenu}>
-								Sign in
-							</Link>
-						</li>
-					</>
-					}
-
-					{currentUser && <>
-						<li>
-							<Link to={RoutePaths.Archive.List} onClick={closeMenu}>
+			<nav id="sideNav" className={classNames({ "open": navIsOpen })}>
+				{currentUser &&
+					<>
+						<div className="nav-group">
+							<span className="nav-group-heading">General</span>
+							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
+								to={RoutePaths.Archive.List} onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV"})}
+							>
+								<FontAwesomeIcon icon={faBoxArchive} />
 								Archive
-							</Link>
-						</li>
-
-						<li>
-							<Link to={RoutePaths.Blob.List} onClick={closeMenu}>
+							</NavLink>
+							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
+								to={RoutePaths.Blob.List} onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV"})}
+							>
+								<FontAwesomeIcon icon={faPhotoFilm} />
 								Documents and media
-							</Link>
-						</li>
+							</NavLink>
+						</div>
 
-						<li>
-							<span className="heading relative">
-								Connected accounts
+						<div className="nav-group">
+							<span className="nav-group-heading">Connected accounts</span>
+							<AccountList />
+						</div>
 
-							</span>
+						<div className="flex-1"></div>
 
-							<ul className={"nav-level-2"}>
-							</ul>
-						</li>
-
-						{accounts === undefined || accounts.length === 0
-							? <li className="italic text-gray-500 py-2 px-4">
-								No connected accounts
-							</li>
-							: <AccountList />
-						}
-
-						<li>
-							<Link to={RoutePaths.Profile}>
-								My profile
-							</Link>
-						</li>
+						<div className="nav-group">
+							{/* <span className="nav-group-heading">General</span> */}
+							<button className={classNames("nav-link", { "active": preferencesIsOpen })}
+								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
+							>
+								<FontAwesomeIcon icon={faSliders} />
+								Preferences
+							</button>
+						</div>
 					</>
-					}
-				</ul>
+				}
 			</nav>
 
-			<div className="flex-1 min-w-0">
+			<main id="mainArea">
 				<main className="px-2 lg:px-6 py-4">
 					{children}
 				</main>
-			</div>
+			</main>
 
-			<footer className="w-full bg-gray-200 text-gray-800 text-center p-4 flex-shrink-0">
-				<p>Footer</p>
-			</footer>
-		</div>
+		</>
 	)
 }
 
 
 
 const AccountList = () => {
-	const isPreferencesOpen = useAtomValue(isPreferencesOpenAtom)
+	const {preferencesIsOpen} = useAtomValue(layoutStateAtom)
 
-	return isPreferencesOpen
+	return preferencesIsOpen
 		? <EditableAccountList />
 		: <ClickableAccountList />
 }
 
 
 const ClickableAccountList = () => {
+	const dispatchLayoutCommand = useSetAtom(layoutStateAtom)
 	const accounts = useAtomValue(externalAccountsAtom)
 
 	return (
 		accounts.map(account => (
-			<li key={account.id} className="flex items-center pl-4">
-				<Link to={`${RoutePaths.Email}/${account.id}`} className="flex-1">
-					{account.displayName}
-				</Link>
-			</li>
+			<NavLink key={account.id}
+				className={({ isActive }) => isActive ? "active" : undefined}
+				to={`${RoutePaths.Email}/${account.id}`}
+				onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
+			>
+				{account.displayName}
+			</NavLink>
 		))
 	)
 }
@@ -143,7 +177,7 @@ const ClickableAccountList = () => {
 const EditableAccountList = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 
-	const dnd = useSortableDragDrop<ExternalAccount, HTMLLIElement>(
+	const dnd = useSortableDragDrop<ExternalAccount, HTMLDivElement>(
 		".draghandle",
 		externalAccountsMimeTypeConverters,
 		accounts,
@@ -154,8 +188,8 @@ const EditableAccountList = () => {
 		{
 			dnd.rows.map(({ rowType, data: account }, index) => rowType === "item-row"
 				?
-				<li key={account.id}
-					className="flex items-center"
+				<div key={account.id}
+					className="nav-link"
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}
@@ -165,23 +199,23 @@ const EditableAccountList = () => {
 					ref={elmnt => { dnd.setElementRef(elmnt, index) }}
 				>
 					<div className="link w-[256px] relative">
-						<span className="draghandle cursor-grab absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+						<span className="draghandle cursor-grab absolute -left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
 							<FontAwesomeIcon icon={faGripVertical} />
 						</span>
-						<span className="pl-4">
-							<input className=""
+						<span className="">
+							<input className="text-white"
 								type="text"
 								value={account.displayName}
 								onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: account.id, displayName: e.target.value })} />
 						</span>
-						<span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-800">
+						<span className="absolute -right-2 top-1/2 -translate-y-1/2 text-gray-800">
 							<button className=" text-red-500 cursor-pointer ml-2.5" onClick={() => dispatch({ action: "REMOVE_ACCOUNT", id: account.id })}>
 								<FontAwesomeIcon icon={faTrashCan} size="1x" />
 							</button>
 						</span>
 					</div>
-				</li>
-				: <li key={account.id}
+				</div>
+				: <div key={account.id}
 					className="flex items-center h-[49px] striped-background"
 					onDragEnd={dnd.dragEnd}
 					onDragOver={e => e.preventDefault()}
@@ -190,7 +224,7 @@ const EditableAccountList = () => {
 				>
 					<div className="link striped-background">
 					</div>
-				</li>
+				</div>
 			)
 		}
 		<ConnectNewAccount />
@@ -226,10 +260,10 @@ export const ConnectNewAccount = () => {
 
 
 	return (
-		<li className="flex items-center">
+		<div className="flex items-center">
 			<div className="link w-[256px] relative">
 				<select
-					className="input w-44 ml-4"
+					className="input w-44 ml-4 text-white"
 					value={getSelectedEmailProvider()?.lookup}
 					onChange={e => setSelectedEmailProvider(availableEmailProviders.find(p => p.lookup === e.target.value))}
 				>
@@ -239,8 +273,8 @@ export const ConnectNewAccount = () => {
 					)}
 				</select>
 
-				<span className="absolute right-3 top-1/2 -translate-y-1/2">
-					<button className="cursor-pointer ml-2.5"
+				<span className="absolute right-2 top-1/2 -translate-y-1/2">
+					<button className="cursor-pointer text-white"
 						onClick={() => login(getSelectedEmailProvider()!.provider, getSelectedEmailProvider()!.authType, window.location.origin + "/email")}
 						disabled={getSelectedEmailProvider() === null}
 					>
@@ -248,6 +282,6 @@ export const ConnectNewAccount = () => {
 					</button>
 				</span>
 			</div>
-		</li>
+		</div>
 	)
 }
