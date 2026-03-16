@@ -58,7 +58,7 @@ div#root {
 
 /* ── Header ── */
 header#topHeader {
-	@apply [grid-area:header] bg-[#2c3e50] text-white flex items-center px-5 gap-4 relative z-[1];
+	@apply [grid-area:header] bg-[#2c3e50] text-white flex items-center px-5 gap-4 relative z-1;
 }
 
 header#topHeader .logo {

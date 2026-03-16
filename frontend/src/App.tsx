@@ -77,6 +77,10 @@ const router = createBrowserRouter([
 					{
 						path: `${RoutePaths.ExternalAuthentication.Basic}/:provider`,
 						element: <BasicAuthenticationPage />
+					},
+					{
+						path: RoutePaths.Settings,
+						element: <div>Settings page (not implemented yet)</div>
 					}
 				]
 			}

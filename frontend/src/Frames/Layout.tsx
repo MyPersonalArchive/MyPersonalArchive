@@ -6,7 +6,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons"
+import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear } from "@fortawesome/free-solid-svg-icons"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
@@ -119,10 +119,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 							<AccountList />
 						</div>
 
-						{ !preferencesIsOpen &&
-							<div className="h-12"></div>
-						}
-
 						<div className="flex-1">
 							<span className="nav-group-heading">Upload</span>
 							<div className="border border-gray-400 h-80 rounded m-4 p-4">
@@ -131,7 +127,17 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						</div>
 
 						<div className="nav-group">
-							<button className={classNames("nav-link", { "bg-white/12 border-l-red-500 text-white": preferencesIsOpen })}
+							<NavLink
+								className={classNames("nav-link", { "bg-white/12 border-l-red-500 text-white": preferencesIsOpen })}
+								to={RoutePaths.Settings}
+								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
+							>
+								<FontAwesomeIcon icon={faGear} fixedWidth />
+								Settings
+							</NavLink>
+
+							<button
+								className={classNames("nav-link", { "bg-white/12 border-l-red-500 text-white": preferencesIsOpen })}
 								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
 							>
 								<FontAwesomeIcon icon={faSliders} fixedWidth />
@@ -167,8 +173,8 @@ const ClickableAccountList = () => {
 	const dispatchLayoutCommand = useSetAtom(layoutStateAtom)
 	const accounts = useAtomValue(externalAccountsAtom)
 
-	return (
-		accounts.map(account => (
+	return <>
+		{accounts.map(account => (
 			<NavLink key={account.id}
 				className={({ isActive }) => isActive ? "active" : undefined}
 				to={`${RoutePaths.Email}/${account.id}`}
@@ -177,8 +183,10 @@ const ClickableAccountList = () => {
 				<FontAwesomeIcon icon={faEnvelope} fixedWidth />
 				{account.displayName}
 			</NavLink>
-		))
-	)
+		))}
+
+		<div className="h-12"></div>
+	</>
 }
 
 

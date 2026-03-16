@@ -16,5 +16,6 @@ export const RoutePaths = {
 	Email: "/email",
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic"
-	}
+	},
+	Settings: "/settings"
 }
