@@ -71,7 +71,7 @@ const EditableStoredFilters = () => {
 				{dnd.rows.map(({ rowType, data: filter }, index) => rowType === "item-row"
 					?
 					<div key={filter.id}
-						className={classNames("btn btn-wide relative flex items-center cursor-default", { "selected": filter.id === selectedFilterId })}
+						className={classNames("btn btn-wide relative flex items-center cursor-default group", { "selected": filter.id === selectedFilterId })}
 						draggable={true}
 						onMouseDown={dnd.mouseDown}
 						onMouseUp={dnd.mouseUp}
@@ -81,7 +81,7 @@ const EditableStoredFilters = () => {
 						ref={elmnt => { dnd.setElementRef(elmnt, index) }}
 					>
 						<span className="draghandle cursor-grab text-gray-400 hover:text-gray-600 font-normal absolute left-3 top-1/2 -translate-y-1/2">
-							<FontAwesomeIcon icon={faGripVertical} />
+							<FontAwesomeIcon icon={faGripVertical} fixedWidth/>
 						</span>
 						<input className="font-mono"
 							type="text"
@@ -91,11 +91,11 @@ const EditableStoredFilters = () => {
 							onFocus={() => setSelectedFilterId(filter.id)}
 						/>
 
-						<button className=" text-red-500 cursor-pointer absolute right-3 top-1/2 -translate-y-1/2"
+						<button className="cursor-pointer absolute text-gray-400 group-hover:text-red-500 right-3 top-1/2 -translate-y-1/2"
 							onClick={() => dispatch({ action: "REMOVE_FILTER", id: filter.id })}
 							onFocus={() => setSelectedFilterId(filter.id)}
 						>
-							<FontAwesomeIcon icon={faTrashCan} size="1x" />
+							<FontAwesomeIcon icon={faTrashCan} fixedWidth />
 						</button>
 					</div>
 					:
