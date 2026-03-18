@@ -53,8 +53,6 @@ export const ArchiveItemListPage = () => {
 				Archive
 			</h1>
 
-			<FileDropZone onBlobAttached={() => { /* //TODO: Suggest to create an archive item from the attached blob? */ }} />
-
 			<div className="stack-horizontal to-the-right my-4">
 				<Link className="link align-with-btn" to={RoutePaths.Blob.List}>Show blobs</Link>
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>

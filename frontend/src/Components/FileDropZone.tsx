@@ -71,9 +71,9 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
 	}
 
-	const handleDragStart = (event: any) => {
-		event.dataTransfer.setData("text/plain", event.target.id)
-	}
+	// const handleDragStart = (event: any) => {
+	// 	event.dataTransfer.setData("text/plain", event.target.id)
+	// }
 
 	return (
 		<div className="input is-wrapper w-full">
@@ -83,17 +83,16 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 				style={{ display: "none" }}
 				onChange={onChangeFile}
 			/>
-			<div draggable="true" style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}
-				onDragStart={handleDragStart}
+			<div
+				className="flex flex-row space-between"
+				// onDragStart={handleDragStart}
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}
 			>
-				<div style={{
-					height: showUnallocatedBlobs ? "7.5em" : "4.5em",
-					display: "flex",
-					flexDirection: "column",
-					justifyContent: "center"
-				}}>
+				<div className="flex flex-col justify-center"
+					style={{
+						height: showUnallocatedBlobs ? "7.5em" : "4.5em",
+					}}>
 					<FontAwesomeIcon icon={faFileImport} color="gray" size="5x" />
 				</div>
 				<div style={{ textAlign: "center", flexGrow: 1 }}>

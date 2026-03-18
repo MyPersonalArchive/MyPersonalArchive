@@ -67,8 +67,6 @@ export const BlobListPage = () => {
 				Documents and media
 			</h1>
 
-			<FileDropZone onBlobAttached={() => { /* //TODO: what? */ }} />
-
 			<Filter />
 
 			<div className="stack-horizontal to-the-right my-4">

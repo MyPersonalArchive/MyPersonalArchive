@@ -6,13 +6,14 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear } from "@fortawesome/free-solid-svg-icons"
+import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear, faFileImport } from "@fortawesome/free-solid-svg-icons"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
 import { useRemoteAuthentication } from "../Utils/Hooks/useRemoteAuthentication"
 import classNames from "classnames"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
+import { FileDrop } from "../Components/FileDrop"
 
 
 
@@ -119,16 +120,14 @@ export const Layout = ({ children }: PropsWithChildren) => {
 							<AccountList />
 						</div>
 
-						<div className="flex-1">
-							<span className="nav-group-heading">Upload</span>
-							<div className="border border-gray-400 h-80 rounded m-4 p-4">
-								Suggested new drop area
-							</div>
-						</div>
+						<FileDrop className="flex-1 border border-gray-400 rounded-lg m-4 p-4 flex flex-col items-center justify-center">
+							<span>Drop files here</span>
+							<span>or</span>
+							<span>click to select files</span>
+						</FileDrop>
 
 						<div className="nav-group">
-							<NavLink
-								className={classNames("nav-link", { "bg-white/12 border-l-red-500 text-white": preferencesIsOpen })}
+							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
 								to={RoutePaths.Settings}
 								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
 							>
@@ -185,7 +184,7 @@ const ClickableAccountList = () => {
 			</NavLink>
 		))}
 
-		<div className="h-12"></div>
+		{/* <div className="h-12"></div> */}
 	</>
 }
 
@@ -207,7 +206,7 @@ const EditableAccountList = () => {
 			dnd.rows.map(({ rowType, data: account }, index) => rowType === "item-row"
 				?
 				<div key={account.id}
-					className={classNames("nav-link group", {"active": location.pathname === `${RoutePaths.Email}/${account.id}`})}
+					className={classNames("nav-link group", { "active": location.pathname === `${RoutePaths.Email}/${account.id}` })}
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}
