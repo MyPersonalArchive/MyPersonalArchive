@@ -2,10 +2,10 @@ import { DragEventHandler, PropsWithChildren, useRef } from "react"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 
 
-export type FileDropProps = PropsWithChildren & {
+export type FileDropProps =  {
 	className?: string
 }
-export const FileDrop = ({ className, children }: FileDropProps) => {
+export const FileDrop = ({ className, children }: PropsWithChildren<FileDropProps>) => {
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const apiClient = useApiClient()
 
