@@ -55,4 +55,8 @@ const reducer = (state: LayoutState, command: LayoutCommand): LayoutState => {
 }
 
 
-export const layoutStateAtom = atomWithReducer<LayoutState, LayoutCommand>({ navIsOpen: false, profileDropdownIsOpen: false, preferencesIsOpen: false }, reducer)
+export const layoutStateAtom = atomWithReducer<LayoutState, LayoutCommand>({
+	navIsOpen: false,
+	profileDropdownIsOpen: false,
+	preferencesIsOpen: false
+}, reducer)

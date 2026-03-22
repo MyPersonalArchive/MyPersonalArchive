@@ -59,10 +59,10 @@ div#root {
 /* ── Header ── */
 header#topHeader {
 	@apply [grid-area:header] bg-[#2c3e50] text-white flex items-center px-5 gap-4 relative z-1;
-}
 
-header#topHeader .logo {
-	@apply text-[1.2rem] font-bold tracking-[.05em];
+	& .logo {
+		@apply text-[1.2rem] font-bold tracking-[.05em];
+	}
 }
 
 /* ── Profile dropdown ── */
@@ -72,11 +72,12 @@ header#topHeader .logo {
 
 .profile-btn {
 	@apply flex items-center gap-2 bg-white/12 border-none rounded-full text-white cursor-pointer py-[.3rem] pr-3 pl-[.3rem] text-sm transition-[background] duration-150;
+
+	&:hover {
+		@apply bg-white/22;
+	}
 }
 
-.profile-btn:hover {
-	@apply bg-white/22;
-}
 
 .profile-avatar {
 	@apply w-8 h-8 rounded-full bg-[#7ef4b4] text-[#1a7a4a] font-bold text-[.85rem] flex items-center justify-center shrink-0 select-none;
@@ -84,128 +85,155 @@ header#topHeader .logo {
 
 .profile-dropdown {
 	@apply hidden absolute top-[calc(100%+.5rem)] right-0 min-w-[200px] bg-white text-[#222] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,.18)] overflow-hidden;
+
+	&.open {
+		@apply block;
+	}
+
+	& a {
+		@apply flex items-center gap-[.65rem] py-[.65rem] px-4 no-underline text-[#333] text-sm transition-[background] duration-[120ms];
+	}
+	
+	& a:hover {
+		@apply bg-[#f3f6fa];
+	}
+
+	& .divider {
+		@apply h-px bg-[#e8ecf0] my-1;
+	}
+
+	& .danger {
+		@apply text-[#c0392b];
+	}
 }
 
-.profile-dropdown.open {
-	@apply block;
-}
 
 .profile-dropdown-header {
 	@apply py-[.85rem] px-4 border-b border-[#e8ecf0];
+
+	& strong {
+		@apply block text-[.9rem];
+	}
+
+	& span {
+		@apply text-[.78rem] text-[#777];
+	}
 }
 
-.profile-dropdown-header strong {
-	@apply block text-[.9rem];
-}
-
-.profile-dropdown-header span {
-	@apply text-[.78rem] text-[#777];
-}
-
-.profile-dropdown a {
-	@apply flex items-center gap-[.65rem] py-[.65rem] px-4 no-underline text-[#333] text-sm transition-[background] duration-[120ms];
-}
-
-.profile-dropdown a:hover {
-	@apply bg-[#f3f6fa];
-}
-
-.profile-dropdown .divider {
-	@apply h-px bg-[#e8ecf0] my-1;
-}
-
-.profile-dropdown .danger {
-	@apply text-[#c0392b];
-}
 
 /* ── Side nav ── */
 nav#sideNav {
 	@apply [grid-area:nav] bg-[hsl(210,29%,30%)] text-[#d4f5e4] flex flex-col items-stretch pt-4 overflow-y-auto;
 	@apply max-sm:fixed max-sm:top-14 max-sm:left-0 max-sm:w-[280] max-sm:h-[calc(100dvh-56px)] max-sm:z-100 max-sm:-translate-x-full max-sm:transition-transform max-sm:duration-[250ms] max-sm:ease-in-out max-sm:shadow-[4px_0_16px_rgba(0,0,0,.3)];
+
+	&.open {
+		@apply max-sm:translate-x-0;
+	}
+
+	& .nav-group {
+		@apply flex flex-col mb-3;
+	}
+
+	& .nav-group-heading {
+		@apply text-[.65rem] font-bold tracking-[.1em] uppercase text-white/45 pt-2 px-4 pb-1 select-none;
+	}
+
+	& a,
+	& .nav-link {
+		@apply flex flex-row items-center gap-3 w-full py-[.6rem] px-4 text-inherit no-underline text-sm cursor-pointer border-l-[3px] border-l-transparent transition-colors duration-150;
+	}
+
+	& a:hover,
+	& a.active,
+	& .nav-link:hover,
+	& .nav-link.active {
+		@apply bg-white/12 border-l-[#7ef4b4] text-white;
+	}
 }
 
-nav#sideNav.open {
-	@apply max-sm:translate-x-0;
-}
-
-nav#sideNav .nav-group {
-	@apply flex flex-col mb-3;
-}
-
-nav#sideNav .nav-group-heading {
-	@apply text-[.65rem] font-bold tracking-[.1em] uppercase text-white/45 pt-2 px-4 pb-1 select-none;
-}
-
-nav#sideNav a,
-nav#sideNav .nav-link {
-	@apply flex flex-row items-center gap-3 w-full py-[.6rem] px-4 text-inherit no-underline text-sm cursor-pointer border-l-[3px] border-l-transparent transition-colors duration-150;
-}
-
-nav#sideNav a:hover,
-nav#sideNav a.active,
-nav#sideNav .nav-link:hover,
-nav#sideNav .nav-link.active {
-	@apply bg-white/12 border-l-[#7ef4b4] text-white;
-}
 
 /* ── Overlay (hidden by default) ── */
 .nav-overlay {
 	@apply hidden fixed top-14 left-0 right-0 bottom-0 bg-black/45 z-[1];
-}
 
-.nav-overlay.open {
-	@apply max-sm:block;
+	&.open {
+		@apply max-sm:block;
+	}
 }
 
 /* ── Main ── */
-main {
-	@apply [grid-area:main] bg-[#eef2f7] p-8 overflow-y-auto relative;
+#mainArea {
+	@apply [grid-area:main] bg-[#eef2f7] overflow-hidden relative min-h-0;
+
+	&:has(.dialog-backdrop.open) {
+		@apply overflow-hidden;
+	}
 }
 
-main:has(.dialog-backdrop.open) {
-	@apply overflow-hidden;
+main {
+	@apply h-full overflow-y-auto px-8 py-6;
+
+	& h1 {
+		@apply mb-4 text-2xl text-[#2c3e50];
+	}
+
+	& p {
+		@apply text-[#555] leading-[1.6] max-w-[65ch];
+	}
 }
+
 
 /* ── Dialog ── */
 .dialog-backdrop {
 	@apply hidden absolute inset-0 bg-black/45 items-center justify-center;
-}
 
-.dialog-backdrop.open {
-	@apply flex;
+	&.open {
+		@apply flex;
+	}
 }
 
 .dialog {
-	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] w-[min(480px,90%)] max-h-[80%] flex flex-col overflow-hidden;
+	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-[80%]  flex flex-col overflow-hidden;
+
+	&.small {
+		@apply w-[min(320px,80%)];
+	}
+
+	&.medium {
+		@apply w-[min(480px,80%)];
+	}
+
+	&.large {
+		@apply w-[min(640px,80%)];
+	}
+
+		&.full {
+		@apply w-[calc(100%-4rem)];
+	}
+
 }
 
 .dialog-header {
 	@apply flex items-center justify-between py-4 px-5 border-b border-[#e8ecf0] shrink-0;
-}
 
-.dialog-header h2 {
-	@apply text-[1.1rem] text-[#2c3e50];
+	& h2 {
+		@apply text-[1.1rem] text-[#2c3e50];
+	}
 }
 
 .dialog-close {
 	@apply bg-transparent border-none text-2xl leading-none text-[#777] cursor-pointer py-[.1rem] px-[.45rem] rounded transition-[background] duration-[120ms];
-}
 
-.dialog-close:hover {
-	@apply bg-[#f0f0f0] text-[#333];
+	&:hover {
+		@apply bg-[#f0f0f0] text-[#333];
+	}
 }
 
 .dialog-body {
 	@apply p-5 overflow-y-auto text-[#555] leading-[1.6];
 }
 
-main h1 {
-	@apply mb-4 text-2xl text-[#2c3e50];
-}
 
-main p {
-	@apply text-[#555] leading-[1.6] max-w-[65ch];
-}
 
 /* ── Hamburger button (hidden on desktop) ── */
 .menu-btn {

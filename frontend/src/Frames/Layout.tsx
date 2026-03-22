@@ -95,7 +95,8 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				</div>
 			</header>
 
-			<div className={classNames("nav-overlay", { "open": navIsOpen })}></div>
+			<div className={classNames("nav-overlay", { "open": navIsOpen })}>
+			</div>
 
 			<nav id="sideNav" className={classNames({ "open": navIsOpen })}>
 				{currentUser &&
@@ -120,7 +121,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 							<AccountList />
 						</div>
 
-						<FileDrop className="flex-1 border border-gray-400 rounded-lg m-4 p-4 flex flex-col items-center justify-center">
+						<FileDrop className="flex-1 border border-gray-400 rounded-lg m-4 p-4 flex flex-col items-center justify-center hover:bg-white/12">
 							<span>Drop files here</span>
 							<span>or</span>
 							<span>click to select files</span>
@@ -129,7 +130,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						<div className="nav-group">
 							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
 								to={RoutePaths.Settings}
-								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
 							>
 								<FontAwesomeIcon icon={faGear} fixedWidth />
 								Settings
@@ -149,10 +149,11 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				}
 			</nav>
 
-			<main className="p-4! pt-2">
-				{children}
-			</main>
-
+			<div id="mainArea">
+				<main>
+					{children}
+				</main>
+			</div>
 		</>
 	)
 }

@@ -20,13 +20,9 @@ export const PreviewList = <T,>({ items, containerStyle, containerClassName, thu
 			</div>
 			{
 				maximizedItem !== undefined && <>
-					<div className="overlay-backdrop z-10" onClick={() => setMaximizedItem(undefined)}>
-						<div className="overlay border border-gray-300 rounded-lg" onClick={event => event.stopPropagation()}>
-							{
-								maximizedPreviewTemplate(maximizedItem, () => setMaximizedItem(undefined))
-							}
-						</div>
-					</div>
+					{/* <ModalDialog onClose={() => setMaximizedItem(undefined)}> */}
+					{maximizedPreviewTemplate(maximizedItem, () => setMaximizedItem(undefined))}
+					{/* </ModalDialog> */}
 				</>
 			}
 		</>

@@ -71,9 +71,6 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
 	}
 
-	// const handleDragStart = (event: any) => {
-	// 	event.dataTransfer.setData("text/plain", event.target.id)
-	// }
 
 	return (
 		<div className="input is-wrapper w-full">
