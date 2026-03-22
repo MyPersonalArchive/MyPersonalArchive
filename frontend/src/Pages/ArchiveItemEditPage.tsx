@@ -16,7 +16,7 @@ import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
-import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModelDialog"
+import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModalDialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
 
 type GetResponse = {
@@ -98,14 +98,14 @@ export const ArchiveItemEditPage = () => {
 
 		apiClient.putFormData("/api/archive/Update", formData)
 
-		navigate(RoutePaths.Archive)
+		navigate(RoutePaths.Archive.List)
 	}
 
 	const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		event.preventDefault()
 
 		apiClient.delete("/api/archive/delete", { id: id! })
-		navigate(RoutePaths.Archive)
+		navigate(RoutePaths.Archive.List)
 	}
 
 	const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
@@ -133,7 +133,7 @@ export const ArchiveItemEditPage = () => {
 			<form onSubmit={save}>
 
 				<h1 className="heading-1">
-					Edit item
+						Edit item
 				</h1>
 
 
@@ -186,6 +186,7 @@ export const ArchiveItemEditPage = () => {
 				<FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
 
 				<div>
+					{/* Previewlist of files from DB */}
 					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
@@ -199,13 +200,16 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-									onRemove={removeUnallocatedBlob}
-									onMinimize={() => minimize()}
-								/>
+								<ModalDialog onClose={() => minimize()} size="full">
+									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+										onRemove={removeUnallocatedBlob}
+										onMinimize={() => minimize()}
+									/>
+								</ModalDialog>
 						}
 					/>
 
+					{/* Previewlist of local files (just added, not saved yet) */}
 					<PreviewList<LocalBlob> items={localBlobs}
 						containerClassName="grid grid-cols-4 gap-4 pt-2"
 						thumbnailPreviewTemplate={
@@ -235,34 +239,33 @@ export const ArchiveItemEditPage = () => {
 
 				<div className="stack-horizontal to-the-right my-4">
 					<Link className="link align-with-btn" to={-1 as any}>
-						Back
+							Back
 					</Link>
 					<button className="btn btn-primary" type="submit">
-						Save
+							Save
 					</button>
-					<button className="btn btn-danger" onClick={(e) => { e.preventDefault(); setOpenDeleteDialog(true) }}>
-						Delete
+					<button className="btn btn-danger" type="button" onClick={() => setOpenDeleteDialog(true)}>
+							Delete
 					</button>
 				</div>
 
-				{
-					openDeleteDialog && (
-						<ModalDialog onClose={() => { setOpenDeleteDialog(false) }}>
-							<DialogHeader>
-								<div>
-									Are you sure you want to delete this item?
-								</div>
-							</DialogHeader>
-							<DialogFooter>
-								<div className="stack-horizontal to-the-right my-4">
-									<button className="btn" onClick={(e) => { e.preventDefault(); setOpenDeleteDialog(false) }}>Cancel</button>
-									<button className="btn btn-danger" onClick={deleteItem}>Delete</button>
-								</div>
-							</DialogFooter>
-						</ModalDialog>
-					)
-				}
 
+
+				{openDeleteDialog &&
+				<ModalDialog onClose={() => setOpenDeleteDialog(false)} size="medium">
+					<DialogHeader>
+						<div>
+							Are you sure you want to delete this item?
+						</div>
+					</DialogHeader>
+					<DialogFooter>
+						<div className="stack-horizontal to-the-right m-4">
+							<button className="btn" type="button" onClick={() => setOpenDeleteDialog(false)}>Cancel</button>
+							<button className="btn btn-danger" type="button" onClick={deleteItem}>Delete</button>
+						</div>
+					</DialogFooter>
+				</ModalDialog>
+				}
 			</form>
 		</>
 	)
