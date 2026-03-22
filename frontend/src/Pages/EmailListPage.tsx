@@ -12,6 +12,7 @@ import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { UUID } from "crypto"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
+import { ModalDialog } from "../Components/ModalDialog"
 
 
 export const EmailListPage = () => {
@@ -127,15 +128,17 @@ export const EmailListPage = () => {
 						/>
 					}
 					maximizedPreviewTemplate={(email, minimize) =>
-						<Preview
-							key={email.uniqueId}
-							email={email}
-							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
-							createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
-							externalAccountId={externalAccountId}
-							selectedFolder={selectedFolder!}
-							maximize={minimize}
-						/>
+						<ModalDialog onClose={() => minimize()} size="full">
+							<Preview
+								key={email.uniqueId}
+								email={email}
+								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
+								createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
+								externalAccountId={externalAccountId}
+								selectedFolder={selectedFolder!}
+								maximize={minimize}
+							/>
+						</ModalDialog>
 					} />
 
 			</div>

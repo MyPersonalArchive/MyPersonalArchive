@@ -20,9 +20,7 @@ export const PreviewList = <T,>({ items, containerStyle, containerClassName, thu
 			</div>
 			{
 				maximizedItem !== undefined && <>
-					{/* <ModalDialog onClose={() => setMaximizedItem(undefined)}> */}
 					{maximizedPreviewTemplate(maximizedItem, () => setMaximizedItem(undefined))}
-					{/* </ModalDialog> */}
 				</>
 			}
 		</>
