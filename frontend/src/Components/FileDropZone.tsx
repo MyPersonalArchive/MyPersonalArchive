@@ -10,6 +10,7 @@ import { DimensionEnum } from "./Preview"
 import { Preview } from "./Preview"
 import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
+import { ModalDialog } from "./ModalDialog"
 
 
 
@@ -146,53 +147,51 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 	}
 
 	return (
-		<div className="overlay-backdrop" style={{ zIndex: 1 }} onClick={onCloseDialog}>
-			<div className="max-w-[95%] max-h-[95%] p-4 overflow-auto bg-white rounded-lg shadow-lg shadow-black-400 shadow-opacity-50" onClick={event => event.stopPropagation()}>
-				<h1 className="heading-2">
+		<ModalDialog onClose={onCloseDialog} closeOnEscape={true} size="full">
+			<h1 className="heading-2">
 					Select from unallocated blobs
-				</h1>
-				<div>
+			</h1>
+			<div>
 
-					<div className="stack-horizontal to-the-right my-4">
-						<label>
-							<input ref={selectAllCheckboxRef} type="checkbox"
-								checked={selectionOfBlobs.areAllItemsSelected}
-								onChange={() => selectionOfBlobs.areAllItemsSelected
-									? selectionOfBlobs.clearSelection()
-									: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
-								} />
+				<div className="stack-horizontal to-the-right my-4">
+					<label>
+						<input ref={selectAllCheckboxRef} type="checkbox"
+							checked={selectionOfBlobs.areAllItemsSelected}
+							onChange={() => selectionOfBlobs.areAllItemsSelected
+								? selectionOfBlobs.clearSelection()
+								: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
+							} />
 							Select all
-						</label>
-						<button className="btn"
-							disabled={selectionOfBlobs.areNoItemsSelected}
-							onClick={() => addBlob(Array.from(selectionOfBlobs.selectedItems))}
-						>
+					</label>
+					<button className="btn"
+						disabled={selectionOfBlobs.areNoItemsSelected}
+						onClick={() => addBlob(Array.from(selectionOfBlobs.selectedItems))}
+					>
 							Add {selectionOfBlobs.selectedItems.size} selected blobs
-						</button>
-					</div>
+					</button>
 				</div>
-
-				<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
-					thumbnailPreviewTemplate={
-						(blob, maximize) =>
-							<BlobCard
-								key={blob.id}
-								blob={blob}
-								attachBlob={() => addBlob([blob.id!])}
-								maximize={maximize}
-								selectionOfBlobs={selectionOfBlobs}
-							/>
-
-
-					}
-					maximizedPreviewTemplate={
-						(blob, minimize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-								onMinimize={minimize} />
-					}
-				/>
 			</div>
-		</div>
+
+			<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
+				thumbnailPreviewTemplate={
+					(blob, maximize) =>
+						<BlobCard
+							key={blob.id}
+							blob={blob}
+							attachBlob={() => addBlob([blob.id!])}
+							maximize={maximize}
+							selectionOfBlobs={selectionOfBlobs}
+						/>
+
+
+				}
+				maximizedPreviewTemplate={
+					(blob, minimize) =>
+						<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+							onMinimize={minimize} />
+				}
+			/>
+		</ModalDialog>
 	)
 }
 

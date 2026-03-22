@@ -17,6 +17,7 @@ import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { DatePicker } from "../Components/DatePicker"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
+import { ModalDialog } from "../Components/ModalDialog"
 
 type CreateResponse = {
 	id: number
@@ -139,9 +140,12 @@ export const ArchiveItemNewPage = () => {
 								onMaximize={() => maximize(blob)} />
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-								onRemove={removeUnallocatedBlob}
-								onMaximize={() => minimize()} />
+							<ModalDialog onClose={() => minimize()} size="full">
+								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+									onRemove={removeUnallocatedBlob}
+									onMaximize={() => minimize()}
+								/>
+							</ModalDialog>
 						}
 					/>
 

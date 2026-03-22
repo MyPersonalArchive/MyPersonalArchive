@@ -225,14 +225,16 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<LocalViewer
-									key={blob.fileName}
-									blob={blob.fileData}
-									fileName={blob.fileName}
-									dimension={DimensionEnum.full}
-									onMinimize={minimize}
-									removeBlob={removeBlob}
-								/>
+								<ModalDialog onClose={() => minimize()} size="full">
+									<LocalViewer
+										key={blob.fileName}
+										blob={blob.fileData}
+										fileName={blob.fileName}
+										dimension={DimensionEnum.full}
+										onMinimize={minimize}
+										removeBlob={removeBlob}
+									/>
+								</ModalDialog>
 						}
 					/>
 				</div>

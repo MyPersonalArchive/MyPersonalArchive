@@ -6,11 +6,11 @@ import { Blob, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "../Components/PreviewList"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
-import { FileDropZone } from "../Components/FileDropZone"
 import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
+import { ModalDialog } from "../Components/ModalDialog"
 
 
 export const BlobListPage = () => {
@@ -108,8 +108,11 @@ export const BlobListPage = () => {
 				}
 				maximizedPreviewTemplate={
 					(blob, minimize) =>
-						<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-							onMinimize={minimize} />
+						<ModalDialog onClose={() => minimize()} size="full">
+							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+								onMinimize={minimize}
+							/>
+						</ModalDialog>
 				}
 			/>
 
