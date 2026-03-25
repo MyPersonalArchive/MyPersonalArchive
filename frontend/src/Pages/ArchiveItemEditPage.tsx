@@ -200,12 +200,16 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<ModalDialog onClose={() => minimize()} size="full">
+								<div className="preview-backdrop"
+									onClick={() => minimize()}
+								>
+									<div className="w-full h-full flex justify-center">
 									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
 										onRemove={removeUnallocatedBlob}
 										onMinimize={() => minimize()}
 									/>
-								</ModalDialog>
+									</div>
+								</div>
 						}
 					/>
 

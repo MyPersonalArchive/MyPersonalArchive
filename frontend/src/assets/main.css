@@ -168,10 +168,6 @@ nav#sideNav {
 /* ── Main ── */
 #mainArea {
 	@apply [grid-area:main] bg-[#eef2f7] overflow-hidden relative min-h-0;
-
-	&:has(.dialog-backdrop.open) {
-		@apply overflow-hidden;
-	}
 }
 
 main {
@@ -186,14 +182,18 @@ main {
 	}
 }
 
+/* ── Preview with hover action bar ── */
+.preview-backdrop {
+	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto;
+
+	> * {
+		@apply my-auto;
+	}
+}
 
 /* ── Dialog ── */
 .dialog-backdrop {
-	@apply hidden absolute inset-0 bg-black/45 items-center justify-center;
-
-	&.open {
-		@apply flex;
-	}
+	@apply flex absolute inset-0 bg-black/45 items-center justify-center;
 }
 
 .dialog {

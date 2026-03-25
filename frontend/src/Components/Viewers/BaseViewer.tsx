@@ -40,10 +40,10 @@ export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer, childre
 				}
 			case DimensionEnum.full:
 				return {
-					width: "80vw",
-					height: "80vh",
-					maxWidth: "90vw",
-					maxHeight: "90vh"
+					width: "100%",
+					height: "100%",
+					maxWidth: "100%",
+					maxHeight: "100%"
 				}
 			default:
 				return { width: "100%", height: "100%" }

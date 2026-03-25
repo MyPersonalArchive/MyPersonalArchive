@@ -5,11 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUpRightAndDownLeftFromCenter, faDownLeftAndUpRightToCenter, faTrash } from "@fortawesome/free-solid-svg-icons"
 
 interface LocalViewerProps extends BaseViewerProps {
-  blob: Blob
-  fileName?: string
-  removeBlob?: (fileName: string) => void
-  onMaximize?: () => void
-  onMinimize?: () => void
+	blob: Blob
+	fileName?: string
+	removeBlob?: (fileName: string) => void
+	onMaximize?: () => void
+	onMinimize?: () => void
 }
 
 export const LocalViewer = ({ blob, fileName, mimeType, dimension, children, removeBlob, onMaximize, onMinimize }: LocalViewerProps) => {
@@ -43,5 +43,5 @@ export const LocalViewer = ({ blob, fileName, mimeType, dimension, children, rem
 		</>
 	)
 
-	return <BaseViewer src={src} mimeType={mimeType || blob.type} dimension={dimension} children={controls}/>
+	return <BaseViewer src={src} mimeType={mimeType || blob.type} dimension={dimension} children={controls} />
 }
