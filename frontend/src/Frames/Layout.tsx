@@ -95,7 +95,10 @@ export const Layout = ({ children }: PropsWithChildren) => {
 				</div>
 			</header>
 
-			<div className={classNames("nav-overlay", { "open": navIsOpen })}>
+			<div className={classNames("nav-overlay", { "open": navIsOpen })}
+				onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
+				aria-hidden={!navIsOpen}
+			>
 			</div>
 
 			<nav id="sideNav" className={classNames({ "open": navIsOpen })}>

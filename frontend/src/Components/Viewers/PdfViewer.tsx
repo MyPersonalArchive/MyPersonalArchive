@@ -17,21 +17,10 @@ export const PdfViewer = ({ src, style }: Props) => {
   
 	return (
 		<div className="pdf-viewer-container">
-			<iframe
+			<embed
 				src={pdfSrc}
-				title="File Preview"
-				style={{
-					width: "100%",
-					height: "100%",
-					border: "none",
-					borderRadius: "0.5rem",
-					// Firefox gets minimal styling to avoid conflicts
-					...(isFirefox && {
-						maxWidth: "100%",
-						objectFit: "contain"
-					}),
-					...style,
-				}}
+				type="application/pdf"
+				style={{ width: "100%", height: "100%", ...style }}
 			/>
 	  </div>
 	)
