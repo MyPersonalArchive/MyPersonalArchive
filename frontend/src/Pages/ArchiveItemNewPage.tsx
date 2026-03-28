@@ -136,10 +136,11 @@ export const ArchiveItemNewPage = () => {
 						thumbnailPreviewTemplate={(blob, maximize) =>
 							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
 								onRemove={removeUnallocatedBlob}
-								onMaximize={() => maximize(blob)} />
+								onMaximize={() => maximize(blob)}
+							/>
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<div className="preview-backdrop"
+							<div className="lightbox-backdrop"
 								onClick={() => minimize()}
 							>
 								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}

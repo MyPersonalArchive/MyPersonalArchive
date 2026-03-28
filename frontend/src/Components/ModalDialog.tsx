@@ -16,7 +16,7 @@ export const ModalDialog = ({ children, onClose, closeOnEscape = true, size = "m
 	}, [onClose, closeOnEscape])
 
 	return (
-		<div className="dialog-backdrop open"
+		<div className="dialog-backdrop"
 			id="dialogBackdrop"
 			role="presentation"
 			onClick={onClose}
