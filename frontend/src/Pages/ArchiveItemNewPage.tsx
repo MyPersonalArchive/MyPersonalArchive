@@ -20,6 +20,7 @@ import { LocalViewer } from "../Components/Viewers/LocalViewer"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { LightBox } from "../Components/LightBox"
 
 type CreateResponse = {
 	id: number
@@ -150,9 +151,7 @@ export const ArchiveItemNewPage = () => {
 							</div>
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<div className="lightbox-backdrop action-bar-host"
-								onClick={() => minimize()}
-							>
+							<LightBox onClose={() => minimize()} className="action-bar-host">
 								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
 								<div className="action-bar">
 									<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
@@ -163,7 +162,7 @@ export const ArchiveItemNewPage = () => {
 									</button>
 								
 								</div>
-							</div>
+							</LightBox>
 						}
 					/>
 

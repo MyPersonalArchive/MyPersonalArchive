@@ -12,6 +12,7 @@ import { formatDate, formatFileSize } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
 import { faDownLeftAndUpRightToCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { LightBox } from "../Components/LightBox"
 
 
 export const BlobListPage = () => {
@@ -109,9 +110,7 @@ export const BlobListPage = () => {
 				}
 				maximizedPreviewTemplate={
 					(blob, minimize) =>
-						<div className="lightbox-backdrop"
-							onClick={() => minimize()}
-						>
+						<LightBox onClose={() => minimize()} className="action-bar-host">
 							<div className="w-full h-full flex justify-center action-bar-host">
 								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
 								<div className="action-bar">
@@ -120,8 +119,7 @@ export const BlobListPage = () => {
 									</button>
 								</div>
 							</div>
-						</div>
-
+						</LightBox>
 				}
 			/>
 

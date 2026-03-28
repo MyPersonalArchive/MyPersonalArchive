@@ -16,11 +16,12 @@ import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
-import { ModalDialog } from "../Components/ModalDialog"
+import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
 import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
+import { LightBox } from "../Components/LightBox"
 
 type GetResponse = {
 	id: number
@@ -188,6 +189,15 @@ export const ArchiveItemEditPage = () => {
 
 				<FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
 
+				{/* <div className="stack-horizontal my-4">
+					<div className="mt-4 text-green-600 bg-gray-900 font-mono text-sm w-full p-2">
+					//TODO: How can we connect the FileDrop in the nav area when on this page? I want files dropped/uploaded to connct to this archive item.
+					</div>
+
+					<button className="btn">Upload a file to add</button>
+					<button className="btn">Select from uploaded documents and media</button>
+				</div> */}
+
 				<div>
 					{/* Previewlist of files from DB */}
 					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
@@ -210,9 +220,7 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<div className="lightbox-backdrop"
-									onClick={() => minimize()}
-								>
+								<LightBox onClose={() => minimize()}>
 									<div className="w-full h-full flex justify-center action-bar-host">
 										<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}/>
 										<div className="action-bar">
@@ -224,7 +232,7 @@ export const ArchiveItemEditPage = () => {
 											</button>
 										</div>
 									</div>
-								</div>
+								</LightBox>
 						}
 					/>
 
@@ -244,9 +252,7 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<div className="lightbox-backdrop"
-									onClick={() => minimize()}
-								>
+								<LightBox onClose={() => minimize()}>
 									<LocalViewer
 										key={blob.fileName}
 										blob={blob.fileData}
@@ -255,7 +261,7 @@ export const ArchiveItemEditPage = () => {
 										onMinimize={minimize}
 										removeBlob={removeBlob}
 									/>
-								</div>
+								</LightBox>
 						}
 					/>
 				</div>
@@ -273,9 +279,8 @@ export const ArchiveItemEditPage = () => {
 				</div>
 
 
-
 				{openDeleteDialog &&
-					<ModalDialog size="medium"
+					<Dialog size="medium"
 						onClose={() => setOpenDeleteDialog(false)}
 						closeOnEscape={false}
 					>
@@ -286,7 +291,7 @@ export const ArchiveItemEditPage = () => {
 							<button className="btn" type="button" onClick={() => setOpenDeleteDialog(false)}>Cancel</button>
 							<button className="btn btn-danger" type="button" onClick={deleteItem}>Delete</button>
 						</div>
-					</ModalDialog>
+					</Dialog>
 				}
 			</form>
 		</>

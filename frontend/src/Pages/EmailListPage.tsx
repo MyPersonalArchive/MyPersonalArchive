@@ -12,7 +12,7 @@ import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { UUID } from "crypto"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
-import { ModalDialog } from "../Components/ModalDialog"
+import { Dialog } from "../Components/Dialog"
 
 
 export const EmailListPage = () => {
@@ -128,7 +128,7 @@ export const EmailListPage = () => {
 						/>
 					}
 					maximizedPreviewTemplate={(email, minimize) =>
-						<ModalDialog size="full"
+						<Dialog size="full"
 							onClose={() => minimize()}
 							closeOnEscape={true}
 						>
@@ -141,7 +141,7 @@ export const EmailListPage = () => {
 								selectedFolder={selectedFolder!}
 								maximize={minimize}
 							/>
-						</ModalDialog>
+						</Dialog>
 					} />
 
 			</div>
