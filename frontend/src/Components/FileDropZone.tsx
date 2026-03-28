@@ -147,11 +147,14 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 	}
 
 	return (
-		<ModalDialog onClose={onCloseDialog} closeOnEscape={true} size="full">
-			<h1 className="heading-2">
-					Select from unallocated blobs
-			</h1>
-			<div>
+		<ModalDialog size="full"
+			onClose={onCloseDialog}
+			closeOnEscape={true}
+		>
+			<div className="dialog-header">
+				Select from unallocated blobs
+			</div>
+			<div className="dialog-content">
 
 				<div className="stack-horizontal to-the-right my-4">
 					<label>
@@ -170,27 +173,27 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 							Add {selectionOfBlobs.selectedItems.size} selected blobs
 					</button>
 				</div>
+
+				<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
+					thumbnailPreviewTemplate={
+						(blob, maximize) =>
+							<BlobCard
+								key={blob.id}
+								blob={blob}
+								attachBlob={() => addBlob([blob.id!])}
+								maximize={maximize}
+								selectionOfBlobs={selectionOfBlobs}
+							/>
+
+
+					}
+					maximizedPreviewTemplate={
+						(blob, minimize) =>
+							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+								onMinimize={minimize} />
+					}
+				/>
 			</div>
-
-			<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
-				thumbnailPreviewTemplate={
-					(blob, maximize) =>
-						<BlobCard
-							key={blob.id}
-							blob={blob}
-							attachBlob={() => addBlob([blob.id!])}
-							maximize={maximize}
-							selectionOfBlobs={selectionOfBlobs}
-						/>
-
-
-				}
-				maximizedPreviewTemplate={
-					(blob, minimize) =>
-						<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-							onMinimize={minimize} />
-				}
-			/>
 		</ModalDialog>
 	)
 }
@@ -204,7 +207,7 @@ type BlobCardProps = {
 }
 const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
 	return (
-		<div className="card flex flex-row relative w-[900px]">
+		<div className="card flex flex-row relative">
 
 			<div className="bg-black w-[152px] h-[152px] flex justify-center items-center">
 				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
