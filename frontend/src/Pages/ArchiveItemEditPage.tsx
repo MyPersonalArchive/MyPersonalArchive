@@ -204,7 +204,7 @@ export const ArchiveItemEditPage = () => {
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<div className="bg-black rounded-sm border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+								<div className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
 									onClick={() => maximize(blob)}
 								>
 									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}/>
@@ -252,9 +252,8 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<LightBox onClose={() => minimize()}>
+								<LightBox key={blob.fileName} onClose={() => minimize()}>
 									<LocalViewer
-										key={blob.fileName}
 										blob={blob.fileData}
 										fileName={blob.fileName}
 										dimension={DimensionEnum.full}

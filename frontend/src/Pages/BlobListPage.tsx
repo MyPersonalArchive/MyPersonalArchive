@@ -10,7 +10,7 @@ import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
-import { faDownLeftAndUpRightToCenter } from "@fortawesome/free-solid-svg-icons"
+import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 
@@ -110,7 +110,7 @@ export const BlobListPage = () => {
 				}
 				maximizedPreviewTemplate={
 					(blob, minimize) =>
-						<LightBox onClose={() => minimize()} className="action-bar-host">
+						<LightBox onClose={() => minimize()}>
 							<div className="w-full h-full flex justify-center action-bar-host">
 								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
 								<div className="action-bar">
@@ -146,7 +146,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 
 				<div className="action-bar">
 					<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
-						<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+						<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
 					</button>
 				</div>
 			</div>

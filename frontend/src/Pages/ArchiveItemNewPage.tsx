@@ -151,16 +151,17 @@ export const ArchiveItemNewPage = () => {
 							</div>
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<LightBox onClose={() => minimize()} className="action-bar-host">
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
-								<div className="action-bar">
-									<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
-										<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-									</button>
-									<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
-										<FontAwesomeIcon icon={faTrash} size="1x" />
-									</button>
-								
+							<LightBox onClose={() => minimize()}>
+								<div className="w-full h-full flex justify-center action-bar-host">
+									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
+									<div className="action-bar">
+										<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
+											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+										</button>
+										<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
+											<FontAwesomeIcon icon={faTrash} size="1x" />
+										</button>
+									</div>
 								</div>
 							</LightBox>
 						}
