@@ -248,6 +248,41 @@ main {
 
 
 
+.action-bar-host {
+	@apply relative;
+	
+	/* Hover Action Bar */
+	& .action-bar {
+		@apply absolute top-0 right-0 bg-black/40 flex p-2 gap-2 opacity-0 transition-opacity duration-300 ease-in-out pointer-events-none rounded-bl-xl backdrop-blur-[0.5px];
+	}
+
+	&:hover .action-bar {
+		@apply opacity-100 pointer-events-auto;
+	}
+
+	& .action-bar button {
+		@apply bg-white/95 text-[#333] border-none rounded-md p-[0.4rem] cursor-pointer transition-all duration-200 flex min-w-7 min-h-7 shadow-[0_1px_3px_rgba(0,0,0,0.2)];
+	}
+
+	& .action-bar button:hover {
+		@apply bg-white scale-115 shadow-[0_2px_8px_rgba(0,0,0,0.3)];
+	}
+
+	& .action-bar button:active {
+		@apply scale-105;
+	}
+
+	/* Hide the old button styles when using action bar */
+	/* &:has(.action-bar)>button {
+		@apply hidden;
+	} */
+}
+
+
+
+
+
+
 
 .horizontal-line {
 	height: 0;
