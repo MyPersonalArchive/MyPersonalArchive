@@ -17,6 +17,9 @@ import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { DatePicker } from "../Components/DatePicker"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 
 type CreateResponse = {
 	id: number
@@ -134,19 +137,32 @@ export const ArchiveItemNewPage = () => {
 				<div>
 					<PreviewList items={blobsFromUnallocated} containerClassName="flex flex-wrap"
 						thumbnailPreviewTemplate={(blob, maximize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
-								onRemove={removeUnallocatedBlob}
-								onMaximize={() => maximize(blob)}
-							/>
+							<div className="action-bar-host">
+								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} />
+								<div className="action-bar">
+									<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
+										<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+									</button>
+									<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
+										<FontAwesomeIcon icon={faTrash} size="1x" />
+									</button>
+								</div>
+							</div>
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<div className="lightbox-backdrop"
+							<div className="lightbox-backdrop action-bar-host"
 								onClick={() => minimize()}
 							>
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-									onRemove={removeUnallocatedBlob}
-									onMaximize={() => minimize()}
-								/>
+								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
+								<div className="action-bar">
+									<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
+										<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+									</button>
+									<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
+										<FontAwesomeIcon icon={faTrash} size="1x" />
+									</button>
+								
+								</div>
 							</div>
 						}
 					/>

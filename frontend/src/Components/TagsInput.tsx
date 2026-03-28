@@ -49,7 +49,14 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 		<>
 			<span className="input is-wrapper" >
 				{
-					tags?.map((tag, ix) => <span key={ix} className="tag whitespace-nowrap">{tag} <span onClick={() => removeTag(ix)}>&times;</span></span>)
+					tags?.map((tag, ix) => 
+						<span key={ix} className="tag whitespace-nowrap">
+							{tag}&nbsp;
+							<span onClick={() => removeTag(ix)}>
+							&times;
+							</span>
+						</span>
+					)
 				}
 				<input
 					className="stripped"

@@ -199,10 +199,10 @@ export const ArchiveItemEditPage = () => {
 								>
 									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}/>
 									<div className="action-bar">
-										<button type="button" onClick={() => maximize(blob)} title="Expand">
+										<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
 											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
 										</button>
-										<button type="button" onClick={() => removeUnallocatedBlob(blob)} title="Delete">
+										<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
 											<FontAwesomeIcon icon={faTrash} size="1x" />
 										</button>
 									</div>
@@ -214,13 +214,12 @@ export const ArchiveItemEditPage = () => {
 									onClick={() => minimize()}
 								>
 									<div className="w-full h-full flex justify-center action-bar-host">
-										<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-										/>
+										<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}/>
 										<div className="action-bar">
-											<button type="button" onClick={() => minimize()} title="Minimize">
+											<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
 												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 											</button>
-											<button type="button" onClick={() => removeUnallocatedBlob(blob)} title="Delete">
+											<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
 												<FontAwesomeIcon icon={faTrash} size="1x" />
 											</button>
 										</div>
