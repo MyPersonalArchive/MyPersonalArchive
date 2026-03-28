@@ -10,7 +10,7 @@ import { DimensionEnum } from "./Preview"
 import { Preview } from "./Preview"
 import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
-import { ModalDialog } from "./ModalDialog"
+import { Dialog } from "./Dialog"
 
 
 
@@ -147,7 +147,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 	}
 
 	return (
-		<ModalDialog size="full"
+		<Dialog size="full"
 			onClose={onCloseDialog}
 			closeOnEscape={true}
 		>
@@ -194,7 +194,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 					}
 				/>
 			</div>
-		</ModalDialog>
+		</Dialog>
 	)
 }
 
