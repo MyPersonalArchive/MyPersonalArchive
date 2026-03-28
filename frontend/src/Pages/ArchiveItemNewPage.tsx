@@ -195,9 +195,9 @@ export const ArchiveItemNewPage = () => {
 				/>
 
 				<div className="stack-horizontal to-the-right my-4">
-					<Link className="link align-with-btn" to={-1 as any}>
+					<button className="btn" onClick={() => navigate(RoutePaths.Archive.List)}>
 						Back
-					</Link>
+					</button>
 					<button className="btn btn-primary" type="submit">
 						Save
 					</button>
