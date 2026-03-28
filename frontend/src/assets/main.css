@@ -211,7 +211,7 @@ main {
 		@apply w-[min(640px,80%)];
 	}
 
-		&.full {
+	&.full {
 		@apply w-[calc(100%-4rem)];
 	}
 
@@ -220,7 +220,7 @@ main {
 
 .dialog-header
 {
-	@apply /*border-b border-gray-300*/ text-lg p-4;
+	@apply /*border-b border-gray-300*/ font-bold p-4;
 }
 
 .dialog-content {
@@ -230,19 +230,6 @@ main {
 .dialog-footer {
 	/* @apply border-t border-gray-300 p-4 flex justify-end gap-2; */
 }
-
-.dialog-close {
-	@apply bg-transparent border-none text-2xl leading-none text-[#777] cursor-pointer py-[.1rem] px-[.45rem] rounded transition-[background] duration-[120ms];
-
-	&:hover {
-		@apply bg-[#f0f0f0] text-[#333];
-	}
-}
-
-.dialog-body {
-	@apply p-5 overflow-y-auto text-[#555] leading-[1.6];
-}
-
 
 
 

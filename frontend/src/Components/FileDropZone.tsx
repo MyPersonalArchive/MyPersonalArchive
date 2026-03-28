@@ -1,4 +1,4 @@
-import { faFileImport } from "@fortawesome/free-solid-svg-icons"
+import { faClose, faDownLeftAndUpRightToCenter, faFileImport, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
@@ -11,6 +11,7 @@ import { Preview } from "./Preview"
 import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
 import { Dialog } from "./Dialog"
+import { LightBox } from "./LightBox"
 
 
 
@@ -147,12 +148,20 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 	}
 
 	return (
-		<Dialog size="full"
+		<Dialog size="full" className="z-10"
 			onClose={onCloseDialog}
 			closeOnEscape={true}
 		>
-			<div className="dialog-header">
-				Select from unallocated blobs
+			<div className="bg-gray-100 p-4 sticky top-0">
+			
+				<div className="flex flex-horizontal justify-between mb-2">
+					<div>
+						<span className="heading-2">Select from unallocated blobs</span>
+					</div>
+					<button className="ml-3" type="button" onClick={() => onCloseDialog()}>
+						<FontAwesomeIcon icon={faClose} className="cursor-pointer" />
+					</button>
+				</div>
 			</div>
 			<div className="dialog-content">
 
@@ -189,8 +198,16 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 					}
 					maximizedPreviewTemplate={
 						(blob, minimize) =>
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-								onMinimize={minimize} />
+							<LightBox onClose={() => minimize()}>
+								<div className="w-full h-full flex justify-center action-bar-host">
+									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
+									<div className="action-bar">
+										<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
+											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+										</button>
+									</div>
+								</div>
+							</LightBox>
 					}
 				/>
 			</div>
@@ -209,8 +226,14 @@ const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProp
 	return (
 		<div className="card flex flex-row relative">
 
-			<div className="bg-black w-[152px] h-[152px] flex justify-center items-center">
-				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
+			<div className="bg-black border border-black w-40 h-40 flex justify-center items-center action-bar-host"
+				onClick={() => maximize(blob)}>
+				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} />
+				<div className="action-bar">
+					<button type="button" onClick={() => maximize(blob)} title="Expand">
+						<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+					</button>
+				</div>
 			</div>
 
 			<div className="p-2 grow">
