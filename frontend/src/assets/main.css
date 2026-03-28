@@ -183,7 +183,7 @@ main {
 }
 
 /* ── Preview with hover action bar ── */
-.preview-backdrop {
+.lightbox-backdrop {
 	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto;
 
 	> * {
@@ -197,7 +197,7 @@ main {
 }
 
 .dialog {
-	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-[80%]  flex flex-col overflow-hidden;
+	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-[80%]  flex flex-col overflow-auto;
 
 	&.small {
 		@apply w-[min(320px,80%)];
@@ -220,11 +220,11 @@ main {
 
 .dialog-header
 {
-	@apply border-b border-gray-300 text-lg p-4;
+	@apply /*border-b border-gray-300*/ text-lg p-4;
 }
 
 .dialog-content {
-	/* @apply p-4 overflow-y-auto; */
+	@apply p-4 /*overflow-auto*/;
 }
 
 .dialog-footer {

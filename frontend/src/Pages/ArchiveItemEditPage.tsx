@@ -200,7 +200,7 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<div className="preview-backdrop"
+								<div className="lightbox-backdrop"
 									onClick={() => minimize()}
 								>
 									<div className="w-full h-full flex justify-center">
@@ -229,7 +229,7 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<div className="preview-backdrop"
+								<div className="lightbox-backdrop"
 									onClick={() => minimize()}
 								>
 									<LocalViewer

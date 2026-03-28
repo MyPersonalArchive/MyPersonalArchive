@@ -107,7 +107,7 @@ export const BlobListPage = () => {
 				}
 				maximizedPreviewTemplate={
 					(blob, minimize) =>
-						<div className="preview-backdrop"
+						<div className="lightbox-backdrop"
 							onClick={() => minimize()}
 						>
 							<div className="w-full h-full flex justify-center">
@@ -136,7 +136,9 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 	return (
 		<div className="card flex flex-row relative">
 
-			<div className="bg-black w-[152px] h-[152px] flex justify-center items-center">
+			<div className="bg-black w-[152px] h-[152px] flex justify-center items-center"
+				onClick={() => maximize(blob)}
+			>
 				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} onMaximize={maximize} />
 			</div>
 
