@@ -32,17 +32,3 @@ export const ModalDialog = ({ children, onClose, closeOnEscape = true, size = "m
 		</div>
 	)
 }
-
-
-
-export const DialogFooter = ({ children }: PropsWithChildren) => {
-	return <div className="dialog-footer">{children}</div>
-}
-
-export const DialogHeader = ({ children }: PropsWithChildren) => {
-	return <div className="dialog-header">{children}</div>
-}
-
-export const DialogContent = ({ children }: PropsWithChildren) => {
-	return <div className="dialog-content">{children}</div>
-}

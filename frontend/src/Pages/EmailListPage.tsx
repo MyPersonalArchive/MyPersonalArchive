@@ -128,7 +128,10 @@ export const EmailListPage = () => {
 						/>
 					}
 					maximizedPreviewTemplate={(email, minimize) =>
-						<ModalDialog onClose={() => minimize()} size="full">
+						<ModalDialog size="full"
+							onClose={() => minimize()}
+							closeOnEscape={true}
+						>
 							<Preview
 								key={email.uniqueId}
 								email={email}

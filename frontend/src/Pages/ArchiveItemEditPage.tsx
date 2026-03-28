@@ -16,7 +16,7 @@ import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
-import { DialogFooter, DialogHeader, ModalDialog } from "../Components/ModalDialog"
+import { ModalDialog } from "../Components/ModalDialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
 
 type GetResponse = {
@@ -133,7 +133,7 @@ export const ArchiveItemEditPage = () => {
 			<form onSubmit={save}>
 
 				<h1 className="heading-1">
-						Edit item
+					Edit item
 				</h1>
 
 
@@ -204,10 +204,10 @@ export const ArchiveItemEditPage = () => {
 									onClick={() => minimize()}
 								>
 									<div className="w-full h-full flex justify-center">
-									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-										onRemove={removeUnallocatedBlob}
-										onMinimize={() => minimize()}
-									/>
+										<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+											onRemove={removeUnallocatedBlob}
+											onMinimize={() => minimize()}
+										/>
 									</div>
 								</div>
 						}
@@ -229,7 +229,9 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<ModalDialog onClose={() => minimize()} size="full">
+								<div className="preview-backdrop"
+									onClick={() => minimize()}
+								>
 									<LocalViewer
 										key={blob.fileName}
 										blob={blob.fileData}
@@ -238,39 +240,38 @@ export const ArchiveItemEditPage = () => {
 										onMinimize={minimize}
 										removeBlob={removeBlob}
 									/>
-								</ModalDialog>
+								</div>
 						}
 					/>
 				</div>
 
 				<div className="stack-horizontal to-the-right my-4">
 					<Link className="link align-with-btn" to={-1 as any}>
-							Back
+						Back
 					</Link>
 					<button className="btn btn-primary" type="submit">
-							Save
+						Save
 					</button>
 					<button className="btn btn-danger" type="button" onClick={() => setOpenDeleteDialog(true)}>
-							Delete
+						Delete
 					</button>
 				</div>
 
 
 
 				{openDeleteDialog &&
-				<ModalDialog onClose={() => setOpenDeleteDialog(false)} size="medium">
-					<DialogHeader>
-						<div>
+					<ModalDialog size="medium"
+						onClose={() => setOpenDeleteDialog(false)}
+						closeOnEscape={false}
+					>
+						<div className="dialog-header">
 							Are you sure you want to delete this item?
 						</div>
-					</DialogHeader>
-					<DialogFooter>
-						<div className="stack-horizontal to-the-right m-4">
+						<div className="stack-horizontal to-the-right p-4">
 							<button className="btn" type="button" onClick={() => setOpenDeleteDialog(false)}>Cancel</button>
 							<button className="btn btn-danger" type="button" onClick={deleteItem}>Delete</button>
 						</div>
-					</DialogFooter>
-				</ModalDialog>
+					</ModalDialog>
 				}
 			</form>
 		</>

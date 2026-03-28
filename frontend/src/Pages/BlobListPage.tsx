@@ -10,7 +10,6 @@ import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { formatDate, formatFileSize } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
-import { ModalDialog } from "../Components/ModalDialog"
 
 
 export const BlobListPage = () => {
@@ -112,9 +111,9 @@ export const BlobListPage = () => {
 							onClick={() => minimize()}
 						>
 							<div className="w-full h-full flex justify-center">
-							<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-								onMinimize={minimize}
-							/>
+								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
+									onMinimize={minimize}
+								/>
 							</div>
 						</div>
 
