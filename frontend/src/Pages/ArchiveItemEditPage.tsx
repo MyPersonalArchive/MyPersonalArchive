@@ -18,6 +18,9 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
 import { ModalDialog } from "../Components/ModalDialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
+import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 
 type GetResponse = {
 	id: number
@@ -191,11 +194,18 @@ export const ArchiveItemEditPage = () => {
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<div className="bg-black rounded-sm w-73 h-73 flex justify-center items-center">
-									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}
-										onRemove={removeUnallocatedBlob}
-										onMaximize={() => maximize(blob)}
-									/>
+								<div className="bg-black rounded-sm border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+									onClick={() => maximize(blob)}
+								>
+									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}/>
+									<div className="action-bar">
+										<button type="button" onClick={() => maximize(blob)} title="Expand">
+											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+										</button>
+										<button type="button" onClick={() => removeUnallocatedBlob(blob)} title="Delete">
+											<FontAwesomeIcon icon={faTrash} size="1x" />
+										</button>
+									</div>
 								</div>
 						}
 						maximizedPreviewTemplate={
@@ -203,11 +213,17 @@ export const ArchiveItemEditPage = () => {
 								<div className="lightbox-backdrop"
 									onClick={() => minimize()}
 								>
-									<div className="w-full h-full flex justify-center">
+									<div className="w-full h-full flex justify-center action-bar-host">
 										<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}
-											onRemove={removeUnallocatedBlob}
-											onMinimize={() => minimize()}
 										/>
+										<div className="action-bar">
+											<button type="button" onClick={() => minimize()} title="Minimize">
+												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+											</button>
+											<button type="button" onClick={() => removeUnallocatedBlob(blob)} title="Delete">
+												<FontAwesomeIcon icon={faTrash} size="1x" />
+											</button>
+										</div>
 									</div>
 								</div>
 						}

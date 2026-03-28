@@ -10,10 +10,9 @@ export interface BaseViewerProps {
   mimeType?: string
   dimension: DimensionEnum
   forceImageViewer?: boolean
-  children?: ReactNode,
 }
 
-export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer, children }: BaseViewerProps) => {
+export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer }: BaseViewerProps) => {
 	const isTextType = (mimeType: string): boolean =>{
 		return mimeType.startsWith("text/") || mimeType === "application/json" || mimeType === "application/xml"
 	}
@@ -61,13 +60,8 @@ export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer, childre
 	else viewer = <div>Preview not supported</div>
 
 	return (
-		<div className="preview" style={getDimensions()}>
+		<div className="baseviewer" style={getDimensions()}>
 			{viewer}
-			{children && (
-				<div className="action-bar">
-					{children}
-				</div>
-			)}
 		</div>
 	)
 }

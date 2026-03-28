@@ -7,7 +7,7 @@ interface Props extends BaseViewerProps {
 	blobId: number
 }
 
-export const ServerViewer = ({ blobId, mimeType, dimension, children }: Props) => {
+export const ServerViewer = ({ blobId, mimeType, dimension }: Props) => {
 	const apiClient = useApiClient()
 	const [srcData, setSrcData] = useState<string>("")
 	const [loading, setLoading] = useState(true)
@@ -48,6 +48,5 @@ export const ServerViewer = ({ blobId, mimeType, dimension, children }: Props) =
 		mimeType={mimeType}
 		dimension={dimension}
 		forceImageViewer={shouldForceImageViewer}
-		children={children}
 	/>
 }
