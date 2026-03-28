@@ -48,7 +48,7 @@ export const ArchiveItemNewPage = () => {
 		const createRequest = {
 			title,
 			tags,
-			blobsFromUnallocated,
+			blobsFromUnallocated: blobsFromUnallocated.map(b => b.id),
 			metadata,
 			label,
 			documentDate
