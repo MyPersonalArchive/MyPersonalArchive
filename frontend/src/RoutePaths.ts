@@ -17,6 +17,5 @@ export const RoutePaths = {
 	Backup: "/backup",
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic"
-	},
-	Settings: "/settings"
+	}
 }

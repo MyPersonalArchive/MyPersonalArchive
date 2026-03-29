@@ -14,9 +14,9 @@ import { UUID } from "crypto"
 
 
 export const StoredFilterSelector = () => {
-	const {preferencesIsOpen} = useAtomValue(layoutStateAtom)
+	const {adjustmentsModeIsOpen} = useAtomValue(layoutStateAtom)
 
-	return preferencesIsOpen
+	return adjustmentsModeIsOpen
 		? <EditableStoredFilters />
 		: <ClickableStoredFilters />
 }

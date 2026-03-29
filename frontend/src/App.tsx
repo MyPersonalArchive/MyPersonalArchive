@@ -82,10 +82,6 @@ const router = createBrowserRouter([
 					{
 						path: RoutePaths.Backup,
 						element: <BackupPage />
-					},
-					{
-						path: RoutePaths.Settings,
-						element: <div>Settings page (not implemented yet)</div>
 					}
 				]
 			}

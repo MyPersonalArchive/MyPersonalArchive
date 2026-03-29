@@ -4,7 +4,7 @@ import { atomWithReducer } from "jotai/utils"
 export type LayoutState = {
 	navIsOpen: boolean
 	profileDropdownIsOpen: boolean
-	preferencesIsOpen: boolean
+	adjustmentsModeIsOpen: boolean
 }
 
 
@@ -13,7 +13,7 @@ type LayoutCommand =
 	| { action: "CLOSE_NAV" }
 	| { action: "TOGGLE_PROFILE_DROPDOWN" }
 	| { action: "CLOSE_PROFILE_DROPDOWN" }
-	| { action: "TOGGLE_PREFERENCES" }
+	| { action: "TOGGLE_ADJUSTMENTS_MODE" }
 
 const reducer = (state: LayoutState, command: LayoutCommand): LayoutState => {
 	switch (command.action) {
@@ -45,10 +45,10 @@ const reducer = (state: LayoutState, command: LayoutCommand): LayoutState => {
 				profileDropdownIsOpen: false
 			}
 
-		case "TOGGLE_PREFERENCES":
+		case "TOGGLE_ADJUSTMENTS_MODE":
 			return {
 				...state,
-				preferencesIsOpen: !state.preferencesIsOpen,
+				adjustmentsModeIsOpen: !state.adjustmentsModeIsOpen,
 				profileDropdownIsOpen: false
 			}
 	}
@@ -58,5 +58,5 @@ const reducer = (state: LayoutState, command: LayoutCommand): LayoutState => {
 export const layoutStateAtom = atomWithReducer<LayoutState, LayoutCommand>({
 	navIsOpen: false,
 	profileDropdownIsOpen: false,
-	preferencesIsOpen: false
+	adjustmentsModeIsOpen: false
 }, reducer)

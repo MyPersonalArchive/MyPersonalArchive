@@ -144,7 +144,8 @@ nav#sideNav {
 	}
 
 	& a,
-	& .nav-link {
+	& .nav-link,
+	& .adjustments-mode-toggle {
 		@apply flex flex-row items-center gap-3 w-full py-[.6rem] px-4 text-inherit no-underline text-sm cursor-pointer border-l-[3px] border-l-transparent transition-colors duration-150;
 	}
 
@@ -154,6 +155,14 @@ nav#sideNav {
 	& .nav-link.active {
 		@apply bg-white/12 border-l-[#7ef4b4] text-white;
 	}
+
+	& .adjustments-mode-toggle:hover{
+		@apply bg-white/12;
+	}
+	& .adjustments-mode-toggle.active {
+		@apply border-l-amber-500 text-white;
+	}
+
 }
 
 

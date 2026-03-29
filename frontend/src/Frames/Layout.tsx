@@ -19,7 +19,7 @@ import { FileDrop } from "../Components/FileDrop"
 
 export const Layout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
-	const [{ navIsOpen, profileDropdownIsOpen, preferencesIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
+	const [{ navIsOpen, profileDropdownIsOpen, adjustmentsModeIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
 
 	return (
 		<>
@@ -133,20 +133,19 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						<div className="nav-group">
 							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
 								to={RoutePaths.Backup}
-								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
 							>
 								<FontAwesomeIcon icon={faGear} fixedWidth />
-								Settings
+								Backup and external sync
 							</NavLink>
 
 							<button
-								className={classNames("nav-link", { "bg-white/12 border-l-red-500 text-white": preferencesIsOpen })}
-								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
+								className={classNames("adjustments-mode-toggle", { "active": adjustmentsModeIsOpen })}
+								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_ADJUSTMENTS_MODE" })}
 							>
 								<FontAwesomeIcon icon={faSliders} fixedWidth />
 								Adjustments mode
 								<div className="flex-1"></div>
-								<FontAwesomeIcon icon={preferencesIsOpen ? faToggleOn : faToggleOff} fixedWidth />
+								<FontAwesomeIcon icon={adjustmentsModeIsOpen ? faToggleOn : faToggleOff} fixedWidth />
 							</button>
 						</div>
 					</>
@@ -165,9 +164,9 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 
 const AccountList = () => {
-	const { preferencesIsOpen } = useAtomValue(layoutStateAtom)
+	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
 
-	return preferencesIsOpen
+	return adjustmentsModeIsOpen
 		? <EditableAccountList />
 		: <ClickableAccountList />
 }
