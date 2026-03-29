@@ -72,7 +72,11 @@ export const ArchiveItemListPage = () => {
 					</thead>
 					<tbody>
 						{
-							archiveItems?.filter(filterFn).toSorted((a, b) => a.title.localeCompare(b.title)).map(item => <Row key={item.id} archiveItem={item} />)
+							archiveItems?.filter(filterFn)
+								.toSorted((a, b) => a.title.localeCompare(b.title))
+								.map(item =>
+									<Row key={item.id} archiveItem={item} />
+								)
 						}
 						{
 							archiveItems && archiveItems.length === 0 && (

@@ -128,12 +128,11 @@ export const EmailListPage = () => {
 						/>
 					}
 					maximizedPreviewTemplate={(email, minimize) =>
-						<Dialog size="full"
+						<Dialog key={email.uniqueId} size="full"
 							onClose={() => minimize()}
 							closeOnEscape={true}
 						>
 							<Preview
-								key={email.uniqueId}
 								email={email}
 								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
 								createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
@@ -211,7 +210,7 @@ type PreviewProps = {
 }
 const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, externalAccountId, selectedFolder, maximize: minimize }: PreviewProps) => {
 	return (
-		<div key={email.uniqueId} className="grid-rows-3">
+		<div className="grid-rows-3">
 			<div className="bg-gray-100 p-4 sticky top-0">
 
 				<div className="flex flex-horizontal justify-between mb-2">
