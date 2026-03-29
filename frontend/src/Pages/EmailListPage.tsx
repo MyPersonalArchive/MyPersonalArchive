@@ -119,7 +119,7 @@ export const EmailListPage = () => {
 				<PreviewList<Email>
 					items={emails}
 					thumbnailPreviewTemplate={(email, maximize) =>
-						<Thumbnail
+						<EmailThumbnail
 							key={email.uniqueId}
 							email={email}
 							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
@@ -132,7 +132,7 @@ export const EmailListPage = () => {
 							onClose={() => minimize()}
 							closeOnEscape={true}
 						>
-							<Preview
+							<EmailPreview
 								email={email}
 								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
 								createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
@@ -149,15 +149,15 @@ export const EmailListPage = () => {
 }
 
 
-type ThumbnailProps = {
+type EmailThumbnailProps = {
 	email: Email
 	selectionOfEmails: Selection<string>
 	createArchiveItemFromEmails: (emails: Email[]) => void
 	maximize: (email: Email) => void
 }
-const Thumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: ThumbnailProps) => {
+const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: EmailThumbnailProps) => {
 	return (
-		<div key={email.uniqueId} className="card">
+		<div key={email.uniqueId} className="card" >
 			<div className="bg-gray-100 p-2">
 				<div className="flex flex-horizontal justify-between mb-2 ">
 					<div>
@@ -167,7 +167,7 @@ const Thumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maxi
 					<div>
 						<SelectCheckbox selection={selectionOfEmails} item={email.uniqueId} />
 						<button className="ml-3" type="button" onClick={() => maximize(email)}>
-							<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+							<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} />
 						</button>
 					</div>
 				</div>
@@ -200,7 +200,7 @@ const Thumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maxi
 }
 
 
-type PreviewProps = {
+type EmailPreviewProps = {
 	email: Email
 	createArchiveItemFromEmails: (emails: Email[]) => void
 	createBlobsFromAttachments: (messageId: string, attachments: EmailAttachment[]) => void
@@ -208,7 +208,7 @@ type PreviewProps = {
 	selectedFolder: string
 	maximize: (email: Email) => void
 }
-const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, externalAccountId, selectedFolder, maximize: minimize }: PreviewProps) => {
+const EmailPreview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, externalAccountId, selectedFolder, maximize: minimize }: EmailPreviewProps) => {
 	return (
 		<div className="grid-rows-3">
 			<div className="bg-gray-100 p-4 sticky top-0">
@@ -219,7 +219,7 @@ const Preview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachment
 						{email.attachments.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 					</div>
 					<button className="ml-3" type="button" onClick={() => minimize(email)}>
-						<FontAwesomeIcon icon={faClose} size="1x" />
+						<FontAwesomeIcon icon={faClose} />
 					</button>
 				</div>
 
