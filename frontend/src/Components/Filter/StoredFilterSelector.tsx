@@ -34,8 +34,8 @@ const ClickableStoredFilters = () => {
 
 	return <div className="stack-horizontal to-the-left">
 		{storedFilters?.map((filter) => (
-			<button className={classNames("btn btn-wide block font-mono", { "selected": filter.name === searchParams.get("filter") })}
-				key={filter.id}
+			<button key={filter.id}
+				className={classNames("btn btn-wide block font-mono", { "selected": filter.name === searchParams.get("filter") })}
 				onClick={() => selectFilter(filter)}
 			>
 				{filter.name}

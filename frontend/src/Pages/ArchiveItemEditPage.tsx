@@ -204,10 +204,11 @@ export const ArchiveItemEditPage = () => {
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<div className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+								<div key={blob.id}
+									className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
 									onClick={() => maximize(blob)}
 								>
-									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small}/>
+									<Preview blob={blob} dimension={DimensionEnum.small}/>
 									<div className="action-bar">
 										<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
 											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
@@ -220,9 +221,9 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
-								<LightBox onClose={() => minimize()}>
+								<LightBox key={blob.id} onClose={() => minimize()}>
 									<div className="w-full h-full flex justify-center action-bar-host">
-										<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full}/>
+										<Preview blob={blob} dimension={DimensionEnum.full}/>
 										<div className="action-bar">
 											<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
 												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />

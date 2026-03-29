@@ -110,9 +110,9 @@ export const BlobListPage = () => {
 				}
 				maximizedPreviewTemplate={
 					(blob, minimize) =>
-						<LightBox onClose={() => minimize()}>
+						<LightBox key={blob.id} onClose={() => minimize()}>
 							<div className="w-full h-full flex justify-center action-bar-host">
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
+								<Preview blob={blob} dimension={DimensionEnum.full} />
 								<div className="action-bar">
 									<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
 										<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
@@ -142,7 +142,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 			<div className="bg-black border border-black w-40 h-40 flex justify-center items-center action-bar-host"
 				onClick={() => maximize(blob)}
 			>
-				<Preview key={blob.id} blob={blob} dimension={DimensionEnum.thumbnail} />
+				<Preview blob={blob} dimension={DimensionEnum.thumbnail} />
 
 				<div className="action-bar">
 					<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">

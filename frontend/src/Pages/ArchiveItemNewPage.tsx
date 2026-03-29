@@ -138,8 +138,8 @@ export const ArchiveItemNewPage = () => {
 				<div>
 					<PreviewList items={blobsFromUnallocated} containerClassName="flex flex-wrap"
 						thumbnailPreviewTemplate={(blob, maximize) =>
-							<div className="action-bar-host">
-								<Preview key={blob.id} blob={blob} dimension={DimensionEnum.small} />
+							<div key={blob.id} className="action-bar-host">
+								<Preview blob={blob} dimension={DimensionEnum.small} />
 								<div className="action-bar">
 									<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
 										<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
@@ -151,9 +151,9 @@ export const ArchiveItemNewPage = () => {
 							</div>
 						}
 						maximizedPreviewTemplate={(blob, minimize) =>
-							<LightBox onClose={() => minimize()}>
+							<LightBox key={blob.id} onClose={() => minimize()}>
 								<div className="w-full h-full flex justify-center action-bar-host">
-									<Preview key={blob.id} blob={blob} dimension={DimensionEnum.full} />
+									<Preview blob={blob} dimension={DimensionEnum.full} />
 									<div className="action-bar">
 										<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
 											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
