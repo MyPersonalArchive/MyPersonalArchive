@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import "./WebRTCPairingModal.css"
 import { usePairingService } from "../../Utils/PairingService"
 import { useBackupService } from "../../Utils/BackupService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -119,12 +118,12 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 	if (!isOpen) return null
 
 	return (
-		<div className="pairing-modal-overlay" onClick={handleCancel}>
-			<div className="pairing-modal" onClick={(e) => e.stopPropagation()}>
-				<div className="pairing-modal-header">
+		<div className="modal-overlay" onClick={handleCancel}>
+			<div className="modal" onClick={(e) => e.stopPropagation()}>
+				<div className="modal-header">
 					<h2><FontAwesomeIcon icon={faRotate} /> Disaster Recovery</h2>
 					<button 
-						className="pairing-modal-close" 
+						className="modal-close" 
 						onClick={handleCancel}
 						disabled={isLoading}
 					>
@@ -132,7 +131,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 					</button>
 				</div>
 
-				<div className="pairing-modal-body">
+				<div className="modal-body">
 					{error && (
 						<div className="error-message">
 							{error}
@@ -141,7 +140,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 
 					{!mode && (
 						<>
-							<div className="pairing-info-box">
+							<div className="info-box">
 								<h3><FontAwesomeIcon icon={faClipboard} /> Choose Recovery Option</h3>
 								<p>
 									<strong>Generate Code:</strong> Create a recovery code to allow another device to restore your backups.<br/>
@@ -149,7 +148,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 								</p>
 							</div>
 
-							<div className="pairing-mode-selector">
+							<div className="flex gap-3 flex-col">
 								<button 
 									className="btn btn-primary"
 									onClick={handleGenerateCode}
@@ -180,12 +179,12 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 
 					{mode === "generate" && (
 						<>
-							<div className="pairing-success">
+							<div className="text-center">
 								<h3><FontAwesomeIcon icon={faCheckCircle} /> Recovery Code Generated</h3>
-								<div className="pairing-code-display">
+								<div className="code-display">
 									{recoveryCode}
 								</div>
-								<p className="pairing-code-hint">
+								<p className="code-hint">
 									Share this code with the device that needs to recover data.
 									<br />
 									Available backups: <strong>{availableBackups}</strong>
@@ -194,7 +193,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 								</p>
 							</div>
 
-							<div className="pairing-actions">
+							<div className="flex justify-end">
 								<button 
 									className="btn btn-primary"
 									onClick={handleCancel}
@@ -237,7 +236,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 								</div>
 							</div>
 
-							<div className="pairing-actions">
+						<div className="flex gap-3 justify-end">
 								<button 
 									className="btn btn-secondary"
 									onClick={() => setMode(null)}
@@ -264,7 +263,7 @@ export const RecoveryModal: React.FC<RecoveryModalProps> = ({
 					)}
 
 					{isRecovering && (
-						<div className="pairing-success">
+						<div className="text-center">
 							<h3><FontAwesomeIcon icon={faRotate} spin /> Recovery in Progress</h3>
 							<p>
 								Restoring your data from the backup...

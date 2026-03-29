@@ -132,7 +132,8 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 						<div className="nav-group">
 							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
-								to={RoutePaths.Settings}
+								to={RoutePaths.Backup}
+								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PREFERENCES" })}
 							>
 								<FontAwesomeIcon icon={faGear} fixedWidth />
 								Settings

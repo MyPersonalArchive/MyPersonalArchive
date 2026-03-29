@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { BackupLog, BackupLogsResponse, BackupRunInfo, useBackupService } from "../../Utils/BackupService"
 import "./BackupLogs.css"
-import { useSignalR } from "../../Utils/useSignalR"
-
-interface BackupLogsProps {
+import { useSignalR } from "../../Utils/Hooks/useSignalR"
+type BackupLogsProps  = {
 	className?: string
 }
 
@@ -229,7 +228,7 @@ export const BackupLogs: React.FC<BackupLogsProps> = ({ className = "" }) => {
 														? `${log.errorMessage.substring(0, 50)}...` 
 														: log.errorMessage}
 												</span>
-											)}
+											)}	
 										</td>
 									</tr>
 								))}

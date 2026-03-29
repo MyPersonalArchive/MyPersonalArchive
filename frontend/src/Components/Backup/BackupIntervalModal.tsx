@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import "./WebRTCPairingModal.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faClock } from "@fortawesome/free-solid-svg-icons"
 
@@ -78,12 +77,12 @@ export const BackupIntervalModal: React.FC<BackupIntervalModalProps> = ({
 	if (!isOpen) return null
 
 	return (
-		<div className="pairing-modal-overlay" onClick={onClose}>
-			<div className="pairing-modal" style={{ maxWidth: "500px" }} onClick={(e) => e.stopPropagation()}>
-				<div className="pairing-modal-header">
+		<div className="modal-overlay" onClick={onClose}>
+			<div className="modal" style={{ maxWidth: "500px" }} onClick={(e) => e.stopPropagation()}>
+				<div className="modal-header">
 					<h2>Set Backup Interval</h2>
 					<button 
-						className="pairing-modal-close" 
+						className="modal-close" 
 						onClick={onClose}
 						disabled={isLoading}
 					>
@@ -91,14 +90,14 @@ export const BackupIntervalModal: React.FC<BackupIntervalModalProps> = ({
 					</button>
 				</div>
 
-				<div className="pairing-modal-body">
+				<div className="modal-body">
 					{error && (
 						<div className="error-message">
 							{error}
 						</div>
 					)}
 
-					<div className="pairing-info-box">
+					<div className="info-box">
 						<h3><FontAwesomeIcon icon={faClock} /> Automatic Backup Schedule</h3>
 						<p>
 							Set how often your backup should run automatically. 
@@ -138,7 +137,7 @@ export const BackupIntervalModal: React.FC<BackupIntervalModalProps> = ({
 						</div>
 					</div>
 
-					<div className="pairing-actions" style={{ marginTop: "24px", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+					<div className="flex gap-2 justify-end mt-6">
 						<button 
 							className="btn btn-secondary"
 							onClick={onClose}

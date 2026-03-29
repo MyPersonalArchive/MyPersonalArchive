@@ -7,7 +7,6 @@ import {
 	faTimes
 } from "@fortawesome/free-solid-svg-icons"
 import { BackupRun, BackupStatus } from "../../types/backup"
-import "./WebRTCPairingModal.css"
 
 interface BackupDetailsModalProps {
 	backupRun: BackupRun | null
