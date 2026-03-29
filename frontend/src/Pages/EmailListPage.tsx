@@ -17,7 +17,7 @@ import { Dialog } from "../Components/Dialog"
 
 export const EmailListPage = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
-	const {preferencesIsOpen} = useAtomValue(layoutStateAtom)
+	const {adjustmentsModeIsOpen} = useAtomValue(layoutStateAtom)
 	
 	const params = useParams()
 	const externalAccountId = params.id as UUID
@@ -37,7 +37,7 @@ export const EmailListPage = () => {
 	return (
 		<>
 			<h1 className="heading-1">
-				{preferencesIsOpen
+				{adjustmentsModeIsOpen
 					? <input className=""
 						value={externalAccount?.displayName ?? "<unknown account>"}
 						onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
