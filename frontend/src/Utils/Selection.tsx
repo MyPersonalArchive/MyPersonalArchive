@@ -114,6 +114,7 @@ export const SelectCheckbox = <T,>({ selection, item, className }: SelectCheckbo
 		<input className={`input ${className}`} type="checkbox"
 			style={{ alignSelf: "end" }}
 			checked={selection.selectedItems.has(item)}
+			onClick={event => event.stopPropagation()}
 			onChange={() => selection.toggleSelection(item)} />
 	)
 }
