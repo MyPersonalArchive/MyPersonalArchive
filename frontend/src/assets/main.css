@@ -3,6 +3,7 @@
 /* New tailwind-based css imports */
 @import "tailwindcss";
 @import "./table.css";
+@import "./backup.css";
 
 @font-face {
         font-family: "Monaspace Neon";

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react"
-import "./WebRTCPairingModal.css"
 import { usePairingService } from "../../Utils/PairingService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCheckCircle, faClock, faLock } from "@fortawesome/free-solid-svg-icons"
@@ -146,12 +145,12 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 	if (!isOpen) return null
 
 	return (
-		<div className="pairing-modal-overlay" onClick={handleCancel}>
-			<div className="pairing-modal" onClick={(e) => e.stopPropagation()}>
-				<div className="pairing-modal-header">
+		<div className="modal-overlay" onClick={handleCancel}>
+			<div className="modal" onClick={(e) => e.stopPropagation()}>
+				<div className="modal-header">
 					<h2>Pair Device</h2>
 					<button 
-						className="pairing-modal-close" 
+						className="modal-close" 
 						onClick={handleCancel}
 						disabled={isLoading}
 					>
@@ -159,7 +158,7 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 					</button>
 				</div>
 
-				<div className="pairing-modal-body">
+				<div className="modal-body">
 					{error && (
 						<div className="error-message">
 							{error}
@@ -168,7 +167,7 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 
 					{!mode && (
 						<>
-							<div className="pairing-info-box">
+							<div className="info-box">
 								<h3><FontAwesomeIcon icon={faLock} /> Secure Peer-to-Peer Pairing</h3>
 								<p>
 									Pair this device with another to enable secure backups 
@@ -191,7 +190,7 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 								</div>
 							</div>
 
-							<div className="pairing-mode-selector">
+							<div className="flex gap-3 mb-6 flex-1">
 								<button 
 									className="btn btn-secondary"
 									onClick={handleGenerateCode}
@@ -216,7 +215,7 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 
 					{mode === "generate" && (
 						<>
-							<div className="pairing-info-box">
+							<div className="info-box">
 								<h3>Share this code</h3>
 								<p>
 									Enter this 6-digit code on the other device to complete pairing. 
@@ -224,7 +223,7 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 								</p>
 							</div>
 
-							<div className="pairing-code-display">
+							<div className="code-display">
 								<div className="code-label">Pairing Code</div>
 								<div className="code-value">{pairingCode}</div>
 							</div>
@@ -243,7 +242,7 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 
 					{mode === "join" && !isConnected && (
 						<>
-							<div className="pairing-info-box">
+							<div className="info-box">
 								<h3>Enter pairing code</h3>
 								<p>
 									Enter the 6-digit code displayed on the other device.
@@ -266,14 +265,14 @@ export const WebRTCPairingModal: React.FC<WebRTCPairingModalProps> = ({
 					)}
 
 					{mode === "join" && isConnected && (
-						<div className="pairing-status connected">
+						<div className="connection-status connected">
 							<FontAwesomeIcon icon={faCheckCircle} /> Connected! Pairing complete.
 						</div>
 					)}
 				</div>
 
 				{!isConnected && (
-					<div className="pairing-modal-footer">
+					<div className="modal-footer">
 						<button 
 							className="btn btn-secondary" 
 							onClick={handleCancel}

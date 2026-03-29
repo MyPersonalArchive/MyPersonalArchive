@@ -1,0 +1,214 @@
+/* Backup component styles using Tailwind @apply pattern */
+/* Extends existing styles from main.css - do not duplicate button/modal base styles */
+
+/* ── Modal Overlays (extends .dialog-backdrop from main.css) ── */
+.modal-overlay {
+	@apply fixed inset-0 bg-black/50 flex items-center justify-center z-[1000];
+	backdrop-filter: blur(4px);
+}
+
+.modal {
+	@apply bg-white rounded-xl shadow-2xl max-w-[500px] w-[90%] max-h-[90vh] overflow-y-auto;
+	animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.modal-header {
+	@apply px-6 pt-6 pb-4 border-b border-gray-200 flex justify-between items-center;
+}
+
+.modal-header h2 {
+	@apply m-0 text-2xl text-gray-900;
+}
+
+.modal-close {
+	@apply bg-transparent border-none text-2xl text-gray-500 cursor-pointer px-2 py-1 rounded transition-all duration-200;
+}
+
+.modal-close:hover {
+	@apply bg-gray-100 text-gray-900;
+}
+
+.modal-body {
+	@apply p-6;
+}
+
+.modal-footer {
+	@apply px-6 py-4 border-t border-gray-200 flex gap-3 justify-end;
+}
+
+/* ── Info Boxes ── */
+.info-box {
+	@apply bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6;
+}
+
+.info-box h3 {
+	@apply m-0 mb-2 text-base text-blue-900;
+}
+
+.info-box p {
+	@apply m-0 text-blue-900 text-sm leading-relaxed;
+}
+
+/* ── Form Elements (extends .input from main.css) ── */
+.form-group {
+	@apply mb-4;
+}
+
+.form-group label {
+	@apply block mb-2 font-medium text-gray-700;
+}
+
+.form-group input,
+.form-group select {
+	@apply w-full px-3 py-2.5 border border-gray-300 rounded-md text-base box-border;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+	@apply outline-none border-blue-500 ring-4 ring-blue-500/10;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+	@apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}
+
+.input-hint {
+	@apply text-xs text-gray-500 mt-1;
+}
+
+/* ── Button variants (base .btn from main.css) ── */
+/* Only adding .btn-secondary which doesn't exist in main.css */
+.btn-secondary {
+	@apply bg-gray-200 text-gray-700;
+}
+
+.btn-secondary:hover:not(:disabled) {
+	@apply bg-gray-300;
+}
+
+/* ── Messages ── */ 
+.error-message {
+	@apply bg-red-50 border border-red-200 text-red-900 px-3 py-3 rounded-md mb-4 text-sm;
+}
+
+.text-warning {
+	@apply text-yellow-700;
+}
+
+/* ── Status Badges ── */
+.status-badge {
+	@apply inline-block px-2 py-1 rounded-md text-xs font-medium uppercase tracking-wider;
+}
+
+.status-running,
+.status-inprogress {
+	@apply bg-blue-100 text-blue-900;
+}
+
+.status-success {
+	@apply bg-green-100 text-green-900;
+}
+
+.status-failed {
+	@apply bg-red-100 text-red-900;
+}
+
+.status-waiting,
+.status-notstarted {
+	@apply bg-yellow-100 text-yellow-900;
+}
+
+.status-pending {
+	@apply bg-gray-100 text-gray-600;
+}
+
+/* ── Pairing Code Display ── */
+.code-display {
+	@apply text-center my-6;
+}
+
+.code-label {
+	@apply text-sm text-gray-500 mb-2;
+}
+
+.code-value {
+	@apply text-5xl font-bold tracking-[0.2em] text-blue-500 font-mono;
+}
+
+.code-hint {
+	@apply text-sm text-gray-600 mt-2;
+}
+
+/* ── Connection Status ── */
+.connection-status {
+	@apply text-center px-4 py-4 bg-yellow-50 rounded-lg mt-4;
+}
+
+.connection-status.connected {
+	@apply bg-green-50 text-green-900;
+}
+
+/* ── Spinner ── */
+.spinner {
+	@apply inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2;
+	animation: spin 0.6s linear infinite;
+}
+
+.spinner-large {
+	@apply w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full mx-auto my-6;
+	animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+/* ── Backup Sections ── */
+.backup-section {
+	@apply my-5 p-5 border border-gray-200 rounded-lg bg-gray-50;
+}
+
+.backup-section h3 {
+	@apply mt-0 text-gray-600 text-xl;
+}
+
+/* ── Peer List ── */
+.peer-item {
+	@apply flex items-center justify-between p-3 border border-gray-200 rounded-lg mb-2 bg-white transition-all duration-200;
+}
+
+.peer-item.selected {
+	@apply border-blue-500 bg-blue-50;
+}
+
+.peer-item:hover {
+	@apply bg-gray-50;
+}
+
+.peer-content {
+	@apply flex-1 cursor-pointer;
+}
+
+.peer-name {
+	@apply block font-medium text-gray-900 mb-1;
+}
+
+.peer-date {
+	@apply block text-sm text-gray-500;
+}
+
+.peer-selected-indicator {
+	@apply inline-block ml-2 text-blue-600;
+}

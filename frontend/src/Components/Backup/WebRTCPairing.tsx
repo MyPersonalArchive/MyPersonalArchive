@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import "./WebRTCPairing.css"
 import { PairedPeerInfo, usePairingService } from "../../Utils/PairingService"
 import { WebRTCPairingModal } from "./WebRTCPairingModal"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -83,7 +82,7 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 			</p>
 			
 			{pairedPeers.length > 0 && (
-				<div className="paired-peers-list">
+				<div className="p-4 bg-white rounded-lg border border-gray-200">
 					<h5>Paired Devices</h5>
 					{pairedPeers.map(peer => (
 						<div 
@@ -117,7 +116,7 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 				</div>
 			)}
 			
-			<div className="pairing-actions">
+			<div className="flex gap-2">
 				<button 
 				
 					onClick={() => setIsModalOpen(true)}
@@ -128,7 +127,7 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 				</button>
 			</div>
 
-			{error && <div className="pairing-error">{error}</div>}
+			{error && <div className="error-message">{error}</div>}
 
 			<WebRTCPairingModal
 				isOpen={isModalOpen}
