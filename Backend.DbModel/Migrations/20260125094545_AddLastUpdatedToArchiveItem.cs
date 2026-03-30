@@ -16,7 +16,7 @@ namespace Backend.DbModel.Migrations
                 table: "ArchiveItem",
                 type: "TEXT",
                 nullable: false,
-                defaultValueSql: "datetime('now')");
+                defaultValue: DateTimeOffset.MinValue);
         }
 
         /// <inheritdoc />
