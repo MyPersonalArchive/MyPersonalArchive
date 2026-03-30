@@ -49,6 +49,7 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"ms-dotnettools.csharp",
 				"ms-dotnettools.csdevkit",
 				"josefpihrt-vscode.roslynator",
 				"eamodio.gitlens",

@@ -114,7 +114,7 @@ public static class Program
 			}
 			else
 			{
-				_logger.LogWarning("HTTPS certificate not found at {CertFile} or password missing. Starting Kestrel without HTTPS on port {Port}.", cert_file, port);
+				_logger.LogWarning($"HTTPS certificate not found at {cert_file} or password missing. Starting Kestrel without HTTPS on port {port}.");
 				options.Listen(bindAddress, port);
 			}
 		});
@@ -131,6 +131,7 @@ public static class Program
 			hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
 		}));
 	}
+
 
 	private static void RegisterBackupProviders(this IHostApplicationBuilder builder)
 	{
@@ -163,14 +164,6 @@ public static class Program
 		});
 	}
 
-	// private static void RegisterEmailServices(this IHostApplicationBuilder builder)
-	// {
-	// 	var services = builder.Services;
-
-	// 	services.AddSingleton<ImapProviderBase, GmailProvider>();
-	// 	services.AddSingleton<ImapProviderBase, FastMailBasicAuthProvider>();
-	// 	services.AddSingleton<EmailProviderFactory>();
-	// }
 
 	private static void RegisterAuthenticationServices(this WebApplicationBuilder builder)
 	{
