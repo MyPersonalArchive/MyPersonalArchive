@@ -46,7 +46,9 @@
 }
 
 @theme {
-	/* --color-customblue: hsla(197, 68%, 37%, 10); */
+	--color-main-color: hsl(210,45%,96%);
+	--color-nav-color: hsl(210,36%,30%);
+	--color-top-color: hsl(210,29%,24%);
 	--font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
@@ -59,7 +61,7 @@ div#root {
 
 /* ── Header ── */
 header#topHeader {
-	@apply [grid-area:header] bg-[#2c3e50] text-white flex items-center px-5 gap-4 relative z-1;
+	@apply [grid-area:header] bg-top-color text-white flex items-center px-5 gap-4 relative z-1;
 
 	& .logo {
 		@apply text-[1.2rem] font-bold tracking-[.05em];
@@ -117,7 +119,7 @@ header#topHeader {
 	}
 
 	& span {
-		@apply text-[.78rem] text-[#777];
+		@apply text-[.78rem] text-neutral-500;
 	}
 }
 
@@ -128,7 +130,7 @@ header#topHeader {
 
 /* ── Side nav ── */
 nav#sideNav {
-	@apply [grid-area:nav] bg-[hsl(210,29%,30%)] text-[#d4f5e4] flex flex-col items-stretch pt-4 overflow-y-auto;
+	@apply [grid-area:nav] bg-nav-color text-[#d4f5e4] flex flex-col items-stretch pt-4 overflow-y-auto;
 	@apply max-sm:fixed max-sm:top-14 max-sm:left-0 max-sm:w-[280] max-sm:h-[calc(100dvh-56px)] max-sm:z-100 max-sm:-translate-x-full max-sm:transition-transform max-sm:duration-[250ms] max-sm:ease-in-out max-sm:shadow-[4px_0_16px_rgba(0,0,0,.3)];
 
 	&.open {
@@ -168,7 +170,7 @@ nav#sideNav {
 
 /* ── Overlay (hidden by default) ── */
 .nav-overlay {
-	@apply hidden fixed top-14 left-0 right-0 bottom-0 bg-black/45 z-[1];
+	@apply hidden fixed top-14 left-0 right-0 bottom-0 bg-black/45 z-1;
 
 	&.open {
 		@apply max-sm:block;
@@ -177,7 +179,7 @@ nav#sideNav {
 
 /* ── Main ── */
 #mainArea {
-	@apply [grid-area:main] bg-[#eef2f7] overflow-hidden relative min-h-0;
+	@apply [grid-area:main] bg-main-color overflow-hidden relative min-h-0;
 }
 
 main {
@@ -299,6 +301,10 @@ main {
 	@apply text-2xl font-bold mb-3;
 }
 
+.heading-3 {
+	@apply text-lg font-bold mb-3;
+}
+
 .link {
 	@apply text-blue-600 hover:underline cursor-pointer;
 }
@@ -308,7 +314,7 @@ main {
 }
 
 .btn {
-	@apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 transition;
+	@apply bg-gray-200 text-gray-800 border border-gray-200 font-semibold px-4 py-1 rounded hover:bg-gray-300 hover:border-gray-300 transition;
 
 	&.btn-wide {
 		@apply px-8;
@@ -337,7 +343,6 @@ main {
 
 
 .group {
-
 	&>.input,
 	&>.btn {
 		@apply rounded-none;
@@ -362,12 +367,21 @@ div.input {
 	@apply py-4;
 }
 
+form {
+	& input,
+	& select,
+	& .input,
+	& .is-wrapper {
+		@apply bg-white;
+	}
+}
+
 .input {
 	@apply inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200;
 
 	/* 'is-wrapper' is used when this element is a complex wrapper for other input elements*/
 	&.is-wrapper {
-		@apply has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
+		@apply  has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
 	}
 
 	/* 'stripped' is used for inner input elements inside a complex wrapper with 'is-wrapper' */
