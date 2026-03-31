@@ -7,19 +7,17 @@ table.table {
 	}
 
 	&>thead>tr>td,
-	&>thead>tr>th {
-		@apply text-center text-black font-semibold bg-gray-100;
+	&>thead>tr>th,
+	&>tfoot>tr>td,
+	&>tfoot>tr>th {
+		@apply bg-gray-50  text-black font-semibold text-xs uppercase tracking-wider;
 	}
 
 	&>tbody>tr>td,
 	&>tbody>tr>th {
-		@apply text-left;
+		@apply text-left bg-white;
 	}
 
-	&>tfoot>tr>td,
-	&>tfoot>tr>th {
-		@apply text-center text-black font-semibold bg-blue-200;
-	}
 
 }
 

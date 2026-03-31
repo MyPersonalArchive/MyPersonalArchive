@@ -62,7 +62,7 @@ export const ArchiveItemListPage = () => {
 
 
 			<div className="overflow-x-auto my-4">
-				<table className="w-full table with-column-seperators">
+				<table className="w-full table">
 					<thead>
 						<tr>
 							<th>Title</th>
@@ -118,10 +118,10 @@ const Row = ({ archiveItem }: RowProps) => {
 					<span key={type} className="inline-block bg-blue-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{type}</span>
 				))}
 			</td>
-			<td>
+			<td className="align-top">
 				{archiveItem.documentDate ? new Date(archiveItem.documentDate).toLocaleDateString() : ""}
 			</td>
-			<td>
+			<td className="align-top">
 				{archiveItem.createdAt.toLocaleDateString()}
 			</td>
 		</tr>
