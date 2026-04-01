@@ -17,6 +17,7 @@ import { RootFrame } from "./Frames/RootFrame"
 import { EmailListPage } from "./Pages/EmailListPage"
 import { BackupPage } from "./Pages/BackupPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
+import { ComponentTestPage } from "./Pages/ComponentTestPage"
 
 const router = createBrowserRouter([
 	{
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
 					{
 						path: RoutePaths.Backup,
 						element: <BackupPage />
+					},
+					{
+						path: "test",
+						element: <ComponentTestPage />
 					}
 				]
 			}
