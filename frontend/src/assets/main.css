@@ -50,6 +50,7 @@
 	--color-nav-color: hsl(210,36%,30%);
 	--color-top-color: hsl(210,29%,24%);
 	--font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	--font-code: "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 div#root {
@@ -240,6 +241,7 @@ main {
 }
 
 .dialog-footer {
+	@apply p-4;
 	/* @apply border-t border-gray-300 p-4 flex justify-end gap-2; */
 }
 
@@ -451,6 +453,13 @@ span.tag {
 }
 
 
+.code {
+	@apply font-code;
+}
+
+kbd {
+	@apply font-mono px-1 bg-gray-200 text-gray-800 border px-1 rounded;
+}
 
 .striped-background {
 	background: repeating-linear-gradient(-30deg,

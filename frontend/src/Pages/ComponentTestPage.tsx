@@ -1,3 +1,6 @@
+import { useState } from "react"
+import { Dialog } from "../Components/Dialog"
+import { LightBox } from "../Components/LightBox"
 
 
 export const ComponentTestPage = () => {
@@ -5,6 +8,9 @@ export const ComponentTestPage = () => {
 		<div>
 			<h1>Component Test Page</h1>
 			<p>This page is for testing and showcasing individual components.</p>
+			<p>Source code at <span className="font-mono">frontend/src/Pages/ComponentTestPage.tsx</span></p>
+
+			<hr className="my-4" />
 
 			<h2 className="heading-2">Inside &lt;form&gt; or .form</h2>
 			<form>
@@ -23,8 +29,39 @@ export const ComponentTestPage = () => {
 }
 
 const ComponentTester = () => {
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const [isLightBoxOpen, setIsLightboxOpen] = useState(false)
+
 	return (
 		<>
+			<h1 className="heading-1">Heading 1</h1>
+			<h2 className="heading-2">Heading 2</h2>
+			<h3 className="heading-3">Heading 3</h3>
+		
+			<div className="flex flex-row gap-2 my-4 items-baseline">
+				<button className="btn btn-primary" type="button" onClick={() => setIsDialogOpen(true)}>Open dialog</button>
+				<button className="btn btn-primary" type="button" onClick={() => setIsLightboxOpen(true)}>Open lightbox</button>
+			</div>
+
+			{isDialogOpen && <Dialog onClose={() => setIsDialogOpen(false)} closeOnEscape={true}>
+				<div className="dialog-header">Dialog Title</div>
+				<div className="dialog-content">
+					This is the dialog!
+				</div>
+				<div className="dialog-footer flex flex-row">
+					<div className="flex-1"></div>
+					<button className="btn" type="button" onClick={() => setIsDialogOpen(false)}>Close</button>
+				</div>
+			</Dialog>}
+
+			{isLightBoxOpen && <LightBox onClose={() => setIsLightboxOpen(false)}>
+				<div className="bg-white text-black p-4">
+					<p className="text-center">Use the <span className="code">&lt;LightBox&gt;</span> component to show content in a modal overlay.</p>
+					<hr />
+					<p className="text-center">Press <kbd>Esc</kbd> or click anywhere to close.</p>
+				</div>
+			</LightBox>}
+
 			<div className="aligned-labels-and-inputs">
 				<label htmlFor="id1">Title</label>
 				<div className="grouped">
@@ -41,34 +78,59 @@ const ComponentTester = () => {
 				<label htmlFor="id2">Title</label>
 				<div className="grouped">
 					<input type="text" id="id2" className="input" placeholder="Test input" />
-					<button className="btn">Test Button</button>
+					<button className="btn" type="button">Search</button>
 				</div>
 			</div>
 
 			<div className="aligned-labels-and-inputs">
 				<label></label>
 				<div className="grouped">
-					<button className="btn">Button 1</button>
-					<button className="btn">Button 2</button>
-					<button className="btn">Button 3</button>
+					<button className="btn" type="button">Button 1</button>
+					<button className="btn" type="button">Button 2</button>
+					<button className="btn" type="button">Button 3</button>
 				</div>
 			</div>
 
-			<div className="flex flex-row gap-2 my-4">
-				<button className="btn">Default</button>
-				<div className="flex-1"></div>
-				<button className="btn btn-primary">Primary</button>
-				<button className="btn btn-warning">Warning</button>
-				<button className="btn btn-danger">Danger</button>
-			</div>
-			
-			<div className="input h-50 w-50 !flex flex-col items-center justify-center">
-				<div>Just a box with</div>
-				<div>.input</div>
+			<div className="flex flex-row gap-2 my-4 items-baseline">
+				<button className="btn items-center" type="button">Default</button>
+				<div className="flex-1 text-center">
+					← Use <span className="code">class="flex-1"</span> to push elements away →
+				</div>
+				<button className="btn btn-primary" type="button">Primary</button>
+				<button className="btn btn-warning" type="button">Warning</button>
+				<button className="btn btn-danger" type="button">Danger</button>
 			</div>
 
+			<div className="flex flex-row gap-2 my-4 items-baseline">
+				<div className="flex-1">
+					Use <span className="code">class="flex-1"</span> to push elements to the left →
+				</div>
+				<input type="text" className="input" />
+			</div>
+
+			<div className="input h-60 w-60 !flex flex-col items-center justify-center">
+				<div>Make anything look</div>
+				<div>like an input element</div>
+				<div>with <span className="font-code">class="input"</span></div>
+			</div>
+
+			<div className="card w-full flex flex-row">
+				<div className="w-40 h-30 bg-black text-red-500 font-code p-4 text-center">class="card"</div>
+				<div className="p-2 grow relative">
+					<div className="flex flex-col py-2 px-4">
+						<div className="font-bold">Title</div>
+						<div className=" text-sm">Subtext</div>
+						<div className=" text-sm">More subtext</div>
+					</div>
 
 
+					<div className="absolute bottom-2 right-2 space-x-2">
+						<button className="btn" type="button">Button 1</button>
+						<button className="btn" type="button">Button 2</button>
+					</div>
+
+				</div>
+			</div>
 		</>
 	)
 }
