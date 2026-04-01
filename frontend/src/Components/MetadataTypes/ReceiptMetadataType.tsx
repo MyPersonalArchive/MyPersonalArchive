@@ -70,7 +70,7 @@ const Component = (props: MetadataComponentProps) => {
 		<>
 			<div className="aligned-labels-and-inputs">
 				<label htmlFor="amount">Amount</label>
-				<div className="flex group">
+				<div className="grouped">
 					<input type="text" id="amount"
 						className="input"
 						placeholder="Amount"

@@ -143,7 +143,7 @@ const Search = () => {
 
 	return (
 		<form onSubmit={search} onReset={reset} className="stack-horizontal to-the-left my-4">
-			<div className="group">
+			<div className="grouped">
 				<input className="input"
 					type="text"
 					placeholder="Search for anything"

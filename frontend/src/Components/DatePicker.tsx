@@ -10,7 +10,7 @@ export const DatePicker = ({ date, setDate }: DatePickerProps) => {
 
 	return (
 		<>
-			<div className="group">
+			<div className="grouped">
 				{
 					(date || clickedNoDate) ? (
 						<input type="date" className="input"
