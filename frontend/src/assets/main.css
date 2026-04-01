@@ -197,7 +197,7 @@ main {
 
 /* ── Preview with hover action bar ── */
 .lightbox-backdrop {
-	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto;
+	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto z-2;
 
 	> * {
 		@apply my-auto;
@@ -206,7 +206,7 @@ main {
 
 /* ── Dialog ── */
 .dialog-backdrop {
-	@apply flex absolute inset-0 bg-black/45 items-center justify-center;
+	@apply flex absolute inset-0 bg-black/45 items-center justify-center z-2;
 }
 
 .dialog {
