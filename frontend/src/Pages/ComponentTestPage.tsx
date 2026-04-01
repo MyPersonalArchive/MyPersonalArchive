@@ -17,12 +17,12 @@ export const ComponentTestPage = () => {
 				<ComponentTester />
 			</form>
 
-			<hr className="my-10" />
+			{/* <hr className="my-10" />
 
 			<h2 className="heading-2">Outside &lt;form&gt;</h2>
 			<div>
 				<ComponentTester />
-			</div>
+			</div> */}
 
 		</div>
 	)
@@ -131,6 +131,33 @@ const ComponentTester = () => {
 
 				</div>
 			</div>
+
+			<table className="table with-column-separators">
+				<thead>
+					<tr>
+						<th>Column 1</th>
+						<th>Column 2</th>
+						<th>Column 3</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Row 1, Cell 1</td>
+						<td>Row 1, Cell 2</td>
+						<td>Row 1, Cell 3</td>
+					</tr>
+					<tr>
+						<td>Row 2, Cell 1</td>
+						<td>Row 2, Cell 2</td>
+						<td>Row 2, Cell 3</td>
+					</tr>
+					<tr>
+						<td>Row 3, Cell 1</td>
+						<td>Row 3, Cell 2</td>
+						<td>Row 3, Cell 3</td>
+					</tr>
+				</tbody>
+			</table>
 		</>
 	)
 }

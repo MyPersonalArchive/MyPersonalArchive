@@ -18,6 +18,11 @@ table.table {
 		@apply text-left bg-white;
 	}
 
+	&>tbody>tr:hover>td{
+		@apply bg-gray-50;
+	}
+
+
 
 }
 
