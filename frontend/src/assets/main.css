@@ -314,7 +314,8 @@ main {
 }
 
 .btn {
-	@apply bg-gray-200 text-gray-800 border border-gray-200 font-semibold px-4 py-1 rounded hover:bg-gray-300 hover:border-gray-300 transition;
+	@apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 focus:bg-gray-300 transition;
+	/* @apply bg-gray-200 text-gray-800 border border-gray-200 font-semibold px-4 py-1 rounded hover:bg-gray-300 hover:border-gray-300 transition; */
 
 	&.btn-wide {
 		@apply px-8;
@@ -342,7 +343,13 @@ main {
 }
 
 
-.group {
+.grouped {
+	@apply inline-flex;
+	
+	&:has(:focus) {
+		@apply outline outline-2 outline-blue-200 rounded;
+	}
+
 	&>.input,
 	&>.btn {
 		@apply rounded-none;
@@ -361,13 +368,18 @@ main {
 	&>.input+.input {
 		@apply border-l-0;
 	}
+
+	&>.btn+.btn {
+		@apply border-l border-gray-300;
+	}
 }
 
 div.input {
 	@apply py-4;
 }
 
-form {
+form,
+.form {
 	& input,
 	& select,
 	& .input,
