@@ -7,7 +7,7 @@ import { useState } from "react"
 export const BackupPage = () => {
 	return (
 		<>
-			<h1 className="heading-1">
+			{/* <h1 className="heading-1">
 				Backup and external sync
 			</h1>
 
@@ -22,7 +22,7 @@ export const BackupPage = () => {
 			<div className="h-40"></div>
 			<hr />
 			Below the fold - do not keep
-			<div className="h-20"></div>
+			<div className="h-20"></div> */}
 			
 			<BackupView />
 		</>
@@ -43,7 +43,7 @@ const BackupActionButtons = () => {
 						onClick={() => setBackupIsRunning(true)}
 					>
 						<FontAwesomeIcon icon={faPlay} />
-						<span>Start Backup</span>
+						<span>Start backup</span>
 					</button>
 					:
 					<button
@@ -52,14 +52,14 @@ const BackupActionButtons = () => {
 						onClick={() => setBackupIsRunning(false)}
 					>
 						<FontAwesomeIcon icon={faStop} />
-						<span>Stop Backup</span>
+						<span>Stop backup</span>
 					</button>
 			}
 			
 			<div className="flex-1"></div>
 			<button
 				className="btn btn-secondary flex items-center gap-2"
-				title="Disaster Recovery"
+				title="Disaster recovery"
 			>
 				<FontAwesomeIcon icon={faRotate} />
 				<span>Recovery</span>
@@ -76,7 +76,7 @@ const BackupActionButtons = () => {
 				className="btn btn-primary flex items-center gap-2"
 			>
 				<FontAwesomeIcon icon={faPlus} />
-				<span>Add New Pair</span>
+				<span>Add new pair</span>
 			</button>
 			
 		</div>

@@ -7,11 +7,8 @@ import {
 	faTimes
 } from "@fortawesome/free-solid-svg-icons"
 import { BackupRun, BackupStatus } from "../../types/backup"
+import { formatSize } from "../../Utils/formatUtils"
 
-interface BackupDetailsModalProps {
-	backupRun: BackupRun | null
-	onClose: () => void
-}
 
 function StatusIcon({ status }: { status: BackupStatus }) {
 	switch (status) {
@@ -56,14 +53,6 @@ function formatDuration(seconds: number | null): string {
 	}
 }
 
-function formatSize(bytes: number): string {
-	if (bytes === 0) return "0 B"
-	const k = 1024
-	const sizes = ["B", "KB", "MB", "GB", "TB"]
-	const i = Math.floor(Math.log(bytes) / Math.log(k))
-	return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
-}
-
 function ProgressBar({ current, total }: { current: number; total: number }) {
 	const percentage = total > 0 ? (current / total) * 100 : 0
 	
@@ -77,7 +66,11 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
 	)
 }
 
-export function BackupDetailsModal({ backupRun, onClose }: BackupDetailsModalProps) {
+type BackupDetailsDialogProps = {
+	backupRun: BackupRun | null
+	onClose: () => void
+}
+export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogProps) {
 	if (!backupRun) return null
 
 	const isRunning = backupRun.status === BackupStatus.Running

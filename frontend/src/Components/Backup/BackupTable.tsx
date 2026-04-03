@@ -12,6 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { useState } from "react"
 import { BackupDestination, BackupStatus } from "../../types/backup"
+import { formatSize } from "../../Utils/formatUtils"
 
 interface BackupTableProps {
 	destinations: BackupDestination[]
@@ -47,14 +48,6 @@ function formatDate(date: Date | null): string {
 		hour: "2-digit",
 		minute: "2-digit"
 	}).format(date)
-}
-
-function formatSize(bytes: number): string {
-	if (bytes === 0) return "0 B"
-	const k = 1024
-	const sizes = ["B", "KB", "MB", "GB", "TB"]
-	const i = Math.floor(Math.log(bytes) / Math.log(k))
-	return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
 }
 
 function ActionMenu({
@@ -214,9 +207,9 @@ export function BackupTable({
 			</div>
 
 			{destinations.length === 0 && (
-				<div className="text-center py-12 text-gray-500">
+				<div className="py-12 text-gray-500 flex flex-col items-center" onClick={() => newBackupTarget()}>
 					<p className="text-lg">No backup destinations configured</p>
-					<p className="text-sm mt-2">Click "New Backup Target" to get started</p>
+					<p className="text-sm">Click "Add new pair" to get started</p>
 				</div>
 			)}
 		</div>

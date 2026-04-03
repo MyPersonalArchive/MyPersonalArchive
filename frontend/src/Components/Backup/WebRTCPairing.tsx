@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { PairedPeerInfo, usePairingService } from "../../Utils/PairingService"
-import { WebRTCPairingModal } from "./WebRTCPairingModal"
+import { WebRTCPairingDialog } from "./WebRTCPairingDialog"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCheck } from "@fortawesome/free-solid-svg-icons"
 
@@ -129,7 +129,7 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 
 			{error && <div className="error-message">{error}</div>}
 
-			<WebRTCPairingModal
+			<WebRTCPairingDialog
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
 				onPairingComplete={handlePairingComplete}

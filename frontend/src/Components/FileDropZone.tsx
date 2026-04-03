@@ -9,7 +9,7 @@ import { BlobIdAndNumberOfPages } from "./Preview"
 import { DimensionEnum } from "./Preview"
 import { Preview } from "./Preview"
 import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
-import { formatDate, formatFileSize } from "../Utils/formatUtils"
+import { formatDate, formatSize } from "../Utils/formatUtils"
 import { Dialog } from "./Dialog"
 import { LightBox } from "./LightBox"
 
@@ -241,7 +241,7 @@ const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProp
 					<div className="font-bold">{blob.fileName}</div>
 					<div className=" text-sm">{formatDate(new Date(blob.uploadedAt))}</div>
 					<div className=" text-sm">{blob.uploadedByUser}</div>
-					<div className=" text-sm">{formatFileSize(blob.fileSize)}</div>
+					<div className=" text-sm">{formatSize(blob.fileSize)}</div>
 				</div>
 
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />

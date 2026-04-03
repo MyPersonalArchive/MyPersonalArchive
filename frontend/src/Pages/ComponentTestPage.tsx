@@ -99,6 +99,7 @@ const ComponentTester = () => {
 				<button className="btn btn-primary" type="button">Primary</button>
 				<button className="btn btn-warning" type="button">Warning</button>
 				<button className="btn btn-danger" type="button">Danger</button>
+				<button className="btn" disabled type="button">Danger</button>
 			</div>
 
 			<div className="flex flex-row gap-2 my-4 items-baseline">

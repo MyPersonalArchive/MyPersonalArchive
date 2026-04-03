@@ -19,51 +19,51 @@ export function TopActionBar({
 	isBackupRunning
 }: TopActionBarProps) {
 	return (
-		<div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
+		<div className="flex gap-2">
 			<button
 				onClick={onStartBackup}
 				disabled={isBackupRunning}
-				className="btn btn-primary flex items-center gap-2"
+				className="btn btn-primary"
 			>
-				<FontAwesomeIcon icon={faPlay} />
+				<FontAwesomeIcon icon={faPlay} className="mr-2" />
 				<span>Start Backup</span>
 			</button>
 
 			<button
 				onClick={onStopBackup}
 				disabled={!isBackupRunning}
-				className="btn flex items-center gap-2"
+				className="btn"
 			>
-				<FontAwesomeIcon icon={faStop} />
+				<FontAwesomeIcon icon={faStop} className="mr-2" />
 				<span>Stop Backup</span>
 			</button>
 
-			<div className="ml-auto flex items-center gap-3">
-				<button
-					onClick={onRecovery}
-					className="btn btn-secondary flex items-center gap-2"
-					title="Disaster Recovery"
-				>
-					<FontAwesomeIcon icon={faRotate} />
-					<span>Recovery</span>
-				</button>
+			<div className="flex-1"></div>
 
-				<button
-					onClick={onSchedule}
-					className="btn flex items-center gap-2"
-				>
-					<FontAwesomeIcon icon={faClock} />
-					<span>Schedule</span>
-				</button>
+			<button
+				onClick={onRecovery}
+				className="btn btn-secondary"
+				title="Disaster recovery"
+			>
+				<FontAwesomeIcon icon={faRotate} className="mr-2"/>
+				<span>Recovery</span>
+			</button>
 
-				<button
-					onClick={onNewTarget}
-					className="btn btn-primary flex items-center gap-2"
-				>
-					<FontAwesomeIcon icon={faPlus} />
-					<span>Add New Pair</span>
-				</button>
-			</div>
+			<button
+				onClick={onSchedule}
+				className="btn"
+			>
+				<FontAwesomeIcon icon={faClock} className="mr-2"/>
+				<span>Schedule</span>
+			</button>
+
+			<button
+				onClick={onNewTarget}
+				className="btn btn-primary"
+			>
+				<FontAwesomeIcon icon={faPlus} className="mr-2"/>
+				<span>Add new pair</span>
+			</button>
 		</div>
 	)
 }

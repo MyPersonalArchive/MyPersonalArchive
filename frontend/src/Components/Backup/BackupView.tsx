@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { TopActionBar } from "./TopActionBar"
 import { BackupTable } from "./BackupTable"
-import { BackupDetailsModal } from "./BackupDetailsModal"
-import { WebRTCPairingModal } from "./WebRTCPairingModal"
-import { BackupIntervalModal } from "./BackupIntervalModal"
-import { RecoveryModal } from "./RecoveryModal"
+import { BackupDetailsDialog } from "./BackupDetailsDialog"
+import { WebRTCPairingDialog } from "./WebRTCPairingDialog"
+import { BackupIntervalDialog } from "./BackupIntervalDialog"
+import { RecoveryDialog } from "./RecoveryDialog"
 import { BackupDestination, BackupRun, BackupStatus, BackupItem } from "../../types/backup"
 import { useBackupService, PairedPeerInfo, BackupLog, RestoreStatus } from "../../Utils/BackupService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -365,7 +365,7 @@ export function BackupView() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-100">
+		<>
 			{/* Restore Progress Overlay */}
 			{restoreStatus && (restoreStatus.isRestoring || restoreStatus.status === "Finished") && (
 				<div className="fixed inset-0 bg-opacity-50 z-50 flex items-center justify-center" style={{ backdropFilter: "blur(4px)" }}>
@@ -435,7 +435,7 @@ export function BackupView() {
 				{/* Section 1: My Backup Destinations (Outbound) */}
 				<div>
 					<div className="mb-4">
-						<h1 className="text-2xl font-bold text-gray-900">My Backup Destinations</h1>
+						<h1 className="text-2xl font-bold text-gray-900">My backup destinations</h1>
 						<p className="text-gray-600 mt-1">
 							Destinations where I send my backups
 						</p>
@@ -458,7 +458,7 @@ export function BackupView() {
 				{/* Section 2: Peers Backing Up to Me (Inbound) */}
 				<div>
 					<div className="mb-4">
-						<h1 className="text-2xl font-bold text-gray-900">Peers Backing Up to Me</h1>
+						<h1 className="text-2xl font-bold text-gray-900">Peers backing up to me</h1>
 						<p className="text-gray-600 mt-1">
 							Devices using me as their backup destination
 						</p>
@@ -479,28 +479,30 @@ export function BackupView() {
 				</div>
 			</div>
 
-			<BackupDetailsModal
+			<BackupDetailsDialog
 				backupRun={selectedBackupRun}
 				onClose={() => setSelectedBackupRun(null)}
 			/>
 
-			<WebRTCPairingModal
-				isOpen={isPairingModalOpen}
-				onClose={() => setIsPairingModalOpen(false)}
-				onPairingComplete={() => {
-					loadDestinations() // Refresh destinations after pairing
-					setIsPairingModalOpen(false)
-				}}
-			/>
+			{isPairingModalOpen &&
+				<WebRTCPairingDialog
+					onClose={() => setIsPairingModalOpen(false)}
+					onPairingComplete={() => {
+						loadDestinations() // Refresh destinations after pairing
+						setIsPairingModalOpen(false)
+					}}
+				/>
+			}
 
-			<BackupIntervalModal
-				isOpen={isIntervalModalOpen}
-				onClose={() => setIsIntervalModalOpen(false)}
-				onSave={handleSaveInterval}
-				currentInterval={backupInterval}
-			/>
+			{isIntervalModalOpen &&
+				<BackupIntervalDialog
+					onClose={() => setIsIntervalModalOpen(false)}
+					onSave={handleSaveInterval}
+					currentInterval={backupInterval}
+				/>
+			}
 
-			<RecoveryModal
+			<RecoveryDialog
 				isOpen={isRecoveryModalOpen}
 				onClose={() => setIsRecoveryModalOpen(false)}
 				onRecoveryComplete={() => {
@@ -508,6 +510,6 @@ export function BackupView() {
 					setIsRecoveryModalOpen(false)
 				}}
 			/>
-		</div>
+		</>
 	)
 }
