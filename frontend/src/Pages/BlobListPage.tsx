@@ -8,7 +8,7 @@ import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
-import { formatDate, formatFileSize } from "../Utils/formatUtils"
+import { formatDate, formatSize } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
 import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -156,7 +156,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 					<div className="font-bold">{blob.fileName}</div>
 					<div className=" text-sm">{formatDate(new Date(blob.uploadedAt))}</div>
 					<div className=" text-sm">{blob.uploadedByUser}</div>
-					<div className=" text-sm">{formatFileSize(blob.fileSize)}</div>
+					<div className=" text-sm">{formatSize(blob.fileSize)}</div>
 				</div>
 
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />

@@ -190,7 +190,7 @@ const BackupManager = () => {
 							disabled={isLoading || (encryptionProvider !== "None" && !password) || !target}
 							className="start-button"
 						>
-							{isLoading ? "Starting..." : "Start Backup"}
+							{isLoading ? "Starting..." : "Start backup"}
 						</button>
 					</div>
 				) : (
@@ -199,7 +199,7 @@ const BackupManager = () => {
 						disabled={isLoading}
 						className="stop-button"
 					>
-						{isLoading ? "Stopping..." : "Stop Backup"}
+						{isLoading ? "Stopping..." : "Stop backup"}
 					</button>
 				)}
 			</div>

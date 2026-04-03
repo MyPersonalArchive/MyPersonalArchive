@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { BackupLog, BackupLogsResponse, BackupRunInfo, useBackupService } from "../../Utils/BackupService"
 import "./BackupLogs.css"
 import { useSignalR } from "../../Utils/Hooks/useSignalR"
+import { formatSize } from "../../Utils/formatUtils"
 type BackupLogsProps  = {
 	className?: string
 }
@@ -76,13 +77,6 @@ export const BackupLogs: React.FC<BackupLogsProps> = ({ className = "" }) => {
 
 	const formatDateTime = (dateString: string): string => {
 		return new Date(dateString).toLocaleString()
-	}
-
-	const formatFileSize = (bytes?: number): string => {
-		if (!bytes) return "N/A"
-		const sizes = ["Bytes", "KB", "MB", "GB"]
-		const i = Math.floor(Math.log(bytes) / Math.log(1024))
-		return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + " " + sizes[i]
 	}
 
 	const getDuration = (start: string, end?: string): string => {
@@ -212,7 +206,7 @@ export const BackupLogs: React.FC<BackupLogsProps> = ({ className = "" }) => {
 											</span>
 										</td>
 										<td className="backup-log-size">
-											{formatFileSize(log.fileSizeBytes)}
+											{formatSize(log.fileSizeBytes) ?? "N/A"}
 										</td>
 										<td>
 											<div className="backup-log-item">
