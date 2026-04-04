@@ -17,7 +17,7 @@ function StatusIcon({ status }: { status: BackupStatus }) {
 		case BackupStatus.Failed:
 			return <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600" />
 		case BackupStatus.Running:
-			return <FontAwesomeIcon icon={faSpinner} className="text-blue-600 animate-spin" />
+			return <FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600" />
 		case BackupStatus.Pending:
 		case BackupStatus.Scheduled:
 			return <FontAwesomeIcon icon={faClock} className="text-gray-500" />
