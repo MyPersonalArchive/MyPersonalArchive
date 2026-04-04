@@ -103,26 +103,14 @@ export function BackupTable({
 		<div>
 			<div >
 				<table className="table w-full">
-					<thead className="bg-gray-50 border-b border-gray-200">
+					<thead>
 						<tr>
-							<th>
-								Status
-							</th>
-							<th>
-								Destination
-							</th>
-							<th>
-								Type
-							</th>
-							<th>
-								Last Backup
-							</th>
-							<th>
-								# of items / Size
-							</th>
-							<th>
-								Actions
-							</th>
+							<th>Status</th>
+							<th>Destination</th>
+							<th>Type</th>
+							<th>Last Backup</th>
+							<th># of items / Size</th>
+							<th>Actions</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -179,10 +167,12 @@ export function BackupTable({
 								</td>
 							</tr>
 						))}
+					</tbody>
+					<tfoot>
 						{destinations.length === 0 &&
 							<tr>
 								<td colSpan={8}>
-									<div className="py-12 text-gray-500 flex flex-col items-center"
+									<div className="py-12 flex flex-col items-center"
 										/* TODO: onClick={() => newBackupTarget()}*/
 									>
 										<p className="text-lg">No backup destinations configured</p>
@@ -191,7 +181,7 @@ export function BackupTable({
 								</td>
 							</tr>
 						}
-					</tbody>
+					</tfoot>
 				</table>
 			</div>
 		</div>

@@ -1,25 +1,21 @@
 table.table {
 	@apply border-separate border-spacing-0;
 
-	& tr>td,
-	& tr>th {
+	& td,
+	& th {
 		@apply px-4 py-2 text-left;
 	}
 
-	&>thead>tr>td,
-	&>thead>tr>th,
-	&>tfoot>tr>td,
-	&>tfoot>tr>th {
-		@apply bg-gray-50  text-black font-semibold text-xs uppercase tracking-wider;
+	& th {
+		@apply bg-gray-100  text-black font-semibold text-xs uppercase tracking-wider;
 	}
 
-	&>tbody>tr>td,
-	&>tbody>tr>th {
+	& td {
 		@apply text-left bg-white;
 	}
 
-	&>tbody>tr:hover>td{
-		@apply bg-gray-50;
+	&>tbody>tr:hover>td {
+		@apply bg-gray-100;
 	}
 
 
