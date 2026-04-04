@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay, faStop, faClock, faPlus, faRotate } from "@fortawesome/free-solid-svg-icons"
 
-interface TopActionBarProps {
+type TopActionBarProps = {
 	onStartBackup: () => void
 	onStopBackup: () => void
 	onSchedule: () => void
@@ -9,57 +9,49 @@ interface TopActionBarProps {
 	onRecovery: () => void
 	isBackupRunning: boolean
 }
-
-export function TopActionBar({
+export const TopActionBar = ({
 	onStartBackup,
 	onStopBackup,
 	onSchedule,
 	onNewTarget,
 	onRecovery,
 	isBackupRunning
-}: TopActionBarProps) {
+}: TopActionBarProps) => {
 	return (
 		<div className="flex gap-2">
-			<button
-				onClick={onStartBackup}
-				disabled={isBackupRunning}
-				className="btn btn-primary"
-			>
-				<FontAwesomeIcon icon={faPlay} className="mr-2" />
-				<span>Start Backup</span>
-			</button>
-
-			<button
-				onClick={onStopBackup}
-				disabled={!isBackupRunning}
-				className="btn"
-			>
-				<FontAwesomeIcon icon={faStop} className="mr-2" />
-				<span>Stop Backup</span>
-			</button>
-
+			{!isBackupRunning ?
+				<button className="btn btn-primary"
+					onClick={onStartBackup}
+				>
+					<FontAwesomeIcon icon={faPlay} className="mr-2" />
+					<span>Start Backup</span>
+				</button> :
+				<button className="btn btn-warning"
+					onClick={onStopBackup}
+				>
+					<FontAwesomeIcon icon={faStop} className="mr-2" />
+					<span>Stop Backup</span>
+				</button>
+			}
 			<div className="flex-1"></div>
 
-			<button
+			<button className="btn btn-secondary"
 				onClick={onRecovery}
-				className="btn btn-secondary"
 				title="Disaster recovery"
 			>
 				<FontAwesomeIcon icon={faRotate} className="mr-2"/>
 				<span>Recovery</span>
 			</button>
 
-			<button
+			<button className="btn"
 				onClick={onSchedule}
-				className="btn"
 			>
 				<FontAwesomeIcon icon={faClock} className="mr-2"/>
 				<span>Schedule</span>
 			</button>
 
-			<button
+			<button className="btn btn-primary"
 				onClick={onNewTarget}
-				className="btn btn-primary"
 			>
 				<FontAwesomeIcon icon={faPlus} className="mr-2"/>
 				<span>Add new pair</span>
