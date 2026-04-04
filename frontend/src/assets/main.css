@@ -430,7 +430,7 @@ form,
 
 	/* 'is-wrapper' is used when this element is a complex wrapper for other input elements*/
 	&.is-wrapper {
-		@apply  has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
+		@apply has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
 	}
 
 	/* 'stripped' is used for inner input elements inside a complex wrapper with 'is-wrapper' */
@@ -497,7 +497,7 @@ span.tag {
 }
 
 kbd {
-	@apply font-mono px-1 bg-gray-200 text-gray-800 border px-1 rounded;
+	@apply font-mono px-1 bg-gray-200 text-gray-800 border rounded;
 }
 
 .striped-background {
