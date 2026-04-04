@@ -114,7 +114,7 @@ public static class Program
 			}
 			else
 			{
-				_logger.LogWarning($"HTTPS certificate not found at {cert_file} or password missing. Starting Kestrel without HTTPS on port {port}.");
+				_logger.LogWarning("HTTPS certificate not found at {CertFile} or password missing. Starting Kestrel without HTTPS on port {Port}.", cert_file, port);
 				options.Listen(bindAddress, port);
 			}
 		});
