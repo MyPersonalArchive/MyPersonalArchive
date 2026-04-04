@@ -129,24 +129,12 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 							<table className="w-full">
 								<thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
 									<tr>
-										<th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
-										Status
-										</th>
-										<th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
-										Item
-										</th>
-										<th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
-										Type
-										</th>
-										<th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
-										Started
-										</th>
-										<th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
-										Duration
-										</th>
-										<th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
-										Size
-										</th>
+										<th>Status</th>
+										<th>Item</th>
+										<th>Type</th>
+										<th>Started</th>
+										<th>Duration</th>
+										<th>Size</th>
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-gray-200">
@@ -158,24 +146,24 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 													<span className="text-sm text-gray-900">{item.status}</span>
 												</div>
 											</td>
-											<td className="px-4 py-3">
+											<td>
 												<div className="text-sm font-medium text-gray-900">{item.name}</div>
 												{item.error && (
 													<div className="text-xs text-red-600 mt-1">{item.error}</div>
 												)}
 											</td>
-											<td className="px-4 py-3 whitespace-nowrap">
+											<td className="whitespace-nowrap">
 												<span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
 													{item.type}
 												</span>
 											</td>
-											<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+											<td className="whitespace-nowrap">
 												{formatDateTime(item.startedAt)}
 											</td>
-											<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+											<td className="whitespace-nowrap">
 												{formatDuration(item.duration)}
 											</td>
-											<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+											<td className="whitespace-nowrap">
 												{formatSize(item.size)}
 											</td>
 										</tr>
