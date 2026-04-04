@@ -7,7 +7,7 @@ import {
 	faTimes
 } from "@fortawesome/free-solid-svg-icons"
 import { BackupRun, BackupStatus } from "../../types/backup"
-import { formatSize } from "../../Utils/formatUtils"
+import { formatDateTime, formatDuration, formatSize } from "../../Utils/formatUtils"
 
 
 function StatusIcon({ status }: { status: BackupStatus }) {
@@ -26,32 +26,6 @@ function StatusIcon({ status }: { status: BackupStatus }) {
 	}
 }
 
-function formatDate(date: Date): string {
-	return new Intl.DateTimeFormat("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-		second: "2-digit"
-	}).format(date)
-}
-
-function formatDuration(seconds: number | null): string {
-	if (seconds === null) return "-"
-	
-	const hours = Math.floor(seconds / 3600)
-	const minutes = Math.floor((seconds % 3600) / 60)
-	const secs = Math.floor(seconds % 60)
-	
-	if (hours > 0) {
-		return `${hours}h ${minutes}m ${secs}s`
-	} else if (minutes > 0) {
-		return `${minutes}m ${secs}s`
-	} else {
-		return `${secs}s`
-	}
-}
 
 function ProgressBar({ current, total }: { current: number; total: number }) {
 	const percentage = total > 0 ? (current / total) * 100 : 0
@@ -76,7 +50,7 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 	const isRunning = backupRun.status === BackupStatus.Running
 	const duration = backupRun.completedAt
 		? (backupRun.completedAt.getTime() - backupRun.startedAt.getTime()) / 1000
-		: null
+		: undefined
 
 	return (
 		<>
@@ -95,8 +69,8 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 								Backup Details: {backupRun.destinationName}
 								</h2>
 								<p className="text-sm text-gray-600 mt-1">
-								Started: {formatDate(backupRun.startedAt)}
-									{backupRun.completedAt && ` • Completed: ${formatDate(backupRun.completedAt)}`}
+								Started: {formatDateTime(backupRun.startedAt)}
+									{backupRun.completedAt && ` • Completed: ${formatDateTime(backupRun.completedAt)}`}
 								</p>
 							</div>
 							<button
@@ -196,7 +170,7 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 												</span>
 											</td>
 											<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-												{formatDate(item.startedAt)}
+												{formatDateTime(item.startedAt)}
 											</td>
 											<td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
 												{formatDuration(item.duration)}

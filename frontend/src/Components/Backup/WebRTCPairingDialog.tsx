@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { usePairingService } from "../../Utils/PairingService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCheckCircle, faClock, faLock } from "@fortawesome/free-solid-svg-icons"
+import { faCheckCircle, faClock, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { useSignalR } from "../../Utils/Hooks/useSignalR"
 import { Dialog } from "../Dialog"
 
@@ -162,25 +162,41 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 						</div>
 
 						<div className="flex gap-3 mb-6 flex-1">
+							<button onClick={() => setMode("join")}
+								className="btn btn-secondary">
+									Join with code
+								<br />
+								<small>(My backup destinations)</small>
+							</button>
 							<button 
 								className="btn btn-secondary"
 								onClick={handleGenerateCode}
 								disabled={isLoading}
 							>
-								{isLoading ? (
+								{isLoading ?
 									<>
-										<span className="spinner"></span>
-											Generating...
+										<FontAwesomeIcon icon={faSpinner} spinPulse className="mr-2" />
+										Generating...
+									</> :
+									<>
+										Generate Code
+										<br />
+										<small>(Peers backing up to me)</small>
 									</>
-								) : (
-									"Generate Code"
-								)}
-							</button>
-							<button onClick={() => setMode("join")}
-								className="btn btn-secondary">
-									Join with code
+								}
 							</button>
 						</div>
+						<div className="todo">
+							//TODO: Simplify UX
+							<ul>
+								<li>// - Any party can generate code or enter code</li>
+								<li>// - Ask user which direction(s) to sync</li>
+								<li>// - Countdown the expiration time of the code</li>
+								<li>// - Allow navigating away while waiting to pair</li>
+								<li>// - List pending invitations</li>
+							</ul>
+						</div>
+
 					</>
 				)}
 
@@ -243,7 +259,7 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 			</div>
 
 			{!isConnected && (
-				<div className="dialog-footer flex">
+				<div className="dialog-footer flex gap-2">
 					<div className="flex-1"></div>
 					<button 
 						className="btn btn-secondary" 
@@ -265,7 +281,7 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 										Connecting...
 								</>
 							) : (
-								"Pair Device"
+								"Pair device"
 							)}
 						</button>
 					)}

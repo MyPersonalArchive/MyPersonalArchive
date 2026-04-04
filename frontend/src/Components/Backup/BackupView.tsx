@@ -37,8 +37,8 @@ function peerToDestination(peer: PairedPeerInfo, logs: BackupLog[]): BackupDesti
 		target: peer.target,
 		type: "WebRTC",
 		status: lastLog ? mapBackupStatus(lastLog.status) : BackupStatus.Scheduled,
-		lastBackup: lastLog?.completedAt ? new Date(lastLog.completedAt) : null,
-		nextBackup: null, // No scheduling yet
+		lastBackup: lastLog?.completedAt ? new Date(lastLog.completedAt) : undefined,
+		nextBackup: undefined, // No scheduling yet
 		itemsBackedUp,
 		totalSize,
 		enabled: true,
@@ -49,8 +49,8 @@ function peerToDestination(peer: PairedPeerInfo, logs: BackupLog[]): BackupDesti
 // Convert BackupLog to BackupItem
 function logToBackupItem(log: BackupLog): BackupItem {
 	const startedAt = new Date(log.startedAt)
-	const completedAt = log.completedAt ? new Date(log.completedAt) : null
-	const duration = completedAt ? (completedAt.getTime() - startedAt.getTime()) / 1000 : null
+	const completedAt = log.completedAt ? new Date(log.completedAt) : undefined
+	const duration = completedAt ? (completedAt.getTime() - startedAt.getTime()) / 1000 : undefined
 	
 	return {
 		id: log.id,
@@ -308,7 +308,7 @@ export function BackupView() {
 				destinationId: destination.id,
 				destinationName: destination.name,
 				startedAt: new Date(firstLog.startedAt),
-				completedAt: lastLog.completedAt ? new Date(lastLog.completedAt) : null,
+				completedAt: lastLog.completedAt ? new Date(lastLog.completedAt) : undefined,
 				status: destination.status,
 				itemsTotal: items.length,
 				itemsCompleted: items.filter(i => i.status === BackupStatus.Success).length,

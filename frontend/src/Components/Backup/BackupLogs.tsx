@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { BackupLog, BackupLogsResponse, BackupRunInfo, useBackupService } from "../../Utils/BackupService"
 import "./BackupLogs.css"
 import { useSignalR } from "../../Utils/Hooks/useSignalR"
-import { formatSize } from "../../Utils/formatUtils"
+import { formatDateTime, formatSize } from "../../Utils/formatUtils"
 type BackupLogsProps  = {
 	className?: string
 }
@@ -75,9 +75,6 @@ export const BackupLogs: React.FC<BackupLogsProps> = ({ className = "" }) => {
 		}
 	}, [page])
 
-	const formatDateTime = (dateString: string): string => {
-		return new Date(dateString).toLocaleString()
-	}
 
 	const getDuration = (start: string, end?: string): string => {
 		if (!end) return "In progress..."
@@ -195,7 +192,7 @@ export const BackupLogs: React.FC<BackupLogsProps> = ({ className = "" }) => {
 											</div>
 										</td>
 										<td className="backup-log-datetime">
-											{formatDateTime(log.startedAt)}
+											{formatDateTime(new Date(log.startedAt))}
 										</td>
 										<td className="backup-log-duration">
 											{getDuration(log.startedAt, log.completedAt)}
