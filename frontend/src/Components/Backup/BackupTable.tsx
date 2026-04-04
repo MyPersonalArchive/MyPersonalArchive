@@ -14,6 +14,7 @@ import { useState } from "react"
 import { BackupDestination, BackupStatus } from "../../types/backup"
 import { formatDate, formatDateTime, formatSize } from "../../Utils/formatUtils"
 
+
 type BackupTableProps = {
 	destinations: BackupDestination[]
 	onViewDetails: (destinationId: number) => void
@@ -21,86 +22,7 @@ type BackupTableProps = {
 	onDeleteDestination: (destinationId: number) => void
 	onNewTarget: () => void
 }
-
-function StatusIcon({ status }: { status: BackupStatus }) {
-	switch (status) {
-		case BackupStatus.Success:
-			return <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
-		case BackupStatus.Failed:
-			return <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600" />
-		case BackupStatus.Running:
-			return <FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600" />
-		case BackupStatus.Pending:
-		case BackupStatus.Scheduled:
-			return <FontAwesomeIcon icon={faClock} className="text-gray-500" />
-		case BackupStatus.Paused:
-			return <FontAwesomeIcon icon={faPause} className="text-yellow-600" />
-		default:
-			return null
-	}
-}
-
-const ActionMenu = ({
-	destinationId,
-	onRunBackup,
-	onDeleteDestination
-}: {
-	destinationId: number
-	onRunBackup: (id: number) => void
-	onDeleteDestination: (id: number) => void
-}) => {
-	const [isOpen, setIsOpen] = useState(false)
-
-	return (
-		<div className="relative">
-			<button
-				onClick={() => setIsOpen(!isOpen)}
-				className="p-2 hover:bg-gray-100 rounded transition"
-			>
-				<FontAwesomeIcon icon={faEllipsisV} />
-			</button>
-
-			{isOpen && (
-				<>
-					<div
-						className="fixed inset-0 z-40"
-						onClick={() => setIsOpen(false)}
-					/>
-					<div className="fixed right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-						<button
-							onClick={() => {
-								onRunBackup(destinationId)
-								setIsOpen(false)
-							}}
-							className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 transition rounded-t-lg"
-						>
-							<FontAwesomeIcon icon={faPlay} className="text-blue-600" />
-							<span>Run Backup Now</span>
-						</button>
-						<button
-							onClick={() => {
-								onDeleteDestination(destinationId)
-								setIsOpen(false)
-							}}
-							className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-red-600 transition rounded-b-lg"
-						>
-							<FontAwesomeIcon icon={faTrash} />
-							<span>Delete</span>
-						</button>
-					</div>
-				</>
-			)}
-		</div>
-	)
-}
-
-export const BackupTable = ({
-	destinations,
-	onViewDetails,
-	onRunBackup,
-	onDeleteDestination,
-	onNewTarget
-}: BackupTableProps) => {
+export const BackupTable = ({ destinations, onViewDetails, onRunBackup, onDeleteDestination, onNewTarget }: BackupTableProps) => {
 	return (
 		<div>
 			<div >
@@ -188,4 +110,79 @@ export const BackupTable = ({
 			</div>
 		</div>
 	)
+}
+
+
+
+type ActionMenuProps = {
+	destinationId: number
+	onRunBackup: (id: number) => void
+	onDeleteDestination: (id: number) => void
+}
+const ActionMenu = ({ destinationId, onRunBackup, onDeleteDestination}: ActionMenuProps) => {
+	const [isOpen, setIsOpen] = useState(false)
+
+	return (
+		<div className="relative">
+			<button
+				onClick={() => setIsOpen(!isOpen)}
+				className="p-2 hover:bg-gray-100 rounded transition"
+			>
+				<FontAwesomeIcon icon={faEllipsisV} />
+			</button>
+
+			{isOpen && (
+				<>
+					<div
+						className="fixed inset-0 z-40"
+						onClick={() => setIsOpen(false)}
+					/>
+					<div className="fixed right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+						<button
+							onClick={() => {
+								onRunBackup(destinationId)
+								setIsOpen(false)
+							}}
+							className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 transition rounded-t-lg"
+						>
+							<FontAwesomeIcon icon={faPlay} className="text-blue-600" />
+							<span>Run Backup Now</span>
+						</button>
+						<button
+							onClick={() => {
+								onDeleteDestination(destinationId)
+								setIsOpen(false)
+							}}
+							className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-red-600 transition rounded-b-lg"
+						>
+							<FontAwesomeIcon icon={faTrash} />
+							<span>Delete</span>
+						</button>
+					</div>
+				</>
+			)}
+		</div>
+	)
+}
+
+
+type StatusIconProps = {
+	status: BackupStatus
+}
+const StatusIcon = ({ status }: StatusIconProps) => {
+	switch (status) {
+		case BackupStatus.Success:
+			return <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
+		case BackupStatus.Failed:
+			return <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600" />
+		case BackupStatus.Running:
+			return <FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600" />
+		case BackupStatus.Pending:
+		case BackupStatus.Scheduled:
+			return <FontAwesomeIcon icon={faClock} className="text-gray-500" />
+		case BackupStatus.Paused:
+			return <FontAwesomeIcon icon={faPause} className="text-yellow-600" />
+		default:
+			return null
+	}
 }

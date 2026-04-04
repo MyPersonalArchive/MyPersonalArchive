@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { usePairingService } from "../../Utils/PairingService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCheckCircle, faClock, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons"
+import { faCheckCircle, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { useSignalR } from "../../Utils/Hooks/useSignalR"
 import { Dialog } from "../Dialog"
+
 
 type WebRTCPairingDialogProps = {
 	onClose: () => void

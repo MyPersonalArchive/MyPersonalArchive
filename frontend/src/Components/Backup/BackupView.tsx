@@ -65,6 +65,7 @@ function logToBackupItem(log: BackupLog): BackupItem {
 	}
 }
 
+
 export function BackupView() {
 	const [outboundDestinations, setOutboundDestinations] = useState<BackupDestination[]>([])
 	const [inboundPeers, setInboundPeers] = useState<BackupDestination[]>([])
@@ -372,58 +373,7 @@ export function BackupView() {
 			
 			{/* Restore Progress Overlay */}
 			{restoreStatus && (restoreStatus.isRestoring || restoreStatus.status === "Finished") && (
-				<div className="fixed inset-0 bg-opacity-50 z-50 flex items-center justify-center" style={{ backdropFilter: "blur(4px)" }}>
-					<div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
-						<h2 className="text-2xl font-bold mb-4 text-center">
-							{restoreStatus.status === "Finished" 
-								? <><FontAwesomeIcon icon={faCheckCircle} /> Restore Complete!</> 
-								: restoreStatus.status === "Failed" 
-									? <><FontAwesomeIcon icon={faTimesCircle} /> Restore Failed</> 
-									: <><FontAwesomeIcon icon={faSpinner} spinPulse /> Restoring Data</>
-							}
-						</h2>
-						<p className="text-gray-600 mb-6 text-center">
-							{restoreStatus.status === "Finished" 
-								? "Your data has been successfully restored."
-								: restoreStatus.status === "Failed"
-									? restoreStatus.errorMessage || "An error occurred during restore."
-									: "Please wait while we restore your data. Do not close this window."
-							}
-						</p>
-					
-						<div className="mb-4">
-							<div className="flex justify-between text-sm text-gray-600 mb-2">
-								<span>Progress</span>
-								<span>{restoreStatus.filesRestored ?? 0} / {restoreStatus.totalFiles ?? 0} files</span>
-							</div>
-							<div className="w-full bg-gray-200 rounded-full h-3">
-								<div 
-									className={`h-3 rounded-full transition-all duration-300 ${
-										restoreStatus.status === "Finished" 
-											? "bg-green-600" 
-											: restoreStatus.status === "Failed" 
-												? "bg-red-600" 
-												: "bg-blue-600"
-									}`}
-									style={{ width: `${(restoreStatus.totalFiles ?? 0) > 0 ? ((restoreStatus.filesRestored ?? 0) / (restoreStatus.totalFiles ?? 1) * 100) : 0}%` }}
-								></div>
-							</div>
-						</div>
-
-						{restoreStatus.currentFile && restoreStatus.status === "InProgress" && (
-							<div className="text-sm text-gray-500 text-center mb-4">
-								<span className="font-mono">{restoreStatus.currentFile}</span>
-							</div>
-						)}
-
-						{restoreStatus.status === "InProgress" && (
-							<div className="text-blue-600">
-								<FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600 mr-2" />
-								<span className="text-sm">Restoring...</span>
-							</div>
-						)}
-					</div>
-				</div>
+				<RestoreStatusView {...restoreStatus} />
 			)}
 
 			<TopActionBar
@@ -512,4 +462,56 @@ export function BackupView() {
 			/>
 		</>
 	)
+}
+
+
+const RestoreStatusView = (restoreStatus: RestoreStatus) => {
+	return <div className="fixed inset-0 bg-opacity-50 z-50 flex items-center justify-center" style={{ backdropFilter: "blur(4px)" }}>
+		<div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
+			<h2 className="text-2xl font-bold mb-4 text-center">
+				{restoreStatus.status === "Finished"
+					? <><FontAwesomeIcon icon={faCheckCircle} /> Restore Complete!</>
+					: restoreStatus.status === "Failed"
+						? <><FontAwesomeIcon icon={faTimesCircle} /> Restore Failed</>
+						: <><FontAwesomeIcon icon={faSpinner} spinPulse /> Restoring Data</>}
+			</h2>
+			<p className="text-gray-600 mb-6 text-center">
+				{restoreStatus.status === "Finished"
+					? "Your data has been successfully restored."
+					: restoreStatus.status === "Failed"
+						? restoreStatus.errorMessage || "An error occurred during restore."
+						: "Please wait while we restore your data. Do not close this window."}
+			</p>
+
+			<div className="mb-4">
+				<div className="flex justify-between text-sm text-gray-600 mb-2">
+					<span>Progress</span>
+					<span>{restoreStatus.filesRestored ?? 0} / {restoreStatus.totalFiles ?? 0} files</span>
+				</div>
+				<div className="w-full bg-gray-200 rounded-full h-3">
+					<div
+						className={`h-3 rounded-full transition-all duration-300 ${restoreStatus.status === "Finished"
+							? "bg-green-600"
+							: restoreStatus.status === "Failed"
+								? "bg-red-600"
+								: "bg-blue-600"}`}
+						style={{ width: `${(restoreStatus.totalFiles ?? 0) > 0 ? ((restoreStatus.filesRestored ?? 0) / (restoreStatus.totalFiles ?? 1) * 100) : 0}%` }}
+					></div>
+				</div>
+			</div>
+
+			{restoreStatus.currentFile && restoreStatus.status === "InProgress" && (
+				<div className="text-sm text-gray-500 text-center mb-4">
+					<span className="font-mono">{restoreStatus.currentFile}</span>
+				</div>
+			)}
+
+			{restoreStatus.status === "InProgress" && (
+				<div className="text-blue-600">
+					<FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600 mr-2" />
+					<span className="text-sm">Restoring...</span>
+				</div>
+			)}
+		</div>
+	</div>
 }

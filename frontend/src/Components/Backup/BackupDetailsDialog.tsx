@@ -10,36 +10,6 @@ import { BackupRun, BackupStatus } from "../../types/backup"
 import { formatDateTime, formatDuration, formatSize } from "../../Utils/formatUtils"
 
 
-function StatusIcon({ status }: { status: BackupStatus }) {
-	switch (status) {
-		case BackupStatus.Success:
-			return <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
-		case BackupStatus.Failed:
-			return <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600" />
-		case BackupStatus.Running:
-			return <FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600" />
-		case BackupStatus.Pending:
-		case BackupStatus.Scheduled:
-			return <FontAwesomeIcon icon={faClock} className="text-gray-500" />
-		default:
-			return null
-	}
-}
-
-
-function ProgressBar({ current, total }: { current: number; total: number }) {
-	const percentage = total > 0 ? (current / total) * 100 : 0
-	
-	return (
-		<div className="w-full bg-gray-200 rounded-full h-2">
-			<div
-				className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-				style={{ width: `${percentage}%` }}
-			/>
-		</div>
-	)
-}
-
 type BackupDetailsDialogProps = {
 	backupRun: BackupRun | null
 	onClose: () => void
@@ -191,5 +161,44 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 				</div>
 			</div>
 		</>
+	)
+}
+
+
+
+type StatusIconProps = {
+	status: BackupStatus
+}
+const StatusIcon = ({ status }: StatusIconProps) => {
+	switch (status) {
+		case BackupStatus.Success:
+			return <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
+		case BackupStatus.Failed:
+			return <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600" />
+		case BackupStatus.Running:
+			return <FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600" />
+		case BackupStatus.Pending:
+		case BackupStatus.Scheduled:
+			return <FontAwesomeIcon icon={faClock} className="text-gray-500" />
+		default:
+			return null
+	}
+}
+
+
+type ProgressBarProps = {
+	current: number
+	total: number
+}
+const ProgressBar = ({ current, total }: ProgressBarProps) => {
+	const percentage = total > 0 ? (current / total) * 100 : 0
+	
+	return (
+		<div className="w-full bg-gray-200 rounded-full h-2">
+			<div
+				className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+				style={{ width: `${percentage}%` }}
+			/>
+		</div>
 	)
 }
