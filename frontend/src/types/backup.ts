@@ -15,8 +15,8 @@ export interface BackupDestination {
 	target: string // Backend target identifier (e.g. "webrtc:1")
 	type: "WebRTC" | "Local" | "Cloud"
 	status: BackupStatus
-	lastBackup: Date | null
-	nextBackup: Date | null
+	lastBackup?: Date
+	nextBackup?: Date
 	itemsBackedUp: number
 	totalSize: number
 	enabled: boolean
@@ -30,8 +30,8 @@ export interface BackupItem {
 	size: number
 	status: BackupStatus
 	startedAt: Date
-	completedAt: Date | null
-	duration: number | null // in seconds
+	completedAt?: Date
+	duration?: number  // in seconds
 	error?: string
 }
 
@@ -40,7 +40,7 @@ export interface BackupRun {
 	destinationId: number
 	destinationName: string
 	startedAt: Date
-	completedAt: Date | null
+	completedAt?: Date
 	status: BackupStatus
 	itemsTotal: number
 	itemsCompleted: number

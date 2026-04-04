@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { useState } from "react"
 import { BackupDestination, BackupStatus } from "../../types/backup"
-import { formatSize } from "../../Utils/formatUtils"
+import { formatDate, formatDateTime, formatSize } from "../../Utils/formatUtils"
 
 interface BackupTableProps {
 	destinations: BackupDestination[]
@@ -37,17 +37,6 @@ function StatusIcon({ status }: { status: BackupStatus }) {
 		default:
 			return null
 	}
-}
-
-function formatDate(date: Date | null): string {
-	if (!date) return "Never"
-	return new Intl.DateTimeFormat("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit"
-	}).format(date)
 }
 
 function ActionMenu({
@@ -111,45 +100,39 @@ export function BackupTable({
 	onDeleteDestination
 }: BackupTableProps) {
 	return (
-		<div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-			<div className="overflow-x-auto">
-				<table className="w-full min-w-max">
+		<div>
+			<div >
+				<table className="table w-full">
 					<thead className="bg-gray-50 border-b border-gray-200">
 						<tr>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+							<th>
 								Status
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[200px]">
+							<th>
 								Destination
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+							<th>
 								Type
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+							<th>
 								Last Backup
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden lg:table-cell">
-								Next Backup
+							<th>
+								# of items / Size
 							</th>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-								Items
-							</th>
-							<th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
-								Size
-							</th>
-							<th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider sticky right-0 bg-gray-50">
+							<th>
 								Actions
 							</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-gray-200">
+					<tbody>
 						{destinations.map((destination) => (
 							<tr
 								key={destination.id}
 								className="hover:bg-gray-50 cursor-pointer transition"
 								onClick={() => onViewDetails(destination.id)}
 							>
-								<td className="px-4 py-4 whitespace-nowrap">
+								<td className="whitespace-nowrap">
 									<div className="flex items-center gap-2">
 										<StatusIcon status={destination.status} />
 										<span className="text-sm font-medium text-gray-900 hidden sm:inline">
@@ -157,7 +140,7 @@ export function BackupTable({
 										</span>
 									</div>
 								</td>
-								<td className="px-4 py-4">
+								<td>
 									<div className="flex items-center gap-2">
 										<div className="text-sm font-medium text-gray-900 max-w-[200px] truncate" title={destination.name}>
 											{destination.name}
@@ -174,24 +157,18 @@ export function BackupTable({
 										<div className="text-xs text-gray-500">Disabled</div>
 									)}
 								</td>
-								<td className="px-4 py-4 whitespace-nowrap">
+								<td className="whitespace-nowrap">
 									<span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
 										{destination.type}
 									</span>
 								</td>
-								<td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
-									{formatDate(destination.lastBackup)}
+								<td className="whitespace-nowrap" title={`Next backup scheduled at: ${formatDate(destination.nextBackup) ?? "N/A"}`}>
+									{formatDateTime(destination.lastBackup) ?? "Never backed up"}
 								</td>
-								<td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 hidden lg:table-cell">
-									{formatDate(destination.nextBackup)}
+								<td className="whitespace-nowrap">
+									{destination.itemsBackedUp.toLocaleString()} / {formatSize(destination.totalSize)}
 								</td>
-								<td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
-									{destination.itemsBackedUp.toLocaleString()}
-								</td>
-								<td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 hidden md:table-cell">
-									{formatSize(destination.totalSize)}
-								</td>
-								<td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium sticky right-0 bg-white">
+								<td className="whitespace-nowrap">
 									<div onClick={(e) => e.stopPropagation()}>
 										<ActionMenu
 											destinationId={destination.id}
@@ -202,16 +179,21 @@ export function BackupTable({
 								</td>
 							</tr>
 						))}
+						{destinations.length === 0 &&
+							<tr>
+								<td colSpan={8}>
+									<div className="py-12 text-gray-500 flex flex-col items-center"
+										/* TODO: onClick={() => newBackupTarget()}*/
+									>
+										<p className="text-lg">No backup destinations configured</p>
+										<p className="text-sm">Click "Add new pair" to get started</p>
+									</div>
+								</td>
+							</tr>
+						}
 					</tbody>
 				</table>
 			</div>
-
-			{destinations.length === 0 && (
-				<div className="py-12 text-gray-500 flex flex-col items-center" onClick={() => newBackupTarget()}>
-					<p className="text-lg">No backup destinations configured</p>
-					<p className="text-sm">Click "Add new pair" to get started</p>
-				</div>
-			)}
 		</div>
 	)
 }

@@ -30,8 +30,6 @@ public class TenantBackupManager
     {
         if (string.IsNullOrWhiteSpace(target))
             throw new ArgumentException("Target cannot be empty", nameof(target));
-        if (tenantId <= 0)
-            throw new ArgumentException("TenantId must be positive", nameof(tenantId));
 
         if (_backupTenants.ContainsKey(tenantId))
             return false;
