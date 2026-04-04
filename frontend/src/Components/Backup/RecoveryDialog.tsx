@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { usePairingService } from "../../Utils/PairingService"
 import { useBackupService } from "../../Utils/BackupService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faRotate, faClipboard, faCheckCircle, faUpload, faDownload, faClock } from "@fortawesome/free-solid-svg-icons"
+import { faRotate, faClipboard, faCheckCircle, faUpload, faDownload, faClock, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Dialog } from "../Dialog"
 
 type RecoveryDialogProps = {
@@ -257,13 +257,12 @@ export const RecoveryDialog = ({ isOpen, onClose, onRecoveryComplete } : Recover
 
 				{isRecovering && (
 					<div className="text-center">
-						<h3><FontAwesomeIcon icon={faRotate} spin /> Recovery in Progress</h3>
+						<h3><FontAwesomeIcon icon={faSpinner} spinPulse /> Recovery in Progress</h3>
 						<p>
 							Restoring your data from the backup...
 							<br />
 							This may take several minutes depending on the size of your backup.
 						</p>
-						<div className="spinner-large"></div>
 					</div>
 				)}
 			</div>

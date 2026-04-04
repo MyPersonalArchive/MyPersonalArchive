@@ -8,7 +8,7 @@ import { RecoveryDialog } from "./RecoveryDialog"
 import { BackupDestination, BackupRun, BackupStatus, BackupItem } from "../../types/backup"
 import { useBackupService, PairedPeerInfo, BackupLog, RestoreStatus } from "../../Utils/BackupService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCheckCircle, faTimesCircle, faRotate } from "@fortawesome/free-solid-svg-icons"
+import { faCheckCircle, faTimesCircle, faRotate, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { useSignalR } from "../../Utils/Hooks/useSignalR"
 
 // Helper function to convert backend status to UI status
@@ -379,7 +379,7 @@ export function BackupView() {
 								? <><FontAwesomeIcon icon={faCheckCircle} /> Restore Complete!</> 
 								: restoreStatus.status === "Failed" 
 									? <><FontAwesomeIcon icon={faTimesCircle} /> Restore Failed</> 
-									: <><FontAwesomeIcon icon={faRotate} spin /> Restoring Data</>
+									: <><FontAwesomeIcon icon={faSpinner} spinPulse /> Restoring Data</>
 							}
 						</h2>
 						<p className="text-gray-600 mb-6 text-center">
@@ -417,8 +417,8 @@ export function BackupView() {
 						)}
 
 						{restoreStatus.status === "InProgress" && (
-							<div className="flex items-center justify-center space-x-2 text-blue-600">
-								<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+							<div className="text-blue-600">
+								<FontAwesomeIcon icon={faSpinner} spinPulse className="text-blue-600 mr-2" />
 								<span className="text-sm">Restoring...</span>
 							</div>
 						)}

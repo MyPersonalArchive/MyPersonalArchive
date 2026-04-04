@@ -221,7 +221,7 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 							</div>
 						) : (
 							<div className="pairing-status">
-								<FontAwesomeIcon icon={faClock} spin /> Waiting for other device to join...
+								<FontAwesomeIcon icon={faSpinner} spinPulse /> Waiting for other device to join...
 							</div>
 						)}
 					</>
