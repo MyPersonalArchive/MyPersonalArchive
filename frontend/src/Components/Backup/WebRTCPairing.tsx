@@ -4,12 +4,12 @@ import { WebRTCPairingDialog } from "./WebRTCPairingDialog"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCheck } from "@fortawesome/free-solid-svg-icons"
 
-interface WebRTCPairingProps {
+type WebRTCPairingProps = {
 	onPairingCodeChange: (code: string) => void
 	disabled: boolean
 }
 
-export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChange, disabled }) => {
+export const WebRTCPairing = ({ onPairingCodeChange, disabled }: WebRTCPairingProps) => {
 	const [error, setError] = useState<string | null>(null)
 	const [pairedPeers, setPairedPeers] = useState<PairedPeerInfo[]>([])
 	const [selectedPeer, setSelectedPeer] = useState<number | null>(null)
@@ -106,7 +106,7 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 								
 							</div>
 							<button 
-								className="btn btn-seondary"
+								className="btn btn-secondary"
 								onClick={(e) => {
 									e.stopPropagation()
 									handleDeletePeer(peer.id, peer.name)
@@ -133,11 +133,12 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 
 			{error && <div className="error-message">{error}</div>}
 
-			<WebRTCPairingDialog
-				isOpen={isModalOpen}
-				onClose={() => setIsModalOpen(false)}
-				onPairingComplete={handlePairingComplete}
-			/>
+			{isModalOpen && (
+				<WebRTCPairingDialog
+					onClose={() => setIsModalOpen(false)}
+					onPairingComplete={handlePairingComplete}
+				/>
+			)}
 		</div>
 	)
 }

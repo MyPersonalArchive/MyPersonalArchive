@@ -19,13 +19,16 @@ export const TopActionBar = ({
 }: TopActionBarProps) => {
 	return (
 		<div className="flex gap-2">
-			{!isBackupRunning ?
+			{!isBackupRunning &&
 				<button className="btn btn-primary"
 					onClick={onStartBackup}
 				>
 					<FontAwesomeIcon icon={faPlay} className="mr-2" />
 					<span>Start Backup</span>
-				</button> :
+				</button>
+			}
+			
+			{isBackupRunning &&
 				<button className="btn btn-warning"
 					onClick={onStopBackup}
 				>
@@ -33,6 +36,7 @@ export const TopActionBar = ({
 					<span>Stop Backup</span>
 				</button>
 			}
+
 			<div className="flex-1"></div>
 
 			<button className="btn btn-secondary"

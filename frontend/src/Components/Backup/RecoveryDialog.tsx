@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { usePairingService } from "../../Utils/PairingService"
 import { useBackupService } from "../../Utils/BackupService"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faRotate, faClipboard, faCheckCircle, faUpload, faDownload, faClock, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { Dialog } from "../Dialog"
 
+
 type RecoveryDialogProps = {
 	isOpen: boolean
 	onClose: () => void
 	onRecoveryComplete: () => void
 }
-
 export const RecoveryDialog = ({ isOpen, onClose, onRecoveryComplete } : RecoveryDialogProps ) => {
 	const [mode, setMode] = useState<"generate" | "use" | null>(null)
 	const [recoveryCode, setRecoveryCode] = useState("")
