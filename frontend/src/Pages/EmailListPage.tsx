@@ -36,14 +36,16 @@ export const EmailListPage = () => {
 
 	return (
 		<>
-			<h1 className="heading-1">
-				{adjustmentsModeIsOpen
-					? <input className=""
-						value={externalAccount?.displayName ?? "<unknown account>"}
-						onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
-					/>
-					: externalAccount?.displayName ?? "<unknown account>"}
-			</h1>
+			<header className="header">
+				<h1>
+					{adjustmentsModeIsOpen
+						? <input className=""
+							value={externalAccount?.displayName ?? "<unknown account>"}
+							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
+						/>
+						: externalAccount?.displayName ?? "<unknown account>"}
+				</h1>
+			</header>
 			<div className="stack-horizontal to-the-left my-4">
 
 				<div className="grouped">

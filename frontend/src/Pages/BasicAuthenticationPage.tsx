@@ -25,9 +25,9 @@ export const BasicAuthenticationPage = () => {
 		<>
 			<form onSubmit={authenticate}>
 
-				<h1 className="heading-1">
-					Authenticate with {provider} (Basic Auth)
-				</h1>
+				<header className="header">
+					<h1>Authenticate with {provider} (Basic Auth)</h1>
+				</header>
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="emailAddress">Email Address</label>

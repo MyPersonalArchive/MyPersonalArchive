@@ -131,7 +131,10 @@ export const RecoveryDialog = ({ isOpen, onClose, onRecoveryComplete } : Recover
 				{!mode && (
 					<>
 						<div className="info-box">
-							<h3><FontAwesomeIcon icon={faClipboard} /> Choose recovery option</h3>
+							<h3>
+								<FontAwesomeIcon icon={faClipboard} className="mr-2"/>
+								Choose recovery option
+							</h3>
 							<p>
 								<strong>Generate code:</strong> Create a recovery code to allow another device to restore your backups.<br/>
 								<strong>Use code:</strong> Enter a recovery code from another device to restore your lost data.
@@ -256,9 +259,9 @@ export const RecoveryDialog = ({ isOpen, onClose, onRecoveryComplete } : Recover
 					<div className="text-center">
 						<h3><FontAwesomeIcon icon={faRotate} spin /> Recovery in Progress</h3>
 						<p>
-								Restoring your data from the backup...
+							Restoring your data from the backup...
 							<br />
-								This may take several minutes depending on the size of your backup.
+							This may take several minutes depending on the size of your backup.
 						</p>
 						<div className="spinner-large"></div>
 					</div>

@@ -30,10 +30,8 @@ export const SignOutPage = () => {
 
 
 	return (
-		<>
-			<h1 className="heading-2">
-				Signing out...
-			</h1>
-		</>
+		<header className="header">
+			<h2>Signing out...</h2>
+		</header>
 	)
 }

@@ -52,10 +52,10 @@ export const BackupIntervalDialog = ({ onClose, onSave, currentInterval = 1440 }
 				)}
 
 				<div className="info-box">
-					<h3>
+					<h1>
 						<FontAwesomeIcon icon={faClock} className="mr-2" />
 						Automatic backup schedule
-					</h3>
+					</h1>
 					<p>
 							Set how often your backup should run automatically. 
 							The backup will continue running at this interval until stopped.

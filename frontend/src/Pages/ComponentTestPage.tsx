@@ -6,20 +6,28 @@ import { LightBox } from "../Components/LightBox"
 export const ComponentTestPage = () => {
 	return (
 		<div>
-			<h1>Component Test Page</h1>
-			<p>This page is for testing and showcasing individual components.</p>
-			<p>Source code at <span className="font-mono">frontend/src/Pages/ComponentTestPage.tsx</span></p>
+			<header className="header">
+				<h1>Component Test Page</h1>
+				<div>This page is for testing and showcasing individual components.</div>
+				<div>Source code at <span className="font-mono">frontend/src/Pages/ComponentTestPage.tsx</span></div>
+			</header>
 
 			<hr className="my-4" />
 
-			<h2 className="heading-2">Inside &lt;form&gt; or .form</h2>
+			<header className="header">
+				<h2>Inside &lt;form&gt; or .form</h2>
+			</header>
+
 			<form>
 				<ComponentTester />
 			</form>
 
 			{/* <hr className="my-10" />
 
-			<h2 className="heading-2">Outside &lt;form&gt;</h2>
+			<header className="header">
+				<h2 className="heading-2">Outside &lt;form&gt;</h2>
+			</header>
+
 			<div>
 				<ComponentTester />
 			</div> */}
@@ -34,10 +42,20 @@ const ComponentTester = () => {
 
 	return (
 		<>
-			<h1 className="heading-1">Heading 1</h1>
-			<h2 className="heading-2">Heading 2</h2>
-			<h3 className="heading-3">Heading 3</h3>
-		
+			<header className="header">
+				<h1>Heading 1</h1>
+				<div>Subtitle</div>
+			</header>
+			<header className="header">
+				<h2>Heading 2</h2>
+				<div>Subtitle</div>
+			</header>
+			<header className="header">
+				<h3>Heading 3</h3>
+				<div>Subtitle</div>
+			</header>
+
+
 			<div className="flex flex-row gap-2 my-4 items-baseline">
 				<button className="btn btn-primary" type="button" onClick={() => setIsDialogOpen(true)}>Open dialog</button>
 				<button className="btn btn-primary" type="button" onClick={() => setIsLightboxOpen(true)}>Open lightbox</button>

@@ -129,7 +129,9 @@ export const BackupLogs: React.FC<BackupLogsProps> = ({ className = "" }) => {
 	return (
 		<div className={`backup-logs ${className}`}>
 			<div className="backup-logs-header">
-				<h3>Backup Log</h3>
+				<header className="header">
+					<h3>Backup Logs</h3>
+				</header>
 				<div className="backup-logs-controls">
 					<select 
 						value={selectedTimestamp} 

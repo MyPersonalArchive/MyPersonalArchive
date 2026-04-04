@@ -47,18 +47,6 @@
 	@apply px-6 py-4 border-t border-gray-200 flex gap-3 justify-end;
 }
 
-/* ── Info Boxes ── */
-.info-box {
-	@apply bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6;
-}
-
-.info-box h3 {
-	@apply m-0 mb-2 text-base text-blue-900;
-}
-
-.info-box p {
-	@apply m-0 text-blue-900 text-sm leading-relaxed;
-}
 
 /* ── Form Elements (extends .input from main.css) ── */
 .form-group {

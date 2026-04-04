@@ -366,6 +366,10 @@ export function BackupView() {
 
 	return (
 		<>
+			<header className="header">
+				<h1>Backup and external sync</h1>
+			</header>
+			
 			{/* Restore Progress Overlay */}
 			{restoreStatus && (restoreStatus.isRestoring || restoreStatus.status === "Finished") && (
 				<div className="fixed inset-0 bg-opacity-50 z-50 flex items-center justify-center" style={{ backdropFilter: "blur(4px)" }}>
@@ -431,52 +435,46 @@ export function BackupView() {
 				isBackupRunning={isBackupRunning}
 			/>
 
-			<div className="p-6 space-y-8">
-				{/* Section 1: My Backup Destinations (Outbound) */}
-				<div>
-					<div className="mb-4">
-						<h1 className="text-2xl font-bold text-gray-900">My backup destinations</h1>
-						<p className="text-gray-600 mt-1">
-							Destinations where I send my backups
-						</p>
+			{/* Section 1: My Backup Destinations (Outbound) */}
+			<div>
+				<header className="header mt-6">
+					<h2>My backup destinations</h2>
+					<div>Destinations where I send my backups</div>
+				</header>
+
+				{isLoading ? (
+					<div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+						<div className="text-gray-500">Loading backup destinations...</div>
 					</div>
+				) : (
+					<BackupTable
+						destinations={outboundDestinations}
+						onViewDetails={handleViewDetails}
+						onRunBackup={handleRunBackup}
+						onDeleteDestination={handleDeleteDestination}
+					/>
+				)}
+			</div>
 
-					{isLoading ? (
-						<div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
-							<div className="text-gray-500">Loading backup destinations...</div>
-						</div>
-					) : (
-						<BackupTable
-							destinations={outboundDestinations}
-							onViewDetails={handleViewDetails}
-							onRunBackup={handleRunBackup}
-							onDeleteDestination={handleDeleteDestination}
-						/>
-					)}
-				</div>
+			{/* Section 2: Peers Backing Up to Me (Inbound) */}
+			<div>
+				<header className="header mt-6">
+					<h2>Peers backing up to me</h2>
+					<div>Devices using me as their backup destination</div>
+				</header>
 
-				{/* Section 2: Peers Backing Up to Me (Inbound) */}
-				<div>
-					<div className="mb-4">
-						<h1 className="text-2xl font-bold text-gray-900">Peers backing up to me</h1>
-						<p className="text-gray-600 mt-1">
-							Devices using me as their backup destination
-						</p>
+				{isLoading ? (
+					<div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+						<div className="text-gray-500">Loading...</div>
 					</div>
-
-					{isLoading ? (
-						<div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
-							<div className="text-gray-500">Loading...</div>
-						</div>
-					) : (
-						<BackupTable
-							destinations={inboundPeers}
-							onViewDetails={handleViewDetails}
-							onRunBackup={() => {}} // Can't trigger their backup
-							onDeleteDestination={handleDeleteDestination}
-						/>
-					)}
-				</div>
+				) : (
+					<BackupTable
+						destinations={inboundPeers}
+						onViewDetails={handleViewDetails}
+						onRunBackup={() => {}} // Can't trigger their backup
+						onDeleteDestination={handleDeleteDestination}
+					/>
+				)}
 			</div>
 
 			<BackupDetailsDialog

@@ -65,9 +65,9 @@ export const BlobListPage = () => {
 
 	return (
 		<>
-			<h1 className="heading-1">
-				Documents and media
-			</h1>
+			<header className="header">
+				<h1>Documents and media</h1>
+			</header>
 
 			<Filter />
 

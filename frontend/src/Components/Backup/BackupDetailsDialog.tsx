@@ -65,14 +65,16 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 						{/* Header */}
 						<div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
 							<div>
-								<h2 className="text-xl font-semibold text-gray-900">
-								Backup Details: {backupRun.destinationName}
-								</h2>
+								<header className="header">
+									<h2>Backup Details: {backupRun.destinationName}</h2>
+								</header>
+								
 								<p className="text-sm text-gray-600 mt-1">
 								Started: {formatDateTime(backupRun.startedAt)}
 									{backupRun.completedAt && ` • Completed: ${formatDateTime(backupRun.completedAt)}`}
 								</p>
 							</div>
+
 							<button
 								onClick={onClose}
 								className="p-2 hover:bg-gray-100 rounded transition"
@@ -123,9 +125,10 @@ export function BackupDetailsDialog({ backupRun, onClose }: BackupDetailsDialogP
 
 						{/* Items Table */}
 						<div className="flex-1 overflow-auto px-6 py-4">
-							<h3 className="text-sm font-semibold text-gray-700 uppercase mb-3">
-							Backup Items ({backupRun.items.length})
-							</h3>
+							<header className="header">
+								<h3>Backup Items ({backupRun.items.length})</h3>
+							</header>
+							
 							<table className="w-full">
 								<thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
 									<tr>

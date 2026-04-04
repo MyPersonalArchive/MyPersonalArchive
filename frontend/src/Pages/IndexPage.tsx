@@ -5,9 +5,9 @@ export const IndexPage = () => {
 	return (
 		<div className="jumbotron">
 			<img src={img} alt="The logo!" />
-			<h1 className="heading-2">
-				Designed to keep your receipts organized and easily accessible.
-			</h1>
+			<header className="header">
+				<h2>Designed to keep your receipts organized and easily accessible.</h2>
+			</header>
 			<p>
 				Effortlessly organize and access your receipts with your digital receipt web app.
 				Upload pictures of your receipts, tag them, with quick access, and easy searching—all in one place.
