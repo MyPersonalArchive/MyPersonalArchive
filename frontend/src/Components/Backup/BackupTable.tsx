@@ -14,11 +14,12 @@ import { useState } from "react"
 import { BackupDestination, BackupStatus } from "../../types/backup"
 import { formatDate, formatDateTime, formatSize } from "../../Utils/formatUtils"
 
-interface BackupTableProps {
+type BackupTableProps = {
 	destinations: BackupDestination[]
 	onViewDetails: (destinationId: number) => void
 	onRunBackup: (destinationId: number) => void
 	onDeleteDestination: (destinationId: number) => void
+	onNewTarget: () => void
 }
 
 function StatusIcon({ status }: { status: BackupStatus }) {
@@ -39,7 +40,7 @@ function StatusIcon({ status }: { status: BackupStatus }) {
 	}
 }
 
-function ActionMenu({
+const ActionMenu = ({
 	destinationId,
 	onRunBackup,
 	onDeleteDestination
@@ -47,7 +48,7 @@ function ActionMenu({
 	destinationId: number
 	onRunBackup: (id: number) => void
 	onDeleteDestination: (id: number) => void
-}) {
+}) => {
 	const [isOpen, setIsOpen] = useState(false)
 
 	return (
@@ -93,12 +94,13 @@ function ActionMenu({
 	)
 }
 
-export function BackupTable({
+export const BackupTable = ({
 	destinations,
 	onViewDetails,
 	onRunBackup,
-	onDeleteDestination
-}: BackupTableProps) {
+	onDeleteDestination,
+	onNewTarget
+}: BackupTableProps) => {
 	return (
 		<div>
 			<div >
@@ -172,8 +174,8 @@ export function BackupTable({
 						{destinations.length === 0 &&
 							<tr>
 								<td colSpan={8}>
-									<div className="py-12 flex flex-col items-center"
-										/* TODO: onClick={() => newBackupTarget()}*/
+									<div className="py-12 flex flex-col items-center cursor-pointer"
+										onClick={onNewTarget}
 									>
 										<p className="text-lg">No backup destinations configured</p>
 										<p className="text-sm">Click "Add new pair" to get started</p>
