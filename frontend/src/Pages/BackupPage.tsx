@@ -7,15 +7,13 @@ import { useState } from "react"
 export const BackupPage = () => {
 	return (
 		<>
-			{/* <h1 className="heading-1">
-				Backup and external sync
-			</h1>
+			{/* <header className="header">
+				<h1 className="heading-1">
+					Backup and external sync
+				</h1>
+			</header>
 
-			<BackupActionButtons/>
-
-			<div className="h-8"></div>
-
-			<div className="h-20"></div> */}
+			<BackupActionButtons/> */}
 			
 			<BackupView />
 		</>

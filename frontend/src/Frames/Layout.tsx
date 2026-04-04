@@ -23,7 +23,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 	return (
 		<>
-			<header id="topHeader">
+			<div id="topBar">
 				<button className="menu-btn" id="menuBtn"
 					aria-label="Open navigation"
 					aria-expanded={navIsOpen}
@@ -93,7 +93,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						</>
 					}
 				</div>
-			</header>
+			</div>
 
 			<div className={classNames("nav-overlay", { "open": navIsOpen })}
 				onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}

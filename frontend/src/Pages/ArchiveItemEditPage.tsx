@@ -135,11 +135,9 @@ export const ArchiveItemEditPage = () => {
 	return (
 		<>
 			<form onSubmit={save}>
-
-				<h1 className="heading-1">
-					Edit item
-				</h1>
-
+				<header className="header">
+					<h1>Edit item</h1>
+				</header>
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="title">Title</label>

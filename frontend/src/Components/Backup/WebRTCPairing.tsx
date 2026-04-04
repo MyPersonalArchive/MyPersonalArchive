@@ -73,7 +73,9 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 
 	return (
 		<div className="webrtc-pairing">
-			<h4>WebRTC P2P Backup</h4>
+			<header className="header">
+				<h4>WebRTC P2P Backup</h4>
+			</header>
 			<p className="pairing-description">
 				{pairedPeers.length > 0 
 					? "Select a paired device or add a new one" 
@@ -83,7 +85,9 @@ export const WebRTCPairing: React.FC<WebRTCPairingProps> = ({ onPairingCodeChang
 			
 			{pairedPeers.length > 0 && (
 				<div className="p-4 bg-white rounded-lg border border-gray-200">
-					<h5>Paired Devices</h5>
+					<header className="header">
+						<h5>Paired Devices</h5>
+					</header>
 					{pairedPeers.map(peer => (
 						<div 
 							key={peer.id}

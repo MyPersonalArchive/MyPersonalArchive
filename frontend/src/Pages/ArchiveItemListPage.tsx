@@ -49,9 +49,9 @@ export const ArchiveItemListPage = () => {
 
 	return (
 		<>
-			<h1 className="heading-1">
-				Archive
-			</h1>
+			<header className="header">
+				<h1>Archive</h1>
+			</header>
 
 			<div className="stack-horizontal to-the-right my-4">
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>

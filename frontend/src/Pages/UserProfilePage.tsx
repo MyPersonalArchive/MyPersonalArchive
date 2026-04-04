@@ -19,9 +19,9 @@ export const UserProfilePage = () => {
 
 	return (
 		<>
-			<h1 className="heading-1">
-				My profile
-			</h1>
+			<header className="header">
+				<h1>My profile</h1>
+			</header>
 
 			{ currentUser !== undefined && currentUser.availableTenantIds.length > 1 &&
 				<div className="aligned-labels-and-inputs">

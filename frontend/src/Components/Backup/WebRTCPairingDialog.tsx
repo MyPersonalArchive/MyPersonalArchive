@@ -136,7 +136,7 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 				{!mode && (
 					<>
 						<div className="info-box">
-							<h3 className="heading-3">
+							<h3>
 								<FontAwesomeIcon icon={faLock} className="mr-2" />
 								Secure peer-to-peer pairing
 							</h3>
@@ -205,8 +205,8 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 						<div className="info-box">
 							<h3>Share this code</h3>
 							<p>
-									Enter this 6-digit code on the other device to complete pairing. 
-									Code expires in 5 minutes.
+								Enter this 6-digit code on the other device to complete pairing. 
+								Code expires in 5 minutes.
 							</p>
 						</div>
 
@@ -231,9 +231,7 @@ export const WebRTCPairingDialog = ({onClose, onPairingComplete} : WebRTCPairing
 					<>
 						<div className="info-box">
 							<h3>Enter pairing code</h3>
-							<p>
-									Enter the 6-digit code displayed on the other device.
-							</p>
+							<p>Enter the 6-digit code displayed on the other device.</p>
 						</div>
 
 						<div className="form-group">

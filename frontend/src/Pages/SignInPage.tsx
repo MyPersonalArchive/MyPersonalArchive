@@ -103,9 +103,10 @@ export const SignInPage = () => {
 				<img src={img} alt="" />
 			</div>
 			<div>
-				<h1 className="heading-2">
-					Sign in to your account
-				</h1>
+				<header className="header">
+					<h2>Sign in to your account</h2>
+				</header>
+				
 				{isLoading
 					? <>Loading data...</>
 					: <>

@@ -93,7 +93,9 @@ const BackupManager = () => {
 		<div className="backup-manager">
 			{/* Status Display */}
 			<div className="backup-section">
-				<h3>Current Status</h3>
+				<header className="header">
+					<h3>Current Status</h3>
+				</header>
 				{backupStatus ? (
 					<div className="status-info">
 						<p>
@@ -118,7 +120,9 @@ const BackupManager = () => {
 
 			{/* Configuration */}
 			<div className="backup-section">
-				<h3>Configuration</h3>
+				<header className="header">
+					<h3>Configuration</h3>
+				</header>
 				<div className="config-options">
 					<div className="config-row">
 						<label htmlFor="backup-provider">Backup Provider:</label>
@@ -172,7 +176,10 @@ const BackupManager = () => {
 
 			{/* Controls */}
 			<div className="backup-section">
-				<h3>Controls</h3>
+				<header className="header">
+					<h3>Controls</h3>
+				</header>
+
 				{backupStatus?.status === null || backupStatus?.status === 0 ? (
 					<div className="start-backup">
 						{encryptionProvider !== "None" && (
