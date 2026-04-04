@@ -452,6 +452,7 @@ export function BackupView() {
 						onViewDetails={handleViewDetails}
 						onRunBackup={handleRunBackup}
 						onDeleteDestination={handleDeleteDestination}
+						onNewTarget={handleNewTarget}
 					/>
 				)}
 			</div>
@@ -473,6 +474,7 @@ export function BackupView() {
 						onViewDetails={handleViewDetails}
 						onRunBackup={() => {}} // Can't trigger their backup
 						onDeleteDestination={handleDeleteDestination}
+						onNewTarget={handleNewTarget}
 					/>
 				)}
 			</div>
