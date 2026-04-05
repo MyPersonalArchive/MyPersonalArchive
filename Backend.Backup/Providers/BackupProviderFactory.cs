@@ -10,13 +10,13 @@ public class BackupProviderFactory
 {
     public IBackupProvider? CurrentProvider { get; private set; }
     private readonly string? _signalingServerUrl;
-    private readonly List<IceServerConfig> _iceServers;
+    private readonly List<string> _iceServers;
     private readonly WebRTCConnectionPool? _connectionPool;
 
-    public BackupProviderFactory(string? signalingServerUrl = null, List<IceServerConfig>? iceServers = null, WebRTCConnectionPool? connectionPool = null)
+    public BackupProviderFactory(string? signalingServerUrl = null, List<string>? iceServers = null, WebRTCConnectionPool? connectionPool = null)
     {
         _signalingServerUrl = signalingServerUrl;
-        _iceServers = iceServers ?? new List<IceServerConfig>();
+        _iceServers = iceServers ?? new List<string>();
         _connectionPool = connectionPool;
         SetProvider("BuddyTarget");
     }

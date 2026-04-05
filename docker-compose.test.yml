@@ -22,6 +22,8 @@ services:
       - AppConfig__BlobFolder=/data/Blobs
       - AppConfig__BackupFolder=/data/backup
       - AppConfig__SignalingServerUrl=wss://mpasignalingserver-production.up.railway.app/signaling
+      - AppConfig__TurnUsername=af3556dffc333228611b0fa6
+      - AppConfig__TurnCredential=+PUbhzWV/KzM4XCw
     volumes:
       - test-instance-data:/data
     network_mode: bridge

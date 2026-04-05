@@ -80,9 +80,7 @@ public class PeerConnectionService(IServiceProvider serviceProvider, IOptions<Ap
     {
         var config = new RTCConfiguration
         {
-            iceServers = BuildIceServersList(),
-            iceTransportPolicy = RTCIceTransportPolicy.all,
-            bundlePolicy = RTCBundlePolicy.max_bundle
+            iceServers = BuildIceServersList()
         };
 
         var peerConnection = new RTCPeerConnection(config);
@@ -260,9 +258,7 @@ public class PeerConnectionService(IServiceProvider serviceProvider, IOptions<Ap
     {
         var rtcConfig = new RTCConfiguration
         {
-            iceServers = BuildIceServersList(),
-            iceTransportPolicy = RTCIceTransportPolicy.all,
-            bundlePolicy = RTCBundlePolicy.max_bundle
+            iceServers = BuildIceServersList()
         };
 
         var peerConnection = new RTCPeerConnection(rtcConfig);
@@ -364,14 +360,17 @@ public class PeerConnectionService(IServiceProvider serviceProvider, IOptions<Ap
 
 	private List<RTCIceServer> BuildIceServersList()
 	{
+		var cfg = config.Value;
 		var iceServers = new List<RTCIceServer>();
-		foreach (var ice in config.Value.IceServers)
+		foreach (var url in cfg.IceServers)
 		{
-			var server = new RTCIceServer { urls = ice.Urls };
-			if (!string.IsNullOrEmpty(ice.Username))
-				server.username = ice.Username;
-			if (!string.IsNullOrEmpty(ice.Credential))
-				server.credential = ice.Credential;
+			var server = new RTCIceServer { urls = url };
+			var isTurn = url.StartsWith("turn:", StringComparison.OrdinalIgnoreCase)
+			          || url.StartsWith("turns:", StringComparison.OrdinalIgnoreCase);
+			if (isTurn && !string.IsNullOrEmpty(cfg.TurnUsername))
+				server.username = cfg.TurnUsername;
+			if (isTurn && !string.IsNullOrEmpty(cfg.TurnCredential))
+				server.credential = cfg.TurnCredential;
 			iceServers.Add(server);
 		}
 		return iceServers;
