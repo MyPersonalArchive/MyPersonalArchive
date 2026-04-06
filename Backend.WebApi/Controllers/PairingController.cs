@@ -1,3 +1,4 @@
+using Backend.Backup.Controllers;
 using Backend.Backup.Services;
 using Backend.Core;
 using Backend.Core.Infrastructure;
@@ -14,6 +15,7 @@ using SIPSorcery.Net;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using static Backend.Backup.Services.PeerMapping;
+using static Backend.Backup.Services.WebRtcPeerConnectionFactory;
 
 namespace Backend.WebApi.Controllers;
 
@@ -68,26 +70,6 @@ public class PairingController : ControllerBase
 
         await hubConnection.StartAsync();
 
-        // Create WebRTC peer connection
-        var config = new RTCConfiguration
-        {
-            iceServers = BuildIceServers()
-        };
-        var peerConnection = new RTCPeerConnection(config);
-
-        // Connection state logging
-        peerConnection.onconnectionstatechange += (state) =>
-        {
-            Debug.WriteLine($"[PairingController:Offerer] Connection state: {state}");
-        };
-        peerConnection.onicegatheringstatechange += (state) =>
-        {
-            Debug.WriteLine($"[PairingController:Offerer] ICE gathering state: {state}");
-        };
-
-        // Create data channel
-        var dataChannel = await peerConnection.createDataChannel(ChannelName);
-
 		// Generate 6-digit code
         var code = GeneratePairingCode();
 
@@ -95,36 +77,29 @@ public class PairingController : ControllerBase
         var peerId = GetOrCreatePeerId();
 
         // Store ICE candidates as they are gathered so we can re-send them after the joiner connects.
-        // The joiner joins after seeing the code (seconds/minutes later), so any candidates gathered
-        // during that window would be sent to nobody and lost on the signaling server.
         var gatheredCandidates = new List<string>();
+        // Guards against sending candidates before the pairing is registered on the signaling server.
+        // Candidates that fire during CreateAsOfferer() would otherwise be dropped as "unknown code".
+        var pairingRegistered = false;
 
-        // Setup ICE candidate handling (trickle ICE – send each candidate as it arrives)
-        peerConnection.onicecandidate += async (candidate) =>
-        {
-            if (candidate != null)
+        // Create WebRTC peer connection as offerer via factory
+        var (handle, dataChannel, offerSdp) = await CreateAsOfferer(
+            _config.Value,
+            ChannelName,
+            onIceCandidate: async (candidate) =>
             {
-                var candidateJson = JsonConvert.SerializeObject(new RTCIceCandidateInit
-                {
-                    candidate = candidate.candidate,
-                    sdpMLineIndex = candidate.sdpMLineIndex,
-                    sdpMid = candidate.sdpMid
-                });
+                var candidateJson = JsonConvert.SerializeObject(candidate);
                 lock (gatheredCandidates) { gatheredCandidates.Add(candidateJson); }
-                await hubConnection.SendAsync("SendIceCandidate", code, candidateJson);
-            }
-        };
-
-        // Create offer and send immediately — do NOT wait for ICE gathering.
-        // Waiting causes us to send candidates before the joiner exists on the signaling server,
-        // where they are lost. With trickle ICE the offer goes out now and candidates flow
-        // as they are gathered; PairingJoined re-sends them anyway (see below).
-        var offer = peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
+                // Only relay once the pairing exists on the server; the flush below covers early candidates.
+                if (pairingRegistered)
+                    await hubConnection.SendAsync("SendIceCandidate", code, candidateJson);
+            },
+            logPrefix: "PairingController:Offerer");
+        var peerConnection = handle.Connection;
 
         try
         {
-            await hubConnection.SendAsync("CreatePairing", code, offer.sdp, peerId);
+            await hubConnection.SendAsync("CreatePairing", code, offerSdp, peerId);
         }
         catch (Exception ex)
         {
@@ -132,32 +107,21 @@ public class PairingController : ControllerBase
             throw;
         }
 
-        // Queue joiner candidates that arrive before the answer so addIceCandidate is
-        // never called without a remote description set.
-        var pendingRemoteCandidates = new List<RTCIceCandidateInit>();
-        var remoteDescriptionSet = false;
+        // Pairing is now registered — flush any candidates that were gathered before this point.
+        pairingRegistered = true;
+        List<string> earlyCandidates;
+        lock (gatheredCandidates) { earlyCandidates = new List<string>(gatheredCandidates); }
+        foreach (var c in earlyCandidates)
+        {
+            try { await hubConnection.SendAsync("SendIceCandidate", code, c); }
+            catch { /* non-fatal */ }
+        }
 
         // Listen for answer from the joiner
         hubConnection.On<string>("PairingAnswerReceived", (answerSdp) =>
         {
-            var answer = new RTCSessionDescriptionInit
-            {
-                type = RTCSdpType.answer,
-                sdp = answerSdp
-            };
-
-            var setResult = peerConnection.setRemoteDescription(answer);
-            if (setResult != SetDescriptionResultEnum.OK)
-            {
-                Debug.WriteLine($"[PairingController:Offerer] Failed to set remote description: {setResult}");
+            if (!SetRemoteAnswer(handle, answerSdp, "PairingController:Offerer"))
                 return;
-            }
-            remoteDescriptionSet = true;
-
-            // Flush any candidates that arrived before the answer
-            foreach (var c in pendingRemoteCandidates)
-                peerConnection.addIceCandidate(c);
-            pendingRemoteCandidates.Clear();
         });
         // Listen for when someone joins — re-send ALL gathered candidates so the joiner
         // receives every candidate even if they connected after some were already sent.
@@ -181,12 +145,7 @@ public class PairingController : ControllerBase
         {
             var candidate = JsonConvert.DeserializeObject<RTCIceCandidateInit>(candidateJson);
             if (candidate != null)
-            {
-                if (remoteDescriptionSet)
-                    peerConnection.addIceCandidate(candidate);
-                else
-                    pendingRemoteCandidates.Add(candidate);
-            }
+                handle.AddRemoteCandidate(candidate);
         });
 
         // Create completion source for connection establishment
@@ -298,123 +257,73 @@ public class PairingController : ControllerBase
         var peerId = GetOrCreatePeerId();
         var sessionEstablished = new TaskCompletionSource<PairingResult>();
         string? initiatorPeerId = null; // Track the initiator's peer ID
-        
-        // Create peer connection
-        var config = new RTCConfiguration
-        {
-            iceServers = BuildIceServers()
-        };
-        var peerConnection = new RTCPeerConnection(config);
-
-        // Connection state logging
-        peerConnection.onconnectionstatechange += (state) =>
-        {
-            Debug.WriteLine($"[PairingController:Joiner] Connection state: {state}");
-        };
-        peerConnection.onicegatheringstatechange += (state) =>
-        {
-            Debug.WriteLine($"[PairingController:Joiner] ICE gathering state: {state}");
-        };
-
-        // Queue remote ICE candidates that arrive before setRemoteDescription
+        PeerConnectionHandle? handle = null;
+        RTCPeerConnection? peerConnection = null;
+        RTCDataChannel? establishedDataChannel = null;
+        // Buffer candidates that arrive before CreateAsAnswerer completes and sets handle.
         var pendingRemoteCandidates = new List<RTCIceCandidateInit>();
-        var remoteDescriptionSet = false;
 
-        // Setup ICE candidate handler
-        peerConnection.onicecandidate += async (candidate) =>
+        // Listen for pairing offer — create answerer connection via factory when offer arrives
+        hubConnection.On<string, string>("PairingOfferReceived", async (offerSdp, remotePeerId) =>
         {
-			Debug.WriteLine($"[PairingController] onicecandidate: {candidate?.candidate}");
-            if (candidate != null)
-            {
-                var candidateJson = JsonConvert.SerializeObject(new
-                {
-                    candidate = candidate.candidate,
-                    sdpMid = candidate.sdpMid,
-                    sdpMLineIndex = candidate.sdpMLineIndex
-                });
-                await hubConnection.SendAsync("SendIceCandidate", code, candidateJson);
-            }
-        };
+			Debug.WriteLine($"[PairingController] Pairing offer received from {remotePeerId}");
+            initiatorPeerId = remotePeerId;
 
-        // Listen for data channel from offerer
-        peerConnection.ondatachannel += (dataChannel) =>
-        {
-			Debug.WriteLine($"[PairingController] ondatachannel: {dataChannel.label}");
-
-            // Check if already open
-            if (dataChannel.readyState == RTCDataChannelState.open)
-            {
-                sessionEstablished.TrySetResult(new PairingResult
+            var answererResult = await CreateAsAnswerer(
+                _config.Value,
+                offerSdp,
+                onIceCandidate: async (candidate) =>
                 {
-                    Success = true,
-                    PeerId = peerId,
-                    Target = "", // Will be set after destination is saved
-                    Message = "Pairing successful"
-                });
-            }
-            else
-            {
-                dataChannel.onopen += () =>
+                    var candidateJson = JsonConvert.SerializeObject(candidate);
+                    await hubConnection.SendAsync("SendIceCandidate", code, candidateJson);
+                },
+                onDataChannelOpen: (dc) =>
                 {
-					Debug.WriteLine($"[PairingController] Data channel opened: {dataChannel.label}");
+                    Debug.WriteLine($"[PairingController] Data channel opened: {dc.label}");
+                    establishedDataChannel = dc;
                     sessionEstablished.TrySetResult(new PairingResult
                     {
                         Success = true,
                         PeerId = peerId,
-                        Target = "", // Will be set after destination is saved
+                        Target = "",
                         Message = "Pairing successful"
                     });
-                };
-            }
-        };
+                },
+                logPrefix: "PairingController:Joiner");
 
-        // Listen for pairing offer (two separate parameters)
-        hubConnection.On<string, string>("PairingOfferReceived", async (offerSdp, remotePeerId) =>
-        {
-			Debug.WriteLine($"[PairingController] Pairing offer received from {remotePeerId}");
-            initiatorPeerId = remotePeerId; // Capture the initiator's peer ID
-            
-            var offer = new RTCSessionDescriptionInit
+            if (answererResult == null)
             {
-                type = RTCSdpType.offer,
-                sdp = offerSdp
-            };
-            
-            var result = peerConnection.setRemoteDescription(offer);
-            if (result != SetDescriptionResultEnum.OK)
-            {
-                Debug.WriteLine($"[PairingController] Failed to set remote description: {result}");
+                sessionEstablished.TrySetResult(new PairingResult
+                {
+                    Success = false, PeerId = "", Target = "",
+                    Message = "Failed to set remote description"
+                });
                 return;
             }
 
-            remoteDescriptionSet = true;
+            handle = answererResult.Value.handle;
+            peerConnection = handle.Connection;
 
-            // Flush any ICE candidates that arrived before the offer
-            foreach (var c in pendingRemoteCandidates)
-                peerConnection.addIceCandidate(c);
-            pendingRemoteCandidates.Clear();
-            
-            // Create answer
-            var answer = peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            
-            // Send answer immediately (trickle ICE) — candidates are sent separately via
-            // onicecandidate as they are gathered.
-            await hubConnection.SendAsync("SendAnswer", code, answer.sdp);
+            // Apply any candidates that arrived while CreateAsAnswerer was still awaiting.
+            List<RTCIceCandidateInit> buffered;
+            lock (pendingRemoteCandidates) { buffered = new List<RTCIceCandidateInit>(pendingRemoteCandidates); pendingRemoteCandidates.Clear(); }
+            foreach (var c in buffered) handle.AddRemoteCandidate(c);
+
+            // Send answer immediately (trickle ICE)
+            await hubConnection.SendAsync("SendAnswer", code, answererResult.Value.answerSdp);
         });
 
-        // Listen for ICE candidates from offerer — buffer if remote description not yet set
+        // Listen for ICE candidates from offerer.
+        // Candidates that arrive before CreateAsAnswerer sets 'handle' are buffered and applied afterwards.
         hubConnection.On<string>("IceCandidateReceived", (candidateJson) =>
         {
 			Debug.WriteLine($"[PairingController] ICE candidate received: {candidateJson}");
             var candidate = JsonConvert.DeserializeObject<RTCIceCandidateInit>(candidateJson);
-            if (candidate != null)
-            {
-                if (remoteDescriptionSet)
-                    peerConnection.addIceCandidate(candidate);
-                else
-                    pendingRemoteCandidates.Add(candidate);
-            }
+            if (candidate == null) return;
+            if (handle != null)
+                handle.AddRemoteCandidate(candidate);
+            else
+                lock (pendingRemoteCandidates) { pendingRemoteCandidates.Add(candidate); }
         });
 
         // Join the pairing with the code
@@ -429,7 +338,7 @@ public class PairingController : ControllerBase
         if (completed == timeout)
         {
             await hubConnection.DisposeAsync();
-            peerConnection.close();
+            peerConnection?.close();
             Debug.WriteLine($"[PairingController] Pairing timeout - code may be invalid or expired");
             return new PairingResult { Success = false, PeerId = "", Target = "", Message = "Pairing timeout - code may be invalid or expired" };
         }
@@ -467,7 +376,6 @@ public class PairingController : ControllerBase
         result.Target = $"webrtc:{destination.Id}";
 
         // Save to JSON file for background service
-        // For recovery, we are the Source (we will backup TO them after restore)
         await _peerMappingStore.SaveAsync(new PeerMapping
         {
             LocalPeerId = peerId,
@@ -475,8 +383,16 @@ public class PairingController : ControllerBase
             TenantId = tenantId,
             DestinationId = destination.Id,
             PairedAt = DateTime.UtcNow,
-            Role = PairingRole.Source  // We backup TO them (we used the code)
+            Role = PairingRole.Source,
+            IsInitiator = false  // We used the code, so we are NOT the initiator
         });
+
+        // Store the live connection in the pool so backup can use it without reconnecting.
+        if (establishedDataChannel != null && peerConnection != null)
+        {
+            _connectionPool.StoreConnection(destination.Id, peerConnection, establishedDataChannel, initiatorPeerId ?? "unknown");
+            Debug.WriteLine($"[PairingController:Joiner] Stored connection in pool for destination {destination.Id}");
+        }
 
         // Register this peer ID with signaling server for reconnection requests
         await _peerConnectionService.RegisterPeerIdAsync(peerId, tenantId);
@@ -520,8 +436,18 @@ public class PairingController : ControllerBase
             TenantId = tenantId,
             DestinationId = destination.Id,
             PairedAt = DateTime.UtcNow,
-            Role = PairingRole.Destination  // They will backup TO me (I generated the code)
+            Role = PairingRole.Destination,
+            IsInitiator = true  // We generated the code, so we are the initiator for reconnection
         });
+
+        // Store the live connection in the pool so backup can use it without reconnecting.
+        if (_activePairingSessions.TryGetValue(tenantId, out var pairingSession) &&
+            pairingSession.DataChannel?.readyState == RTCDataChannelState.open &&
+            pairingSession.PeerConnection != null)
+        {
+            _connectionPool.StoreConnection(destination.Id, pairingSession.PeerConnection, pairingSession.DataChannel, request.PeerId);
+            Debug.WriteLine($"[PairingController:Offerer] Stored connection in pool for destination {destination.Id}");
+        }
 
         // Register this peer ID with signaling server for reconnection requests
         await _peerConnectionService.RegisterPeerIdAsync(localPeerId, tenantId);
@@ -549,7 +475,7 @@ public class PairingController : ControllerBase
                 Target = $"webrtc:{m.DestinationId}",
                 RemotePeerId = m.RemotePeerId,
                 PairedAt = m.PairedAt,
-                IsInitiator = m.Role == PairingRole.Destination, // True if we generated code
+                IsInitiator = m.IsInitiator,
                 Role = m.Role.ToString(),
                 IsConnected = _connectionPool.IsDestinationConnected(m.DestinationId)
             })
@@ -811,21 +737,6 @@ public class PairingController : ControllerBase
         return peerId;
     }
 
-	private List<RTCIceServer> BuildIceServers(){
-		var cfg = _config.Value;
-		return [.. cfg.IceServers.Select(url =>
-        {
-            var server = new RTCIceServer { urls = url };
-            var isTurn = url.StartsWith("turn:", StringComparison.OrdinalIgnoreCase)
-                      || url.StartsWith("turns:", StringComparison.OrdinalIgnoreCase);
-            if (isTurn && !string.IsNullOrEmpty(cfg.TurnUsername))
-                server.username = cfg.TurnUsername;
-            if (isTurn && !string.IsNullOrEmpty(cfg.TurnCredential))
-                server.credential = cfg.TurnCredential;
-            return server;
-        })];
-	}
-
     private class PairingSession
     {
         public required string Code { get; set; }
@@ -838,72 +749,5 @@ public class PairingController : ControllerBase
         public RTCDataChannel? DataChannel { get; set; }
         public TaskCompletionSource<bool>? ConnectionEstablished { get; set; }
         public string? RemotePeerId { get; set; }
-    }
-
-    public class PairingCodeResponse
-    {
-        public required string Code { get; set; } 
-        public DateTime ExpiresAt { get; set; }
-        public required string PeerId { get; set; }
-    }
-
-    public class UsePairingCodeRequest
-    {
-        public required string Code { get; set; }
-    }
-
-    public class CompletePairingRequest
-    {
-        public required string PeerId { get; set; }
-        public string? PeerName { get; set; }
-    }
-
-    public class CompletePairingResponse
-    {
-        public int DestinationId { get; set; }
-        public required string Message { get; set; }
-    }
-
-    public class PairedPeerInfo
-    {
-        public int Id { get; set; }
-        public required string Name { get; set; }
-        public required string Target { get; set; }
-        public required string RemotePeerId { get; set; }
-        public DateTime PairedAt { get; set; }
-        public bool IsInitiator { get; set; }
-        public required string Role { get; set; }
-        public bool IsConnected { get; set; }
-    }
-
-    public class PairingResult
-    {
-        public bool Success { get; set; }
-        public required string PeerId { get; set; }
-        public required string Target { get; set; }
-        public required string Message { get; set; }
-    }
-
-    public class PairingStatusResponse
-    {
-        public bool HasActiveSession { get; set; }
-        public string? Code { get; set; }
-        public DateTime? ExpiresAt { get; set; }
-        public bool IsExpired { get; set; }
-        public bool IsConnected { get; set; }
-        public string? RemotePeerId { get; set; }
-    }
-
-    public class RecoveryCodeResponse
-    {
-        public required string Code { get; set; }
-        public DateTime ExpiresAt { get; set; }
-        public int TenantId { get; set; }
-        public int AvailableBackupCount { get; set; }
-    }
-
-    public class UseRecoveryCodeRequest
-    {
-        public required string Code { get; set; }
     }
 }

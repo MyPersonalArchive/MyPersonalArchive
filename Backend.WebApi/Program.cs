@@ -82,6 +82,11 @@ public static class Program
 
 		var app = builder.Build();
 
+		// Wire SIPSorcery's internal logger to the ASP.NET Core logging pipeline.
+		// Without this, all TURN allocation failures, ICE errors etc. are completely silent.
+		var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+		SIPSorcery.LogFactory.Set(loggerFactory);
+
 		app.PrepareDatabase();
 		app.Configure();
 

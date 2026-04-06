@@ -21,6 +21,12 @@ public class PeerMapping
 	
 	[JsonConverter(typeof(JsonStringEnumConverter))]
 	public PairingRole Role { get; set; } = PairingRole.Source; // Default for backward compatibility
+
+	/// <summary>
+	/// True if this instance generated the pairing code (was the offerer).
+	/// Used to determine which side initiates reconnection: the initiator reconnects.
+	/// </summary>
+	public bool IsInitiator { get; set; }
 }
 
 public class PeerMappingData

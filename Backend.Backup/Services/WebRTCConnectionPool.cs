@@ -43,21 +43,19 @@ public class WebRTCConnectionPool(IServiceProvider serviceProvider, PeerMappingS
         using var scope = serviceProvider.CreateScope();
         var peerConnectionService = scope.ServiceProvider.GetRequiredService<PeerConnectionService>();
 
-        // Request reconnection
+        // Request reconnection. If it returns false because a reconnection is ALREADY IN PROGRESS
+        // (started by the background service), we should still wait for the pool to be populated
+        // rather than giving up immediately — the connection will arrive within ~35s.
         var success = await peerConnectionService.RequestReconnectionAsync(
             mapping.LocalPeerId,
             mapping.RemotePeerId,
             destinationId
         );
-        
-        if (!success)
-        {
-            return null;
-        }
 
-        // Wait up to 30 seconds for connection to be stored in pool
-        var timeout = DateTime.UtcNow.AddSeconds(30);
-        var attempts = 0;
+        // Wait up to 35 seconds for connection to be stored in pool.
+        // If success=true, the connection is being established right now.
+        // If success=false (already in progress from background service), it may still arrive.
+        var timeout = DateTime.UtcNow.AddSeconds(35);
         while (DateTime.UtcNow < timeout)
         {
             if (_connections.TryGetValue(destinationId, out var conn) &&
@@ -67,7 +65,6 @@ public class WebRTCConnectionPool(IServiceProvider serviceProvider, PeerMappingS
             {
                 return (conn.DataChannel, conn.RemotePeerId);
             }
-            attempts++;
             await Task.Delay(500);
         }
 
