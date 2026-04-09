@@ -23,7 +23,7 @@ export const EmailListPage = () => {
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
 
-	const { fetchEmails, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider(externalAccountId)
+	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider(externalAccountId)
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -69,7 +69,7 @@ export const EmailListPage = () => {
 				</div>
 
 				<button className="btn"
-					onClick={() => fetchEmails()}
+					onClick={() => fetchEmailSummaries()}
 					disabled={(selectedFolder ?? "") === ""}
 				>
 					Fetch emails
@@ -86,12 +86,9 @@ export const EmailListPage = () => {
 						- Only show emails with attachments [checkbox]
 						- Filter by sender/subject/body etc [input box]
 						- Download from specific folder(s) [select multiple]
+					Stored filters?
 					Display options
 						- Group by conversation	[checkbox]
-						- Newest on top? [checkbox or sort order selection]
-					Stored filters?
-					Stored email accounts?
-						- instead of just selecting the provider and enter account and login details, set up a list of stored email accounts to select from
 					*/}
 				</div>
 
@@ -185,7 +182,7 @@ const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails,
 			</div>
 
 			<div className="overflow-hidden text-ellipsis whitespace-nowrap p-2">
-				{email.body}
+				{email.previewText}
 			</div>
 
 			<div>

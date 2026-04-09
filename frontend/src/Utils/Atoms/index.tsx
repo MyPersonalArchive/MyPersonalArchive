@@ -9,15 +9,20 @@ export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSele
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 
-export type Email = {
+export type EmailSummary = {
 	uniqueId: string
 	subject: string
-	body: string
-	htmlBody: string
+	previewText: string
 	receivedTime: string
 	from: EmailAddress[]
 	to: EmailAddress[]
 	attachments: EmailAttachment[]
+}
+
+
+export type Email = EmailSummary & {
+	body?: string
+	htmlBody?: string
 }
 
 export type EmailAddress = {

@@ -10,7 +10,7 @@ public static class IImapExtensions
 {
 	extension(IImapClient client)
 	{
-		public async Task<IList<Email>> GetEmailsByIds(string folder, List<string> messageIds)
+		public async Task<IList<EmailSummary>> GetEmailsByIds(string folder, List<string> messageIds)
 		{
 			var mailFolder = client.GetFolder(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
@@ -19,7 +19,7 @@ public static class IImapExtensions
 							.Select(UniqueId.Parse)
 							.ToList();
 
-			var results = new List<Email>();
+			var results = new List<EmailSummary>();
 			foreach (var uniqueId in uniqueIds)
 			{
 				results.Add(await GetEmailAsync(mailFolder, uniqueId));
@@ -28,7 +28,7 @@ public static class IImapExtensions
 			return results;
 		}
 
-		
+
 		public async Task<IList<string>> GetAvailableFolders()
 		{
 			var root = client.GetFolder(client.PersonalNamespaces[0]);
@@ -37,77 +37,45 @@ public static class IImapExtensions
 		}
 
 
-		public async Task<IList<Email>> GetEmailsByCriteria(EmailSearchCriteria searchCriteria)
+		public async IAsyncEnumerable<EmailSummary> GetEmailsStreaming(string folder, int numberOfEmailsToFetch = 2000 /*, uint sinceUniqueId = uint.MaxValue*/)
 		{
-			var results = new List<Email>();
-
-			var folders = searchCriteria.Folders;
-			if (folders == null || !folders.Any())
-			{
-				//Folder names are case sensitive. Gmail, Fastmail uses default "INBOX", but for Outlook etc it's "Inbox".
-				//If we shall allow users to search inboxes we need to solve this somehow?
-				folders = ["INBOX"];
-			}
-
-			var searchQuery = GenerateSearchQuery(searchCriteria);
-			foreach (var folder in folders)
-			{
-				var mailFolder = client.GetFolder(folder);
-				await mailFolder.OpenAsync(FolderAccess.ReadOnly);
-
-				var uids = await mailFolder.SearchAsync(searchQuery);
-				var limitedUids = uids.Reverse().Take(searchCriteria?.Limit ?? 100).ToList();
-
-				const int batchSize = 50;
-				var messages = new List<IMessageSummary>();
-
-				//For better performance fetch in batches. This seems to be faster, at least on my account with ALOT of emails.
-				//By requesting just the uniqueId and BodyStructure we don't have to download the message bodies.
-				for (int i = 0; i < limitedUids.Count; i += batchSize)
-				{
-					var batch = limitedUids.Skip(i).Take(batchSize).ToList();
-					var summaries = await mailFolder.FetchAsync(batch, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
-					messages.AddRange(summaries);
-				}
-
-				foreach (var item in messages)
-				{
-					results.Add(await GetEmailAsync(mailFolder, item.UniqueId));
-				}
-			}
-
-
-			await client.DisconnectAsync(true);
-			client.Dispose();
-			return results;
-		}
-
-
-		public async IAsyncEnumerable<Email> GetEmailsStreaming(string folder)
-		{
-			var mailFolder = client.GetFolder(folder);
+			var mailFolder = await client.GetFolderAsync(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-			var uids = await mailFolder.SearchAsync((SearchQuery?)SearchQuery.All);
-			var limitedUids = uids.Reverse().Take(100).ToList();
+			var batchSizes = new Queue<int>([1, 8, 100, 1000, 1000, 1000]); //First fetch a few emails for faster "first email", and for scrolling the first page(s) retrieval, then increase batch size for better overall performance
 
-			const int batchSize = 50;
-			var messages = new List<IMessageSummary>();
+			// Start from the newest email (end of mailbox) and work backwards
+			int startIndex = mailFolder.Count - 1;
+			int endIndexTarget = Math.Max(-1, startIndex - numberOfEmailsToFetch + 1);
 
-			//For better performance fetch in batches. This seems to be faster, at least on my account with ALOT of emails.
-			//By requesting just the uniqueId and BodyStructure we don't have to download the message bodies.
-			for (int i = 0; i < limitedUids.Count; i += batchSize)
+			int toIndex = startIndex;
+			int emailsYielded = 0;
+			uint lastUniqueIdFetched;
+
+			while (toIndex > endIndexTarget && emailsYielded < numberOfEmailsToFetch)
 			{
-				var batch = limitedUids.Skip(i).Take(batchSize).ToList();
-				var summaries = await mailFolder.FetchAsync(batch, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
-				messages.AddRange(summaries);
+				int batchSize = batchSizes.Dequeue();
+				int fromIndex = Math.Max(0, toIndex - batchSize + 1);
+
+				var summaries = await mailFolder.FetchAsync(fromIndex, toIndex, MessageSummaryItems.Envelope | MessageSummaryItems.InternalDate | MessageSummaryItems.BodyStructure | MessageSummaryItems.PreviewText);
+				foreach (var item in summaries.Reverse())
+				{
+					if (emailsYielded >= numberOfEmailsToFetch)
+						break;
+					yield return ConvertSummaryToEmail(item);
+					emailsYielded++;
+
+					lastUniqueIdFetched = item.UniqueId.Id; //keep updating lastUniqueIdFetched as we yield emails, so it always represents the UniqueID of the last email that was fetched/yielded. This is important for the client to know where to continue fetching from when requesting the next batch/page of emails
+				}
+
+				toIndex = fromIndex - 1;
 			}
 
-			foreach (var item in messages)
-			{
-				// results.Add(await GetEmailAsync(mailFolder, item.UniqueId));
-				yield return await GetEmailAsync(mailFolder, item.UniqueId);
-			}
+			// yield return new EmailMetadata
+			// {
+			// 	GetMoreEmailsFromUniqueId = toIndex >= 0 ? lastUniqueIdFetched : (uint?)null
+			// };
+
 
 			await client.DisconnectAsync(true);
 			client.Dispose();
@@ -121,7 +89,7 @@ public static class IImapExtensions
 
 			var message = await mailFolder.GetMessageAsync(new UniqueId(uint.Parse(messageId)));
 
-			foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
+			foreach (var part in message.BodyParts.OfType<MimePart>())
 			{
 				if (part.IsAttachment && part.FileName == fileName)
 				{
@@ -143,39 +111,72 @@ public static class IImapExtensions
 	}
 
 
-	private static async Task<Email> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
+	private static EmailSummary ConvertSummaryToEmail(IMessageSummary summary)
+	{
+		return new EmailSummary
+		{
+			UniqueId = summary.UniqueId.Id.ToString(),
+			Subject = summary.NormalizedSubject,
+			PreviewText = summary.PreviewText ?? "n/a",
+			From = summary.Envelope.From
+				.Select(address => address is MailboxAddress mb
+					? new EmailSummary.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+					: new EmailSummary.Address { EmailAddress = address.Name }
+				),
+			To = summary.Envelope.To
+				.Select(address => address is MailboxAddress mb
+					? new EmailSummary.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+					: new EmailSummary.Address { EmailAddress = address.Name }
+				),
+			ReceivedTime = summary.InternalDate ?? DateTimeOffset.MinValue,
+			Attachments = summary.Attachments.Select(a => new EmailSummary.EmailAttachment
+			{
+				FileName = a.FileName,
+				ContentType = a.ContentType.MimeType
+			})
+		};
+	}
+
+
+	private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
 	{
 		var message = await mailFolder.GetMessageAsync(uniqueId);
-		var email = new Email()
+		var email = new FullEmail
 		{
 			UniqueId = uniqueId.Id.ToString(),
 			Subject = message.Subject,
 			From = message.From
 				.Select(address => address is MailboxAddress mb
-					? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-					: new Email.Address { EmailAddress = address.Name }
+					? new FullEmail.EmailAddress { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+					: new FullEmail.EmailAddress { EmailAddress = address.Name }
 				),
 			To = message.To
 				.Select(address => address is MailboxAddress mb
-					? new Email.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-					: new Email.Address { EmailAddress = address.Name }
+					? new FullEmail.EmailAddress { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
+					: new FullEmail.EmailAddress { EmailAddress = address.Name }
 				),
 			ReceivedTime = message.Date,
 			Body = message.TextBody,
-			HtmlBody = message.HtmlBody
-		};
-
-		foreach (var part in message.BodyParts.OfType<MimeKit.MimePart>())
-		{
-			if (part.IsAttachment)
-			{
-				email.Attachments.Add(new Email.EmailAttachment
+			HtmlBody = message.HtmlBody,
+			Attachments = message.BodyParts.OfType<MimePart>().Where(part => part.IsAttachment)
+				.Select(part => new FullEmail.EmailAttachment
 				{
 					FileName = part.FileName ?? "attachment",
 					ContentType = part.ContentType.MimeType
-				});
-			}
-		}
+				})
+		};
+
+		// foreach (var part in message.BodyParts.OfType<MimePart>())
+		// {
+		// 	if (part.IsAttachment)
+		// 	{
+		// 		email.Attachments.Add(new Email.EmailAttachment
+		// 		{
+		// 			FileName = part.FileName ?? "attachment",
+		// 			ContentType = part.ContentType.MimeType
+		// 		});
+		// 	}
+		// }
 		return email;
 	}
 
@@ -204,38 +205,57 @@ public static class IImapExtensions
 }
 
 
-public class Email
+public class EmailSummary
 {
 	public string UniqueId { get; set; } = string.Empty;
 	public string Subject { get; set; } = string.Empty;
-	public string Body { get; set; } = string.Empty;
-	public string HtmlBody { get; set; } = string.Empty;
+	public string PreviewText { get; internal set; } = string.Empty;
+	// public string? Body { get; set; }
+	// public string? HtmlBody { get; set; }
 	public DateTimeOffset ReceivedTime { get; set; }
-	public IEnumerable<Address> From { get; set; } = [];
-	public IEnumerable<Address> To { get; set; } = [];
-	public List<EmailAttachment> Attachments { get; set; } = [];
+	public IEnumerable<EmailAddress> From { get; set; } = [];
+	public IEnumerable<EmailAddress> To { get; set; } = [];
+	public IEnumerable<EmailAttachment> Attachments { get; set; } = [];
 
-	public class Address
-	{
-		public required string EmailAddress { get; set; }
-		public string? Name { get; set; }
-	}
 
-	public class EmailAttachment
-	{
-		public required string FileName { get; set; }
-		public required string ContentType { get; set; }
-	}
+	public record EmailAddress(string Address, string? Name);
+
+	public record EmailAttachment(string FileName, string ContentType);
 }
 
 
-public class Attachment
+
+public record EmailBodyContent(string? PlainText, string? Html);
+
+
+public class FullEmail
 {
-	public required Stream Stream { get; set; }
-	public required string ContentType { get; set; }
-	public required string FileName { get; set; }
-	public long FileSize { get; set; }
+	public string UniqueId { get; set; } = string.Empty;
+	public string Subject { get; set; } = string.Empty;
+	public string PreviewText { get; internal set; } = string.Empty;
+	public string? Body { get; set; }
+	public string? HtmlBody { get; set; }
+	public DateTimeOffset ReceivedTime { get; set; }
+	public IEnumerable<EmailAddress> From { get; set; } = [];
+	public IEnumerable<EmailAddress> To { get; set; } = [];
+	public IEnumerable<EmailAttachment> Attachments { get; set; } = [];
+
+	public string? Body { get; set; }
+	public string? HtmlBody { get; set; }
+
+
+	public record EmailAddress(string Address, string? Name);
+    
+	public class Attachment
+ 	{
+		public required Stream Stream { get; set; }
+		public required string ContentType { get; set; }
+		public required string FileName { get; set; }
+		public long FileSize { get; set; }
+	}
 }
+
+
 
 
 public class EmailSearchCriteria
