@@ -66,7 +66,7 @@ public class EmailController : ControllerBase
 	{
 		var imapClient = await GetImapClient(externalAccountId);
 
-		Response.Headers["Content-Type"] = "text/event-stream";
+		Response.Headers.ContentType = "text/event-stream";
 		var jsonOptions = new System.Text.Json.JsonSerializerOptions
 		{
 			PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase

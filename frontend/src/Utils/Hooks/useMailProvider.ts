@@ -31,17 +31,17 @@ export function useMailProvider(externalAccountId: UUID) {
 		setSelectedFolderByExternalAccount(prev => new Map(prev).set(externalAccountId, folders?.at(0)))
 	}
 
-	const fetchEmails = async () => {
+	const fetchEmailSummaries = async () => {
 		setEmailsByExternalAccountAndFolder(prev => {
 			const current = prev.get(externalAccountId) ?? new Map()
 			const updatedCurrent = new Map(current).set(selectedFolder ?? "", [])
 			return new Map(prev).set(externalAccountId, updatedCurrent)
 		})
 
-		const { promise } = apiClient.getStream<Email>("/api/Email/GetEmailsStreaming", { externalAccountId, folder: selectedFolder },
+		const { promise } = apiClient.getStream<EmailSummary>("/api/Email/GetEmailsStreaming", { externalAccountId, folder: selectedFolder },
 			email => {
 				setEmailsByExternalAccountAndFolder(prev => {
-					const current = prev.get(externalAccountId) ?? new Map()
+					const current = prev.get(externalAccountId) ?? new Map<string, Email[]>()
 					const folderEmails = current.get(selectedFolder ?? "") ?? []
 					const updatedFolderEmails = [...folderEmails, email]
 					const updatedCurrent = new Map(current).set(selectedFolder ?? "", updatedFolderEmails)
@@ -75,7 +75,7 @@ export function useMailProvider(externalAccountId: UUID) {
 	}
 
 	return {
-		fetchEmails,
+		fetchEmailSummaries,
 		createArchiveItemFromEmails,
 		createBlobsFromAttachments,
 		fetchFolders,
