@@ -94,11 +94,19 @@ public class EmailHandler :
 	}
 
 
-	public async Task<IEnumerable<Email>> Handle(ListEmails query)
+	public async Task<GetEmailContents.EmailContents> Handle(GetEmailContents query)
 	{
-		var imapClient = await GetImapClient(query.ExternalAccountId);
+        //TODO: Implement this!
+		return new GetEmailContents.EmailContents("This is a placeholder body.", "<p>This is a placeholder HTML body.</p>");
 
-		return await imapClient.GetEmailsByCriteria(query.Criteria);
+		// var imapClient = await GetImapClient(query.ExternalAccountId);
+
+		// var emailContents = await imapClient.GetEmailContents(query.Folder, query.MessageId);
+
+		// return new GetEmailContents.EmailContents(
+		// 	emailContents.Body,
+		// 	emailContents.HtmlBody
+		// );
 	}
 
 

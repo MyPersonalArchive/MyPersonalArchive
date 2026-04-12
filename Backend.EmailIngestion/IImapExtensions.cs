@@ -82,9 +82,9 @@ public static class IImapExtensions
 		}
 
 
-		public async Task<Attachment?> DownloadAttachmentAsync(string folder, string messageId, string fileName)
+		public async Task<Stream?> DownloadAttachmentAsync(string folder, string messageId, string fileName)
 		{
-			var mailFolder = client.GetFolder(folder);
+			var mailFolder = await client.GetFolderAsync(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
 			var message = await mailFolder.GetMessageAsync(new UniqueId(uint.Parse(messageId)));
@@ -96,13 +96,7 @@ public static class IImapExtensions
 					var ms = new MemoryStream();
 					await part.Content.DecodeToAsync(ms);
 					ms.Position = 0;
-					return new Attachment
-					{
-						Stream = ms,
-						FileName = fileName,
-						ContentType = part.ContentType.MimeType,
-						FileSize = ms.Length
-					};
+					return ms;
 				}
 			}
 
@@ -120,20 +114,16 @@ public static class IImapExtensions
 			PreviewText = summary.PreviewText ?? "n/a",
 			From = summary.Envelope.From
 				.Select(address => address is MailboxAddress mb
-					? new EmailSummary.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-					: new EmailSummary.Address { EmailAddress = address.Name }
+					? new EmailSummary.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+					: new EmailSummary.EmailAddress(address.Name, address.Name)
 				),
 			To = summary.Envelope.To
 				.Select(address => address is MailboxAddress mb
-					? new EmailSummary.Address { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-					: new EmailSummary.Address { EmailAddress = address.Name }
+					? new EmailSummary.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+					: new EmailSummary.EmailAddress(address.Name, address.Name)
 				),
 			ReceivedTime = summary.InternalDate ?? DateTimeOffset.MinValue,
-			Attachments = summary.Attachments.Select(a => new EmailSummary.EmailAttachment
-			{
-				FileName = a.FileName,
-				ContentType = a.ContentType.MimeType
-			})
+			Attachments = summary.Attachments.Select(a => new EmailSummary.EmailAttachment(a.FileName ?? "attachment", a.ContentType.MimeType))
 		};
 	}
 
@@ -147,36 +137,21 @@ public static class IImapExtensions
 			Subject = message.Subject,
 			From = message.From
 				.Select(address => address is MailboxAddress mb
-					? new FullEmail.EmailAddress { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-					: new FullEmail.EmailAddress { EmailAddress = address.Name }
+					? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+					: new FullEmail.EmailAddress(address.Name, address.Name)
 				),
 			To = message.To
 				.Select(address => address is MailboxAddress mb
-					? new FullEmail.EmailAddress { EmailAddress = mb.ToString(), Name = string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name }
-					: new FullEmail.EmailAddress { EmailAddress = address.Name }
+					? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+					: new FullEmail.EmailAddress(address.Name, address.Name)
 				),
 			ReceivedTime = message.Date,
 			Body = message.TextBody,
 			HtmlBody = message.HtmlBody,
 			Attachments = message.BodyParts.OfType<MimePart>().Where(part => part.IsAttachment)
-				.Select(part => new FullEmail.EmailAttachment
-				{
-					FileName = part.FileName ?? "attachment",
-					ContentType = part.ContentType.MimeType
-				})
+				.Select(part => new FullEmail.EmailAttachment(part.FileName ?? "attachment", part.ContentType.MimeType, null /* FileSize is not set here, as it would require fully downloading the attachment */))
 		};
 
-		// foreach (var part in message.BodyParts.OfType<MimePart>())
-		// {
-		// 	if (part.IsAttachment)
-		// 	{
-		// 		email.Attachments.Add(new Email.EmailAttachment
-		// 		{
-		// 			FileName = part.FileName ?? "attachment",
-		// 			ContentType = part.ContentType.MimeType
-		// 		});
-		// 	}
-		// }
 		return email;
 	}
 
@@ -240,19 +215,16 @@ public class FullEmail
 	public IEnumerable<EmailAddress> To { get; set; } = [];
 	public IEnumerable<EmailAttachment> Attachments { get; set; } = [];
 
-	public string? Body { get; set; }
-	public string? HtmlBody { get; set; }
 
-
-	public record EmailAddress(string Address, string? Name);
+	public record EmailAddress(
+		string Address,
+		string? Name);
     
-	public class Attachment
- 	{
-		public required Stream Stream { get; set; }
-		public required string ContentType { get; set; }
-		public required string FileName { get; set; }
-		public long FileSize { get; set; }
-	}
+	public record EmailAttachment(
+		string FileName,
+		string ContentType,
+		long? FileSize
+	);
 }
 
 
