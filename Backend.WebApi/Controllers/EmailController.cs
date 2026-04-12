@@ -52,17 +52,16 @@ public class EmailController : ControllerBase
 	{
 		var imapClient = await GetImapClient(externalAccountId);
 
-		var attachment = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
-		if (attachment == null) return NotFound();
+		var stream = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
+		if (stream == null) return NotFound();
 
-		return File(attachment.Stream, "application/octet-stream", fileName);
+		return File(stream, "application/octet-stream", fileName);
 	}
 
 
 	[Authorize()]
 	[HttpGet("GetEmailsStreaming")]
-	public async Task GetEmailsStreaming([FromQuery] Guid externalAccountId,
-														[FromQuery] string folder)
+	public async Task GetEmailsStreaming([FromQuery] Guid externalAccountId, [FromQuery] string folder)
 	{
 		var imapClient = await GetImapClient(externalAccountId);
 

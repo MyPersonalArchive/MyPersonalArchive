@@ -115,7 +115,7 @@ export const EmailListPage = () => {
 					</button>
 				</div>
 
-				<PreviewList<Email>
+				<PreviewList<FullEmail>
 					items={emails}
 					thumbnailPreviewTemplate={(email, maximize) =>
 						<EmailThumbnail
@@ -149,10 +149,10 @@ export const EmailListPage = () => {
 
 
 type EmailThumbnailProps = {
-	email: Email
+	email: FullEmail
 	selectionOfEmails: Selection<string>
-	createArchiveItemFromEmails: (emails: Email[]) => void
-	maximize: (email: Email) => void
+	createArchiveItemFromEmails: (emails: FullEmail[]) => void
+	maximize: (email: FullEmail) => void
 }
 const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: EmailThumbnailProps) => {
 	return (
@@ -200,12 +200,12 @@ const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails,
 
 
 type EmailPreviewProps = {
-	email: Email
-	createArchiveItemFromEmails: (emails: Email[]) => void
+	email: FullEmail
+	createArchiveItemFromEmails: (emails: FullEmail[]) => void
 	createBlobsFromAttachments: (messageId: string, attachments: EmailAttachment[]) => void
 	externalAccountId: string
 	selectedFolder: string
-	maximize: (email: Email) => void
+	maximize: (email: FullEmail) => void
 }
 const EmailPreview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, externalAccountId, selectedFolder, maximize: minimize }: EmailPreviewProps) => {
 	return (
@@ -256,7 +256,7 @@ const EmailPreview = ({ email, createArchiveItemFromEmails, createBlobsFromAttac
 
 type AttachmentListProps = {
 	attachments: EmailAttachment[]
-	email: Email
+	email: FullEmail
 	externalAccountId: string
 	selectedFolder: string
 	ingestAttachments: (messageId: string, attachments: EmailAttachment[]) => void
@@ -330,7 +330,7 @@ const AddressList = ({ addresses }: AddressListProps) => {
 	return (
 		<>
 			{addresses.map((address, ix) => (
-				<span key={address.emailAddress}>
+				<span key={ix}>
 					<Address address={address} />
 					{ix < addresses.length - 1 && "; "}
 				</span>
