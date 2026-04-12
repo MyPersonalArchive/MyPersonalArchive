@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react"
 import { useMailProvider } from "../Utils/Hooks/useMailProvider"
-import { Email, EmailAddress, EmailAttachment } from "../Utils/Atoms"
+import { FullEmail, EmailAddress, EmailAttachment } from "../Utils/Atoms"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
@@ -117,6 +117,7 @@ export const EmailListPage = () => {
 
 				<PreviewList<FullEmail>
 					items={emails}
+					keySelector={email => email.uniqueId}
 					thumbnailPreviewTemplate={(email, maximize) =>
 						<EmailThumbnail
 							key={email.uniqueId}
@@ -208,6 +209,14 @@ type EmailPreviewProps = {
 	maximize: (email: FullEmail) => void
 }
 const EmailPreview = ({ email, createArchiveItemFromEmails, createBlobsFromAttachments, externalAccountId, selectedFolder, maximize: minimize }: EmailPreviewProps) => {
+	//TODO: request BodyHtml ?? BodyText from backend if not alread available
+
+	const {fetchEmailContents} = useMailProvider(externalAccountId)
+	useEffect(() => {
+		fetchEmailContents(email)
+	}, [email])
+
+
 	return (
 		<div className="grid-rows-3">
 			<div className="bg-gray-100 p-4 sticky top-0">

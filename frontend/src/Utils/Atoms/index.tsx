@@ -17,13 +17,17 @@ export type EmailSummary = {
 	from: EmailAddress[]
 	to: EmailAddress[]
 	attachments: EmailAttachment[]
-}
-
-
-export type Email = EmailSummary & {
 	body?: string
 	htmlBody?: string
 }
+
+
+export type EmailContents = {
+	body?: string
+	htmlBody?: string
+}
+
+export type FullEmail = EmailSummary & EmailContents
 
 export type EmailAddress = {
 	name?: string
@@ -37,5 +41,5 @@ export type EmailAttachment = {
 
 export const foldersByExternalAccountAtom = atom<Map<string, string[] | undefined>>(new Map())
 export const selectedFolderByExternalAccountAtom = atom<Map<string, string | undefined>>(new Map())
-export const emailsByExternalAccountAndFolderAtom = atom<Map<string, Map<string, Email[]>>>(new Map())
+export const emailsByExternalAccountAndFolderAtom = atom<Map<string, Map<string, FullEmail[]>>>(new Map())
 

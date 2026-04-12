@@ -98,6 +98,7 @@ export const BlobListPage = () => {
 			</div>
 
 			<PreviewList<Blob> items={visibleBlobs}
+				keySelector={blob => blob.id}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
 						key={blob.id}
