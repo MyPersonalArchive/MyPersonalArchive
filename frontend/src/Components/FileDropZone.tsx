@@ -184,6 +184,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 				</div>
 
 				<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
+					keySelector={blob => blob.id}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
 							<BlobCard

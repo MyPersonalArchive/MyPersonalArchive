@@ -137,6 +137,7 @@ export const ArchiveItemNewPage = () => {
 
 				<div>
 					<PreviewList items={blobsFromUnallocated} containerClassName="flex flex-wrap"
+						keySelector={blob => blob.id}
 						thumbnailPreviewTemplate={(blob, maximize) =>
 							<div key={blob.id} className="action-bar-host">
 								<Preview blob={blob} dimension={DimensionEnum.small} />
@@ -170,6 +171,7 @@ export const ArchiveItemNewPage = () => {
 				</div>
 
 				<PreviewList<{ fileName: string, fileData: Blob }> items={localBlobs}
+					keySelector={blob => blob.fileName}
 					containerClassName="grid grid-cols-4 gap-4 pt-2"
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>

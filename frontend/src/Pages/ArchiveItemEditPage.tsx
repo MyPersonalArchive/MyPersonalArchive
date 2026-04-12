@@ -199,6 +199,7 @@ export const ArchiveItemEditPage = () => {
 				<div>
 					{/* Previewlist of files from DB */}
 					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
+						keySelector={blob => blob.id}
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
@@ -237,6 +238,7 @@ export const ArchiveItemEditPage = () => {
 
 					{/* Previewlist of local files (just added, not saved yet) */}
 					<PreviewList<LocalBlob> items={localBlobs}
+						keySelector={blob => blob.fileName}
 						containerClassName="grid grid-cols-4 gap-4 pt-2"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
