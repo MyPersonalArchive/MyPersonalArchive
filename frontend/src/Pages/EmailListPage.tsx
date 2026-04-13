@@ -5,7 +5,7 @@ import { SelectCheckbox, useSelection } from "../Utils/Selection"
 import { PreviewList } from "../Components/PreviewList"
 import type { Selection } from "../Utils/Selection"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faClose, faPaperclip, faRefresh, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faClose, faPaperclip, faRefresh, faSpinner, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { useParams } from "react-router-dom"
 import { useAtom, useAtomValue } from "jotai"
 import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
@@ -238,8 +238,15 @@ const EmailPreview = ({ email, createArchiveItemFromEmails, createBlobsFromAttac
 			</div>
 
 			<div className="p-4 overflow-y-scroll">
-				<div className="my-2" dangerouslySetInnerHTML={{ __html: email.htmlBody ?? email.body }}>
-				</div>
+				{email.htmlBody === undefined && email.body === undefined
+					? <div className="my-2 flex flex-col gap-3">
+						<div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+							<FontAwesomeIcon icon={faSpinner} spinPulse />
+							Loading email content...
+						</div>
+					</div>
+					: <div className="my-2" dangerouslySetInnerHTML={{ __html: email.htmlBody ?? email.body ?? "" }} />
+				}
 			</div>
 
 			<div className="p-4 border-t border-gray-300 sticky bottom-0 bg-white">
