@@ -23,7 +23,7 @@ export const EmailListPage = () => {
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
 
-	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments } = useMailProvider(externalAccountId)
+	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments, isStreamingEmails } = useMailProvider(externalAccountId)
 
 	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -142,6 +142,13 @@ export const EmailListPage = () => {
 							/>
 						</Dialog>
 					} />
+
+				{isStreamingEmails && (
+					<div className="flex justify-center items-center gap-2 py-4 text-gray-400 text-sm">
+						<FontAwesomeIcon icon={faSpinner} spinPulse />
+						Loading emails...
+					</div>
+				)}
 
 			</div>
 		</ >
