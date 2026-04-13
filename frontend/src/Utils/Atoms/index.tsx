@@ -42,4 +42,5 @@ export type EmailAttachment = {
 export const foldersByExternalAccountAtom = atom<Map<string, string[] | undefined>>(new Map())
 export const selectedFolderByExternalAccountAtom = atom<Map<string, string | undefined>>(new Map())
 export const emailsByExternalAccountAndFolderAtom = atom<Map<string, Map<string, FullEmail[]>>>(new Map())
+export const isStreamingEmailsAtom = atom<Map<string, boolean>>(new Map())
 

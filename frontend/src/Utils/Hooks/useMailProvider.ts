@@ -1,7 +1,7 @@
 import { useAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
 import { UUID } from "crypto"
-import { EmailContents, EmailSummary, EmailAttachment, emailsByExternalAccountAndFolderAtom, foldersByExternalAccountAtom, selectedFolderByExternalAccountAtom, FullEmail } from "../Atoms"
+import { EmailContents, EmailSummary, EmailAttachment, emailsByExternalAccountAndFolderAtom, foldersByExternalAccountAtom, selectedFolderByExternalAccountAtom, FullEmail, isStreamingEmailsAtom } from "../Atoms"
 
 
 // type FindAttachmentRequest = {
@@ -18,12 +18,14 @@ export function useMailProvider(externalAccountId: UUID) {
 	const [foldersByExternalAccount, setFoldersByExternalAccount] = useAtom(foldersByExternalAccountAtom)
 	const [emailsByExternalAccountAndFolder, setEmailsByExternalAccountAndFolder] = useAtom(emailsByExternalAccountAndFolderAtom)
 	const [selectedFolderByExternalAccount, setSelectedFolderByExternalAccount] = useAtom(selectedFolderByExternalAccountAtom)
+	const [isStreamingEmailsMap, setIsStreamingEmailsMap] = useAtom(isStreamingEmailsAtom)
 
 	const apiClient = useApiClient()
 
 	const folders = foldersByExternalAccount.get(externalAccountId) ?? []
 	const selectedFolder = selectedFolderByExternalAccount.get(externalAccountId)
 	const emails = emailsByExternalAccountAndFolder.get(externalAccountId)?.get(selectedFolder ?? "") ?? []
+	const isStreamingEmails = isStreamingEmailsMap.get(externalAccountId) ?? false
 
 	const fetchFolders = async () => {
 		const folders = await apiClient.get<string[]>("/api/query/listFolders", { externalAccountId })
@@ -37,6 +39,7 @@ export function useMailProvider(externalAccountId: UUID) {
 			const updatedCurrent = new Map(current).set(selectedFolder ?? "", [])
 			return new Map(prev).set(externalAccountId, updatedCurrent)
 		})
+		setIsStreamingEmailsMap(prev => new Map(prev).set(externalAccountId, true))
 
 		const { promise } = apiClient.getStream<EmailSummary>("/api/Email/GetEmailsStreaming", { externalAccountId, folder: selectedFolder },
 			email => {
@@ -51,6 +54,7 @@ export function useMailProvider(externalAccountId: UUID) {
 		)
 
 		await promise
+		setIsStreamingEmailsMap(prev => new Map(prev).set(externalAccountId, false))
 	}
 
 	const fetchEmailContents = async (emailSummary: EmailSummary) => {
@@ -96,6 +100,7 @@ export function useMailProvider(externalAccountId: UUID) {
 		createArchiveItemFromEmails,
 		createBlobsFromAttachments,
 		fetchFolders,
+		isStreamingEmails,
 		selectedFolder,
 		setSelectedFolder: (folder: string | undefined) => setSelectedFolderByExternalAccount(prev => new Map(prev).set(externalAccountId, folder)),
 		emails,
