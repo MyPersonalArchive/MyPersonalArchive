@@ -1,11 +1,11 @@
 using System.Security.Authentication;
 using Backend.Core.Authentication;
 using Backend.EmailIngestion;
-using Backend.EmailIngestion.ImapClientProviders;
-using Backend.WebApi.Services;
 using MailKit.Net.Imap;
+using MimeKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Backend.EmailIngestion.Services;
 
 namespace Backend.WebApi.Controllers;
 
@@ -17,7 +17,7 @@ namespace Backend.WebApi.Controllers;
 		- Same as above, exclude provider + unique messageId?
 	- We need to find a secure way to store oauth2 tokens and basic imap passwords
 	- We should include the complete email when user adds an attachments
-	- Implement more providers (maybe just outlook/hoitmail for now? Rest can come later)
+	- Implement more providers (maybe just outlook/hotmail for now? Rest can come later)
 		- Outlook/hotmail (is this the same now?)
 		- Zoho
 		- Apple
@@ -46,16 +46,20 @@ public class EmailController : ControllerBase
 	[Authorize()]
 	[HttpGet("download-attachment")]
 	public async Task<IActionResult> DownloadAttachment([FromQuery] Guid externalAccountId,
-														[FromQuery] string messageId,
+														[FromQuery] uint messageId,
 														[FromQuery] string fileName,
 														[FromQuery] string folder)
 	{
 		var imapClient = await GetImapClient(externalAccountId);
 
-		var stream = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
-		if (stream == null) return NotFound();
+		var mimeEntity = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
+		if (mimeEntity is not MimePart mimePart) return NotFound();
 
-		return File(stream, "application/octet-stream", fileName);
+		var stream = new MemoryStream();
+		await mimePart.Content.DecodeToAsync(stream);
+		stream.Position = 0;
+
+		return File(stream, mimePart.ContentType.MimeType, fileName);
 	}
 
 
