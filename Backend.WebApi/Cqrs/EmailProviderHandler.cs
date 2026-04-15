@@ -1,5 +1,5 @@
+using Backend.Core.Cqrs.Infrastructure;
 using Backend.EmailIngestion.Services;
-using Backend.WebApi.Cqrs.Infrastructure;
 
 
 namespace Backend.WebApi.Cqrs;

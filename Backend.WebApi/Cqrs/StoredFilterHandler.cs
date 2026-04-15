@@ -1,3 +1,4 @@
+using Backend.Core.Cqrs.Infrastructure;
 using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.WebApi.Services;
 

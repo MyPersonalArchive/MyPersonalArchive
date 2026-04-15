@@ -1,4 +1,4 @@
-using Backend.WebApi.Cqrs.Infrastructure;
+using Backend.Core.Cqrs.Infrastructure;
 
 namespace Backend.WebApi.Cqrs;
 
