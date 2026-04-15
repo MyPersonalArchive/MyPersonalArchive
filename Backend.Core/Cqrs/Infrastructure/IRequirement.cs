@@ -1,4 +1,8 @@
-namespace Backend.WebApi.Cqrs.Infrastructure;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+
+
+namespace Backend.Core.Cqrs.Infrastructure;
 
 
 public interface IRequirement

@@ -1,4 +1,5 @@
 using Backend.Core.Authentication;
+using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;

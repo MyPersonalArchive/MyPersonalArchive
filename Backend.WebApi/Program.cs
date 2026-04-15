@@ -15,11 +15,11 @@ using System.Reflection;
 using Backend.WebApi.Managers.Backup;
 using Backend.WebApi.Middleware;
 using Backend.Core.JsonConverters;
-using Backend.WebApi.Cqrs.Infrastructure;
 using MailKit.Net.Imap;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
 using Backend.Backup.Services;
+using Backend.WebApi.Cqrs.Infrastructure;
 
 namespace Backend.WebApi;
 

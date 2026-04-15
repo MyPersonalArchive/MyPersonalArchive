@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.App" Version="10.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.1" />
 		<PackageReference Include="NetVips" Version="3.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
