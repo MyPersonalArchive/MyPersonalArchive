@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
-using Backend.WebApi.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Backend.Core.Authentication;
 using System.Net.Http.Headers;
 using Backend.Core.Infrastructure;
+using Backend.EmailIngestion.Services;
 
 
 namespace Backend.WebApi.Controllers;

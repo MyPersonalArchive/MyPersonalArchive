@@ -2,10 +2,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
-using Backend.WebApi.Services;
+using Backend.EmailIngestion.Services;
+using Microsoft.Extensions.DependencyInjection;
+// using Backend.WebApi.Services;
+// using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace Backend.EmailIngestion.ImapClientProviders;
+namespace Backend.EmailIngestion;
 
 
 [RegisterService(ServiceLifetime.Scoped)]

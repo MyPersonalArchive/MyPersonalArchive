@@ -10,23 +10,23 @@ public static class IImapExtensions
 {
 	extension(IImapClient client)
 	{
-		public async Task<IList<EmailSummary>> GetEmailsByIds(string folder, List<string> messageIds)
-		{
-			var mailFolder = client.GetFolder(folder);
-			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+		// public async Task<IList<EmailSummary>> GetEmailsByIds(string folder, List<string> messageIds)
+		// {
+		// 	var mailFolder = client.GetFolder(folder);
+		// 	await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-			var uniqueIds = messageIds
-							.Select(UniqueId.Parse)
-							.ToList();
+		// 	var uniqueIds = messageIds
+		// 					.Select(UniqueId.Parse)
+		// 					.ToList();
 
-			var results = new List<EmailSummary>();
-			foreach (var uniqueId in uniqueIds)
-			{
-				results.Add(await GetEmailAsync(mailFolder, uniqueId));
-			}
+		// 	var results = new List<EmailSummary>();
+		// 	foreach (var uniqueId in uniqueIds)
+		// 	{
+		// 		results.Add(await GetEmailAsync(mailFolder, uniqueId));
+		// 	}
 
-			return results;
-		}
+		// 	return results;
+		// }
 
 
 		public async Task<IList<string>> GetAvailableFolders()
@@ -82,25 +82,77 @@ public static class IImapExtensions
 		}
 
 
-		public async Task<Stream?> DownloadAttachmentAsync(string folder, string messageId, string fileName)
+		public async Task<EmailBodyContent?> GetEmailContents(string folder, uint messageId)
 		{
 			var mailFolder = await client.GetFolderAsync(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-			var message = await mailFolder.GetMessageAsync(new UniqueId(uint.Parse(messageId)));
-
-			foreach (var part in message.BodyParts.OfType<MimePart>())
+			var summaries = await mailFolder.FetchAsync([new UniqueId(messageId)], MessageSummaryItems.BodyStructure);
+			var summary = summaries.FirstOrDefault();
+			if (summary == null)
 			{
-				if (part.IsAttachment && part.FileName == fileName)
-				{
-					var ms = new MemoryStream();
-					await part.Content.DecodeToAsync(ms);
-					ms.Position = 0;
-					return ms;
-				}
+				return null;
 			}
 
-			return null;
+			string? plainText = null;
+			string? htmlText = null;
+
+			if (summary.TextBody is BodyPartText textPart)
+			{
+				var entity = (TextPart)await mailFolder.GetBodyPartAsync(new UniqueId(messageId), textPart);
+				plainText = entity.Text;
+			}
+
+			if (summary.HtmlBody is BodyPartText htmlPart)
+			{
+				var entity = (TextPart)await mailFolder.GetBodyPartAsync(new UniqueId(messageId), htmlPart);
+				htmlText = entity.Text;
+			}
+
+			return new EmailBodyContent(plainText, htmlText);
+		}
+
+
+
+
+		public async Task<MimeEntity?> DownloadAttachmentAsync(string folder, uint messageId, string fileName)
+		{
+			var mailFolder = await client.GetFolderAsync(folder);
+			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+
+			var summaries = await mailFolder.FetchAsync([new UniqueId(messageId)], MessageSummaryItems.BodyStructure);
+			var summary = summaries.FirstOrDefault();
+			if (summary == null)
+			{
+				return null;
+			}
+
+            var attachementPart = summary.BodyParts.FirstOrDefault(part => part.IsAttachment && part.FileName == fileName);
+			if (attachementPart == null)
+			{
+				return null;
+			}
+
+			var mimeEntity = await mailFolder.GetBodyPartAsync(new UniqueId(messageId), attachementPart);
+			return mimeEntity;
+
+			// var mailFolder = await client.GetFolderAsync(folder);
+			// await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+
+			// var message = await mailFolder.GetMessageAsync(new UniqueId(messageId));
+
+			// foreach (var part in message.BodyParts.OfType<MimePart>())
+			// {
+			// 	if (part.IsAttachment && part.FileName == fileName)
+			// 	{
+			// 		var ms = new MemoryStream();
+			// 		await part.Content.DecodeToAsync(ms);
+			// 		ms.Position = 0;
+			// 		return ms;
+			// 	}
+			// }
+
+			// return null;
 		}
 	}
 
@@ -128,57 +180,66 @@ public static class IImapExtensions
 	}
 
 
-	private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
-	{
-		var message = await mailFolder.GetMessageAsync(uniqueId);
-		var email = new FullEmail
-		{
-			UniqueId = uniqueId.Id.ToString(),
-			Subject = message.Subject,
-			From = message.From
-				.Select(address => address is MailboxAddress mb
-					? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-					: new FullEmail.EmailAddress(address.Name, address.Name)
-				),
-			To = message.To
-				.Select(address => address is MailboxAddress mb
-					? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-					: new FullEmail.EmailAddress(address.Name, address.Name)
-				),
-			ReceivedTime = message.Date,
-			Body = message.TextBody,
-			HtmlBody = message.HtmlBody,
-			Attachments = message.BodyParts.OfType<MimePart>().Where(part => part.IsAttachment)
-				.Select(part => new FullEmail.EmailAttachment(part.FileName ?? "attachment", part.ContentType.MimeType, null /* FileSize is not set here, as it would require fully downloading the attachment */))
-		};
+	// private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
+	// {
+	// 	var message = await mailFolder.GetMessageAsync(uniqueId);
+	// 	var email = new FullEmail
+	// 	{
+	// 		UniqueId = uniqueId.Id.ToString(),
+	// 		Subject = message.Subject,
+	// 		From = message.From
+	// 			.Select(address => address is MailboxAddress mb
+	// 				? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+	// 				: new FullEmail.EmailAddress(address.Name, address.Name)
+	// 			),
+	// 		To = message.To
+	// 			.Select(address => address is MailboxAddress mb
+	// 				? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+	// 				: new FullEmail.EmailAddress(address.Name, address.Name)
+	// 			),
+	// 		ReceivedTime = message.Date,
+	// 		Body = message.TextBody,
+	// 		HtmlBody = message.HtmlBody,
+	// 		Attachments = message.BodyParts.OfType<MimePart>().Where(part => part.IsAttachment)
+	// 			.Select(part => new FullEmail.EmailAttachment(part.FileName ?? "attachment", part.ContentType.MimeType, null /* FileSize is not set here, as it would require fully downloading the attachment */))
+	// 	};
 
-		return email;
-	}
+	// 	return email;
+	// }
 
 
-	private static SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
-	{
-		var query = SearchQuery.All;
-		if (criteria?.Subject != null)
-		{
-			query = query.And(SearchQuery.SubjectContains(criteria.Subject));
-		}
-		if (criteria?.From != null)
-		{
-			query = query.And(SearchQuery.FromContains(criteria.From));
-		}
-		if (criteria?.To != null)
-		{
-			query = query.And(SearchQuery.ToContains(criteria.To));
-		}
-		if (criteria?.Since != null)
-		{
-			query = query.And(SearchQuery.DeliveredAfter(criteria.Since.Value));
-		}
-		return query;
-	}
+
+	// 	private static SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
+	// 	{
+	// 		var query = SearchQuery.All;
+	// 		if (criteria?.Subject != null)
+	// 		{
+	// 			query = query.And(SearchQuery.SubjectContains(criteria.Subject));
+	// 		}
+	// 		if (criteria?.From != null)
+	// 		{
+	// 			query = query.And(SearchQuery.FromContains(criteria.From));
+	// 		}
+	// 		if (criteria?.To != null)
+	// 		{
+	// 			query = query.And(SearchQuery.ToContains(criteria.To));
+	// 		}
+	// 		if (criteria?.Since != null)
+	// 		{
+	// 			query = query.And(SearchQuery.DeliveredAfter(criteria.Since.Value));
+	// 		}
+	// 		return query;
+	// 	}
 }
 
+
+// public class Attachment
+// {
+// 	public MemoryStream Stream { get; internal set; }
+// 	public string FileName { get; internal set; }
+// 	public string ContentType { get; internal set; }
+// 	public long FileSize { get; internal set; }
+// }
 
 public class EmailSummary
 {
@@ -219,7 +280,7 @@ public class FullEmail
 	public record EmailAddress(
 		string Address,
 		string? Name);
-    
+
 	public record EmailAttachment(
 		string FileName,
 		string ContentType,

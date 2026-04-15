@@ -13,6 +13,7 @@ import { UUID } from "crypto"
 import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 import { Dialog } from "../Components/Dialog"
+import { clickIfNotSelectingText } from "../Utils/event-helpers"
 
 
 export const EmailListPage = () => {
@@ -163,12 +164,15 @@ type EmailThumbnailProps = {
 	maximize: (email: FullEmail) => void
 }
 const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: EmailThumbnailProps) => {
+
+
+
 	return (
 		<div key={email.uniqueId} className="card" >
 			<div className="bg-gray-100 p-2">
 				<div className="flex flex-horizontal justify-between mb-2 ">
 					<div>
-						<span className="font-bold">{email.subject}</span>
+						<span className="font-bold" onClick={clickIfNotSelectingText(() => maximize(email))}>{email.subject}</span>
 						{email.attachments.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 					</div>
 					<div>

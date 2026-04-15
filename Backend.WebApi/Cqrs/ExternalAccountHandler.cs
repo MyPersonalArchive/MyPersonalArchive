@@ -1,6 +1,6 @@
 using Backend.Core.Authentication;
+using Backend.EmailIngestion.Services;
 using Backend.WebApi.Cqrs.Infrastructure;
-using Backend.WebApi.Services;
 
 
 namespace Backend.WebApi.Cqrs;

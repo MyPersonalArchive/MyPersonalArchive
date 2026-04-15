@@ -41,5 +41,4 @@ public class SignalRService : ISignalRService
 		await _hubContext.Clients.Users(_username).SendAsync("ReceiveMessage", message);
 	}
 	#endregion
-
 }

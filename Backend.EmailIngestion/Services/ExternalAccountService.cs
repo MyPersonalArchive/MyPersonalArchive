@@ -3,12 +3,11 @@ using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
-using Backend.WebApi.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 
-namespace Backend.WebApi.Services
+namespace Backend.EmailIngestion.Services
 {
 
 	[RegisterService(ServiceLifetime.Scoped)]
@@ -39,7 +38,7 @@ namespace Backend.WebApi.Services
 		// public async Task ChangeExternalAccountSettingsAsync(Func<ExternalAccountSettings, ExternalAccountSettings> changeDelegate)
 		// {
 		// 	await ChangeSettingsAsync(changeDelegate);
-		// 	await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+		// 	await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ExternalAccountsUpdated", null));
 		// }
 
 		public async Task Replace(ExternalAccountSettings.Account account)

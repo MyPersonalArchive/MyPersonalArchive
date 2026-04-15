@@ -2,10 +2,11 @@ using Backend.Core;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
-namespace Backend.WebApi.Services;
+namespace Backend.EmailIngestion.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class EmailProviderService : SystemSettingsServiceBase<EmailProviderSettings>
