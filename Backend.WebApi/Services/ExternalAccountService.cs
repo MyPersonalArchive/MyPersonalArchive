@@ -1,6 +1,7 @@
 using Backend.Core;
 using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
 using Backend.WebApi.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,9 +16,9 @@ namespace Backend.WebApi.Services
 	{
 		protected override string FileName => "ExternalAccountSettings.json";
 
-		private readonly SignalRService _signalRService;
+		private readonly ISignalRService _signalRService;
 
-		public ExternalAccountService(IOptions<AppConfig> config, IAmbientDataResolver resolver, SignalRService signalRService)
+		public ExternalAccountService(IOptions<AppConfig> config, IAmbientDataResolver resolver, ISignalRService signalRService)
 			: base(config, resolver)
 		{
 			_signalRService = signalRService;
@@ -32,7 +33,7 @@ namespace Backend.WebApi.Services
 		public async Task StoreExternalAccountSettingsAsync(ExternalAccountSettings settings)
 		{
 			await SaveSettingsAsync(settings);
-			await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+			await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ExternalAccountsUpdated", null));
 		}
 
 		// public async Task ChangeExternalAccountSettingsAsync(Func<ExternalAccountSettings, ExternalAccountSettings> changeDelegate)
@@ -56,7 +57,7 @@ namespace Backend.WebApi.Services
 				}
 				return settings;
 			});
-			await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+			await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ExternalAccountsUpdated", null));
 		}
 
 		public async Task AddOrReplace(ExternalAccountSettings.Account account)
@@ -75,7 +76,7 @@ namespace Backend.WebApi.Services
 				}
 				return settings;
 			});
-			await _signalRService.PublishToTenantChannel(new SignalRService.Message("ExternalAccountsUpdated", null));
+			await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ExternalAccountsUpdated", null));
 		}
 	}
 

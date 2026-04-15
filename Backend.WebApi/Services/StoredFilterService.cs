@@ -1,5 +1,6 @@
 using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
 using Backend.WebApi.SignalR;
 using Microsoft.Extensions.Options;
@@ -11,9 +12,9 @@ public class StoredFilterService : TenantSettingsServiceBase<StoredFilterSetting
 {
 	protected override string FileName => "StoredFilterSettings.json";
 
-	private readonly SignalRService _signalRService;
+	private readonly ISignalRService _signalRService;
 
-	public StoredFilterService(IOptions<AppConfig> config, IAmbientDataResolver resolver, SignalRService signalRService)
+	public StoredFilterService(IOptions<AppConfig> config, IAmbientDataResolver resolver, ISignalRService signalRService)
 		: base(config, resolver)
 	{
 		_signalRService = signalRService;
@@ -28,7 +29,7 @@ public class StoredFilterService : TenantSettingsServiceBase<StoredFilterSetting
 	public async Task StoreStoredFilterSettingsAsync(StoredFilterSettings settings)
 	{
 		await SaveSettingsAsync(settings);
-		await _signalRService.PublishToTenantChannel(new SignalRService.Message("StoredFiltersUpdated", null));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("StoredFiltersUpdated", null));
 	}
 }
 

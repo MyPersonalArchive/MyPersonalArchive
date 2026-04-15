@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 
 namespace Backend.WebApi.SignalR;
 
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class SignalRService
+public class SignalRService : ISignalRService
 {
 	private readonly IHubContext<NotificationHub> _hubContext;
 	private readonly int? _tenantId;
@@ -21,40 +22,24 @@ public class SignalRService
 
 	#region SignalR server methods
 	// public async Task PublishToSharedChannel(object data) => await PublishToSharedChannel(new Message(data));
-	public async Task PublishToSharedChannel(Message message)
+	public async Task PublishToSharedChannel(ISignalRService.Message message)
 	{
 		await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
 	}
 
 
 	// public async Task PublishToTenantChannel(string messageName, object data) => await PublishToTenantChannel(new Message(messageName, data));
-	public async Task PublishToTenantChannel(Message message)
+	public async Task PublishToTenantChannel(ISignalRService.Message message)
 	{
 		await _hubContext.Clients.Group($"tenantId={_tenantId}").SendAsync("ReceiveMessage", message);
 	}
 
 
 	// public async Task PublishToUserChannel(string messageName, object data) => await PublishToUserChannel(new Message(messageName, data));
-	public async Task PublishToUserChannel(Message message)
+	public async Task PublishToUserChannel(ISignalRService.Message message)
 	{
 		await _hubContext.Clients.Users(_username).SendAsync("ReceiveMessage", message);
 	}
 	#endregion
 
-
-	public class Message
-	{
-		public string MessageType { get; private set; }
-		public object? Data { get; private set; }
-
-		// public Message(object data)
-		// 	: this(data.GetType().Name, data)
-		// { }
-
-		public Message(string messageType, object? data)
-		{
-			MessageType = messageType;
-			Data = data;
-		}
-	}
 }

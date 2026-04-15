@@ -1,7 +1,7 @@
 using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
-using Backend.WebApi.SignalR;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
@@ -12,9 +12,9 @@ public class EmailProviderService : SystemSettingsServiceBase<EmailProviderSetti
 {
 	protected override string FileName => "EmailProviderSettings.json";
 
-	private readonly SignalRService _signalRService;
+	private readonly ISignalRService _signalRService;
 
-	public EmailProviderService(IOptions<AppConfig> config, IAmbientDataResolver resolver, SignalRService signalRService)
+	public EmailProviderService(IOptions<AppConfig> config, IAmbientDataResolver resolver, ISignalRService signalRService)
 		: base(config, resolver)
 	{
 		_signalRService = signalRService;

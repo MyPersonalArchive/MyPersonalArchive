@@ -1,15 +1,14 @@
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 using Backend.DbModel.Database.EntityModels;
-using Backend.WebApi.SignalR;
-using Message = Backend.WebApi.SignalR.SignalRService.Message;
 
 namespace Backend.WebApi.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class BlobService
 {
-	private readonly SignalRService _signalRService;
-	public BlobService(SignalRService signalRService)
+	private readonly ISignalRService _signalRService;
+	public BlobService(ISignalRService signalRService)
 	{
 		_signalRService = signalRService;
 	}
@@ -24,7 +23,7 @@ public class BlobService
 			return;
 		}
 
-		await _signalRService.PublishToTenantChannel(new Message("BlobsAdded", blobIds));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsAdded", blobIds));
 	}
 
 	public async Task PublishBlobsUpdatedMessage(IEnumerable<Blob> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
@@ -35,7 +34,7 @@ public class BlobService
 			return;
 		}
 
-		await _signalRService.PublishToTenantChannel(new Message("BlobsUpdated", blobIds));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsUpdated", blobIds));
 	}
 
 	public async Task PublishBlobsDeletedMessage(IEnumerable<Blob> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id).ToList());
@@ -46,7 +45,7 @@ public class BlobService
 			return;
 		}
 
-		await _signalRService.PublishToTenantChannel(new Message("BlobsDeleted", blobIds));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsDeleted", blobIds));
 	}
 	#endregion
 }

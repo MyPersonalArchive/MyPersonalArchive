@@ -1,15 +1,14 @@
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 using Backend.DbModel.Database.EntityModels;
-using Backend.WebApi.SignalR;
-using Message = Backend.WebApi.SignalR.SignalRService.Message;
 
 namespace Backend.WebApi.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class ArchiveItemService
 {
-	private readonly SignalRService _signalRService;
-	public ArchiveItemService(SignalRService signalRService)
+	private readonly ISignalRService _signalRService;
+	public ArchiveItemService(ISignalRService signalRService)
 	{
 		_signalRService = signalRService;
 	}
@@ -24,7 +23,7 @@ public class ArchiveItemService
 			return;
 		}
 
-		await _signalRService.PublishToTenantChannel(new Message("ArchiveItemsAdded", archiveItemIds));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsAdded", archiveItemIds));
 	}
 
 	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
@@ -35,7 +34,7 @@ public class ArchiveItemService
 			return;
 		}
 
-		await _signalRService.PublishToTenantChannel(new Message("ArchiveItemsUpdated", archiveItemIds));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsUpdated", archiveItemIds));
 	}
 
 	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id).ToList());
@@ -46,7 +45,7 @@ public class ArchiveItemService
 			return;
 		}
 
-		await _signalRService.PublishToTenantChannel(new Message("ArchiveItemsDeleted", archiveItemIds));
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsDeleted", archiveItemIds));
 	}
 	#endregion
 }

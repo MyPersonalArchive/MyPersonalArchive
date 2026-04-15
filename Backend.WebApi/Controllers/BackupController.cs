@@ -1,6 +1,7 @@
 using Backend.Backup;
 using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Services;
 using Backend.DbModel.Database;
 using Backend.WebApi.SignalR;
 using Microsoft.AspNetCore.Mvc;
@@ -71,9 +72,9 @@ public class BackupController : ControllerBase
         else
         {
             // Notify frontend that backup failed to start
-            var signalRService = HttpContext.RequestServices.GetRequiredService<SignalRService>();
+            var signalRService = HttpContext.RequestServices.GetRequiredService<ISignalRService>();
             await signalRService.PublishToTenantChannel(
-                new SignalRService.Message("BackupFailed", new { Error = "Backup is already running for this tenant", Target = request.Target })
+                new ISignalRService.Message("BackupFailed", new { Error = "Backup is already running for this tenant", Target = request.Target })
             );
             return BadRequest("Backup is already running for this tenant");
         }
