@@ -15,6 +15,7 @@ public class DispatchController : ControllerBase
 {
 	private readonly ILogger<DispatchController> _logger;
 	private readonly IServiceProvider _services;
+	private readonly HandlerRegistry _handlerRegistry;
 
 	private readonly JsonSerializerOptions _serializerOptions = new()
 	{
@@ -22,17 +23,18 @@ public class DispatchController : ControllerBase
 	};
 
 
-	public DispatchController(IServiceProvider services, ILogger<DispatchController> logger)
+	public DispatchController(IServiceProvider services, ILogger<DispatchController> logger, HandlerRegistry handlerRegistry)
 	{
 		_logger = logger;
 		_services = services;
+		_handlerRegistry = handlerRegistry;
 	}
 
 
 	[HttpGet("query/{queryName}")]
 	public async Task<IActionResult> GetQuery(string queryName, [FromQuery] Dictionary<string, string> parameters)
 	{
-		var queryHandlerType = ResolveQueryHandler(queryName);
+		var queryHandlerType = _handlerRegistry.ResolveQueryHandler(queryName);
 
 		if (queryHandlerType == null)
 		{
@@ -80,7 +82,7 @@ public class DispatchController : ControllerBase
 	[HttpPost("query/{queryName}")]
 	public async Task<IActionResult> PostQuery(string queryName)
 	{
-		var queryHandlerType = ResolveQueryHandler(queryName);
+		var queryHandlerType = _handlerRegistry.ResolveQueryHandler(queryName);
 
 		if (queryHandlerType == null)
 		{
@@ -126,7 +128,7 @@ public class DispatchController : ControllerBase
 	[HttpPost("execute/{commandName}")]
 	public async Task<IActionResult> PostCommand(string commandName)
 	{
-		var commandHandlerType = ResolveCommandHandler(commandName);
+		var commandHandlerType = _handlerRegistry.ResolveCommandHandler(commandName);
 
 		if (commandHandlerType == null)
 		{
@@ -167,7 +169,7 @@ public class DispatchController : ControllerBase
 	[HttpPut("execute/{commandName}")]
 	public async Task<IActionResult> PutCommand(string commandName)
 	{
-		var commandHandlerType = ResolveCommandHandler(commandName);
+		var commandHandlerType = _handlerRegistry.ResolveCommandHandler(commandName);
 
 		if (commandHandlerType == null)
 		{
@@ -208,7 +210,7 @@ public class DispatchController : ControllerBase
 	[HttpDelete("execute/{commandName}")]
 	public async Task<IActionResult> DeleteCommand(string commandName, [FromQuery] Dictionary<string, string> parameters)
 	{
-		var commandHandlerType = ResolveCommandHandler(commandName);
+		var commandHandlerType = _handlerRegistry.ResolveCommandHandler(commandName);
 
 		if (commandHandlerType == null)
 		{
@@ -246,47 +248,6 @@ public class DispatchController : ControllerBase
 
 		return NoContent();
 	}
-
-	private Type? ResolveQueryHandler(string queryName)
-	{
-		//TODO: Consider caching the results for performance
-		//TODO: How to handle multiple assemblies? All relevant assemblies should be scanned.
-
-		var assembly = typeof(DispatchController).Assembly;
-
-		// Get queryhandlers that can handle the query with the given name
-		return assembly.GetTypes()
-			.Where(type => type.IsClass && !type.IsAbstract)
-			.Where(type => type.GetInterfaces()
-				.Any(i => i.IsGenericType
-					&& (
-						i.GetGenericTypeDefinition() == typeof(IAsyncQueryHandler<,>)
-						|| i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)
-					)
-					&& i.GetGenericArguments()[0].Name.Equals(queryName, StringComparison.OrdinalIgnoreCase)
-				))
-			.SingleOrDefault();
-	}
-
-
-	private Type? ResolveCommandHandler(string commandName)
-	{
-		var assembly = typeof(DispatchController).Assembly;
-
-		// Get all types implementing ICommandHandler<TCommand>
-		return assembly.GetTypes()
-			.Where(type => type.IsClass && !type.IsAbstract)
-			.Where(type => type.GetInterfaces()
-				.Any(i => i.IsGenericType
-					&& (
-						i.GetGenericTypeDefinition() == typeof(IAsyncCommandHandler<>)
-						|| i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
-					)
-					&& i.GetGenericArguments()[0].Name.Equals(commandName, StringComparison.OrdinalIgnoreCase)
-				))
-			.SingleOrDefault();
-	}
-
 
 	private IEnumerable<string> CheckRequirements(Type queryOrCommandType)
 	{
