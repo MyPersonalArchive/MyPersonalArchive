@@ -31,15 +31,11 @@ namespace Backend.WebApi.Controllers;
 // [Authorize(Policy = "TenantIdPolicy")]
 public class EmailController : ControllerBase
 {
-	private readonly ExternalAccountService _externalAccountService;
-	private readonly AccessTokenHelper _accessTokenHelper;
-	private readonly EmailProviderService _emailProviderService;
+	private readonly ImapClientFactory _imapClientFactory;
 
-	public EmailController(ExternalAccountService externalAccountService, AccessTokenHelper accessTokenHelper, EmailProviderService emailProviderService)
+	public EmailController(ImapClientFactory imapClientFactory)
 	{
-		_externalAccountService = externalAccountService;
-		_accessTokenHelper = accessTokenHelper;
-		_emailProviderService = emailProviderService;
+		_imapClientFactory = imapClientFactory;
 	}
 
 
@@ -50,7 +46,7 @@ public class EmailController : ControllerBase
 														[FromQuery] string fileName,
 														[FromQuery] string folder)
 	{
-		var imapClient = await GetImapClient(externalAccountId);
+		var imapClient = await _imapClientFactory.GetImapClient(externalAccountId);
 
 		var mimeEntity = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
 		if (mimeEntity is not MimePart mimePart) return NotFound();
@@ -67,7 +63,7 @@ public class EmailController : ControllerBase
 	[HttpGet("GetEmailsStreaming")]
 	public async Task GetEmailsStreaming([FromQuery] Guid externalAccountId, [FromQuery] string folder)
 	{
-		var imapClient = await GetImapClient(externalAccountId);
+		var imapClient = await _imapClientFactory.GetImapClient(externalAccountId);
 
 		Response.Headers.ContentType = "text/event-stream";
 		var jsonOptions = new System.Text.Json.JsonSerializerOptions
@@ -79,42 +75,6 @@ public class EmailController : ControllerBase
 			var json = System.Text.Json.JsonSerializer.Serialize(email, jsonOptions);
 			await Response.WriteAsync($"data: {json}\n\n");
 			await Response.Body.FlushAsync();
-		}
-	}
-
-	private async Task<IImapClient> GetImapClient(Guid externalAccountId)
-	{
-		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-		var externalAccount = externalAccountSettings.GetExternalAccount(externalAccountId);
-
-		var emailProviderSettings = await _emailProviderService.GetEmailProviderSettingsAsync();
-		var authType = emailProviderSettings.GetAuthType(externalAccount.Provider, externalAccount.Credentials.Type);
-		var emailProvider = emailProviderSettings.GetEmailProvider(externalAccount.Provider);
-
-		var auth = externalAccount.Credentials;
-
-		var refreshedAuth = await _accessTokenHelper.RefreshAccessTokenIfNeeded(auth, authType);
-		if (refreshedAuth != auth)
-		{
-			externalAccount.Credentials = refreshedAuth;
-			await _externalAccountService.Replace(externalAccount);
-		}
-
-		try
-		{
-			var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
-			return imapClient;
-		}
-		catch (AuthenticationException) when (refreshedAuth is OAuthContext)
-		{
-			// Token was rejected by the server despite our clock saying it's valid.
-			// This can happen due to clock drift, revocation, or provider-side expiry.
-			// Force a refresh and retry once.
-			var forcedAuth = await _accessTokenHelper.ForceRefreshAccessToken(refreshedAuth, authType);
-			externalAccount.Credentials = forcedAuth;
-			await _externalAccountService.Replace(externalAccount);
-
-			return await ImapClientFactory.ConnectAsync(forcedAuth, externalAccount.EmailAddress, emailProvider);
 		}
 	}
 }
