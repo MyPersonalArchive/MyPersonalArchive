@@ -1,10 +1,8 @@
 using Backend.Core.Authentication;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.EmailIngestion.Services;
-using Backend.WebApi.Cqrs.Infrastructure;
 
-
-namespace Backend.WebApi.Cqrs;
+namespace Backend.EmailIngestion.Cqrs;
 
 
 public class ExternalAccount

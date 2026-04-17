@@ -1,8 +1,7 @@
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.EmailIngestion.Services;
 
-
-namespace Backend.WebApi.Cqrs;
+namespace Backend.EmailIngestion.Cqrs;
 
 
 public class EmailProvider
