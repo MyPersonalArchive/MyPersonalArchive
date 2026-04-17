@@ -46,7 +46,7 @@ public class DispatchController : ControllerBase
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
 		var failureReasons = CheckRequirements(queryType);
-		if (failureReasons.Any())
+		if (failureReasons.Count != 0)
 		{
 			return BadRequest(string.Join("; ", failureReasons));
 		}
@@ -94,7 +94,7 @@ public class DispatchController : ControllerBase
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
 		var failureReasons = CheckRequirements(queryType);
-		if (failureReasons.Any())
+		if (failureReasons.Count != 0)
 		{
 			return BadRequest(string.Join("; ", failureReasons));
 		}
@@ -140,7 +140,7 @@ public class DispatchController : ControllerBase
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
 		var failureReasons = CheckRequirements(commandType);
-		if (failureReasons.Any())
+		if (failureReasons.Count != 0)
 		{
 			return BadRequest(string.Join("; ", failureReasons));
 		}
@@ -160,7 +160,7 @@ public class DispatchController : ControllerBase
 		else
 		{
 			// Sync handler
-			var result = handleMethod.Invoke(handler, [command]);
+			handleMethod.Invoke(handler, [command]);
 		}
 
 		return NoContent();
@@ -181,7 +181,7 @@ public class DispatchController : ControllerBase
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
 		var failureReasons = CheckRequirements(commandType);
-		if (failureReasons.Any())
+		if (failureReasons.Count != 0)
 		{
 			return BadRequest(string.Join("; ", failureReasons));
 		}
@@ -201,7 +201,7 @@ public class DispatchController : ControllerBase
 		else
 		{
 			// Sync handler
-			var result = handleMethod.Invoke(handler, [command]);
+			handleMethod.Invoke(handler, [command]);
 		}
 
 		return NoContent();
@@ -222,7 +222,7 @@ public class DispatchController : ControllerBase
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
 		var failureReasons = CheckRequirements(commandType);
-		if (failureReasons.Any())
+		if (failureReasons.Count != 0)
 		{
 			return BadRequest(string.Join("; ", failureReasons));
 		}
@@ -243,19 +243,19 @@ public class DispatchController : ControllerBase
 		else
 		{
 			// Sync handler
-			var result = handleMethod.Invoke(handler, [command]);
+			handleMethod.Invoke(handler, [command]);
 		}
 
 		return NoContent();
 	}
 
-	private IEnumerable<string> CheckRequirements(Type queryOrCommandType)
+	private ICollection<string> CheckRequirements(Type queryOrCommandType)
 	{
 		var currentAttributes = queryOrCommandType.GetCustomAttributes(typeof(IRequirement), true).Cast<IRequirement>();
 		//Mandatory attribute "types": authentication requirement, permission requirement, etc.
 		//Optional attribute "types": tenant requirement, feature flag requirement, etc.
 
-		var requiredAttributes = new Type[] { typeof(RequireAuthenticationAttribute) };
+		var requiredAttributes = new[] { typeof(RequireAuthenticationAttribute) };
 		var missingRequiredAttributes = requiredAttributes
 			.Where(requiredAttributeType =>
 				!currentAttributes.Any(
@@ -264,7 +264,7 @@ public class DispatchController : ControllerBase
 					)
 				)
 			.ToList();
-		if (missingRequiredAttributes.Any())
+		if (missingRequiredAttributes.Count != 0)
 		{
 			return [$"Missing required requirement attributes: {string.Join(", ", missingRequiredAttributes.Select(t => t.Name))}"];
 		}
