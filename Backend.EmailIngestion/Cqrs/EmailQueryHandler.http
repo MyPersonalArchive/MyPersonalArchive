@@ -1,0 +1,33 @@
+@Backend_WebApi_HostAddress = https://host.docker.internal:5054
+
+
+### Sign out to clear cookie
+POST {{Backend_WebApi_HostAddress}}/api/authentication/signout
+
+
+
+### Login to get a token
+# @name login
+POST {{Backend_WebApi_HostAddress}}/api/authentication/signin
+Content-Type: application/json
+
+{
+  "Username": "admin@localhost",
+  "Password": "p@$$w0rd"
+}
+
+
+
+### Get external accounts
+# @name getExternalAccounts
+GET {{Backend_WebApi_HostAddress}}/api/query/getExternalAccounts
+X-Tenant-Id: -1
+
+@firstAccountId = {{getExternalAccounts.response.body.$[0].id}}
+
+
+
+### Test ListFolders
+GET {{Backend_WebApi_HostAddress}}/api/query/listFolders?externalAccountId={{firstAccountId}}
+X-Tenant-Id: -1
+
