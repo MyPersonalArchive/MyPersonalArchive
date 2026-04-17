@@ -1,11 +1,6 @@
-using Backend.Core.Authentication;
 using Backend.Core.Cqrs.Infrastructure;
-using Backend.EmailIngestion;
-using Backend.EmailIngestion.Services;
-using MailKit.Net.Imap;
-using MailKit.Security;
 
-namespace Backend.WebApi.Cqrs;
+namespace Backend.EmailIngestion.Cqrs;
 
 
 [RequireAllowedTenantId]
