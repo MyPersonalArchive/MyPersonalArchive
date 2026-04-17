@@ -22,7 +22,7 @@ public class ImapClientFactory
 		_accessTokenHelper = accessTokenHelper;
 	}
 
-	private async Task<IImapClient> GetImapClient(Guid externalAccountId)
+	public async Task<IImapClient> GetImapClient(Guid externalAccountId)
 	{
 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
 		var externalAccount = externalAccountSettings.GetExternalAccount(externalAccountId);
@@ -59,7 +59,7 @@ public class ImapClientFactory
 	}
 
 
-	public static async Task<IImapClient> ConnectAsync(IAuthContext auth, string emailAddress, EmailProviderSettings.EmailProvider emailProvider)
+	private static async Task<IImapClient> ConnectAsync(IAuthContext auth, string emailAddress, EmailProviderSettings.EmailProvider emailProvider)
 	{
 		var imapClient = new ImapClient();
 		await imapClient.ConnectAsync(emailProvider.ImapHost, emailProvider.ImapPort, SecureSocketOptions.SslOnConnect);

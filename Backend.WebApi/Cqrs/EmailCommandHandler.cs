@@ -43,27 +43,20 @@ public class EmailCommandHandler :
 	IAsyncCommandHandler<CreateArchiveItemsFromEmails>,
 	IAsyncCommandHandler<CreateBlobsFromAttachments>
 {
-	private readonly ExternalAccountService _externalAccountService;
-	private readonly EmailProviderService _emailProviderService;
-	private readonly AccessTokenHelper _accessTokenHelper;
-
+	private readonly ImapClientFactory _imapClientFactory;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly IFileStorageProvider _fileProvider;
 
-	public EmailCommandHandler(ExternalAccountService externalAccountService,
-							EmailProviderService emailProviderService,
+	public EmailCommandHandler(ImapClientFactory imapClientFactory,
 							MpaDbContext dbContext,
 							IAmbientDataResolver resolver,
-							IFileStorageProvider fileProvider,
-							AccessTokenHelper accessTokenHelper)
+							IFileStorageProvider fileProvider)
 	{
-		_externalAccountService = externalAccountService;
-		_emailProviderService = emailProviderService;
+		_imapClientFactory = imapClientFactory;
 		_dbContext = dbContext;
 		_resolver = resolver;
 		_fileProvider = fileProvider;
-		_accessTokenHelper = accessTokenHelper;
 	}
 
 
@@ -147,43 +140,6 @@ public class EmailCommandHandler :
 		// }
 
 		// await _dbContext.SaveChangesAsync();
-	}
-
-
-	private async Task<IImapClient> GetImapClient(Guid externalAccountId)
-	{
-		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-		var externalAccount = externalAccountSettings.GetExternalAccount(externalAccountId);
-
-		var emailProviderSettings = await _emailProviderService.GetEmailProviderSettingsAsync();
-		var authType = emailProviderSettings.GetAuthType(externalAccount.Provider, externalAccount.Credentials.Type);
-		var emailProvider = emailProviderSettings.GetEmailProvider(externalAccount.Provider);
-
-		var auth = externalAccount.Credentials;
-
-		var refreshedAuth = await _accessTokenHelper.RefreshAccessTokenIfNeeded(auth, authType);
-		if (refreshedAuth != auth)
-		{
-			externalAccount.Credentials = refreshedAuth;
-			await _externalAccountService.Replace(externalAccount);
-		}
-
-		try
-		{
-			var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
-			return imapClient;
-		}
-		catch (AuthenticationException) when (refreshedAuth is OAuthContext)
-		{
-			// Token was rejected by the server despite our clock saying it's valid.
-			// This can happen due to clock drift, revocation, or provider-side expiry.
-			// Force a refresh and retry once.
-			var forcedAuth = await _accessTokenHelper.ForceRefreshAccessToken(refreshedAuth, authType);
-			externalAccount.Credentials = forcedAuth;
-			await _externalAccountService.Replace(externalAccount);
-
-			return await ImapClientFactory.ConnectAsync(forcedAuth, externalAccount.EmailAddress, emailProvider);
-		}
 	}
 
 
