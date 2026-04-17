@@ -2,7 +2,7 @@ namespace Backend.Core.Infrastructure;
 
 public interface IAmbientDataResolver
 {
-    public abstract int? GetCurrentTenantId();
+    public int? GetCurrentTenantId();
 
-    public abstract string GetCurrentUsername();
+    public string GetCurrentUsername();
 }

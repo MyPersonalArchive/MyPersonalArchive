@@ -25,7 +25,7 @@ public class HandlerDiscovery
 		// Register all handlers
 		var handlerTypes = assemblies
 			.SelectMany(assembly => assembly.GetTypes())
-			.Where(type => type.IsClass && !type.IsAbstract)
+			.Where(type => type is { IsClass: true, IsAbstract: false })
 			.Where(type => typeof(IHandler).IsAssignableFrom(type))
 			.ToList();
 
