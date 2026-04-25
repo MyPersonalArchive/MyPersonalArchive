@@ -62,7 +62,7 @@ public class DispatchController : ControllerBase
 		{
 			// Async handler
 			var task = (Task)handleMethod.Invoke(handler, [query])!;
-			await task.ConfigureAwait(false);
+			await task;
 
 			// Get result from task
 			var resultProperty = task.GetType().GetProperty("Result");
@@ -109,7 +109,7 @@ public class DispatchController : ControllerBase
 		{
 			// Async handler
 			var task = (Task)handleMethod.Invoke(handler, [query])!;
-			await task.ConfigureAwait(false);
+			await task;
 
 			// Get result from task
 			var resultProperty = task.GetType().GetProperty("Result");
@@ -155,7 +155,7 @@ public class DispatchController : ControllerBase
 		{
 			// Async handler
 			var task = (Task)handleMethod.Invoke(handler, [command])!;
-			await task.ConfigureAwait(false);
+			await task;
 		}
 		else
 		{
@@ -196,7 +196,7 @@ public class DispatchController : ControllerBase
 		{
 			// Async handler
 			var task = (Task)handleMethod.Invoke(handler, [command])!;
-			await task.ConfigureAwait(false);
+			await task;
 		}
 		else
 		{
@@ -238,7 +238,7 @@ public class DispatchController : ControllerBase
 		{
 			// Async handler
 			var task = (Task)handleMethod.Invoke(handler, [command])!;
-			await task.ConfigureAwait(false);
+			await task;
 		}
 		else
 		{

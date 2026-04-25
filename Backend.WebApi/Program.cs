@@ -41,6 +41,8 @@ public static class Program
 			ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 		};
 
+		builder.Services.AddHttpContextAccessor();
+
 		var executingAssembly = Assembly.GetExecutingAssembly();
 		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);	//TODO: Include only specific assemblies? All referenced assemblies could be a lot.
 
@@ -57,13 +59,10 @@ public static class Program
 		builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
 		builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
 
-		builder.Services.AddHttpContextAccessor();
-		builder.Services.AddSingleton<IAuthorizationHandler, TenantIdRequirementsAuthorizationHandler>();
+		builder.Services.AddScoped<IAuthorizationHandler, TenantIdRequirementsAuthorizationHandler>();
 
 		builder.Services.AddDbContext<MpaDbContext>();
 
-		builder.Services.AddScoped<IAmbientDataResolver, WebApiAmbientDataResolver>();
-		builder.Services.AddTransient<PasswordHasher>();
 		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
 
 		builder.Services.AddHttpClient();

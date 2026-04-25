@@ -3,7 +3,8 @@ using Backend.Core.Infrastructure;
 
 namespace Backend.WebApi;
 
-internal class WebApiAmbientDataResolver : IAmbientDataResolver
+[RegisterService()]
+public class WebApiAmbientDataResolver : IAmbientDataResolver
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;
 
