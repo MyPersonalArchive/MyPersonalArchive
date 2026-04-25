@@ -79,10 +79,10 @@ export function useMailProvider(externalAccountId: UUID) {
 			emailFolder: selectedFolder,
 			messageIds: emails.map(email => email.uniqueId)
 		}
-		await apiClient.post("/api/command/createArchiveItemsFromEmails", params)
+		await apiClient.post("/api/execute/createArchiveItemsFromEmails", params)
 	}
 
-	const createBlobsFromAttachments = async (messageId: string, emailAttachments: EmailAttachment[]) => {
+	const createBlobsFromAttachments = async (messageId: number, emailAttachments: EmailAttachment[]) => {
 		const params = {
 			externalAccountId,
 			emailFolder: selectedFolder,
@@ -91,7 +91,7 @@ export function useMailProvider(externalAccountId: UUID) {
 				fileName: a.fileName
 			}))
 		}
-		await apiClient.post("/api/command/createBlobsFromAttachments", params)
+		await apiClient.post("/api/execute/createBlobsFromAttachments", params)
 	}
 
 	return {

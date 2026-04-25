@@ -1,7 +1,10 @@
+using Backend.Core;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
+using Backend.DbModel.Database.EntityModels;
+using MimeKit;
 
 namespace Backend.EmailIngestion.Cqrs;
 
@@ -11,7 +14,7 @@ public class CreateArchiveItemsFromEmails : ICommand<CreateArchiveItemsFromEmail
 {
 	public required Guid ExternalAccountId { get; set; }
 	public required string EmailFolder { get; set; }
-	public required List<string> MessageIds { get; set; }
+	public required List<uint> MessageIds { get; set; }
 }
 
 
@@ -24,7 +27,7 @@ public class CreateBlobsFromAttachments : ICommand<CreateBlobsFromAttachments>
 
 	public class AttachmentReference
 	{
-		public required string MessageId { get; set; }
+		public required uint MessageId { get; set; }
 		public required string FileName { get; set; }
 	}
 }
@@ -112,99 +115,54 @@ public class EmailCommandHandler :
 
 	public async Task Handle(CreateBlobsFromAttachments command)
 	{
-		throw new NotImplementedException("");
 
-		// if (command.AttachmentReferences.Count == 0)
-		// {
-		// 	return;
-		// }
+		if (command.AttachmentReferences.Count == 0)
+		{
+			return;
+		}
 
-		// var imapClient = await GetImapClient(command.ExternalAccountId);
+		var imapClient = await _imapClientFactory.GetImapClient(command.ExternalAccountId);
 
-		// foreach (var attachmentReference in command.AttachmentReferences)
-		// {
-		// 	var filename = attachmentReference.FileName;
-		// 	var attachment = await imapClient.DownloadAttachmentAsync(command.EmailFolder, attachmentReference.MessageId, filename);
-		// 	if (attachment == null) continue;
 
-		// 	string pathInStore = await _fileProvider.Store(filename, attachment.ContentType, attachment.Stream);
-		// 	var blob = await CreateBlob(attachment, filename, pathInStore, null!);
-		// 	await _dbContext.Blobs.AddAsync(blob);
-		// }
+		foreach (var attachmentReference in command.AttachmentReferences)
+		{
+			var filename = attachmentReference.FileName;
+			var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, attachmentReference.MessageId, filename);
+			if (mimeEntity == null) continue;
 
-		// await _dbContext.SaveChangesAsync();
+
+			if (mimeEntity is not MimePart mimePart) continue;
+
+			var stream = new MemoryStream();
+			await mimePart.Content.DecodeToAsync(stream);
+			stream.Position = 0;
+
+			var pathInStore = await _fileProvider.Store(filename, mimePart.ContentType.MimeType, stream);
+			var blob = await CreateBlob(mimePart, stream, filename, pathInStore, null!);
+			await _dbContext.Blobs.AddAsync(blob);
+		}
+
+		await _dbContext.SaveChangesAsync();
+
+		// throw new NotImplementedException("");
 	}
 
 
-	// private async Task<Blob> CreateBlob(Attachment downloadedAttachment, string fileName, string pathInStore, ArchiveItem archiveItem)
-	// {
-	// 	return new Blob
-	// 	{
-	// 		TenantId = _resolver.GetCurrentTenantId()!.Value,
-	// 		ArchiveItem = archiveItem,
-	// 		FileHash = _fileProvider.ComputeSha256Hash(downloadedAttachment.Stream),
-	// 		MimeType = downloadedAttachment.ContentType,
-	// 		OriginalFilename = fileName,
-	// 		PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType, downloadedAttachment.Stream),
-	// 		FileSize = downloadedAttachment.FileSize,
-	// 		UploadedAt = DateTimeOffset.Now,
-	// 		UploadedByUsername = _resolver.GetCurrentUsername(),
-	// 		StoreRoot = StoreRoot.FileStorage.ToString(),
-	// 		PathInStore = pathInStore
-	// 	};
-	// }
+	private async Task<Blob> CreateBlob(MimePart downloadedAttachment, Stream contentStream, string fileName, string pathInStore, ArchiveItem archiveItem)
+	{
+		return new Blob
+		{
+			TenantId = _resolver.GetCurrentTenantId()!.Value,
+			ArchiveItem = archiveItem,
+			FileHash = _fileProvider.ComputeSha256Hash(contentStream),
+			MimeType = downloadedAttachment.ContentType.MimeType,
+			OriginalFilename = fileName,
+			PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType.MimeType, contentStream),
+			FileSize = downloadedAttachment.ContentDisposition?.Size ?? 0,
+			UploadedAt = DateTimeOffset.Now,
+			UploadedByUsername = _resolver.GetCurrentUsername(),
+			StoreRoot = StoreRoot.FileStorage.ToString(),
+			PathInStore = pathInStore
+		};
+	}
 }
-
-// public class ImapClientFactory
-// {
-// 	private readonly ExternalAccountService _externalAccountService;
-// 	private readonly EmailProviderService _emailProviderService;
-// 	private readonly AccessTokenHelper _accessTokenHelper;
-
-// 	public ImapClientFactory(ExternalAccountService externalAccountService,
-// 		EmailProviderService emailProviderService,
-// 		AccessTokenHelper accessTokenHelper)
-// 	{
-// 		_externalAccountService = externalAccountService;
-// 		_emailProviderService = emailProviderService;
-// 		_accessTokenHelper = accessTokenHelper;
-// 	}
-
-
-// 	private async Task<IImapClient> GetImapClient(Guid externalAccountId)
-// 	{
-// 		var externalAccountSettings = await _externalAccountService.GetExternalAccountSettingsAsync();
-// 		var externalAccount = externalAccountSettings.GetExternalAccount(externalAccountId);
-
-// 		var emailProviderSettings = await _emailProviderService.GetEmailProviderSettingsAsync();
-// 		var authType = emailProviderSettings.GetAuthType(externalAccount.Provider, externalAccount.Credentials.Type);
-// 		var emailProvider = emailProviderSettings.GetEmailProvider(externalAccount.Provider);
-
-// 		var auth = externalAccount.Credentials;
-
-// 		var refreshedAuth = await _accessTokenHelper.RefreshAccessTokenIfNeeded(auth, authType);
-// 		if (refreshedAuth != auth)
-// 		{
-// 			externalAccount.Credentials = refreshedAuth;
-// 			await _externalAccountService.Replace(externalAccount);
-// 		}
-
-// 		try
-// 		{
-// 			var imapClient = await ImapClientFactory.ConnectAsync(refreshedAuth, externalAccount.EmailAddress, emailProvider);
-// 			return imapClient;
-// 		}
-// 		catch (AuthenticationException) when (refreshedAuth is OAuthContext)
-// 		{
-// 			// Token was rejected by the server despite our clock saying it's valid.
-// 			// This can happen due to clock drift, revocation, or provider-side expiry.
-// 			// Force a refresh and retry once.
-// 			var forcedAuth = await _accessTokenHelper.ForceRefreshAccessToken(refreshedAuth, authType);
-// 			externalAccount.Credentials = forcedAuth;
-// 			await _externalAccountService.Replace(externalAccount);
-
-// 			return await ImapClientFactory.ConnectAsync(forcedAuth, externalAccount.EmailAddress, emailProvider);
-// 		}
-// 	}
-
-// }

@@ -1,21 +1,19 @@
-using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
-using Backend.WebApi.SignalR;
-using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class StoredFilterService : TenantSettingsServiceBase<StoredFilterSettings>
+public class StoredFilterService : SettingsServiceBase<StoredFilterSettings>
 {
 	protected override string FileName => "StoredFilterSettings.json";
 
 	private readonly ISignalRService _signalRService;
 
-	public StoredFilterService(IOptions<AppConfig> config, IAmbientDataResolver resolver, ISignalRService signalRService)
-		: base(config, resolver)
+	public StoredFilterService(IAmbientDataResolver resolver, ISignalRService signalRService, TenantSettingsFileStoreFactory fileStoreFactory)
+		: base(resolver, fileStoreFactory.GetFileStore())
 	{
 		_signalRService = signalRService;
 	}

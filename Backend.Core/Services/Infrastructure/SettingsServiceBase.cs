@@ -1,48 +1,42 @@
 using System.Text.Json;
 using Backend.Core.Infrastructure;
-using Microsoft.Extensions.Options;
+using Backend.Core.Providers.Store;
 
 namespace Backend.Core.Services.Infrastructure;
 
 public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 {
-	protected readonly string SettingsFolder;
 	protected readonly IAmbientDataResolver Resolver;
-
+	private readonly IFileStore _fileStore;
 
 	protected abstract string FileName { get; }
 
-	public SettingsServiceBase(IOptions<AppConfig> config, IAmbientDataResolver resolver)
+	protected SettingsServiceBase(IAmbientDataResolver resolver, IFileStore fileStore)
 	{
-		SettingsFolder = config.Value.SettingsFolder;
 		Resolver = resolver;
+		_fileStore = fileStore;
+
 	}
-
-	protected abstract string GetSettingsPath();
-
 
 	protected async Task<T> LoadSettingsAsync()
 	{
-		var filePath = Path.Combine(GetSettingsPath(), FileName);
-		if (!File.Exists(filePath))
+		if (!await _fileStore.FileExists([], FileName))
 		{
 			return new T { SchemaVersion = "1.0" };
 		}
 
-		var json = await File.ReadAllTextAsync(filePath);
-		return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions.Web) ?? new T { SchemaVersion = "1.0" };
+		await using var stream = await _fileStore.GetFile([], FileName);
+		return JsonSerializer.Deserialize<T>(stream, JsonSerializerOptions.Web) ?? new T { SchemaVersion = "1.0" };
 	}
 
 	protected async Task SaveSettingsAsync(T settings)
 	{
-		if (!Directory.Exists(GetSettingsPath()))
-		{
-			Directory.CreateDirectory(GetSettingsPath());
-		}
-		var path = Path.Combine(GetSettingsPath(), FileName);
+		using var stream = new MemoryStream();
+		await JsonSerializer.SerializeAsync(stream, settings, JsonSerializerOptions.Web);
 
-		var json = JsonSerializer.Serialize(settings, JsonSerializerOptions.Web);
-		await File.WriteAllTextAsync(path, json);
+		await stream.FlushAsync();
+
+		await _fileStore.StoreFile([], FileName, stream);
 	}
 
 	protected async Task ChangeSettingsAsync(Func<T, T> changeDelegate)

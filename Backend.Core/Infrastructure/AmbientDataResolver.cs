@@ -4,5 +4,5 @@ public interface IAmbientDataResolver
 {
     public int? GetCurrentTenantId();
 
-    public string GetCurrentUsername();
+    public string? GetCurrentUsername();
 }

@@ -1,6 +1,7 @@
 using Backend.Core;
 using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
+using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,14 +12,14 @@ namespace Backend.EmailIngestion.Services
 {
 
 	[RegisterService(ServiceLifetime.Scoped)]
-	public class ExternalAccountService : UserSettingsServiceBase<ExternalAccountSettings>
+	public class ExternalAccountService : SettingsServiceBase<ExternalAccountSettings>
 	{
 		protected override string FileName => "ExternalAccountSettings.json";
 
 		private readonly ISignalRService _signalRService;
 
-		public ExternalAccountService(IOptions<AppConfig> config, IAmbientDataResolver resolver, ISignalRService signalRService)
-			: base(config, resolver)
+		public ExternalAccountService(IAmbientDataResolver resolver, ISignalRService signalRService, UserSettingsFileStoreFactory fileStoreFactory)
+			: base(resolver, fileStoreFactory.GetFileStore())
 		{
 			_signalRService = signalRService;
 		}

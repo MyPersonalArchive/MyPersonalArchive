@@ -10,7 +10,7 @@ export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 
 export type EmailSummary = {
-	uniqueId: string
+	uniqueId: number
 	subject: string
 	previewText: string
 	receivedTime: string

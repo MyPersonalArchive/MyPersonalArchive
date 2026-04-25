@@ -26,7 +26,7 @@ export const EmailListPage = () => {
 
 	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments, isStreamingEmails } = useMailProvider(externalAccountId)
 
-	const selectionOfEmails = useSelection<string>(new Set(emails.map(email => email.uniqueId)))
+	const selectionOfEmails = useSelection<number>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
@@ -159,7 +159,7 @@ export const EmailListPage = () => {
 
 type EmailThumbnailProps = {
 	email: FullEmail
-	selectionOfEmails: Selection<string>
+	selectionOfEmails: Selection<number>
 	createArchiveItemFromEmails: (emails: FullEmail[]) => void
 	maximize: (email: FullEmail) => void
 }
@@ -214,7 +214,7 @@ const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails,
 type EmailPreviewProps = {
 	email: FullEmail
 	createArchiveItemFromEmails: (emails: FullEmail[]) => void
-	createBlobsFromAttachments: (messageId: string, attachments: EmailAttachment[]) => void
+	createBlobsFromAttachments: (messageId: number, attachments: EmailAttachment[]) => void
 	externalAccountId: string
 	selectedFolder: string
 	maximize: (email: FullEmail) => void
@@ -286,7 +286,7 @@ type AttachmentListProps = {
 	email: FullEmail
 	externalAccountId: string
 	selectedFolder: string
-	ingestAttachments: (messageId: string, attachments: EmailAttachment[]) => void
+	ingestAttachments: (messageId: number, attachments: EmailAttachment[]) => void
 }
 const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder, ingestAttachments }: AttachmentListProps) => {
 	const selectionOfAttachments = useSelection<string>(new Set(attachments.map(attachment => attachment.fileName)))
@@ -305,7 +305,7 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 		const params = new URLSearchParams()
 		params.set("externalAccountId", externalAccountId)
 		params.set("tenant-id", `${currentTenantId}`)
-		params.set("messageId", email.uniqueId)
+		params.set("messageId", email.uniqueId.toString())
 		params.set("fileName", attachment.fileName)
 		params.set("folder", selectedFolder) // email folders may have spaces, so lets use query params
 

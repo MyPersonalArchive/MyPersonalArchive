@@ -1,22 +1,21 @@
-using Backend.Core;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
+using Backend.Core.Providers.Store;
 
 namespace Backend.EmailIngestion.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class EmailProviderService : SystemSettingsServiceBase<EmailProviderSettings>
+public class EmailProviderService : SettingsServiceBase<EmailProviderSettings>
 {
 	protected override string FileName => "EmailProviderSettings.json";
 
 	private readonly ISignalRService _signalRService;
 
-	public EmailProviderService(IOptions<AppConfig> config, IAmbientDataResolver resolver, ISignalRService signalRService)
-		: base(config, resolver)
+	public EmailProviderService(IAmbientDataResolver resolver, ISignalRService signalRService, SystemSettingsFileStoreFactory fileStoreFactory)
+		: base(resolver, fileStoreFactory.GetFileStore())
 	{
 		_signalRService = signalRService;
 	}

@@ -135,24 +135,6 @@ public static class IImapExtensions
 
 			var mimeEntity = await mailFolder.GetBodyPartAsync(new UniqueId(messageId), attachementPart);
 			return mimeEntity;
-
-			// var mailFolder = await client.GetFolderAsync(folder);
-			// await mailFolder.OpenAsync(FolderAccess.ReadOnly);
-
-			// var message = await mailFolder.GetMessageAsync(new UniqueId(messageId));
-
-			// foreach (var part in message.BodyParts.OfType<MimePart>())
-			// {
-			// 	if (part.IsAttachment && part.FileName == fileName)
-			// 	{
-			// 		var ms = new MemoryStream();
-			// 		await part.Content.DecodeToAsync(ms);
-			// 		ms.Position = 0;
-			// 		return ms;
-			// 	}
-			// }
-
-			// return null;
 		}
 	}
 
@@ -161,7 +143,7 @@ public static class IImapExtensions
 	{
 		return new EmailSummary
 		{
-			UniqueId = summary.UniqueId.Id.ToString(),
+			UniqueId = summary.UniqueId.Id,
 			Subject = summary.NormalizedSubject,
 			PreviewText = summary.PreviewText ?? "n/a",
 			From = summary.Envelope.From
@@ -243,7 +225,7 @@ public static class IImapExtensions
 
 public class EmailSummary
 {
-	public string UniqueId { get; set; } = string.Empty;
+	public uint UniqueId { get; set; }
 	public string Subject { get; set; } = string.Empty;
 	public string PreviewText { get; internal set; } = string.Empty;
 	// public string? Body { get; set; }
