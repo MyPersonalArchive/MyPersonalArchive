@@ -1,7 +1,10 @@
+using Backend.Core.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Backend.Core.Providers.Store;
 
+[RegisterService(ServiceLifetime.Scoped)]
 public class ObjectStore : IObjectStore
 {
 	private readonly IFileStore _fileStore;
@@ -52,7 +55,7 @@ public class ObjectStore : IObjectStore
 		var extensions = filesForObject
 			.Select(filename => Path.GetExtension(filename))
 			.Select(extension => extension.TrimStart('.'));
-		
+
 		return extensions;
 	}
 

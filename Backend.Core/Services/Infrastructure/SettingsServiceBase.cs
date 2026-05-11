@@ -31,12 +31,8 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 
 	protected async Task SaveSettingsAsync(T settings)
 	{
-		using var stream = new MemoryStream();
-		await JsonSerializer.SerializeAsync(stream, settings, JsonSerializerOptions.Web);
-
-		await stream.FlushAsync();
-
-		await _fileStore.StoreFile([], FileName, stream);
+		await using var fileStream = await _fileStore.GetWritableFileStream([], FileName);
+		await JsonSerializer.SerializeAsync(fileStream, settings, JsonSerializerOptions.Web);
 	}
 
 	protected async Task ChangeSettingsAsync(Func<T, T> changeDelegate)
