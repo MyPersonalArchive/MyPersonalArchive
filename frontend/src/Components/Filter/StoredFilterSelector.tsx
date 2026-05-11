@@ -6,7 +6,7 @@ import { useAtom, useAtomValue } from "jotai"
 import classNames from "classnames"
 import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
 import { useDrop, useSortableDragDrop } from "../DragDropHelpers"
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useRef, useState } from "react"
 import { createQueryString } from "../../Utils/createQueryString"
 import { TagsInput } from "../TagsInput"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
@@ -19,8 +19,9 @@ export const StoredFilterSelector = () => {
 	const storedFilters = useAtomValue(storedFiltersAtom)
 
 	const apiClient = useApiClient()
+	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
 	useEffect(() => {
-		if (!adjustmentsModeIsOpen) {
+		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
 			apiClient.post("/api/execute/SaveStoredFilters", {
 				storedFilters: storedFilters.map(filter => ({
 					...filter,
@@ -31,6 +32,7 @@ export const StoredFilterSelector = () => {
 				}))
 			})
 		}
+		previousAdjustmentsModeIsOpen.current = adjustmentsModeIsOpen
 	}, [adjustmentsModeIsOpen])
 
 	return adjustmentsModeIsOpen

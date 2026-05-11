@@ -1,12 +1,12 @@
 
-import { PropsWithChildren, useEffect, useState } from "react"
+import { PropsWithChildren, useEffect, useRef, useState } from "react"
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear, faFileImport } from "@fortawesome/free-solid-svg-icons"
+import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear } from "@fortawesome/free-solid-svg-icons"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
@@ -25,12 +25,14 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	const externalAccounts = useAtomValue(externalAccountsAtom)
 
 	const apiClient = useApiClient()
+	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
 	useEffect(() => {
-		if (!adjustmentsModeIsOpen) {
+		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
 			apiClient.post("/api/execute/SaveExternalAccounts", {
 				externalAccounts
 			})
 		}
+		previousAdjustmentsModeIsOpen.current = adjustmentsModeIsOpen
 	}, [adjustmentsModeIsOpen])
 
 	return (
