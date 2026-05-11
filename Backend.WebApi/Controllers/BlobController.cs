@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Backend.Core;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
+using Backend.Core.Providers.Store;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Backend.WebApi.Services;
@@ -20,63 +22,80 @@ public class BlobController : ControllerBase
 	private IFileStorageProvider _fileProvider;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly BlobService _blobService;
+	private readonly IObjectStore _objectStore;
 
-	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, BlobService blobService)
+	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, BlobService blobService, IObjectStore objectStore)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;
 		_resolver = resolver;
 		_blobService = blobService;
+		_objectStore = objectStore;
 	}
 
 
-	[HttpGet]
-	public async Task<ActionResult> Download([FromQuery] int blobId)
-	{
-		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-		if (blob == null)
-		{
-			return NotFound();
-		}
+	// [HttpGet]
+	// public async Task<ActionResult> Download([FromQuery] int blobId)
+	// {
+	// 	var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+	// 	if (blob == null)
+	// 	{
+	// 		return NotFound();
+	// 	}
 
-		var stream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
-		return File(stream, metadata.MimeType, metadata.OriginalFilename);
-	}
+	// 	var filename = blob.PathInStore.Split('/').Last();
+	// 	var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+
+	// 	var metadataStream = await _objectStore.GetObject(objectId, "metadata");
+	// 	var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
+
+	// 	var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
+
+	// 	return File(contentStream, metadata.MimeType, metadata.OriginalFilename);
+	// }
 
 
-	[HttpGet]
-	public async Task<ActionResult> Preview(
-		[FromQuery] int blobId,
-		[FromQuery] DimensionEnum dimension,
-		[FromQuery] int pageNumber = 0
-	)
-	{
-		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-		if (blob == null)
-		{
-			return NotFound();
-		}
+	// [HttpGet]
+	// public async Task<ActionResult> Preview(
+	// 	[FromQuery] int blobId,
+	// 	[FromQuery] DimensionEnum dimension,
+	// 	[FromQuery] int pageNumber = 0
+	// )
+	// {
+	// 	var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+	// 	if (blob == null)
+	// 	{
+	// 		return NotFound();
+	// 	}
 
-		int maxX, maxY;
-		switch (dimension)
-		{
-			case DimensionEnum.Thumbnail:
-				maxX = maxY = 150;
-				break;
-			case DimensionEnum.Small:
-				maxX = maxY = 300;
-				break;
-			case DimensionEnum.Full:
-				maxX = maxY = 800;
-				break;
-			default:
-				return BadRequest();
-		}
+	// 	int maxX, maxY;
+	// 	switch (dimension)
+	// 	{
+	// 		case DimensionEnum.Thumbnail:
+	// 			maxX = maxY = 150;
+	// 			break;
+	// 		case DimensionEnum.Small:
+	// 			maxX = maxY = 300;
+	// 			break;
+	// 		case DimensionEnum.Full:
+	// 			maxX = maxY = 800;
+	// 			break;
+	// 		default:
+	// 			return BadRequest();
+	// 	}
 
-		var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
-		var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, pageNumber);
-		return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
-	}
+	// 	var filename = blob.PathInStore.Split('/').Last();
+	// 	var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+
+	// 	var metadataStream = await _objectStore.GetObject(objectId, "metadata");
+	// 	var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
+
+	// 	var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
+
+	// 	var previewStream = PreviewGenerator.GeneratePreview(contentStream, metadata.MimeType, maxX, maxY, pageNumber);
+	// 	return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
+	// }
+
 
 	//If we decide to go away from libvips we will remove "Preview" and only have this
 	public async Task<ActionResult> GetFile([FromQuery] int blobId, [FromQuery] DimensionEnum dimension)
@@ -86,6 +105,13 @@ public class BlobController : ControllerBase
 		{
 			return NotFound();
 		}
+
+		var filename = blob.PathInStore.Split('/').Last();
+		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+
+		var metadataStream = await _objectStore.GetObject(objectId, "metadata");
+		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
+		var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
 
 		//User our libvips preview mechanism if image or pdf
 		if (dimension != DimensionEnum.Full && (blob.MimeType.StartsWith("image/") || blob.MimeType == "application/pdf"))
@@ -106,12 +132,11 @@ public class BlobController : ControllerBase
 					return BadRequest();
 			}
 
-			var originalStream = _fileProvider.GetFile(blob.PathInStore, out var metadata);
-			var previewStream = PreviewGenerator.GeneratePreview(originalStream, metadata.MimeType, maxX, maxY, 0);
+			var previewStream = PreviewGenerator.GeneratePreview(contentStream, metadata.MimeType, maxX, maxY, 0);
 			return File(previewStream, "image/png", $"{metadata.OriginalFilename}_preview(0).png");
 		}
 
-		return PhysicalFile(blob.PathInStore, blob.MimeType);
+		return File(contentStream, metadata.MimeType, metadata.OriginalFilename);
 	}
 
 
@@ -183,7 +208,7 @@ public class BlobController : ControllerBase
 			{
 				TenantId = _resolver.GetCurrentTenantId()!.Value,
 				ArchiveItem = null,
-				FileHash = _fileProvider.ComputeSha256Hash(stream),
+				FileHash = stream.ComputeSha256Hash(),
 				MimeType = file.ContentType,
 				OriginalFilename = file.FileName,
 				PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
