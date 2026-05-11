@@ -316,7 +316,7 @@ public class ArchiveController : ControllerBase
 
 		return new Blob
 		{
-			FileHash = _fileProvider.ComputeSha256Hash(stream),
+			FileHash = stream.ComputeSha256Hash(),
 			MimeType = file.ContentType,
 			OriginalFilename = file.FileName,
 			PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),

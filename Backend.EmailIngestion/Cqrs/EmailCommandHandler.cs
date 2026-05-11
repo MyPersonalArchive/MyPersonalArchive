@@ -154,7 +154,7 @@ public class EmailCommandHandler :
 		{
 			TenantId = _resolver.GetCurrentTenantId()!.Value,
 			ArchiveItem = archiveItem,
-			FileHash = _fileProvider.ComputeSha256Hash(contentStream),
+			FileHash = contentStream.ComputeSha256Hash(),
 			MimeType = downloadedAttachment.ContentType.MimeType,
 			OriginalFilename = fileName,
 			PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType.MimeType, contentStream),
