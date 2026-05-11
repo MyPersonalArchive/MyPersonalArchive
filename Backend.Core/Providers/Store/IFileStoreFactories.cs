@@ -1,4 +1,3 @@
-
 using Backend.Core.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,10 +9,12 @@ public class ObjectStoreFileStoreFactory
 {
 	private readonly IFileStore _fileStore;
 
-	public ObjectStoreFileStoreFactory(IFileStore fileStore)
+	public ObjectStoreFileStoreFactory(IFileStore fileStore, IAmbientDataResolver resolver)
 	{
+		var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
+
 		_fileStore = fileStore;
-		_fileStore.Configure(["Blobs"]);
+		_fileStore.Configure(["Blobs", tenantId.ToString()]);
 	}
 
 	public IFileStore GetFileStore(IEnumerable<string> containerNames)
@@ -66,17 +67,19 @@ public class UserSettingsFileStoreFactory
 {
 	private readonly IFileStore _fileStore;
 
-public UserSettingsFileStoreFactory(IFileStore fileStore, IAmbientDataResolver resolver)
-{
-	var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
-	var username = resolver?.GetCurrentUsername() ?? throw new Exception("Missing username in ambient data");
 
-	_fileStore = fileStore;
-	_fileStore.Configure(["Settings", tenantId.ToString(), username]);
-}
+	public UserSettingsFileStoreFactory(IFileStore fileStore, IAmbientDataResolver resolver)
+	{
+		var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
+		var username = resolver?.GetCurrentUsername() ?? throw new Exception("Missing username in ambient data");
 
-public IFileStore GetFileStore()
-{
-	return _fileStore;
-}
+		_fileStore = fileStore;
+		_fileStore.Configure(["Settings", tenantId.ToString(), username]);
+	}
+
+
+	public IFileStore GetFileStore()
+	{
+		return _fileStore;
+	}
 }
