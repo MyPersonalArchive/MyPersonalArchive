@@ -69,6 +69,27 @@ public class FileSystemFileStore : IFileStore
 	}
 
 
+	/// <summary>
+	/// Gets a writable stream for the specified file. If the file already exists, it will be overwritten.
+	/// </summary>
+	/// <remarks>
+	/// The caller is responsible for disposing the stream after use. The stream will be flushed and closed when disposed.
+	/// </remarks>
+	/// <param name="containerNames"></param>
+	/// <param name="filename"></param>
+	/// <returns></returns>
+	public async Task<Stream> GetWritableFileStream(IEnumerable<string> containerNames, string filename)
+	{
+		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
+		Directory.CreateDirectory(folderPath);
+
+		var filePath = Path.Combine(folderPath, filename);
+
+		var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+		return fileStream;
+	}
+
+
 	public async Task AppendToFile(IEnumerable<string> containerNames, string filename, Stream contentStream)
 	{
 		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
@@ -76,7 +97,7 @@ public class FileSystemFileStore : IFileStore
 
 		var filePath = Path.Combine(folderPath, filename);
 
-		contentStream.Seek(0, SeekOrigin.Begin);
+		contentStream.Seek(0, SeekOrigin.End);
 		await using var fileStream = File.Open(filePath, FileMode.Append, FileAccess.Write);
 		await contentStream.CopyToAsync(fileStream);
 	}
@@ -85,7 +106,8 @@ public class FileSystemFileStore : IFileStore
 	public Task<Stream> GetFile(IEnumerable<string> containerNames, string filename)
 	{
 		var filePath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames, filename]);
-		var fileStream = File.OpenRead(filePath);
+		// var fileStream = File.OpenRead(filePath);
+		var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 		return Task.FromResult((Stream)fileStream);
 	}
 

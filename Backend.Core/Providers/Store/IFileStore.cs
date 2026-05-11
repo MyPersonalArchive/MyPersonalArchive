@@ -12,6 +12,8 @@ public interface IFileStore
 
 	public Task StoreFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
 
+	public Task<Stream> GetWritableFileStream(IEnumerable<string> containerNames, string filename);
+	
 	public Task AppendToFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
 
 	public Task<Stream> GetFile(IEnumerable<string> containerNames, string filename);
