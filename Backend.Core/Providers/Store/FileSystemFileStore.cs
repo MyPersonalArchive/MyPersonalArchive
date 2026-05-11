@@ -8,7 +8,7 @@ namespace Backend.Core.Providers.Store;
 public class FileSystemFileStore : IFileStore
 {
 	private readonly string _storeRoot;
-	private IEnumerable<string> _baseContainerNames;
+	private IEnumerable<string> _baseContainerNames = [];
 
 	/// <summary>
 	/// Indicates whether the store has been configured. Once configured, the base container names cannot be changed.
