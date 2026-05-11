@@ -6,15 +6,32 @@ import { useAtom, useAtomValue } from "jotai"
 import classNames from "classnames"
 import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
 import { useDrop, useSortableDragDrop } from "../DragDropHelpers"
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { createQueryString } from "../../Utils/createQueryString"
 import { TagsInput } from "../TagsInput"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { UUID } from "crypto"
+import { useApiClient } from "../../Utils/Hooks/useApiClient"
 
 
 export const StoredFilterSelector = () => {
 	const {adjustmentsModeIsOpen} = useAtomValue(layoutStateAtom)
+	const storedFilters = useAtomValue(storedFiltersAtom)
+
+	const apiClient = useApiClient()
+	useEffect(() => {
+		if (!adjustmentsModeIsOpen) {
+			apiClient.post("/api/execute/SaveStoredFilters", {
+				storedFilters: storedFilters.map(filter => ({
+					...filter,
+					filterDefinition: {
+						...filter.filterDefinition,
+						metadataTypes: Array.from(filter.filterDefinition.metadataTypes)
+					}
+				}))
+			})
+		}
+	}, [adjustmentsModeIsOpen])
 
 	return adjustmentsModeIsOpen
 		? <EditableStoredFilters />
@@ -88,7 +105,7 @@ const EditableStoredFilters = () => {
 							value={filter.name}
 							size={Math.max(3, filter.name.length)}
 							onChange={e => dispatch({ action: "EDIT_FILTER_NAME", id: filter.id, name: e.target.value })}
-							onFocus={() => setSelectedFilterId(filter.id)}
+							onFocus={(e) => { setSelectedFilterId(filter.id); e.target.select() }}
 						/>
 
 						<button className="cursor-pointer absolute text-gray-400 group-hover:text-red-500 right-3 top-1/2 -translate-y-1/2"

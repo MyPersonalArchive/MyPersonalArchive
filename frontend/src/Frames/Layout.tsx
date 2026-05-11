@@ -1,5 +1,5 @@
 
-import { PropsWithChildren, useState } from "react"
+import { PropsWithChildren, useEffect, useState } from "react"
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -14,12 +14,24 @@ import { useRemoteAuthentication } from "../Utils/Hooks/useRemoteAuthentication"
 import classNames from "classnames"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 import { FileDrop } from "../Components/FileDrop"
+import { useApiClient } from "../Utils/Hooks/useApiClient"
 
 
 
 export const Layout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
 	const [{ navIsOpen, profileDropdownIsOpen, adjustmentsModeIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
+
+	const externalAccounts = useAtomValue(externalAccountsAtom)
+
+	const apiClient = useApiClient()
+	useEffect(() => {
+		if (!adjustmentsModeIsOpen) {
+			apiClient.post("/api/execute/SaveExternalAccounts", {
+				externalAccounts
+			})
+		}
+	}, [adjustmentsModeIsOpen])
 
 	return (
 		<>
@@ -174,10 +186,10 @@ const AccountList = () => {
 
 const ClickableAccountList = () => {
 	const dispatchLayoutCommand = useSetAtom(layoutStateAtom)
-	const accounts = useAtomValue(externalAccountsAtom)
+	const externalAccounts = useAtomValue(externalAccountsAtom)
 
 	return <>
-		{accounts.map(account => (
+		{externalAccounts.map(account => (
 			<NavLink key={account.id}
 				className={({ isActive }) => isActive ? "active" : undefined}
 				to={`${RoutePaths.Email}/${account.id}`}
@@ -194,14 +206,14 @@ const ClickableAccountList = () => {
 
 
 const EditableAccountList = () => {
-	const [accounts, dispatch] = useAtom(externalAccountsAtom)
+	const [externalAccounts, dispatch] = useAtom(externalAccountsAtom)
 	const navigate = useNavigate()
 	const location = useLocation()
 
 	const dnd = useSortableDragDrop<ExternalAccount, HTMLDivElement>(
 		".draghandle",
 		externalAccountsMimeTypeConverters,
-		accounts,
+		externalAccounts,
 		dispatch
 	)
 
@@ -225,7 +237,7 @@ const EditableAccountList = () => {
 					<span className="">
 						<input className="text-inherit"
 							type="text"
-							onFocus={() => navigate(`${RoutePaths.Email}/${account.id}`)}
+							onFocus={(e) => { navigate(`${RoutePaths.Email}/${account.id}`); e.target.select() }}
 							value={account.displayName}
 							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: account.id, displayName: e.target.value })} />
 					</span>
