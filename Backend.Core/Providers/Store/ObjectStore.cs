@@ -13,7 +13,7 @@ public class ObjectStore : IObjectStore
 		_fileStore = fileStoreFactory.GetFileStore([]);
 	}
 
-	public async Task<bool> ObjectExists(IEnumerable<string> containerNames, Guid objectId)
+	public async Task<bool> ObjectExists(Guid objectId)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 
@@ -21,7 +21,7 @@ public class ObjectStore : IObjectStore
 		return files.Any(filename => filename.StartsWith(objectIdStringDashed));
 	}
 
-	public Task<IEnumerable<Guid>> ListObjectIds(IEnumerable<string> containerNames)
+	public Task<IEnumerable<Guid>> ListObjectIds()
 	{
 		// var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
 		// if (!Directory.Exists(folderPath))
@@ -44,7 +44,7 @@ public class ObjectStore : IObjectStore
 	}
 
 
-	public async Task<IEnumerable<string>> ListExtensions(IEnumerable<string> containerNames, Guid objectId)
+	public async Task<IEnumerable<string>> ListExtensions(Guid objectId)
 	{
 
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
@@ -59,7 +59,7 @@ public class ObjectStore : IObjectStore
 		return extensions;
 	}
 
-	public async Task StoreObject(IEnumerable<string> containerNames, Guid objectId, string extension, Stream stream)
+	public async Task StoreObject(Guid objectId, string extension, Stream stream)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 
@@ -69,13 +69,13 @@ public class ObjectStore : IObjectStore
 		await _fileStore.StoreFile(ObjectPathPartsFromObjectId(objectId), filename, stream);
 	}
 
-	public async Task<Stream> GetObject(IEnumerable<string> containerNames, Guid objectId, string extension)
+	public async Task<Stream> GetObject(Guid objectId, string extension)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 		return await _fileStore.GetFile(ObjectPathPartsFromObjectId(objectId), $"{objectIdStringDashed}.{extension}");
 	}
 
-	public async Task DeleteObject(IEnumerable<string> containerNames, Guid objectId)
+	public async Task DeleteObject(Guid objectId)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 

@@ -13,9 +13,7 @@ public interface IFileStorageProvider
 	Task<string> Store(string fileName, string mimeType, Stream stream);
 	// Task StoreForKnownMetadata(string fileName, Stream stream);
 	Stream GetFile(string filePath, out FileMetadata metadata);
-	// Stream GetPreview(string filePath, int maxX, int maxY, int pageNo, out FileMetadata metadata);
 	void DeleteFile(string fileName);
-	byte[] ComputeSha256Hash(Stream data);
 }
 
 public class FileStorageProvider : IFileStorageProvider
@@ -51,7 +49,7 @@ public class FileStorageProvider : IFileStorageProvider
 			MimeType = mimeType,
 			Size = stream.Length,
 			OriginalFilename = fileName,
-			Hash = Convert.ToHexString(ComputeSha256Hash(stream)),
+			Hash = Convert.ToHexString(stream.ComputeSha256Hash()),
 			UploadedAt = DateTimeOffset.Now,
 			UploadedBy = username
 		}));
@@ -102,13 +100,6 @@ public class FileStorageProvider : IFileStorageProvider
 	}
 
 	private string GetFolderPath(string uniqueFileName) => Path.Combine(_baseFolder, uniqueFileName[..2], uniqueFileName[..4], uniqueFileName[..6]);
-
-	public byte[] ComputeSha256Hash(Stream stream)
-	{
-		stream.Seek(0, SeekOrigin.Begin);
-		using var sha256Hash = SHA256.Create();
-		return sha256Hash.ComputeHash(stream);
-	}
 }
 
 
