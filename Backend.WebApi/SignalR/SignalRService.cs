@@ -16,7 +16,7 @@ public class SignalRService : ISignalRService
 	{
 		_hubContext = hubContext;
 		_tenantId = resolver.GetCurrentTenantId();
-		_username = resolver.GetCurrentUsername();
+		_username = resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
 	}
 
 
