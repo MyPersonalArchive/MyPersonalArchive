@@ -10,6 +10,8 @@ public interface IObjectStore
 
 	public Task StoreObject(Guid objectId, string extension, Stream stream);
 
+	public Task<Stream> GetWritableObjectStream(Guid objectId, string v);
+
 	public Task<Stream> GetObject(Guid objectId, string extension);
 
 	public Task DeleteObject(Guid objectId);

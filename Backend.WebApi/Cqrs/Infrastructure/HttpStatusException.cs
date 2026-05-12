@@ -7,21 +7,15 @@ namespace Backend.WebApi.Cqrs.Infrastructure;
 public abstract class HttpStatusException : Exception
 {
 	private readonly HttpStatusCode _statusCode;
-	private readonly string _message;
-	private readonly Exception? _innerException;
 
 	public HttpStatusException(HttpStatusCode statusCode, string message, Exception? innerException)
 		: base(message, innerException)
 	{
 		_statusCode = statusCode;
-		_message = message;
-		_innerException = innerException;
 	}
 
 
 	public HttpStatusCode StatusCode => _statusCode;
-	public string Message => _message;
-	public Exception? InnerException => _innerException;
 }
 
 

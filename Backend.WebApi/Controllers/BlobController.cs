@@ -9,6 +9,7 @@ using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Controllers;
 
@@ -23,14 +24,18 @@ public class BlobController : ControllerBase
 	private readonly IAmbientDataResolver _resolver;
 	private readonly BlobService _blobService;
 	private readonly IObjectStore _objectStore;
+	private readonly string _baseFolder;
 
-	public BlobController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, BlobService blobService, IObjectStore objectStore)
+	public BlobController(IOptions<AppConfig> config, MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, BlobService blobService, IObjectStore objectStore)
 	{
 		_dbContext = dbContext;
 		_fileProvider = fileProvider;
 		_resolver = resolver;
 		_blobService = blobService;
 		_objectStore = objectStore;
+
+		var currentTenantId = resolver.GetCurrentTenantId() ?? throw new Exception("Missing tenant ID");
+		_baseFolder = Path.Combine(config.Value.RootFolder, "Blobs", currentTenantId.ToString());
 	}
 
 
@@ -83,7 +88,24 @@ public class BlobController : ControllerBase
 		var blobs = new List<Blob>();
 		foreach (var file in files)
 		{
+			var objectId = Guid.NewGuid();
 			var stream = file.OpenReadStream();
+			await _objectStore.StoreObject(objectId, Path.GetExtension(file.FileName).TrimStart('.'), stream);
+
+			var metadata = new FileMetadata
+			{
+				MimeType = file.ContentType,
+				Size = file.Length,
+				OriginalFilename = file.FileName,
+				Hash = Convert.ToHexString(stream.ComputeSha256Hash()),
+				UploadedAt = DateTimeOffset.Now,
+				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim")
+			};
+
+			await using (var objectStream = await _objectStore.GetWritableObjectStream(objectId, "metadata"))
+			{
+				await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
+			}
 
 			var blob = new Blob
 			{
@@ -95,9 +117,13 @@ public class BlobController : ControllerBase
 				PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
 				FileSize = file.Length,
 				UploadedAt = DateTimeOffset.Now,
-				UploadedByUsername = _resolver.GetCurrentUsername(),
+				UploadedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 				StoreRoot = StoreRoot.FileStorage.ToString(),
-				PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
+
+				// `pathInStore` is not necessarily the actual path where the file is stored, but we keep it for backward
+				// compatibility with existing data in the database. The objectId can be extracted from the filename.
+				// The actual storage is handled by the IObjectStore implementation, which can have its own internal structure.
+				PathInStore = Path.Combine(GetFolderPath(objectId), $"{objectId:D}{Path.GetExtension(file.FileName)}")
 			};
 			blobs.Add(blob);
 		}
@@ -108,6 +134,12 @@ public class BlobController : ControllerBase
 		await _blobService.PublishBlobsAddedMessage(blobs);
 
 		return NoContent();
+	}
+
+	private string GetFolderPath(Guid objectId)
+	{
+		var objectIdStringDashed = objectId.ToString("D");
+		return Path.Combine(_baseFolder, objectIdStringDashed[..2], objectIdStringDashed[..4], objectIdStringDashed[..6]);
 	}
 
 	public enum DimensionEnum

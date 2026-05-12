@@ -18,7 +18,7 @@ public class BlobService
 	// - GetBlob
 	// - ListBlobs
 	// - DeleteBlob
-	// - UploadBlob StoreBlob
+	// - UploadBlob or StoreBlob
 	// - GetBlob
 
 
