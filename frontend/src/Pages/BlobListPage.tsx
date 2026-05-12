@@ -39,13 +39,13 @@ export const BlobListPage = () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
 
 		const visibleBlobIds = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id)).map(b => b.id)
-		await apiClient.delete("/api/blob/delete", { blobIds: visibleBlobIds })
+		await apiClient.delete("/api/execute/deleteBlobs", { blobIds: visibleBlobIds })
 
 		selectionOfBlobs.clearSelection()
 	}
 
 	const deleteBlob = (blobId: number) => {
-		apiClient.delete("/api/blob/delete", { blobIds: [blobId] })
+		apiClient.delete("/api/execute/deleteBlobs", { blobIds: [blobId] })
 	}
 
 	const createArchiveItemFromVisibleSelectedBlobs = async () => {

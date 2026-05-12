@@ -31,7 +31,7 @@ export const useBlobsPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<ListResponse[]>("/api/blob/list")
+		apiClient.get<ListResponse[]>("/api/query/listBlobs")
 			.then(response => {
 				setBlobs(response!.map(blob => ({
 					...blob,
@@ -46,7 +46,7 @@ export const useBlobsPrefetching = () => {
 				const blobIds = message.data as number[]
 
 				Promise
-					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/blob/get", { id })))
+					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/query/getBlob", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
@@ -64,7 +64,7 @@ export const useBlobsPrefetching = () => {
 				const blobIds = message.data as number[]
 
 				Promise
-					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/blob/get", { id })))
+					.all(blobIds.map(id => apiClient.get<GetResponse>("/api/query/getBlob", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
