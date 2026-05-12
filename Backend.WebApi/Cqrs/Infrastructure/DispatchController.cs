@@ -58,23 +58,31 @@ public class DispatchController : ControllerBase
 		var query = Activator.CreateInstance(queryType);
 		MapParametersToObject(query!, parameters);
 
-		if (IsHandleMethodAwaitable(handleMethod))
+		try
 		{
-			// Async handler
-			var task = (Task)handleMethod.Invoke(handler, [query])!;
-			await task;
+			if (IsHandleMethodAwaitable(handleMethod))
+			{
+				// Async handler
+				var task = (Task)handleMethod.Invoke(handler, [query])!;
+				await task;
 
-			// Get result from task
-			var resultProperty = task.GetType().GetProperty("Result");
-			var result = resultProperty!.GetValue(task);
+				// Get result from task
+				var resultProperty = task.GetType().GetProperty("Result");
+				var result = resultProperty!.GetValue(task);
 
-			return Ok(result);
+				return Ok(result);
+			}
+			else
+			{
+				// Sync handler
+				var result = handleMethod.Invoke(handler, [query]);
+				return Ok(result);
+			}
 		}
-		else
+		catch (HttpStatusException ex)
 		{
-			// Sync handler
-			var result = handleMethod.Invoke(handler, [query]);
-			return Ok(result);
+			_logger.LogError(ex, "Error executing query {QueryName}", queryName);
+			return StatusCode((int)ex.StatusCode, ex.Message);
 		}
 	}
 
@@ -105,25 +113,34 @@ public class DispatchController : ControllerBase
 		// Create query instance and map parameters
 		var query = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), queryType, _serializerOptions);
 
-		if (IsHandleMethodAwaitable(handleMethod))
+		try
 		{
-			// Async handler
-			var task = (Task)handleMethod.Invoke(handler, [query])!;
-			await task;
+			if (IsHandleMethodAwaitable(handleMethod))
+			{
+				// Async handler
+				var task = (Task)handleMethod.Invoke(handler, [query])!;
+				await task;
 
-			// Get result from task
-			var resultProperty = task.GetType().GetProperty("Result");
-			var result = resultProperty!.GetValue(task);
+				// Get result from task
+				var resultProperty = task.GetType().GetProperty("Result");
+				var result = resultProperty!.GetValue(task);
 
-			return Ok(result);
+				return Ok(result);
+			}
+			else
+			{
+				// Sync handler
+				var result = handleMethod.Invoke(handler, [query]);
+				return Ok(result);
+			}
 		}
-		else
+		catch (HttpStatusException ex)
 		{
-			// Sync handler
-			var result = handleMethod.Invoke(handler, [query]);
-			return Ok(result);
+			_logger.LogError(ex, "Error executing query {QueryName}", queryName);
+			return StatusCode((int)ex.StatusCode, ex.Message);
 		}
 	}
+
 
 	[HttpPost("execute/{commandName}")]
 	public async Task<IActionResult> PostCommand(string commandName)
@@ -151,19 +168,27 @@ public class DispatchController : ControllerBase
 		// Create query instance and map parameters
 		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, _serializerOptions);
 
-		if (IsHandleMethodAwaitable(handleMethod))
+		try
 		{
-			// Async handler
-			var task = (Task)handleMethod.Invoke(handler, [command])!;
-			await task;
-		}
-		else
-		{
-			// Sync handler
-			handleMethod.Invoke(handler, [command]);
-		}
+			if (IsHandleMethodAwaitable(handleMethod))
+			{
+				// Async handler
+				var task = (Task)handleMethod.Invoke(handler, [command])!;
+				await task;
+			}
+			else
+			{
+				// Sync handler
+				handleMethod.Invoke(handler, [command]);
+			}
 
-		return NoContent();
+			return NoContent();
+		}
+		catch (HttpStatusException ex)
+		{
+			_logger.LogError(ex, "Error executing command {CommandName}", commandName);
+			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
 	}
 
 	[HttpPut("execute/{commandName}")]
@@ -192,19 +217,27 @@ public class DispatchController : ControllerBase
 		// Create query instance and map parameters
 		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, _serializerOptions);
 
-		if (IsHandleMethodAwaitable(handleMethod))
+		try
 		{
-			// Async handler
-			var task = (Task)handleMethod.Invoke(handler, [command])!;
-			await task;
-		}
-		else
-		{
-			// Sync handler
-			handleMethod.Invoke(handler, [command]);
-		}
+			if (IsHandleMethodAwaitable(handleMethod))
+			{
+				// Async handler
+				var task = (Task)handleMethod.Invoke(handler, [command])!;
+				await task;
+			}
+			else
+			{
+				// Sync handler
+				handleMethod.Invoke(handler, [command]);
+			}
 
-		return NoContent();
+			return NoContent();
+		}
+		catch (HttpStatusException ex)
+		{
+			_logger.LogError(ex, "Error executing command {CommandName}", commandName);
+			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
 	}
 
 	[HttpDelete("execute/{commandName}")]
@@ -234,19 +267,27 @@ public class DispatchController : ControllerBase
 		var command = Activator.CreateInstance(commandType);
 		MapParametersToObject(command!, parameters);
 
-		if (IsHandleMethodAwaitable(handleMethod))
+		try
 		{
-			// Async handler
-			var task = (Task)handleMethod.Invoke(handler, [command])!;
-			await task;
-		}
-		else
-		{
-			// Sync handler
-			handleMethod.Invoke(handler, [command]);
-		}
+			if (IsHandleMethodAwaitable(handleMethod))
+			{
+				// Async handler
+				var task = (Task)handleMethod.Invoke(handler, [command])!;
+				await task;
+			}
+			else
+			{
+				// Sync handler
+				handleMethod.Invoke(handler, [command]);
+			}
 
-		return NoContent();
+			return NoContent();
+		}
+		catch (HttpStatusException ex)
+		{
+			_logger.LogError(ex, "Error executing command {CommandName}", commandName);
+			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
 	}
 
 	private ICollection<string> CheckRequirements(Type queryOrCommandType)
