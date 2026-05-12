@@ -34,69 +34,6 @@ public class BlobController : ControllerBase
 	}
 
 
-	// [HttpGet]
-	// public async Task<ActionResult> Download([FromQuery] int blobId)
-	// {
-	// 	var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-	// 	if (blob == null)
-	// 	{
-	// 		return NotFound();
-	// 	}
-
-	// 	var filename = blob.PathInStore.Split('/').Last();
-	// 	var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
-
-	// 	var metadataStream = await _objectStore.GetObject(objectId, "metadata");
-	// 	var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
-
-	// 	var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
-
-	// 	return File(contentStream, metadata.MimeType, metadata.OriginalFilename);
-	// }
-
-
-	// [HttpGet]
-	// public async Task<ActionResult> Preview(
-	// 	[FromQuery] int blobId,
-	// 	[FromQuery] DimensionEnum dimension,
-	// 	[FromQuery] int pageNumber = 0
-	// )
-	// {
-	// 	var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-	// 	if (blob == null)
-	// 	{
-	// 		return NotFound();
-	// 	}
-
-	// 	int maxX, maxY;
-	// 	switch (dimension)
-	// 	{
-	// 		case DimensionEnum.Thumbnail:
-	// 			maxX = maxY = 150;
-	// 			break;
-	// 		case DimensionEnum.Small:
-	// 			maxX = maxY = 300;
-	// 			break;
-	// 		case DimensionEnum.Full:
-	// 			maxX = maxY = 800;
-	// 			break;
-	// 		default:
-	// 			return BadRequest();
-	// 	}
-
-	// 	var filename = blob.PathInStore.Split('/').Last();
-	// 	var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
-
-	// 	var metadataStream = await _objectStore.GetObject(objectId, "metadata");
-	// 	var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
-
-	// 	var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
-
-	// 	var previewStream = PreviewGenerator.GeneratePreview(contentStream, metadata.MimeType, maxX, maxY, pageNumber);
-	// 	return File(previewStream, "image/jpg", $"{metadata.OriginalFilename}_preview({pageNumber}).jpg");
-	// }
-
-
 	//If we decide to go away from libvips we will remove "Preview" and only have this
 	public async Task<ActionResult> GetFile([FromQuery] int blobId, [FromQuery] DimensionEnum dimension)
 	{
@@ -140,62 +77,6 @@ public class BlobController : ControllerBase
 	}
 
 
-
-	[HttpGet]
-	public async Task<ActionResult<GetBlobResponse>> Get(int id)
-	{
-		var blob = await _dbContext.Blobs
-			.Include(blob => blob.UploadedBy)
-			.Select(blob => new GetBlobResponse
-			{
-				Id = blob.Id,
-				FileName = blob.OriginalFilename,
-				FileSize = blob.FileSize,
-				PageCount = blob.PageCount,
-				UploadedAt = blob.UploadedAt,
-				UploadedByUser = blob.UploadedBy!.Fullname,
-				MimeType = blob.MimeType,
-				IsAllocated = blob.ArchiveItem != null
-			})
-			.SingleOrDefaultAsync(blob => blob.Id == id);
-
-		if (blob == null)
-		{
-			return NotFound();
-		}
-
-		return blob;
-	}
-
-
-	[HttpGet]
-	public async Task<ActionResult<IEnumerable<ListBlobResponse>>> List()
-	{
-		var total = await _dbContext.Blobs
-							.Where(blob => blob.ArchiveItem == null)
-							.CountAsync();
-
-		var blobs = (await _dbContext.Blobs
-			.Include(blob => blob.UploadedBy)
-			.Select(blob => new ListBlobResponse
-			{
-				Id = blob.Id,
-				FileName = blob.OriginalFilename,
-				FileSize = blob.FileSize,
-				PageCount = blob.PageCount,
-				UploadedAt = blob.UploadedAt,
-				UploadedByUser = blob.UploadedBy!.Fullname,
-				MimeType = blob.MimeType,
-				IsAllocated = blob.ArchiveItem != null
-			})
-			.ToListAsync()) // Cannot orderBy dateTimeOffset without ToListing first
-			.OrderByDescending(blob => blob.UploadedAt)
-			.ToList();
-
-		return blobs;
-	}
-
-
 	[HttpPost]
 	public async Task<ActionResult> Upload(IFormFileCollection files)
 	{
@@ -227,63 +108,6 @@ public class BlobController : ControllerBase
 		await _blobService.PublishBlobsAddedMessage(blobs);
 
 		return NoContent();
-	}
-
-	[HttpDelete]
-	public async Task<ActionResult> Delete([FromQuery] int[] blobIds)
-	{
-		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
-		if (!blobs.Any())
-		{
-			return NotFound();
-		}
-
-		blobs.ForEach(blob => _fileProvider.DeleteFile(blob.PathInStore));
-		_dbContext.Blobs.RemoveRange(blobs);
-
-		await _dbContext.SaveChangesAsync();
-
-		await _blobService.PublishBlobsDeletedMessage(blobs);
-
-		return NoContent();
-	}
-
-	public static List<ListBlobResponse> ToListBlobResponse(List<Blob> blobs)
-	{
-		return blobs.Select(blob => new ListBlobResponse
-		{
-			Id = blob.Id,
-			FileName = blob.OriginalFilename,
-			FileSize = blob.FileSize,
-			PageCount = blob.PageCount,
-			UploadedAt = blob.UploadedAt,
-			UploadedByUser = blob.UploadedByUsername
-		}
-		).ToList();
-	}
-
-	public class GetBlobResponse
-	{
-		public int Id { get; set; }
-		public string? FileName { get; set; }
-		public long FileSize { get; set; }
-		public DateTimeOffset UploadedAt { get; set; }
-		public required string UploadedByUser { get; set; }
-		public int PageCount { get; set; }
-		public string? MimeType { get; set; }
-		public bool IsAllocated { get; internal set; }
-	}
-
-	public class ListBlobResponse
-	{
-		public int Id { get; set; }
-		public string? FileName { get; set; }
-		public long FileSize { get; set; }
-		public DateTimeOffset UploadedAt { get; set; }
-		public required string UploadedByUser { get; set; }
-		public int PageCount { get; set; }
-		public string? MimeType { get; set; }
-		public bool IsAllocated { get; internal set; }
 	}
 
 	public enum DimensionEnum
