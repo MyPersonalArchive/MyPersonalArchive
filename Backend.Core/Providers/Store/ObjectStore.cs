@@ -62,11 +62,18 @@ public class ObjectStore : IObjectStore
 	public async Task StoreObject(Guid objectId, string extension, Stream stream)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
-
 		var filename = $"{objectIdStringDashed}.{extension}";
 
 		stream.Seek(0, SeekOrigin.Begin);
 		await _fileStore.StoreFile(ObjectPathPartsFromObjectId(objectId), filename, stream);
+	}
+
+	public Task<Stream> GetWritableObjectStream(Guid objectId, string extension)
+	{
+		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
+		var filename = $"{objectIdStringDashed}.{extension}";
+
+		return _fileStore.GetWritableFileStream(ObjectPathPartsFromObjectId(objectId), filename);
 	}
 
 	public async Task<Stream> GetObject(Guid objectId, string extension)
@@ -84,7 +91,7 @@ public class ObjectStore : IObjectStore
 
 		foreach (var file in filesForObject)
 		{
-			File.Delete(file);
+			await _fileStore.DeleteFile(ObjectPathPartsFromObjectId(objectId), file);
 		}
 	}
 
@@ -104,5 +111,4 @@ public class ObjectStore : IObjectStore
 			objectIdStringStripped.Substring(0, 6)
 		];
 	}
-
 }
