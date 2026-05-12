@@ -60,7 +60,7 @@ public class RequireAllowedTenantIdAttribute : RequireAuthenticationAttribute, I
 		if (!int.TryParse(tenantIdValue, out var tenantId) /*|| tenantId <= 0*/)
 		{
 			failureReason = "X-Tenant-Id header must be a valid integer";
-			logger.LogWarning("X-Tenant-Id header invalid: {TenantId}", tenantIdValue);
+			logger.LogWarning("X-Tenant-Id header invalid: {TenantId}", tenantIdValue!);
 			return false;
 		}
 

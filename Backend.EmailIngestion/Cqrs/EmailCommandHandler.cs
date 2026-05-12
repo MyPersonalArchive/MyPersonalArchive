@@ -160,7 +160,7 @@ public class EmailCommandHandler :
 			PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType.MimeType, contentStream),
 			FileSize = downloadedAttachment.ContentDisposition?.Size ?? 0,
 			UploadedAt = DateTimeOffset.Now,
-			UploadedByUsername = _resolver.GetCurrentUsername(),
+			UploadedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			StoreRoot = StoreRoot.FileStorage.ToString(),
 			PathInStore = pathInStore
 		};
