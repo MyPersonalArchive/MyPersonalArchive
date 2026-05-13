@@ -1,6 +1,14 @@
+using System.Text.Json;
+using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Providers;
+using Backend.Core.Providers.Store;
 using Backend.Core.Services;
+using Microsoft.Extensions.Options;
+using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Backend.WebApi.Services;
 
@@ -8,18 +16,107 @@ namespace Backend.WebApi.Services;
 public class BlobService
 {
 	private readonly ISignalRService _signalRService;
-	public BlobService(ISignalRService signalRService)
+	private readonly IObjectStore _objectStore;
+	private readonly MpaDbContext _dbContext;
+	private readonly IAmbientDataResolver _resolver;
+	private string _baseFolder;
+
+	public BlobService(IOptions<AppConfig> config, ISignalRService signalRService, IObjectStore objectStore, MpaDbContext dbContext, IAmbientDataResolver resolver)
 	{
 		_signalRService = signalRService;
+		_objectStore = objectStore;
+		_dbContext = dbContext;
+		_resolver = resolver;
+
+		var currentTenantId = resolver.GetCurrentTenantId() ?? throw new Exception("Missing tenant ID");
+		_baseFolder = Path.Combine(config.Value.RootFolder, "Blobs", currentTenantId.ToString());
 	}
 
 
 	// TODO: Implement these methods in a way that they also publish the appropriate SignalR messages after performing their main function
-	// - GetBlob
 	// - ListBlobs
 	// - DeleteBlob
-	// - UploadBlob or StoreBlob
 	// - GetBlob
+
+
+	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)> GetBlob(int blobId)
+	{
+		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+		if (blob == null)
+		{
+			return (null, null, null);
+		}
+
+		var filename = blob.PathInStore.Split('/').Last();
+		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+
+		var metadataStream = await _objectStore.GetObject(objectId, "metadata");
+		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
+		var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
+
+		return (contentStream, metadata, blob);
+	}
+	
+
+	public async Task UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
+	{
+		var blobs = new List<Blob>();
+		foreach (var file in files)
+		{
+			var objectId = Guid.NewGuid();
+			var stream = file.contentStream;
+			await _objectStore.StoreObject(objectId, Path.GetExtension(file.fileName).TrimStart('.'), stream);
+
+			var metadata = new FileMetadata
+			{
+				MimeType = file.mimeType,
+				Size = file.contentStream.Length,
+				OriginalFilename = file.fileName,
+				Hash = Convert.ToHexString(stream.ComputeSha256Hash()),
+				UploadedAt = DateTimeOffset.Now,
+				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim")
+			};
+
+			await using (var objectStream = await _objectStore.GetWritableObjectStream(objectId, "metadata"))
+			{
+				await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
+			}
+
+			var blob = new Blob
+			{
+				TenantId = _resolver.GetCurrentTenantId()!.Value,
+				ArchiveItem = null,
+				FileHash = stream.ComputeSha256Hash(),
+				MimeType = file.mimeType,
+				OriginalFilename = file.fileName,
+				PageCount = PreviewGenerator.GetDocumentPageCount(file.mimeType, stream),
+				FileSize = file.contentStream.Length,
+				UploadedAt = DateTimeOffset.Now,
+				UploadedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
+				StoreRoot = StoreRoot.FileStorage.ToString(),
+
+				// `pathInStore` is not necessarily the actual path where the file is stored, but we keep it for backward
+				// compatibility with existing data in the database. The objectId can be extracted from the filename.
+				// The actual storage is handled by the IObjectStore implementation, which can have its own internal structure.
+				PathInStore = Path.Combine(GetFolderPath(objectId), $"{objectId:D}{Path.GetExtension(file.fileName)}")
+			};
+			blobs.Add(blob);
+		}
+
+		await _dbContext.Blobs.AddRangeAsync(blobs);
+		await _dbContext.SaveChangesAsync();
+
+		await PublishBlobsAddedMessage(blobs);
+	}
+
+	private string GetFolderPath(Guid objectId)
+	{
+		var objectIdStringDashed = objectId.ToString("D");
+		return Path.Combine(_baseFolder, objectIdStringDashed[..2], objectIdStringDashed[..4], objectIdStringDashed[..6]);
+	}
+
+
+
 
 
 	#region SignalR message creators
@@ -27,7 +124,7 @@ public class BlobService
 	public async Task PublishBlobsAddedMessage(IEnumerable<Blob> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
 	public async Task PublishBlobsAddedMessage(IEnumerable<int> blobIds)
 	{
-		if(blobIds == null || !blobIds.Any())
+		if (blobIds == null || !blobIds.Any())
 		{
 			return;
 		}
@@ -58,25 +155,5 @@ public class BlobService
 
 		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsDeleted", blobIds));
 	}
-	#endregion
-
-	#region blob handling methods
-	public async Task StoreBlob(Guid blobId, Stream blobStream, Stream metadataStream)
-	{
-		await PublishBlobsAddedMessage([blobId]);
-		throw new NotImplementedException();
-	}
-
-	public async Task<Stream> GetBlob(Guid blobId)
-	{
-		throw new NotImplementedException();
-	}
-
-	public async Task DeleteBlob(Guid blobId)
-	{
-		await PublishBlobsDeletedMessage([blobId]);
-		throw new NotImplementedException();
-	}
-
 	#endregion
 }
