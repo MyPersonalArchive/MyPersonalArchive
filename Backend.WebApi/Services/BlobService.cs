@@ -33,12 +33,6 @@ public class BlobService
 	}
 
 
-	// TODO: Implement these methods in a way that they also publish the appropriate SignalR messages after performing their main function
-	// - ListBlobs
-	// - DeleteBlob
-	// - GetBlob
-
-
 	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)> GetBlob(int blobId)
 	{
 		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
@@ -116,6 +110,44 @@ public class BlobService
 	}
 
 
+	public async Task DeleteBlobs(IEnumerable<int> blobIds)
+	{
+		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
+		if (blobs.Count == 0)
+		{
+			return;
+		}
+
+		foreach (var blob in blobs)
+		{
+			var filename = blob.PathInStore.Split('/').Last();
+			var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+
+			await _objectStore.DeleteObject(objectId);
+		}
+
+		_dbContext.Blobs.RemoveRange(blobs);
+		await _dbContext.SaveChangesAsync();
+
+		await PublishBlobsDeletedMessage(blobs);
+	}
+
+
+	public async Task<Blob> GetBlobEntity(int blobId)
+	{
+		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+		return blob;
+	}
+
+	public async Task<IEnumerable<Blob>> ListBlobEntities()
+	{
+		var blobs = await _dbContext.Blobs
+			.Include(blob => blob.UploadedBy)
+			.Include(blob => blob.ArchiveItem)
+			.ToListAsync();
+
+		return blobs;
+	}
 
 
 
