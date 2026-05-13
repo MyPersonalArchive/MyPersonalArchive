@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using Backend.Backup.Providers;
+using Backend.Backup.Services;
 using Backend.Core;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Backend.Backup;
+namespace Backend.Backup.Managers;
 
 public class TenantBackupManager
 {

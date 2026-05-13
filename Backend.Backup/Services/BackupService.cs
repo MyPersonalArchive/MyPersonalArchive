@@ -8,7 +8,7 @@ using Backend.DbModel.Database.EntityModels;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
-namespace Backend.Backup;
+namespace Backend.Backup.Services;
 
 public class BackupService(IServiceScope scope, int tenantId)
 {

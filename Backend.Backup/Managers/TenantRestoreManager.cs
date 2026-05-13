@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Backend.Backup;
+namespace Backend.Backup.Managers;
 
 public class TenantRestoreManager
 {

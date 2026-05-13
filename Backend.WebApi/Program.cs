@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
-using Backend.WebApi.Managers.Backup;
 using Backend.WebApi.Middleware;
 using Backend.Core.JsonConverters;
 using MailKit.Net.Imap;
@@ -20,6 +19,8 @@ using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
 using Backend.Backup.Services;
 using Backend.WebApi.Cqrs.Infrastructure;
+using Backend.Backup.Managers;
+using Backend.Backup.Providers;
 
 namespace Backend.WebApi;
 

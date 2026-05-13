@@ -1,10 +1,8 @@
-using Backend.Backup.Providers;
 using Backend.Backup.Services;
 using Backend.Crypto;
 using Backend.Core;
-using Backend.Core.Providers;
 
-namespace Backend.Backup;
+namespace Backend.Backup.Providers;
 
 public class BackupProviderFactory
 {

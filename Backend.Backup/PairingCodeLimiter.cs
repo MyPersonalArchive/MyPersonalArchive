@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Backend.WebApi.Services;
+namespace Backend.Backup;
 
 public class PairingCodeLimiter(int maxAttempts, TimeSpan window)
 {

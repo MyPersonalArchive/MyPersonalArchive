@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Backend.Backup;
+namespace Backend.Backup.Services;
 
 public class BackupLogFileService(IOptions<BackupConfiguration> config)
 {
