@@ -1,4 +1,6 @@
-namespace Backend.Core.Infrastructure;
+using Backend.Core.Infrastructure;
+
+namespace Backend.Core;
 
 public class StaticAmbientDataResolver : IAmbientDataResolver
 {

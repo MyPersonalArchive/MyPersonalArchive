@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 
-namespace Backend.Core.Providers;
+namespace Backend.Backup.Providers;
 
 public interface IBackupProvider
 {

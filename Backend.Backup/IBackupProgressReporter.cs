@@ -1,3 +1,5 @@
+using Backend.Backup.Services;
+
 namespace Backend.Backup;
 
 public interface IBackupProgressReporter

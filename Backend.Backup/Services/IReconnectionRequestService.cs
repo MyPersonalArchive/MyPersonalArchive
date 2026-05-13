@@ -1,7 +1,6 @@
-using Backend.Backup.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Backend.WebApi.Services;
+namespace Backend.Backup.Services;
 
 public interface IReconnectionRequestService
 {

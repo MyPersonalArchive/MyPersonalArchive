@@ -1,8 +1,9 @@
 using Backend.Backup;
-using Backend.Core.Infrastructure;
+using Backend.Backup.Services;
+using Backend.Core;
 using Backend.Core.Services;
 
-namespace Backend.WebApi.Managers.Backup;
+namespace Backend.WebApi;
 
 public class SignalRBackupProgressReporter : IBackupProgressReporter
 {
