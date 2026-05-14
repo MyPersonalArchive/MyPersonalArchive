@@ -28,7 +28,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
 	useEffect(() => {
 		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
-			apiClient.post("/api/execute/SaveExternalAccounts", {
+			apiClient.execute("SaveExternalAccounts", {
 				externalAccounts
 			})
 		}

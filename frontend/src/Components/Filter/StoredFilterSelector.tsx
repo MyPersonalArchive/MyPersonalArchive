@@ -22,7 +22,7 @@ export const StoredFilterSelector = () => {
 	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
 	useEffect(() => {
 		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
-			apiClient.post("/api/execute/SaveStoredFilters", {
+			apiClient.execute("SaveStoredFilters", {
 				storedFilters: storedFilters.map(filter => ({
 					...filter,
 					filterDefinition: {

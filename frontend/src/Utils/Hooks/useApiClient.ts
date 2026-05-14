@@ -212,7 +212,7 @@ export const useApiClient = () => {
 				})
 		},
 
-		query: async (commandName: string, payload: any = {}, incomingOptions?: RequestInit) => {
+		query: async<T> (queryName: string, payload: any = {}, incomingOptions?: RequestInit) => {
 			// const queryString = createQueryString(payload)
 			const options = {
 				...incomingOptions,
@@ -221,11 +221,12 @@ export const useApiClient = () => {
 				body: JSON.stringify(payload)
 			}
 
-			return interceptedFetch("/api/query/" + commandName /*+ queryString*/, options)
+			return interceptedFetch("/api/query/" + queryName /*+ queryString*/, options)
 				.then(response => {
 					if (!response.ok) {
-						throw new Error(`Command ${commandName} failed with status ${response.status}`)
+						throw new Error(`Query ${queryName} failed with status ${response.status}`)
 					}
+					return response.json() as T
 				})
 		},
 

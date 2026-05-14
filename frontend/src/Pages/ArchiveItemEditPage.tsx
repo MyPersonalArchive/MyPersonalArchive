@@ -66,7 +66,7 @@ export const ArchiveItemEditPage = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<GetResponse>("/api/query/getArchiveItem", { id: params.id })
+		apiClient.query<GetResponse>("getArchiveItem", { id: Number.parseInt(params.id!) })
 			.then(item => {
 				setId(item!.id)
 				setTitle(item!.title)
@@ -108,7 +108,7 @@ export const ArchiveItemEditPage = () => {
 	const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		event.preventDefault()
 
-		apiClient.delete("/api/archive/delete", { id: id! })
+		apiClient.execute("delete", { id: id! })
 		navigate(RoutePaths.Archive.List)
 	}
 
