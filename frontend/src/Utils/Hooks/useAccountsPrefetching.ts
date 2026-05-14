@@ -30,7 +30,7 @@ export const useExternalAccountsPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
+		apiClient.query<GetResponse[]>("GetExternalAccounts")
 			.then(externalAccountsFromResponse => {
 				dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(externalAccountsFromResponse) })
 			})
@@ -39,7 +39,7 @@ export const useExternalAccountsPrefetching = () => {
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
 			case "ExternalAccountsUpdated": {
-				apiClient.get<GetResponse[]>("/api/query/GetExternalAccounts")
+				apiClient.query<GetResponse[]>("GetExternalAccounts")
 					.then(externalAccountsFromResponse => {
 						dispatch({ action: "LOAD", externalAccounts: mapResponseToModel(externalAccountsFromResponse) })
 					})

@@ -11,7 +11,7 @@ export const useEmailProvidersPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<GetResponse[]>("/api/query/GetEmailProviders")
+		apiClient.query<GetResponse[]>("GetEmailProviders")
 			.then(emailProvidersFromResponse => {
 				setEmailProviders(emailProvidersFromResponse!)
 			})
@@ -20,7 +20,7 @@ export const useEmailProvidersPrefetching = () => {
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
 			case "EmailProvidersUpdated": {
-				apiClient.get<GetResponse[]>("/api/query/GetEmailProviders")
+				apiClient.query<GetResponse[]>("GetEmailProviders")
 					.then(emailProvidersFromResponse => {
 						setEmailProviders(emailProvidersFromResponse!)
 					})

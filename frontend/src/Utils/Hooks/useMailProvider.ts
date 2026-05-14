@@ -28,7 +28,7 @@ export function useMailProvider(externalAccountId: UUID) {
 	const isStreamingEmails = isStreamingEmailsMap.get(externalAccountId) ?? false
 
 	const fetchFolders = async () => {
-		const folders = await apiClient.get<string[]>("/api/query/listFolders", { externalAccountId })
+		const folders = await apiClient.query<string[]>("listFolders", { externalAccountId })
 		setFoldersByExternalAccount(prev => new Map(prev).set(externalAccountId, folders))
 		setSelectedFolderByExternalAccount(prev => new Map(prev).set(externalAccountId, folders?.at(0)))
 	}
@@ -63,7 +63,7 @@ export function useMailProvider(externalAccountId: UUID) {
 		}
 
 		//TODO: Ensure that FullEmail is updated, and current mail is re-rendered with new contents.
-		const emailContents = await apiClient.get<EmailContents>("/api/query/getEmailContents", { externalAccountId, folder: selectedFolder, messageId: emailSummary.uniqueId })
+		const emailContents = await apiClient.query<EmailContents>("getEmailContents", { externalAccountId, folder: selectedFolder, messageId: emailSummary.uniqueId })
 		setEmailsByExternalAccountAndFolder(prev => {
 			const current = prev.get(externalAccountId) ?? new Map<string, FullEmail[]>()
 			const folderEmails = current.get(selectedFolder ?? "") ?? []
@@ -79,7 +79,7 @@ export function useMailProvider(externalAccountId: UUID) {
 			emailFolder: selectedFolder,
 			messageIds: emails.map(email => email.uniqueId)
 		}
-		await apiClient.post("/api/execute/createArchiveItemsFromEmails", params)
+		await apiClient.execute("CreateArchiveItemsFromEmails", params)
 	}
 
 	const createBlobsFromAttachments = async (messageId: number, emailAttachments: EmailAttachment[]) => {
@@ -91,7 +91,7 @@ export function useMailProvider(externalAccountId: UUID) {
 				fileName: a.fileName
 			}))
 		}
-		await apiClient.post("/api/execute/createBlobsFromAttachments", params)
+		await apiClient.execute("CreateBlobsFromAttachments", params)
 	}
 
 	return {

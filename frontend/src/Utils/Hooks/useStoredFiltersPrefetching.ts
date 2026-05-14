@@ -46,7 +46,7 @@ export const useStoredFiltersPrefetching = () => {
 
 
 	useEffect(() => {
-		apiClient.get<GetResponse[]>("/api/query/GetStoredFilters")
+		apiClient.query<GetResponse[]>("GetStoredFilters")
 			.then(filtersFromResponse => {
 				dispatch({ action: "LOAD", storedFilters: mapResponseToModel(filtersFromResponse) })
 			})
@@ -55,7 +55,7 @@ export const useStoredFiltersPrefetching = () => {
 	useSignalR((message: SignalRMessage) => {
 		switch (message.messageType) {
 			case "StoredFiltersUpdated": {
-				apiClient.get<GetResponse[]>("/api/query/GetStoredFilters")
+				apiClient.query<GetResponse[]>("GetStoredFilters")
 					.then(filtersFromResponse => {
 						dispatch({ action: "LOAD", storedFilters: mapResponseToModel(filtersFromResponse) })
 					})
