@@ -5,7 +5,6 @@ using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
-using Backend.WebApi.Cqrs;
 using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
