@@ -1,32 +1,61 @@
+using System.Collections;
 using System.Linq.Expressions;
 
 namespace Backend.DbModel.Database;
 
 public static class EFExtensions
-{ 
-    public static IQueryable<T> ConditionalWhere<T>(
-        this IQueryable<T> source, 
-        Func<bool> condition,
-        Expression<Func<T, bool>> predicate)
-    {
-        if (condition())
-        {
-            return source.Where(predicate);
-        }
+{
+	extension<T>(IQueryable<T> source)
+	{
+		public IQueryable<T> ConditionalWhere(
+			Func<bool> condition,
+			Expression<Func<T, bool>> predicate)
+		{
+			if (condition())
+			{
+				return source.Where(predicate);
+			}
 
-        return source;
-    }
+			return source;
+		}
 
-    public static IQueryable<T> ConditionalWhere<T>(
-        this IQueryable<T> source, 
-        bool condition,
-        Expression<Func<T, bool>> predicate)
-    {
-        if (condition)
-        {
-            return source.Where(predicate);
-        }
+		public IQueryable<T> ConditionalWhere(
+			bool condition,
+			Expression<Func<T, bool>> predicate)
+		{
+			if (condition)
+			{
+				return source.Where(predicate);
+			}
 
-        return source;
-    }
+			return source;
+		}
+	}
+
+	extension<T>(IEnumerable<T> source)
+	{
+		public IEnumerable<T> ConditionalWhere(
+			Func<bool> condition,
+			Func<T, bool> predicate)
+		{
+			if (condition())
+			{
+				return source.Where(predicate);
+			}
+
+			return source;
+		}
+
+		public IEnumerable<T> ConditionalWhere(
+			bool condition,
+			Func<T, bool> predicate)
+		{
+			if (condition)
+			{
+				return source.Where(predicate);
+			}
+
+			return source;
+		}
+	}
 }

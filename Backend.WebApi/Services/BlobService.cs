@@ -110,6 +110,7 @@ public class BlobService
 	}
 
 
+
 	public async Task DeleteBlobs(IEnumerable<int> blobIds)
 	{
 		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
@@ -133,7 +134,7 @@ public class BlobService
 	}
 
 
-	public async Task<Blob> GetBlobEntity(int blobId)
+	public async Task<Blob?> GetBlobEntity(int blobId)
 	{
 		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
 		return blob;

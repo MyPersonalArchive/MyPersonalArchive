@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Backend.Core.Infrastructure;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -28,7 +27,6 @@ public class FileStorageProvider : IFileStorageProvider
 		_resolver = resolver;
 		_baseFolder = Path.Combine(config.Value.RootFolder, "Blobs", resolver.GetCurrentTenantId().ToString());
 	}
-
 
 	public async Task<string> Store(string fileName, string mimeType, Stream stream)
 	{
@@ -107,9 +105,9 @@ public class FileStorageProvider : IFileStorageProvider
 public class FileMetadata
 {
 	public DateTimeOffset UploadedAt { get; set; }
-	public string UploadedBy { get; set; }
-	public string OriginalFilename { get; set; }
-	public string MimeType { get; set; }
-	public long Size { get; set; }
-	public string Hash { get; set; }
+	public required string UploadedBy { get; set; }
+	public required string OriginalFilename { get; set; }
+	public required string MimeType { get; set; }
+	public required long Size { get; set; }
+	public required string Hash { get; set; }
 }
