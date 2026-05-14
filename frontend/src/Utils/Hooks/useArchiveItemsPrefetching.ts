@@ -31,7 +31,7 @@ export const useArchiveItemsPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<ListResponse[]>("/api/archive/list")
+		apiClient.get<ListResponse[]>("/api/query/listArchiveItems")
 			.then(response => setArchiveItems(response!.map(item => ({
 				...item,
 				createdAt: new Date(item.createdAt),
@@ -45,7 +45,7 @@ export const useArchiveItemsPrefetching = () => {
 				const archiveItemIds = message.data as number[]
 
 				Promise
-					.all(archiveItemIds.map(id => apiClient.get<GetResponse>("/api/archive/get", { id })))
+					.all(archiveItemIds.map(id => apiClient.get<GetResponse>("/api/query/getArchiveItem", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						blobs: response!.blobs.map(blob => ({id: blob.id})),
@@ -66,7 +66,7 @@ export const useArchiveItemsPrefetching = () => {
 				const archiveItemIds = message.data as number[]
 
 				Promise
-					.all(archiveItemIds.map(id => apiClient.get<GetResponse>("/api/archive/get", { id })))
+					.all(archiveItemIds.map(id => apiClient.get<GetResponse>("/api/query/getArchiveItem", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						blobs: response!.blobs.map(blob => ({id: blob.id})),
