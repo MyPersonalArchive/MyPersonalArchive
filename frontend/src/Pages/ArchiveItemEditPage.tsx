@@ -66,7 +66,7 @@ export const ArchiveItemEditPage = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.get<GetResponse>("/api/archive/get", { id: params.id })
+		apiClient.get<GetResponse>("/api/query/getArchiveItem", { id: params.id })
 			.then(item => {
 				setId(item!.id)
 				setTitle(item!.title)

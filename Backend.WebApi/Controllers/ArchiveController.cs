@@ -5,6 +5,7 @@ using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
+using Backend.WebApi.Cqrs;
 using Backend.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -194,122 +195,6 @@ public class ArchiveController : ControllerBase
 	}
 
 
-	[HttpGet]
-	public async Task<ActionResult<GetResponse>> Get(int id)
-	{
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Blobs)
-			.Include(archiveItem => archiveItem.Tags)
-			.SingleOrDefaultAsync(x => x.Id == id);
-
-		if (archiveItem == null)
-		{
-			return NotFound();
-		}
-
-		return new GetResponse
-		{
-			Id = archiveItem.Id,
-			Title = archiveItem.Title,
-			Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
-			Metadata = archiveItem.Metadata,
-			CreatedAt = archiveItem.CreatedAt,
-			DocumentDate = archiveItem.DocumentDate,
-			Blobs = [.. archiveItem.Blobs?.Select(blob => new GetResponse.Blob
-			{
-				Id = blob.Id,
-				NumberOfPages = blob.PageCount,
-				MimeType = blob.MimeType
-			}).ToList() ?? [],],
-		};
-	}
-
-	[HttpGet]
-	public async Task<ActionResult<IEnumerable<ListResponse>>> List([FromQuery] FilterRequest filterRequest)
-	{
-		var titleFilter = filterRequest.Title?.ToLowerInvariant() ?? "";
-		var tagsFilter = filterRequest.Tags ?? [];
-		var metadataTypesFilter = filterRequest.MetadataTypes ?? [];
-
-		if (!string.IsNullOrEmpty(filterRequest.Filter))
-		{
-			var storedFilterName = filterRequest.Filter;
-			var filters = await _storedFilterService.GetStoredFilterSettingsAsync();
-			var filter = filters.Filters.FirstOrDefault(f => f.Name == storedFilterName);
-			if (filter == null)
-			{
-				//If the filter name is not found, return empty result
-				return new List<ListResponse>();
-			}
-			else
-			{
-				titleFilter = filter.Definition.Title?.ToLowerInvariant() ?? "";
-				tagsFilter = filter.Definition.Tags ?? [];
-				metadataTypesFilter = filter.Definition.MetadataTypes ?? [];
-			}
-		}
-
-		return _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Tags)
-			.Include(archiveItem => archiveItem.Blobs)
-			.ConditionalWhere(!string.IsNullOrEmpty(titleFilter), archiveItem => archiveItem.Title.ToLower().Contains(titleFilter))
-			.ToList()
-			.Where(archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
-			.Where(archiveItem => metadataTypesFilter.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))
-			.Select(archiveItem => new ListResponse
-			{
-				Id = archiveItem.Id,
-				Title = archiveItem.Title,
-				Tags = archiveItem.Tags.Select(tag => tag.Title),
-				Blobs = archiveItem.Blobs.Select(blob => new ListResponse.Blob() { Id = blob.Id }),
-				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
-				CreatedAt = archiveItem.CreatedAt,
-				DocumentDate = archiveItem.DocumentDate
-			})
-			.OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.ToLower().IndexOf(titleFilter))
-			.ThenBy(archItem => archItem.Title == null ? null : archItem.Title.ToLower())
-			.ToList();
-	}
-
-
-	[HttpDelete]
-	public async Task<ActionResult> Delete([FromQuery] int id)
-	{
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Blobs)
-			.Include(archiveItem => archiveItem.Tags)
-				.ThenInclude(tag => tag.ArchiveItems)
-			.SingleOrDefaultAsync(x => x.Id == id);
-
-		if (archiveItem == null)
-		{
-			return NotFound();
-		}
-
-		if (archiveItem.Blobs != null)
-		{
-			foreach (var blob in archiveItem.Blobs)
-			{
-				_fileProvider.DeleteFile(blob.PathInStore);
-				_dbContext.Blobs.Remove(blob);
-			}
-		}
-
-		var removedTags = archiveItem.Tags.Where(tag => tag.ArchiveItems != null && tag.ArchiveItems.Count == 1 && tag.ArchiveItems.Contains(archiveItem));
-		foreach (var tag in removedTags)
-		{
-			_dbContext.Tags.Remove(tag);
-		}
-
-		_dbContext.ArchiveItems.Remove(archiveItem);
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemService.PublishArchiveItemsDeletedMessage([archiveItem]);
-
-		return NoContent();
-	}
-
-
 	private async Task<Blob> CreateBlobFromUploadedFile(IFormFile file)
 	{
 		using var stream = file.OpenReadStream();
@@ -330,27 +215,7 @@ public class ArchiveController : ControllerBase
 
 
 	#region Request and response models
-	public class ListRequest
-	{
-		//TODO: Is filtering or paging needed?
-	}
 
-	public class ListResponse
-	{
-		public int Id { get; set; }
-		public required string Title { get; set; }
-		public required IEnumerable<string> Tags { get; set; }
-		public required IEnumerable<Blob> Blobs { get; set; }
-		public required IEnumerable<string> MetadataTypes { get; set; }
-		// public required JsonObject Metadata { get; set; }
-		public DateTimeOffset CreatedAt { get; set; }
-		public DateTimeOffset? DocumentDate { get; set; }
-
-		public class Blob
-		{
-			public int Id { get; set; }
-		}
-	}
 
 	public class CreateRequest
 	{
@@ -375,32 +240,6 @@ public class ArchiveController : ControllerBase
 		public required JsonObject Metadata { get; set; }
 		public int[]? BlobsFromUnallocated { get; set; }
 		public int[]? RemovedBlobs { get; set; }
-	}
-
-	public class GetResponse
-	{
-		public int Id { get; set; }
-		public required string Title { get; set; }
-		public DateTimeOffset? DocumentDate { get; set; }
-		public DateTimeOffset CreatedAt { get; set; }
-		public required List<string> Tags { get; set; }
-		public required JsonObject Metadata { get; set; }
-		public required List<Blob> Blobs { get; set; }
-
-		public class Blob
-		{
-			public int Id { get; set; }
-			public int NumberOfPages { get; set; }
-			public string? MimeType { get; set; }
-		}
-	}
-
-	public class FilterRequest
-	{
-		public string? Title { get; set; }
-		public string[]? Tags { get; set; } = [];
-		public string[]? MetadataTypes { get; set; }
-		public string? Filter { get; set; }
 	}
 	#endregion
 }
