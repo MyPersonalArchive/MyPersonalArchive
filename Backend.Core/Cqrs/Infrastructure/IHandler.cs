@@ -8,6 +8,7 @@ public interface IHandler
 
 
 // Query interfaces
+// Queries should have no side-effects, and the results can be cached.
 public interface IQuery<TQuery, TResult>
     where TQuery : IQuery<TQuery, TResult>
 {
@@ -27,6 +28,8 @@ public interface IQueryHandler<TQuery, TResult> : IHandler
 
 
 // Command interfaces
+// Commands will have side-effects and should never be cached.
+// Try to keep handlers idempotent, so that if the same command is executed multiple times, it will have the same effect as executing it once.
 public interface ICommand<TCommand> where TCommand : ICommand<TCommand>
 {
 }
