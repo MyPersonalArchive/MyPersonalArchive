@@ -35,7 +35,8 @@ public static class Program
 		InitializeLogger(builder);
 
 		// OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
-		// JsonObject is used in our dbContext. Can we instead use JObject? We are not using Newtonsoft there.
+		// JsonObject is used in our dbContext.
+		// TODO: Can we instead use JObject? We are not using Newtonsoft there.
 		JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 		{
 			Converters = { new JsonObjectConverter() },
