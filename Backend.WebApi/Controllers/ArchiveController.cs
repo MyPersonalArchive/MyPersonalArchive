@@ -24,20 +24,16 @@ public class ArchiveController : ControllerBase
 	};
 
 	private readonly MpaDbContext _dbContext;
-	private readonly IFileStorageProvider _fileProvider;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly ArchiveItemService _archiveItemService;
 	private readonly BlobService _blobService;
-	private readonly StoredFilterService _storedFilterService;
 
-	public ArchiveController(MpaDbContext dbContext, IFileStorageProvider fileProvider, IAmbientDataResolver resolver, ArchiveItemService archiveItemService, BlobService blobService, StoredFilterService storedFilterService)
+	public ArchiveController(MpaDbContext dbContext, IAmbientDataResolver resolver, ArchiveItemService archiveItemService, BlobService blobService)
 	{
 		_dbContext = dbContext;
-		_fileProvider = fileProvider;
 		_resolver = resolver;
 		_archiveItemService = archiveItemService;
 		_blobService = blobService;
-		_storedFilterService = storedFilterService;
 	}
 
 
@@ -50,36 +46,8 @@ public class ArchiveController : ControllerBase
 			return BadRequest();
 		}
 
-		var newArchiveItem = new ArchiveItem
-		{
-			Title = createRequest.Title,
-			CreatedByUsername = _resolver.GetCurrentUsername(),
-			CreatedAt = DateTimeOffset.Now,
-			DocumentDate = createRequest.DocumentDate,
-			Tags = [.. Tags.Ensure(_dbContext, createRequest.Tags)],
-			Metadata = createRequest.Metadata,
-			LastUpdated = DateTimeOffset.Now
-		};
-
-		var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
-
-		if (createRequest.BlobsFromUnallocated != null)
-		{
-			var unallocatedBlobs = await _dbContext.Blobs
-													.Where(blob => blob.ArchiveItem == null)
-													.Where(blob => createRequest.BlobsFromUnallocated.Contains(blob.Id))
-													.ToListAsync();
-			foreach (var blob in unallocatedBlobs)
-			{
-				blobs.Add(blob);
-			}
-		}
-
-		newArchiveItem.Blobs = blobs;
-		_dbContext.ArchiveItems.Add(newArchiveItem);
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemService.PublishArchiveItemsAddedMessage([newArchiveItem]);
+		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
+		var newArchiveItem = await _archiveItemService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Metadata, createRequest.BlobsFromUnallocated ?? [], uploadedBlobs);
 
 		return new CreateResponse
 		{
@@ -87,40 +55,14 @@ public class ArchiveController : ControllerBase
 		};
 	}
 
+
 	[HttpGet]
 	public async Task<ActionResult<int>> CreateAndAttachBlobs([FromQuery] List<int> blobIds)
 	{
-		var blobs = await _dbContext.Blobs
-							.Where(blob => blobIds.Contains(blob.Id))
-							.ToListAsync();
-
-		if (!blobs.Any())
-		{
-			return NotFound();
-		}
-
-		var archiveItem = new ArchiveItem
-		{
-			//TODO: Title, Tags and Metadata should be part of the payload...
-			//  (So that the user can set them before creating the archive item, or cancel the creation)
-			Title = "New archive item",
-			CreatedByUsername = _resolver.GetCurrentUsername(),
-			CreatedAt = DateTimeOffset.Now,
-			Blobs = blobs,
-			Tags = new List<Tag>(),
-			Metadata = new JsonObject(),
-			LastUpdated = DateTimeOffset.Now
-		};
-
-		_dbContext.ArchiveItems.Add(archiveItem);
-
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemService.PublishArchiveItemsAddedMessage([archiveItem]);
-		await _blobService.PublishBlobsUpdatedMessage(blobs);
-
-		return archiveItem.Id;
+		var newArchiveItem = await _archiveItemService.CreateArchiveItem("New archive item", [], null, blobIds, []);
+		return newArchiveItem.Id;
 	}
+
 
 	[HttpPut]
 	public async Task<ActionResult> Update([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
@@ -131,90 +73,27 @@ public class ArchiveController : ControllerBase
 			return BadRequest();
 		}
 
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(item => item.Blobs)
-			.Include(item => item.Tags)
-			.SingleOrDefaultAsync(item => item.Id == updateRequest.Id);
-
-		if (archiveItem == null)
+		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
+		var updatedArchiveItem = await _archiveItemService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.BlobsFromUnallocated ?? [], uploadedBlobs);
+		if (updatedArchiveItem == null)
 		{
 			return NotFound();
 		}
-
-		var blobs = (await Task.WhenAll(files.Select(async file => await CreateBlobFromUploadedFile(file)))).ToList();
-
-		if (updateRequest.BlobsFromUnallocated != null && updateRequest.BlobsFromUnallocated.Length > 0)
-		{
-			var unallocatedBlobs = _dbContext.Blobs.Where(blob => blob.ArchiveItem == null && updateRequest.BlobsFromUnallocated.Contains(blob.Id)).ToList();
-			foreach (var blob in unallocatedBlobs)
-			{
-				blobs.Add(blob);
-			}
-
-			await _blobService.PublishBlobsUpdatedMessage(unallocatedBlobs);
-		}
-
-		if (updateRequest.RemovedBlobs != null && updateRequest.RemovedBlobs.Length > 0 && archiveItem.Blobs != null)
-		{
-			var removedBlobs = archiveItem.Blobs!.Where(blob => updateRequest.RemovedBlobs.Contains(blob.Id)).ToList();
-			foreach (var blob in removedBlobs)
-			{
-				archiveItem.Blobs.Remove(blob);
-			}
-
-			await _blobService.PublishBlobsUpdatedMessage(removedBlobs);
-		}
-
-		foreach (var blob in blobs)
-		{
-			archiveItem.Blobs!.Add(blob);
-		}
-
-		var removedTags = archiveItem.Tags.Where(tag => !updateRequest.Tags.Contains(tag.Title));
-		foreach (var tag in removedTags)
-		{
-			archiveItem.Tags.Remove(tag);
-			if (tag.ArchiveItems != null && tag.ArchiveItems.Count == 1 && tag.ArchiveItems.Contains(archiveItem))
-			{
-				_dbContext.Tags.Remove(tag);
-			}
-		}
-
-		archiveItem.Title = updateRequest.Title;
-		archiveItem.Tags = [.. Tags.Ensure(_dbContext, updateRequest.Tags)];
-		archiveItem.Metadata = updateRequest.Metadata;
-		archiveItem.DocumentDate = updateRequest.DocumentDate;
-		archiveItem.LastUpdated = DateTimeOffset.Now;
-
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemService.PublishArchiveItemsUpdatedMessage([archiveItem]);
 
 		return NoContent();
 	}
 
 
-	private async Task<Blob> CreateBlobFromUploadedFile(IFormFile file)
+	private async Task<IEnumerable<Blob>> CreateBlobsFromUploadedFiles(IFormFileCollection files)
 	{
-		using var stream = file.OpenReadStream();
+		var payloads = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
+		var uploadedBlobs = await _blobService.UploadBlobs(payloads);
 
-		return new Blob
-		{
-			FileHash = stream.ComputeSha256Hash(),
-			MimeType = file.ContentType,
-			OriginalFilename = file.FileName,
-			PageCount = PreviewGenerator.GetDocumentPageCount(file.ContentType, stream),
-			FileSize = file.Length,
-			UploadedAt = DateTimeOffset.Now,
-			UploadedByUsername = _resolver.GetCurrentUsername(),
-			StoreRoot = StoreRoot.FileStorage.ToString(),
-			PathInStore = await _fileProvider.Store(file.FileName, file.ContentType, stream)
-		};
+		return uploadedBlobs;
 	}
 
 
 	#region Request and response models
-
 
 	public class CreateRequest
 	{

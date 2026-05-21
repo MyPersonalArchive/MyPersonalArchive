@@ -52,7 +52,7 @@ public class BlobService
 	}
 	
 
-	public async Task UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
+	public async Task<IEnumerable<Blob>> UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
 	{
 		var blobs = new List<Blob>();
 		foreach (var file in files)
@@ -101,8 +101,11 @@ public class BlobService
 		await _dbContext.SaveChangesAsync();
 
 		await PublishBlobsAddedMessage(blobs);
+		return blobs;
 	}
 
+
+	// TODO: This is a duplicate function. Look for others with same signature and code and remove when no longer relevant.
 	private string GetFolderPath(Guid objectId)
 	{
 		var objectIdStringDashed = objectId.ToString("D");
@@ -140,6 +143,14 @@ public class BlobService
 		return blob;
 	}
 
+
+	public async Task<ICollection<Blob>> GetBlobEntities(IEnumerable<int> blobIds)
+	{
+		var blobs = await _dbContext.Blobs.Where(blob => blobIds.Contains(blob.Id)).ToListAsync();
+		return blobs;
+	}
+
+
 	public async Task<IEnumerable<Blob>> ListBlobEntities()
 	{
 		var blobs = await _dbContext.Blobs
@@ -151,11 +162,9 @@ public class BlobService
 	}
 
 
-
 	#region SignalR message creators
-	public async Task PublishBlobsAddedMessage(IEnumerable<Guid> blobIds) => throw new NotImplementedException();
-	public async Task PublishBlobsAddedMessage(IEnumerable<Blob> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
-	public async Task PublishBlobsAddedMessage(IEnumerable<int> blobIds)
+	internal async Task PublishBlobsAddedMessage(IEnumerable<Blob> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
+	private async Task PublishBlobsAddedMessage(IEnumerable<int> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
 		{
@@ -165,9 +174,9 @@ public class BlobService
 		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsAdded", blobIds));
 	}
 
-	public async Task PublishBlobsUpdatedMessage(IEnumerable<Guid> blobIds) => throw new NotImplementedException();
-	public async Task PublishBlobsUpdatedMessage(IEnumerable<Blob> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
-	public async Task PublishBlobsUpdatedMessage(IEnumerable<int> blobIds)
+
+	internal async Task PublishBlobsUpdatedMessage(IEnumerable<Blob> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
+	internal async Task PublishBlobsUpdatedMessage(IEnumerable<int> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
 		{
@@ -177,9 +186,9 @@ public class BlobService
 		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsUpdated", blobIds));
 	}
 
-	public async Task PublishBlobsDeletedMessage(IEnumerable<Guid> blobIds) => throw new NotImplementedException();
-	public async Task PublishBlobsDeletedMessage(IEnumerable<Blob> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id).ToList());
-	public async Task PublishBlobsDeletedMessage(IEnumerable<int> blobIds)
+
+	private async Task PublishBlobsDeletedMessage(IEnumerable<Blob> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id).ToList());
+	private async Task PublishBlobsDeletedMessage(IEnumerable<int> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
 		{
