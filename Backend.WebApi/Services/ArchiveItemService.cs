@@ -43,8 +43,8 @@ public class ArchiveItemService
 			.Include(archiveItem => archiveItem.Blobs)
 			.ConditionalWhere(!string.IsNullOrEmpty(titleFilter), archiveItem => archiveItem.Title!.ToLower().Contains(titleFilter!, StringComparison.InvariantCultureIgnoreCase))
 			.ToList()
-			.ConditionalWhere(tagsFilter != null && tagsFilter!.Any(), archiveItem => tagsFilter.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
-			.ConditionalWhere(metadataTypesFilter != null && metadataTypesFilter!.Any(), archiveItem => metadataTypesFilter.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))
+			.ConditionalWhere(tagsFilter != null && tagsFilter!.Any(), archiveItem => tagsFilter!.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
+			.ConditionalWhere(metadataTypesFilter != null && metadataTypesFilter!.Any(), archiveItem => metadataTypesFilter!.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))
 			.ToList();
 		return archiveItems;
 	}
@@ -61,7 +61,7 @@ public class ArchiveItemService
 		var newArchiveItem = new ArchiveItem
 		{
 			Title = title,
-			CreatedByUsername = _resolver.GetCurrentUsername(),
+			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			CreatedAt = DateTimeOffset.Now,
 			Blobs = connectedBlobEntities,
 			Tags = tags != null

@@ -33,12 +33,12 @@ public class BlobService
 	}
 
 
-	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)> GetBlob(int blobId)
+	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)?> GetBlob(int blobId)
 	{
 		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
 		if (blob == null)
 		{
-			return (null, null, null);
+			return null; //(null, null, null);
 		}
 
 		var filename = blob.PathInStore.Split('/').Last();

@@ -21,14 +21,15 @@ public class BlobController : ControllerBase
 
 	public async Task<ActionResult> GetFile([FromQuery] int blobId, [FromQuery] DimensionEnum dimension)
 	{
-		var (contentStream, metadata, blob) = await _blobService.GetBlob(blobId);
-		if(blob == null)
+		var tuple = await _blobService.GetBlob(blobId);
+		if(!tuple.HasValue)
 		{
 			return NotFound();
 		}
+		var (contentStream, metadata, blob) = tuple.Value;
 
 		//User our libvips preview mechanism if image or pdf
-		if (dimension != DimensionEnum.Full && (blob.MimeType.StartsWith("image/") || blob.MimeType == "application/pdf"))
+		if (dimension != DimensionEnum.Full && (blob.MimeType!.StartsWith("image/") || blob.MimeType == "application/pdf"))
 		{
 			int maxX, maxY;
 			switch (dimension)
