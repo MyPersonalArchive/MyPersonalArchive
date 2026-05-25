@@ -43,6 +43,8 @@ public static class Program
 			ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 		};
 
+		builder.Services.AddControllers().AddApplicationPart(typeof(DispatchController).Assembly);
+
 		builder.Services.AddHttpContextAccessor();
 
 		var executingAssembly = Assembly.GetExecutingAssembly();
