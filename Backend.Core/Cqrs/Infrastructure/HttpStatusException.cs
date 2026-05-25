@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Backend.WebApi.Cqrs.Infrastructure;
+namespace Backend.Core.Cqrs.Infrastructure;
 
 
 [Serializable]

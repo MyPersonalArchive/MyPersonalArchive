@@ -12,7 +12,6 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SIPSorcery.Net;
 using System.Security.Cryptography;
-using static Backend.Backup.Services.PeerMapping;
 
 namespace Backend.WebApi.Controllers;
 

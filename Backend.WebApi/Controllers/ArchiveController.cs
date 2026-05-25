@@ -1,14 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Backend.Core;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
-using Backend.WebApi.Services;
+using Backend.Mpa.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.WebApi.Controllers;
 

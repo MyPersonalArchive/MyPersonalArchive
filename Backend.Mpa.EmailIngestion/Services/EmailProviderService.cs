@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 using Backend.Core.Providers.Store;
 
-namespace Backend.EmailIngestion.Services;
+namespace Backend.Mpa.EmailIngestion.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class EmailProviderService : SettingsServiceBase<EmailProviderSettings>

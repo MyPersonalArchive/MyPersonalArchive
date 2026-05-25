@@ -5,10 +5,7 @@ using Backend.Core;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
 using Backend.DbModel.Database;
-using Backend.WebApi.SignalR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 

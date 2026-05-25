@@ -1,10 +1,10 @@
 using Backend.Core.Authentication;
 using Backend.Core.Infrastructure;
-using Backend.EmailIngestion.Services;
+using Backend.Mpa.EmailIngestion.Services;
 using MailKit.Net.Imap;
 using MailKit.Security;
 
-namespace Backend.EmailIngestion;
+namespace Backend.Mpa.EmailIngestion;
 
 [RegisterService]
 public class ImapClientFactory

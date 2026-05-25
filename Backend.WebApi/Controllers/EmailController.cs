@@ -1,11 +1,7 @@
-using System.Security.Authentication;
-using Backend.Core.Authentication;
-using Backend.EmailIngestion;
-using MailKit.Net.Imap;
 using MimeKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Backend.EmailIngestion.Services;
+using Backend.Mpa.EmailIngestion;
 
 namespace Backend.WebApi.Controllers;
 

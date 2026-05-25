@@ -4,6 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<RootNamespace>Backend.Core</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -17,7 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Backend.Crypto\Backend.Crypto.csproj" />
+		<ProjectReference Include="..\Backend.Crypto\Backend.Crypto.csproj" />
 	</ItemGroup>
 
 </Project>

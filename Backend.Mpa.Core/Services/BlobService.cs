@@ -8,9 +8,10 @@ using Microsoft.Extensions.Options;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 
-namespace Backend.WebApi.Services;
+namespace Backend.Mpa.Core.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class BlobService

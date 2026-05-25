@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using SIPSorcery.Net;
-using static Backend.Backup.Services.PeerMapping;
 
 namespace Backend.Backup.Services;
 

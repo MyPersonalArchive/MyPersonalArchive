@@ -1,9 +1,8 @@
 using Backend.Core.Cqrs.Infrastructure;
-using Backend.WebApi.Cqrs.Infrastructure;
-using Backend.WebApi.Services;
+using Backend.Mpa.Core.Services;
 
 
-namespace Backend.WebApi.Cqrs;
+namespace Backend.Mpa.Core.Cqrs;
 
 
 public class StoredFilter
