@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Backend.Core;
-using Backend.DbModel.Database;
+using Backend.Mpa.DbModel.Database;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;

@@ -1,8 +1,8 @@
 using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
-using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
+using Backend.Mpa.DbModel.Database;
+using Backend.Mpa.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

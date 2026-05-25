@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Backend.DbModel.Database;
 using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Mpa.DbModel.Database;
 
 
 internal class Program

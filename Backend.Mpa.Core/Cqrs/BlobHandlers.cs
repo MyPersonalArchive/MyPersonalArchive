@@ -1,7 +1,7 @@
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Providers.Store;
-using Backend.DbModel.Database;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.DbModel.Database;
 
 namespace Backend.Mpa.Core.Cqrs;
 

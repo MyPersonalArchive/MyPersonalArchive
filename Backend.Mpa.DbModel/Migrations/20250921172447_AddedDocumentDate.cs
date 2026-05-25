@@ -1,0 +1,28 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Backend.Mpa.DbModel.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddedDocumentDate : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "DocumentDate",
+                table: "ArchiveItem",
+                type: "TEXT",
+                nullable: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "DocumentDate",
+                table: "ArchiveItem");
+        }
+    }
+}

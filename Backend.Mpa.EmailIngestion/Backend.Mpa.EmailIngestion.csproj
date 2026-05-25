@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="../Backend.Core/Backend.Core.csproj" />
-		<ProjectReference Include="../Backend.DbModel/Backend.DbModel.csproj" />
+		<ProjectReference Include="../Backend.Mpa.DbModel/Backend.Mpa.DbModel.csproj" />
 		<ProjectReference Include="../Backend.Mpa.Core/Backend.Mpa.Core.csproj" />
 	</ItemGroup>
 

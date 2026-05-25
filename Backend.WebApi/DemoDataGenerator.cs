@@ -1,5 +1,5 @@
-using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
+using Backend.Mpa.DbModel.Database;
+using Backend.Mpa.DbModel.Database.EntityModels;
 
 namespace Backend.WebApi;
 
