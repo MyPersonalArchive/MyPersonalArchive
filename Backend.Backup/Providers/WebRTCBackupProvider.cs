@@ -1,5 +1,4 @@
 using SIPSorcery.Net;
-using Microsoft.AspNetCore.SignalR.Client;
 using Backend.Backup.Services;
 
 namespace Backend.Backup.Providers;

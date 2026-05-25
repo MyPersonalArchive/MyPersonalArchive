@@ -6,7 +6,7 @@ using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using MimeKit;
 
-namespace Backend.EmailIngestion.Cqrs;
+namespace Backend.Mpa.EmailIngestion.Cqrs;
 
 
 [RequireAllowedTenantId]
@@ -43,6 +43,9 @@ public class EmailCommandHandler :
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private readonly IFileStorageProvider _fileProvider;
+
+	// private readonly BlobService _blobService;
+	// private readonly ArchiveItemService _archiveItemService;
 
 	public EmailCommandHandler(ImapClientFactory imapClientFactory,
 							MpaDbContext dbContext,

@@ -1,6 +1,6 @@
 using Backend.Core.Cqrs.Infrastructure;
 
-namespace Backend.EmailIngestion.Cqrs;
+namespace Backend.Mpa.EmailIngestion.Cqrs;
 
 
 [RequireAllowedTenantId]

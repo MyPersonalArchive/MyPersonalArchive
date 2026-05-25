@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RootNamespace>Backend.Mpa.EmailIngestion</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MailKit" Version="4.7.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Backend.Core/Backend.Core.csproj" />
+		<ProjectReference Include="../Backend.DbModel/Backend.DbModel.csproj" />
+		<ProjectReference Include="../Backend.Mpa.Core/Backend.Mpa.Core.csproj" />
+	</ItemGroup>
+
+</Project>

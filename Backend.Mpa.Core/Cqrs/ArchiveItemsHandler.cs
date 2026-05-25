@@ -1,10 +1,9 @@
 
 using System.Text.Json.Nodes;
 using Backend.Core.Cqrs.Infrastructure;
-using Backend.WebApi.Cqrs.Infrastructure;
-using Backend.WebApi.Services;
+using Backend.Mpa.Core.Services;
 
-namespace Backend.WebApi.Cqrs;
+namespace Backend.Mpa.Core.Cqrs;
 
 
 [RequireAllowedTenantId]
@@ -59,6 +58,17 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 }
 
 
+
+// [RequireAllowedTenantId]
+// public class CreateArchiveItem : ICommand<CreateArchiveItem>
+// {
+// 	public required string Title { get; set; }
+// 	public required List<string> Tags { get; set; }
+// 	public required JsonObject Metadata { get; set; }
+// 	public required List<int> BlobIds { get; set; }
+// }
+
+
 [RequireAllowedTenantId]
 public class DeleteArchiveItem : ICommand<DeleteArchiveItem>
 {
@@ -69,6 +79,7 @@ public class DeleteArchiveItem : ICommand<DeleteArchiveItem>
 public class ArchiveItemsHandler :
 	IAsyncQueryHandler<GetArchiveItem, GetArchiveItem.Response>,
 	IAsyncQueryHandler<ListArchiveItems, IEnumerable<ListArchiveItems.Response>>,
+	// IAsyncCommandHandler<CreateArchiveItem>,
 	IAsyncCommandHandler<DeleteArchiveItem>
 {
 	private readonly ArchiveItemService _archiveItemService;
@@ -146,6 +157,16 @@ public class ArchiveItemsHandler :
 			// .ThenBy(archItem => archItem.Title == null ? null : archItem.Title, StringComparer.InvariantCultureIgnoreCase);
 			.OrderBy(archItem => archItem.Title == null ? null : archItem.Title, StringComparer.InvariantCultureIgnoreCase);
 	}
+
+
+	// public async Task Handle(CreateArchiveItem command)
+	// {
+	// 	var archiveItem = await _archiveItemService.CreateArchiveItem(command.Title, command.Tags, command.Metadata, command.BlobIds);
+
+	// 	//TODO: Should this return the archiveItem.Id, so that the client can navigate to it immediately after creation?
+	//  // ...or should the CreateArchiveItem command include the the archiveItem.Id as a parameter? UUID maybe...
+	// }
+
 
 	public async Task Handle(DeleteArchiveItem command)
 	{

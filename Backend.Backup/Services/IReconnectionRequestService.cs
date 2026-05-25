@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.SignalR.Client;
-
 namespace Backend.Backup.Services;
 
 public interface IReconnectionRequestService

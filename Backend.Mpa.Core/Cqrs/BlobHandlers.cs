@@ -1,10 +1,9 @@
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Providers.Store;
 using Backend.DbModel.Database;
-using Backend.WebApi.Cqrs.Infrastructure;
-using Backend.WebApi.Services;
+using Backend.Mpa.Core.Services;
 
-namespace Backend.WebApi.Cqrs;
+namespace Backend.Mpa.Core.Cqrs;
 
 
 [RequireAllowedTenantId]

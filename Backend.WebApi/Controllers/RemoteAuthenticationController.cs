@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Backend.Core.Authentication;
 using System.Net.Http.Headers;
 using Backend.Core.Infrastructure;
-using Backend.EmailIngestion.Services;
+using Backend.Mpa.EmailIngestion.Services;
 
 
 namespace Backend.WebApi.Controllers;

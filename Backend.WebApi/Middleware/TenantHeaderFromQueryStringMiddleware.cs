@@ -1,6 +1,3 @@
-using System.Diagnostics;
-
-
 namespace Backend.WebApi.Middleware;
 
 

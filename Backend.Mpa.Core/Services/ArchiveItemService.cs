@@ -1,12 +1,12 @@
 using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Backend.DbModel.Database;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Backend.WebApi.Services;
+namespace Backend.Mpa.Core.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class ArchiveItemService

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SIPSorcery.Net;
-using static Backend.Backup.Services.PeerMapping;
 
 namespace Backend.Backup.Services;
 

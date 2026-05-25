@@ -2,8 +2,9 @@ using Backend.Core.Infrastructure;
 using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Backend.Core.Services.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Backend.WebApi.Services;
+namespace Backend.Mpa.Core.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class StoredFilterService : SettingsServiceBase<StoredFilterSettings>

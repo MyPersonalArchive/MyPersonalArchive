@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using Backend.DbModel.Database;
 
 namespace Backend.DbModel.Database.EntityModels;
 

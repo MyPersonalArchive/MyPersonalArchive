@@ -1,10 +1,9 @@
 using MailKit;
 using MailKit.Net.Imap;
-using MailKit.Search;
 using MimeKit;
 
 
-namespace Backend.EmailIngestion;
+namespace Backend.Mpa.EmailIngestion;
 
 public static class IImapExtensions
 {

@@ -1,10 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Backend.DbModel.Database;
-using System;
 using Backend.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Backend.DbModel.Database.EntityModels;
 using Backend.Core.Infrastructure;
 
 

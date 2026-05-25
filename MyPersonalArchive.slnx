@@ -3,7 +3,8 @@
   <Project Path="Backend.Core/Backend.Core.csproj" />
   <Project Path="Backend.Crypto/Backend.Crypto.csproj" />
   <Project Path="Backend.DbModel/Backend.DbModel.csproj" />
-  <Project Path="Backend.EmailIngestion/Backend.EmailIngestion.csproj" />
+  <Project Path="Backend.Mpa.Core/Backend.Mpa.Core.csproj" />
+  <Project Path="Backend.Mpa.EmailIngestion/Backend.Mpa.EmailIngestion.csproj" />
   <Project Path="Backend.WebApi/Backend.WebApi.csproj" />
   <Project Path="ConsoleApp1/ConsoleApp1.csproj" />
 </Solution>

@@ -1,6 +1,5 @@
 using Backend.Core.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Backend.Core.Providers.Store;
 

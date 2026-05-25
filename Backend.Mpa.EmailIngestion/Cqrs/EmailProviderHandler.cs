@@ -1,7 +1,7 @@
 using Backend.Core.Cqrs.Infrastructure;
-using Backend.EmailIngestion.Services;
+using Backend.Mpa.EmailIngestion.Services;
 
-namespace Backend.EmailIngestion.Cqrs;
+namespace Backend.Mpa.EmailIngestion.Cqrs;
 
 
 public class EmailProvider

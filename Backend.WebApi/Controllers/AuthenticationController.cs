@@ -1,9 +1,6 @@
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Security.Claims;
 using Backend.Core;
 using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;

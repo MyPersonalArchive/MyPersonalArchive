@@ -4,9 +4,7 @@ using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
 using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Backend.DbModel.Database;
