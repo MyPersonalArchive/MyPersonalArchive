@@ -1,5 +1,7 @@
 using System.Reflection;
 using Backend.Core.Cqrs.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.WebApi.Cqrs.Infrastructure;
 

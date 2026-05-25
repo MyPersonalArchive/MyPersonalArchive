@@ -3,6 +3,8 @@ using System.Text.Json;
 using Backend.Core.Cqrs.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.WebApi.Cqrs.Infrastructure;
 
