@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
-using Backend.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
 using Backend.Core.Infrastructure;
+using Backend.Mpa.DbModel.Database;
 
 namespace Backend.WebApi.SignalR;
 

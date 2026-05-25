@@ -1,4 +1,4 @@
-using Backend.DbModel.Database;
+using Backend.Mpa.DbModel.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

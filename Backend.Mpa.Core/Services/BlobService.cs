@@ -5,10 +5,10 @@ using Backend.Core.Providers;
 using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Microsoft.Extensions.Options;
-using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Backend.Mpa.DbModel.Database;
+using Backend.Mpa.DbModel.Database.EntityModels;
 
 
 namespace Backend.Mpa.Core.Services;

@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
-using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.DbModel.Database;
+using Backend.Mpa.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

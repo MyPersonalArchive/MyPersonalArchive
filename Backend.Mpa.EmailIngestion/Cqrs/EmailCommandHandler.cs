@@ -2,8 +2,8 @@ using Backend.Core;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
-using Backend.DbModel.Database;
-using Backend.DbModel.Database.EntityModels;
+using Backend.Mpa.DbModel.Database;
+using Backend.Mpa.DbModel.Database.EntityModels;
 using MimeKit;
 
 namespace Backend.Mpa.EmailIngestion.Cqrs;
