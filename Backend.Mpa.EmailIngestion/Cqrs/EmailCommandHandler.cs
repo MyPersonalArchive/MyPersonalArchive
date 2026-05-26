@@ -1,7 +1,10 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Backend.Core;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
+using Backend.Mpa.Core.Services;
 using Backend.Mpa.DbModel.Database;
 using Backend.Mpa.DbModel.Database.EntityModels;
 using MimeKit;
@@ -42,83 +45,72 @@ public class EmailCommandHandler :
 	private readonly ImapClientFactory _imapClientFactory;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
-	private readonly IFileStorageProvider _fileProvider;
 
-	// private readonly BlobService _blobService;
-	// private readonly ArchiveItemService _archiveItemService;
+	private readonly BlobService _blobService;
+	private readonly ArchiveItemService _archiveItemService;
 
 	public EmailCommandHandler(ImapClientFactory imapClientFactory,
 							MpaDbContext dbContext,
 							IAmbientDataResolver resolver,
-							IFileStorageProvider fileProvider)
+							BlobService blobService,
+							ArchiveItemService archiveItemService)
 	{
 		_imapClientFactory = imapClientFactory;
 		_dbContext = dbContext;
 		_resolver = resolver;
-		_fileProvider = fileProvider;
+		_blobService = blobService;
+		_archiveItemService = archiveItemService;
 	}
 
 
 	public async Task Handle(CreateArchiveItemsFromEmails command)
 	{
-		throw new NotImplementedException("");
-		// if (command.MessageIds.Count == 0)
-		// {
-		// 	return;
-		// }
+		if (command.MessageIds.Count == 0)
+		{
+			return;
+		}
 
-		// var imapClient = await GetImapClient(command.ExternalAccountId);
+		var imapClient = await _imapClientFactory.GetImapClient(command.ExternalAccountId);
 
-		// var emails = await imapClient.GetEmailsByIds(command.EmailFolder, command.MessageIds);
-		// foreach (var email in emails)
-		// {
-		// 	var archiveItem = new ArchiveItem
-		// 	{
-		// 		TenantId = _resolver.GetCurrentTenantId()!.Value,
-		// 		Title = email.Subject,
-		// 		CreatedAt = DateTimeOffset.UtcNow,
-		// 		CreatedByUsername = _resolver.GetCurrentUsername(),
-		// 		Tags = [],
-		// 		DocumentDate = email.ReceivedTime,
-		// 		Metadata = (JsonSerializer.SerializeToNode(new
-		// 		{
-		// 			email = new
-		// 			{
-		// 				to = email.To.Select(a => $"{a.Name} <{a.Address}>"),
-		// 				from = email.From.Select(a => $"{a.Name} <{a.Address}>"),
-		// 				date = email.ReceivedTime,
-		// 				subject = email.Subject,
-		// 				body = email.Body
-		// 			}
-		// 		}) as JsonObject)!
-		// 	};
+		var emails = await imapClient.GetEmailsByIds(command.EmailFolder, command.MessageIds);
+		foreach (var email in emails)
+		{
+			var title = email.Subject;
+			var metadata = (JsonSerializer.SerializeToNode(new
+			{
+				email = new
+				{
+					to = email.To.Select(a => $"{a.Name} <{a.Address}>"),
+					from = email.From.Select(a => $"{a.Name} <{a.Address}>"),
+					date = email.ReceivedTime,
+					subject = email.Subject,
+					body = email.Body
+				}
+			}) as JsonObject)!;
 
-		// 	if (email.Attachments.Count() != 0)
-		// 	{
-		// 		foreach (var attachmentInfo in email.Attachments)
-		// 		{
-		// 			var filename = attachmentInfo.FileName;
-		// 			var attachment = await imapClient.DownloadAttachmentAsync(command.EmailFolder, email.UniqueId, filename);
-		// 			if (attachment == null) continue;
+			var uploadedBlobs = new List<(Stream Content, string Filename, string MimeType)>();
+			foreach (var attachmentReference in email.Attachments)
+			{
+				var filename = attachmentReference.FileName;
+				var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, email.UniqueId, filename);
+				if (mimeEntity == null) continue;
 
-		// 			string pathInStore = await _fileProvider.Store(filename, attachment.ContentType, attachment.Stream);
-		// 			var blob = await CreateBlob(attachment, filename, pathInStore, archiveItem);
+				if (mimeEntity is not MimePart mimePart) continue;
 
-		// 			await _dbContext.Blobs.AddAsync(blob);
-		// 			archiveItem.Blobs!.Add(blob);
-		// 		}
-		// 	}
+				var stream = new MemoryStream() as Stream;
+				await mimePart.Content.DecodeToAsync(stream);
+				stream.Position = 0;
 
-		// 	await _dbContext.ArchiveItems.AddAsync(archiveItem);
-		// }
+				uploadedBlobs.Add((stream, filename, mimePart.ContentType.MimeType));
+			}
 
-		// await _dbContext.SaveChangesAsync();
+			await _archiveItemService.CreateArchiveItem(title, [], metadata, [], uploadedBlobs);
+		}
 	}
 
 
 	public async Task Handle(CreateBlobsFromAttachments command)
 	{
-
 		if (command.AttachmentReferences.Count == 0)
 		{
 			return;
@@ -126,7 +118,7 @@ public class EmailCommandHandler :
 
 		var imapClient = await _imapClientFactory.GetImapClient(command.ExternalAccountId);
 
-
+		var uploadedBlobs = new List<(Stream Content, string Filename, string MimeType)>();
 		foreach (var attachmentReference in command.AttachmentReferences)
 		{
 			var filename = attachmentReference.FileName;
@@ -140,32 +132,9 @@ public class EmailCommandHandler :
 			await mimePart.Content.DecodeToAsync(stream);
 			stream.Position = 0;
 
-			var pathInStore = await _fileProvider.Store(filename, mimePart.ContentType.MimeType, stream);
-			var blob = await CreateBlob(mimePart, stream, filename, pathInStore, null!);
-			await _dbContext.Blobs.AddAsync(blob);
+			uploadedBlobs.Add((stream, filename, mimePart.ContentType.MimeType));
 		}
 
-		await _dbContext.SaveChangesAsync();
-
-		// throw new NotImplementedException("");
-	}
-
-
-	private async Task<Blob> CreateBlob(MimePart downloadedAttachment, Stream contentStream, string fileName, string pathInStore, ArchiveItem archiveItem)
-	{
-		return new Blob
-		{
-			TenantId = _resolver.GetCurrentTenantId()!.Value,
-			ArchiveItem = archiveItem,
-			FileHash = contentStream.ComputeSha256Hash(),
-			MimeType = downloadedAttachment.ContentType.MimeType,
-			OriginalFilename = fileName,
-			PageCount = PreviewGenerator.GetDocumentPageCount(downloadedAttachment.ContentType.MimeType, contentStream),
-			FileSize = downloadedAttachment.ContentDisposition?.Size ?? 0,
-			UploadedAt = DateTimeOffset.Now,
-			UploadedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
-			StoreRoot = StoreRoot.FileStorage.ToString(),
-			PathInStore = pathInStore
-		};
+		await _blobService.UploadBlobs(uploadedBlobs);
 	}
 }
