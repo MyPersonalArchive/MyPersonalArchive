@@ -1,7 +1,7 @@
 using MailKit;
 using MailKit.Net.Imap;
 using MimeKit;
-
+using System.Linq;
 
 namespace Backend.Mpa.EmailIngestion;
 
@@ -9,23 +9,47 @@ public static class IImapExtensions
 {
 	extension(IImapClient client)
 	{
-		// public async Task<IList<EmailSummary>> GetEmailsByIds(string folder, List<string> messageIds)
-		// {
-		// 	var mailFolder = client.GetFolder(folder);
-		// 	await mailFolder.OpenAsync(FolderAccess.ReadOnly);
+		public async Task<IList<FullEmail>> GetEmailsByIds(string folder, List<uint> messageIds)
+		{
+			var uniqueIds = messageIds
+							.Select(id => new UniqueId(id))
+							.ToList();
 
-		// 	var uniqueIds = messageIds
-		// 					.Select(UniqueId.Parse)
-		// 					.ToList();
+			var mailFolder = client.GetFolder(folder);
+			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-		// 	var results = new List<EmailSummary>();
-		// 	foreach (var uniqueId in uniqueIds)
-		// 	{
-		// 		results.Add(await GetEmailAsync(mailFolder, uniqueId));
-		// 	}
+			return await Task.WhenAll(uniqueIds.Select(uniqueId => GetEmailAsync(mailFolder, uniqueId)));
+		}
 
-		// 	return results;
-		// }
+		private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
+		{
+			var message = await mailFolder.GetMessageAsync(uniqueId);
+			var email = new FullEmail
+			{
+				UniqueId = uniqueId.Id,
+				Subject = message.Subject,
+				From = message.From
+					.Select(address => address is MailboxAddress mb
+						? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+						: new FullEmail.EmailAddress(address.Name, null)
+					),
+				To = message.To
+					.Select(address => address is MailboxAddress mb
+						? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
+						: new FullEmail.EmailAddress(address.Name, null)
+					),
+				ReceivedTime = message.Date,
+				Body = message.TextBody,
+				HtmlBody = message.HtmlBody,
+				Attachments = message.BodyParts.OfType<MimePart>()
+					.Where(part => part.IsAttachment)
+					.Select(part => new FullEmail.EmailAttachment(part.FileName ?? "attachment",
+								part.ContentType.MimeType,
+								part.ContentDisposition?.Size)
+					)
+			};
+			return email;
+		}
 
 
 		public async Task<IList<string>> GetAvailableFolders()
@@ -126,7 +150,7 @@ public static class IImapExtensions
 				return null;
 			}
 
-            var attachementPart = summary.BodyParts.FirstOrDefault(part => part.IsAttachment && part.FileName == fileName);
+			var attachementPart = summary.BodyParts.FirstOrDefault(part => part.IsAttachment && part.FileName == fileName);
 			if (attachementPart == null)
 			{
 				return null;
@@ -247,7 +271,7 @@ public record EmailBodyContent(string? PlainText, string? Html);
 
 public class FullEmail
 {
-	public string UniqueId { get; set; } = string.Empty;
+	public uint UniqueId { get; set; }
 	public string Subject { get; set; } = string.Empty;
 	public string PreviewText { get; internal set; } = string.Empty;
 	public string? Body { get; set; }
