@@ -34,7 +34,7 @@ public class HandlerDiscovery
 		foreach (var handlerType in handlerTypes)
 		{
 			_logger.LogInformation($"\tRegistering handler: {handlerType.FullName}");
-			_services.AddTransient(handlerType);
+			_services.AddScoped(handlerType);
 
 			foreach (var iface in handlerType.GetInterfaces().Where(i => i.IsGenericType))
 			{

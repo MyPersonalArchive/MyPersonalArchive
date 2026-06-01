@@ -44,6 +44,7 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 }
 
 
+[RequireAllowedTenantId]
 public class DeleteBlobs : ICommand<DeleteBlobs>
 {
 	public required int[] BlobIds { get; set; }
@@ -56,14 +57,10 @@ public class BlobHandlers :
 	IAsyncCommandHandler<DeleteBlobs>
 {
 	private readonly BlobService _blobService;
-	private readonly MpaDbContext _dbContext;
-	private readonly IObjectStore _objectStore;
 
-	public BlobHandlers(BlobService blobService, MpaDbContext dbContext, IObjectStore objectStore)
+	public BlobHandlers(BlobService blobService)
 	{
 		_blobService = blobService;
-		_dbContext = dbContext;
-		_objectStore = objectStore;
 	}
 
 

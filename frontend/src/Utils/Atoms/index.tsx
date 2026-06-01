@@ -37,6 +37,7 @@ export type EmailAddress = {
 export type EmailAttachment = {
 	fileName: string
 	contentType: string
+	partSpecifier: string
 }
 
 export const foldersByExternalAccountAtom = atom<Map<string, string[] | undefined>>(new Map())

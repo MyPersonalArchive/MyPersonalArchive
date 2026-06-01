@@ -1,12 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Backend.Core;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers;
 using Backend.Mpa.Core.Services;
 using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
 using MimeKit;
 
 namespace Backend.Mpa.EmailIngestion.Cqrs;
@@ -31,7 +28,7 @@ public class CreateBlobsFromAttachments : ICommand<CreateBlobsFromAttachments>
 	public class AttachmentReference
 	{
 		public required uint MessageId { get; set; }
-		public required string FileName { get; set; }
+		public required string PartSpecifier { get; set; }
 	}
 }
 
@@ -43,21 +40,14 @@ public class EmailCommandHandler :
 	IAsyncCommandHandler<CreateBlobsFromAttachments>
 {
 	private readonly ImapClientFactory _imapClientFactory;
-	private readonly MpaDbContext _dbContext;
-	private readonly IAmbientDataResolver _resolver;
-
 	private readonly BlobService _blobService;
 	private readonly ArchiveItemService _archiveItemService;
 
 	public EmailCommandHandler(ImapClientFactory imapClientFactory,
-							MpaDbContext dbContext,
-							IAmbientDataResolver resolver,
 							BlobService blobService,
 							ArchiveItemService archiveItemService)
 	{
 		_imapClientFactory = imapClientFactory;
-		_dbContext = dbContext;
-		_resolver = resolver;
 		_blobService = blobService;
 		_archiveItemService = archiveItemService;
 	}
@@ -91,8 +81,7 @@ public class EmailCommandHandler :
 			var uploadedBlobs = new List<(Stream Content, string Filename, string MimeType)>();
 			foreach (var attachmentReference in email.Attachments)
 			{
-				var filename = attachmentReference.FileName;
-				var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, email.UniqueId, filename);
+				var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, email.UniqueId, attachmentReference.PartSpecifier);
 				if (mimeEntity == null) continue;
 
 				if (mimeEntity is not MimePart mimePart) continue;
@@ -101,7 +90,7 @@ public class EmailCommandHandler :
 				await mimePart.Content.DecodeToAsync(stream);
 				stream.Position = 0;
 
-				uploadedBlobs.Add((stream, filename, mimePart.ContentType.MimeType));
+				uploadedBlobs.Add((stream, mimePart.FileName ?? attachmentReference.FileName, mimePart.ContentType.MimeType));
 			}
 
 			await _archiveItemService.CreateArchiveItem(title, [], metadata, [], uploadedBlobs);
@@ -121,8 +110,7 @@ public class EmailCommandHandler :
 		var uploadedBlobs = new List<(Stream Content, string Filename, string MimeType)>();
 		foreach (var attachmentReference in command.AttachmentReferences)
 		{
-			var filename = attachmentReference.FileName;
-			var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, attachmentReference.MessageId, filename);
+			var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, attachmentReference.MessageId, attachmentReference.PartSpecifier);
 			if (mimeEntity == null) continue;
 
 
@@ -132,7 +120,7 @@ public class EmailCommandHandler :
 			await mimePart.Content.DecodeToAsync(stream);
 			stream.Position = 0;
 
-			uploadedBlobs.Add((stream, filename, mimePart.ContentType.MimeType));
+			uploadedBlobs.Add((stream, mimePart.FileName ?? "attachment", mimePart.ContentType.MimeType));
 		}
 
 		await _blobService.UploadBlobs(uploadedBlobs);

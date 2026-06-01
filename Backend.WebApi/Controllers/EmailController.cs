@@ -39,19 +39,19 @@ public class EmailController : ControllerBase
 	[HttpGet("download-attachment")]
 	public async Task<IActionResult> DownloadAttachment([FromQuery] Guid externalAccountId,
 														[FromQuery] uint messageId,
-														[FromQuery] string fileName,
+														[FromQuery] string partSpecifier,
 														[FromQuery] string folder)
 	{
 		var imapClient = await _imapClientFactory.GetImapClient(externalAccountId);
 
-		var mimeEntity = await imapClient.DownloadAttachmentAsync(folder, messageId, fileName);
+		var mimeEntity = await imapClient.DownloadAttachmentAsync(folder, messageId, partSpecifier);
 		if (mimeEntity is not MimePart mimePart) return NotFound();
 
 		var stream = new MemoryStream();
 		await mimePart.Content.DecodeToAsync(stream);
 		stream.Position = 0;
 
-		return File(stream, mimePart.ContentType.MimeType, fileName);
+		return File(stream, mimePart.ContentType.MimeType, mimePart.FileName ?? "attachment");
 	}
 
 

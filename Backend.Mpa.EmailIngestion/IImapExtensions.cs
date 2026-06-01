@@ -41,14 +41,26 @@ public static class IImapExtensions
 				ReceivedTime = message.Date,
 				Body = message.TextBody,
 				HtmlBody = message.HtmlBody,
-				Attachments = message.BodyParts.OfType<MimePart>()
-					.Where(part => part.IsAttachment)
-					.Select(part => new FullEmail.EmailAttachment(part.FileName ?? "attachment",
-								part.ContentType.MimeType,
-								part.ContentDisposition?.Size)
-					)
+				Attachments = EnumerateAttachments(message)
 			};
 			return email;
+		}
+
+
+		private static IEnumerable<FullEmail.EmailAttachment> EnumerateAttachments(MimeMessage message)
+		{
+			var iter = new MimeIterator(message);
+			while (iter.MoveNext())
+			{
+				if (iter.Current is MimePart part && part.IsAttachment)
+				{
+					yield return new FullEmail.EmailAttachment(
+						part.FileName ?? "attachment",
+						part.ContentType.MimeType,
+						part.ContentDisposition?.Size,
+						iter.PathSpecifier);
+				}
+			}
 		}
 
 
@@ -138,7 +150,7 @@ public static class IImapExtensions
 
 
 
-		public async Task<MimeEntity?> DownloadAttachmentAsync(string folder, uint messageId, string fileName)
+		public async Task<MimeEntity?> DownloadAttachmentAsync(string folder, uint messageId, string partSpecifier)
 		{
 			var mailFolder = await client.GetFolderAsync(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
@@ -150,7 +162,7 @@ public static class IImapExtensions
 				return null;
 			}
 
-			var attachementPart = summary.BodyParts.FirstOrDefault(part => part.IsAttachment && part.FileName == fileName);
+			var attachementPart = summary.BodyParts.FirstOrDefault(part => part.IsAttachment && part.PartSpecifier == partSpecifier);
 			if (attachementPart == null)
 			{
 				return null;
@@ -180,7 +192,7 @@ public static class IImapExtensions
 					: new EmailSummary.EmailAddress(address.Name, address.Name)
 				),
 			ReceivedTime = summary.InternalDate ?? DateTimeOffset.MinValue,
-			Attachments = summary.Attachments.Select(a => new EmailSummary.EmailAttachment(a.FileName ?? "attachment", a.ContentType.MimeType))
+			Attachments = summary.Attachments.Select(a => new EmailSummary.EmailAttachment(a.FileName ?? "attachment", a.ContentType.MimeType, a.PartSpecifier))
 		};
 	}
 
@@ -261,7 +273,7 @@ public class EmailSummary
 
 	public record EmailAddress(string Address, string? Name);
 
-	public record EmailAttachment(string FileName, string ContentType);
+	public record EmailAttachment(string FileName, string ContentType, string PartSpecifier);
 }
 
 
@@ -289,7 +301,8 @@ public class FullEmail
 	public record EmailAttachment(
 		string FileName,
 		string ContentType,
-		long? FileSize
+		long? FileSize,
+		string PartSpecifier
 	);
 }
 

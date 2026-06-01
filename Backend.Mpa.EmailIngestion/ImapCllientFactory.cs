@@ -3,10 +3,11 @@ using Backend.Core.Infrastructure;
 using Backend.Mpa.EmailIngestion.Services;
 using MailKit.Net.Imap;
 using MailKit.Security;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Mpa.EmailIngestion;
 
-[RegisterService]
+[RegisterService(ServiceLifetime.Scoped)]
 public class ImapClientFactory
 {
 	private readonly ExternalAccountService _externalAccountService;

@@ -77,9 +77,11 @@ public class BlobService
 				await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
 			}
 
+			int currentTenantId = _resolver.GetCurrentTenantId() ?? throw new Exception("Missing tenant ID");
+			string currentUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
 			var blob = new Blob
 			{
-				TenantId = _resolver.GetCurrentTenantId()!.Value,
+				TenantId = currentTenantId,
 				ArchiveItem = null,
 				FileHash = stream.ComputeSha256Hash(),
 				MimeType = file.mimeType,
@@ -87,7 +89,7 @@ public class BlobService
 				PageCount = PreviewGenerator.GetDocumentPageCount(file.mimeType, stream),
 				FileSize = file.contentStream.Length,
 				UploadedAt = DateTimeOffset.Now,
-				UploadedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
+				UploadedByUsername = currentUsername,
 				StoreRoot = StoreRoot.FileStorage.ToString(),
 
 				// `pathInStore` is not necessarily the actual path where the file is stored, but we keep it for backward
@@ -140,14 +142,21 @@ public class BlobService
 
 	public async Task<Blob?> GetBlobEntity(int blobId)
 	{
-		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+		var blob = await _dbContext.Blobs
+			.Include(blob => blob.UploadedBy)
+			.Include(blob => blob.ArchiveItem)
+			.SingleOrDefaultAsync(blob => blob.Id == blobId);
 		return blob;
 	}
 
 
 	public async Task<ICollection<Blob>> GetBlobEntities(IEnumerable<int> blobIds)
 	{
-		var blobs = await _dbContext.Blobs.Where(blob => blobIds.Contains(blob.Id)).ToListAsync();
+		var blobs = await _dbContext.Blobs
+			.Include(blob => blob.UploadedBy)
+			.Include(blob => blob.ArchiveItem)
+			.Where(blob => blobIds.Contains(blob.Id))
+			.ToListAsync();
 		return blobs;
 	}
 

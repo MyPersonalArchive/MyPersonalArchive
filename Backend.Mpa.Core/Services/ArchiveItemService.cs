@@ -64,9 +64,7 @@ public class ArchiveItemService
 			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			CreatedAt = DateTimeOffset.Now,
 			Blobs = connectedBlobEntities,
-			Tags = tags != null
-				? tags.Select(tag => new Tag { Title = tag }).ToList()
-				: [],
+			Tags = Tags.Ensure(_dbContext, tags),
 			Metadata = metadata ?? new JsonObject(),
 			LastUpdated = DateTimeOffset.Now
 		};
@@ -113,9 +111,7 @@ public class ArchiveItemService
 		}
 
 		archiveItem.Title = title;
-		archiveItem.Tags = tags != null
-			? tags.Select(tag => new Tag { Title = tag }).ToList()
-			: [];
+		archiveItem.Tags = Tags.Ensure(_dbContext, tags);
 		archiveItem.Metadata = metadata ?? new JsonObject();
 		archiveItem.DocumentDate = documentDate;
 		archiveItem.LastUpdated = DateTimeOffset.Now;
