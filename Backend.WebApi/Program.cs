@@ -48,14 +48,14 @@ public static class Program
 		builder.Services.AddHttpContextAccessor();
 
 		var executingAssembly = Assembly.GetExecutingAssembly();
-		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);	//TODO: Include only specific assemblies? All referenced assemblies could be a lot.
+		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);  //TODO: Include only specific assemblies? All referenced assemblies could be a lot.
 
 		// Add services to the container.
 		new HandlerDiscovery(builder.Services, _logger)
-			.RegisterCommandAndQueryHandlers([executingAssembly, ..otherRelevantAssemblies]);
+			.RegisterCommandAndQueryHandlers([executingAssembly, .. otherRelevantAssemblies]);
 
 		new ServiceDiscovery(builder.Services, _logger)
-			.RegisterServices([executingAssembly, ..otherRelevantAssemblies]);
+			.RegisterServices([executingAssembly, .. otherRelevantAssemblies]);
 
 		builder.Services.AddControllers();
 
@@ -103,14 +103,14 @@ public static class Program
 		{
 			var cert_file = "/data/https/server.pfx";
 			var cert_password = builder.Configuration.GetValue<string>("CertificatePassword")?.TrimEnd('\n', '\r');
-			
+
 			// Read port from environment variable or default to 5054
 			var portString = Environment.GetEnvironmentVariable("BACKEND_PORT") ?? "5054";
 			var port = int.TryParse(portString, out var parsedPort) ? parsedPort : 5054;
-			
+
 			// Use IPAddress.Any (0.0.0.0) to allow access from outside the container
 			var bindAddress = IPAddress.Any;
-			
+
 			if (!string.IsNullOrEmpty(cert_password) && File.Exists(cert_file))
 			{
 				options.Listen(bindAddress, port, listenOptions => { listenOptions.UseHttps(cert_file, cert_password); });
@@ -150,14 +150,14 @@ public static class Program
 		});
 
 		// Register factories with signaling server URL, ICE servers, and connection pool
-		services.AddSingleton<BackupProviderFactory>(sp => 
+		services.AddSingleton<BackupProviderFactory>(sp =>
 		{
 			var connectionPool = sp.GetRequiredService<WebRTCConnectionPool>();
 			return new BackupProviderFactory(appConfig?.SignalingServerUrl, appConfig?.IceServers, connectionPool);
 		});
-		services.AddSingleton<Func<IServiceScope, int, IBackupProgressReporter>>((sp) => 
+		services.AddSingleton<Func<IServiceScope, int, IBackupProgressReporter>>((sp) =>
 			(scope, tenantId) => new SignalRBackupProgressReporter(scope, tenantId));
-		
+
 		// Register restore manager with progress reporter factory
 		services.AddSingleton<TenantRestoreManager>(sp =>
 		{

@@ -88,7 +88,7 @@ export function useMailProvider(externalAccountId: UUID) {
 			emailFolder: selectedFolder,
 			attachmentReferences: emailAttachments.map(a => ({
 				messageId: messageId,
-				fileName: a.fileName
+				partSpecifier: a.partSpecifier
 			}))
 		}
 		await apiClient.execute("CreateBlobsFromAttachments", params)

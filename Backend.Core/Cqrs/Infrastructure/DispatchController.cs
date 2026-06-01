@@ -62,7 +62,7 @@ public class DispatchController : ControllerBase
 
 		try
 		{
-			if (IsHandleMethodAwaitable(handleMethod))
+			if (IsHandleQueryMethodAwaitable(handleMethod))
 			{
 				// Async handler
 				var task = (Task)handleMethod.Invoke(handler, [query])!;
@@ -85,6 +85,11 @@ public class DispatchController : ControllerBase
 		{
 			_logger.LogError(ex, "Error executing query {QueryName}", queryName);
 			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unhandled error executing query {QueryName}", queryName);
+			return StatusCode(500, ex.Message);
 		}
 	}
 
@@ -117,7 +122,7 @@ public class DispatchController : ControllerBase
 
 		try
 		{
-			if (IsHandleMethodAwaitable(handleMethod))
+			if (IsHandleQueryMethodAwaitable(handleMethod))
 			{
 				// Async handler
 				var task = (Task)handleMethod.Invoke(handler, [query])!;
@@ -140,6 +145,11 @@ public class DispatchController : ControllerBase
 		{
 			_logger.LogError(ex, "Error executing query {QueryName}", queryName);
 			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unhandled error executing query {QueryName}", queryName);
+			return StatusCode(500, ex.Message);
 		}
 	}
 
@@ -172,7 +182,7 @@ public class DispatchController : ControllerBase
 
 		try
 		{
-			if (IsHandleMethodAwaitable(handleMethod))
+			if (IsHandleCommandMethodAwaitable(handleMethod))
 			{
 				// Async handler
 				var task = (Task)handleMethod.Invoke(handler, [command])!;
@@ -190,6 +200,11 @@ public class DispatchController : ControllerBase
 		{
 			_logger.LogError(ex, "Error executing command {CommandName}", commandName);
 			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unhandled error executing command {CommandName}", commandName);
+			return StatusCode(500, ex.Message);
 		}
 	}
 
@@ -221,7 +236,7 @@ public class DispatchController : ControllerBase
 
 		try
 		{
-			if (IsHandleMethodAwaitable(handleMethod))
+			if (IsHandleCommandMethodAwaitable(handleMethod))
 			{
 				// Async handler
 				var task = (Task)handleMethod.Invoke(handler, [command])!;
@@ -239,6 +254,11 @@ public class DispatchController : ControllerBase
 		{
 			_logger.LogError(ex, "Error executing command {CommandName}", commandName);
 			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unhandled error executing command {CommandName}", commandName);
+			return StatusCode(500, ex.Message);
 		}
 	}
 
@@ -271,7 +291,7 @@ public class DispatchController : ControllerBase
 
 		try
 		{
-			if (IsHandleMethodAwaitable(handleMethod))
+			if (IsHandleCommandMethodAwaitable(handleMethod))
 			{
 				// Async handler
 				var task = (Task)handleMethod.Invoke(handler, [command])!;
@@ -289,6 +309,11 @@ public class DispatchController : ControllerBase
 		{
 			_logger.LogError(ex, "Error executing command {CommandName}", commandName);
 			return StatusCode((int)ex.StatusCode, ex.Message);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unhandled error executing command {CommandName}", commandName);
+			return StatusCode(500, ex.Message);
 		}
 	}
 
@@ -350,10 +375,24 @@ public class DispatchController : ControllerBase
 	}
 
 
-	private static bool IsHandleMethodAwaitable(System.Reflection.MethodInfo handleMethod)
+	// private static bool IsHandleMethodAwaitable(System.Reflection.MethodInfo handleMethod)
+	// {
+	// 	return (handleMethod.ReturnType.IsGenericType && handleMethod.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+	// 		|| handleMethod.ReturnType == typeof(Task);
+	// }
+
+
+	private static bool IsHandleQueryMethodAwaitable(System.Reflection.MethodInfo handleMethod)
 	{
-		return handleMethod.ReturnType.IsGenericType && handleMethod.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
+		return (handleMethod.ReturnType.IsGenericType && handleMethod.ReturnType.GetGenericTypeDefinition() == typeof(Task<>));
 	}
+
+	private static bool IsHandleCommandMethodAwaitable(System.Reflection.MethodInfo handleMethod)
+	{
+		return handleMethod.ReturnType == typeof(Task);
+	}
+
+
 
 
 	private void MapParametersToObject(object target, Dictionary<string, string> parameters)

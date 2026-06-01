@@ -306,7 +306,7 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 		params.set("externalAccountId", externalAccountId)
 		params.set("tenant-id", `${currentTenantId}`)
 		params.set("messageId", email.uniqueId.toString())
-		params.set("fileName", attachment.fileName)
+		params.set("partSpecifier", attachment.partSpecifier)
 		params.set("folder", selectedFolder) // email folders may have spaces, so lets use query params
 
 		return <a href={`/api/email/download-attachment?${params.toString()}`}

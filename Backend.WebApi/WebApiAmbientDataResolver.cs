@@ -3,7 +3,7 @@ using Backend.Core.Infrastructure;
 
 namespace Backend.WebApi;
 
-[RegisterService()]
+[RegisterService(ServiceLifetime.Scoped)]
 public class WebApiAmbientDataResolver : IAmbientDataResolver
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;

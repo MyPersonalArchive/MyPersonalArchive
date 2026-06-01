@@ -108,7 +108,7 @@ export const ArchiveItemEditPage = () => {
 	const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		event.preventDefault()
 
-		apiClient.execute("delete", { id: id! })
+		apiClient.execute("DeleteArchiveItem", { id: id! })
 		navigate(RoutePaths.Archive.List)
 	}
 
