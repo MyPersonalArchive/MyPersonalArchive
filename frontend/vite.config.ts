@@ -11,7 +11,8 @@ const httpsEnabled = fs.existsSync(keyPath) && fs.existsSync(certPath)
 
 // Allow configuring backend port via environment variable
 const backendPort = process.env.VITE_BACKEND_PORT || "5054"
-const backendUrl = httpsEnabled ? `https://localhost:${backendPort}` : `http://localhost:${backendPort}`
+const backendUrl = process.env.VITE_BACKEND_URL || `http://localhost:${backendPort}`
+const backendIsHttps = new URL(backendUrl).protocol === "https:"
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -31,7 +32,7 @@ export default defineConfig({
 			"/api": {
 				target: backendUrl,
 				changeOrigin: true,
-				...(httpsEnabled && {
+				...(backendIsHttps && {
 					secure: false,
 					agent: new https.Agent({
 						rejectUnauthorized: false
@@ -54,7 +55,8 @@ export default defineConfig({
 				target: backendUrl,
 				changeOrigin: true,
 				ws: true,
-				...(httpsEnabled && {
+				...(backendIsHttps && {
+					secure: false,
 					agent: new https.Agent({
 						rejectUnauthorized: false
 					})
