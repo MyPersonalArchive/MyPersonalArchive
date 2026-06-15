@@ -2,11 +2,10 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
 	"name": "my-personal-archive-dev",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	// "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "devcontainer",
+	"workspaceFolder": "/workspaces/MyPersonalArchive",
+	"workspaceMount": "source=mypersonalarchive-workspace,target=/workspaces/MyPersonalArchive,type=volume",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
@@ -22,18 +21,6 @@
 		// 	"ghcr.io/devcontainers/features/sshd:1.1.0": {}
 		// }
 	},
-	"containerEnv": {
-		"ASPNETCORE_ENVIRONMENT": "Development",
-		"JWT_SECRET": "=:|V7hblR0eD+7+S10F6e~4RPc_!87hd*1kashdh_dsada123*",
-		"JWT_ISSUER": "gotnonameapps.com",
-		"AUDIENCE": "gotnonameapps.com",
-		"GOOGLE__CLIENTSECRET": "${localEnv:MPA_GOOGLE_CLIENT_SECRET}",
-		"GOOGLE__CLIENTID": "${localEnv:MPA_GOOGLE_CLIENT_ID}",
-		"CERTIFICATEPASSWORD": "${localEnv:MPA_CERTIFICATE_PASSWORD}"
-	},
-	"mounts": [
-		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
-	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5173],
 	"portsAttributes": {
