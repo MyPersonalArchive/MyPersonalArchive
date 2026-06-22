@@ -2,8 +2,9 @@ using MimeKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Mpa.EmailIngestion;
+using Microsoft.AspNetCore.Http;
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.Mpa.EmailIngestion.Controllers;
 
 //TODO:
 /*

@@ -36,14 +36,12 @@ public static class Program
 
 		// OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
 		// JsonObject is used in our dbContext.
-		// TODO: Can we instead use JObject? We are not using Newtonsoft there.
+// TODO: Remove Newtonsoft.Json
 		JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 		{
 			Converters = { new JsonObjectConverter() },
 			ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 		};
-
-		builder.Services.AddControllers().AddApplicationPart(typeof(DispatchController).Assembly);
 
 		builder.Services.AddHttpContextAccessor();
 
@@ -57,7 +55,8 @@ public static class Program
 		new ServiceDiscovery(builder.Services, _logger)
 			.RegisterServices([executingAssembly, .. otherRelevantAssemblies]);
 
-		builder.Services.AddControllers();
+		new ControllerDiscovery(builder.Services, _logger)
+			.RegisterControllers([executingAssembly, .. otherRelevantAssemblies]);
 
 		builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
 		builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));

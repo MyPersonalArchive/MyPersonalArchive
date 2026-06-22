@@ -8,9 +8,10 @@ using Backend.Core.Authentication;
 using System.Net.Http.Headers;
 using Backend.Core.Infrastructure;
 using Backend.Mpa.EmailIngestion.Services;
+using Microsoft.AspNetCore.Http;
 
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.Mpa.EmailIngestion.Controllers;
 
 [ApiController]
 [Route("api/[Controller]")]
