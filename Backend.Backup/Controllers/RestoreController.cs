@@ -2,7 +2,7 @@ using Backend.Backup.Managers;
 using Backend.Core.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.Backup.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

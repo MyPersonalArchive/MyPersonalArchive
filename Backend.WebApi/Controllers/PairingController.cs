@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using SIPSorcery.Net;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Backend.WebApi.Controllers;
 
@@ -99,7 +99,7 @@ public class PairingController : ControllerBase
         {
             if (candidate != null)
             {
-                var candidateJson = JsonConvert.SerializeObject(new RTCIceCandidateInit
+                var candidateJson = JsonSerializer.Serialize(new RTCIceCandidateInit
                 {
                     candidate = candidate.candidate,
                     sdpMLineIndex = candidate.sdpMLineIndex,
@@ -152,7 +152,7 @@ public class PairingController : ControllerBase
         // Listen for ICE candidates from the joiner
         hubConnection.On<string>("IceCandidateReceived", (candidateJson) =>
         {
-            var candidate = JsonConvert.DeserializeObject<RTCIceCandidateInit>(candidateJson);
+            var candidate = JsonSerializer.Deserialize<RTCIceCandidateInit>(candidateJson);
             if (candidate != null)
             {
                 peerConnection.addIceCandidate(candidate);
@@ -282,7 +282,7 @@ public class PairingController : ControllerBase
         {
             if (candidate != null)
             {
-                var candidateJson = JsonConvert.SerializeObject(new
+                var candidateJson = JsonSerializer.Serialize(new
                 {
                     candidate = candidate.candidate,
                     sdpMid = candidate.sdpMid,
@@ -358,7 +358,7 @@ public class PairingController : ControllerBase
         // Listen for ICE candidates from offerer
         hubConnection.On<string>("IceCandidateReceived", (candidateJson) =>
         {
-            var candidate = JsonConvert.DeserializeObject<RTCIceCandidateInit>(candidateJson);
+            var candidate = JsonSerializer.Deserialize<RTCIceCandidateInit>(candidateJson);
             if (candidate != null)
             {
                 peerConnection.addIceCandidate(candidate);
