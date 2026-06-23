@@ -2,7 +2,7 @@ using Backend.Mpa.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace Backend.Mpa.DbModel;
+namespace Backend.Backup;
 
 public static class EfBackupHelper
 {

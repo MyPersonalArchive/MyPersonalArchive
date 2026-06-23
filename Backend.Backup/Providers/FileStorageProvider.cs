@@ -1,8 +1,10 @@
+using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Providers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Backend.Core.Providers;
+namespace Backend.Backup.Providers;
 
 
 //If we find a common implementation for storage types this can be IStorageProvider which 
@@ -15,6 +17,7 @@ public interface IFileStorageProvider
 	void DeleteFile(string fileName);
 }
 
+[RegisterService]
 public class FileStorageProvider : IFileStorageProvider
 {
 	private const string MetadataExtension = ".metadata";

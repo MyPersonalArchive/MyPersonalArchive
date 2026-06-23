@@ -6,13 +6,11 @@ using Backend.Core;
 using Backend.Backup;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using Backend.Core.Providers;
 using Newtonsoft.Json;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using Backend.WebApi.Middleware;
-using Backend.Core.JsonConverters;
 using MailKit.Net.Imap;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
@@ -33,15 +31,6 @@ public static class Program
 	{
 		var builder = WebApplication.CreateBuilder(args);
 		InitializeLogger(builder);
-
-		// OBS: For JSON serialization. Converter is for telling newtonsoft how to properly deserialize JsonObjects.
-		// JsonObject is used in our dbContext.
-// TODO: Remove Newtonsoft.Json
-		JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-		{
-			Converters = { new JsonObjectConverter() },
-			ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-		};
 
 		builder.Services.AddHttpContextAccessor();
 
