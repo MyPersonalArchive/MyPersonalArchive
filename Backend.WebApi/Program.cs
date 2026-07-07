@@ -35,8 +35,9 @@ public static class Program
 		builder.Services.AddHttpContextAccessor();
 
 		var executingAssembly = Assembly.GetExecutingAssembly();
-		var otherRelevantAssemblies = executingAssembly.GetReferencedAssemblies().Where(x => x.Name!.StartsWith("Backend")).Select(Assembly.Load);  //TODO: Include only specific assemblies? All referenced assemblies could be a lot.
-
+		var otherRelevantAssemblies = Directory
+			.GetFiles(AppContext.BaseDirectory, "Backend.*.dll")
+			.Select(f => Assembly.Load(AssemblyName.GetAssemblyName(f)));
 		// Add services to the container.
 		new HandlerDiscovery(builder.Services, _logger)
 			.RegisterCommandAndQueryHandlers([executingAssembly, .. otherRelevantAssemblies]);
