@@ -41,18 +41,49 @@ public class FileSystemFileStore : IFileStore
 	}
 
 
-	public Task<IEnumerable<string>> ListFiles(IEnumerable<string> containerNames)
+	public Task<IEnumerable<string[]>> ListFiles(IEnumerable<string> containerNames, bool recursive = false)
 	{
 		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
 		if (!Directory.Exists(folderPath))
 		{
-			return Task.FromResult(Enumerable.Empty<string>());
+			return Task.FromResult(Enumerable.Empty<string[]>());
 		}
 
-		var filenames = Directory.GetFiles(folderPath)
-			.Select(filePath => Path.GetFileName(filePath));
+		if (recursive)
+		{
+			var filenames = Directory.GetFiles(folderPath, "*", new EnumerationOptions { RecurseSubdirectories = true });
+			var relativeParts = filenames.Select(filePath => Path.GetRelativePath(folderPath, filePath).Split(Path.DirectorySeparatorChar));
+			return Task.FromResult(relativeParts);
+		}
+		else
+		{
+			var filenames = Directory.GetFiles(folderPath, "*", SearchOption.TopDirectoryOnly);
+			var filenamesOnly = filenames.Select(filePath => Path.GetFileName(filePath));
+			return Task.FromResult(filenamesOnly.Select(name => new string[] { name }));
+		}
+	}
 
-		return Task.FromResult(filenames);
+
+	public Task<IEnumerable<string[]>> ListFolders(IEnumerable<string> containerNames, bool recursive = false)
+	{
+		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
+		if (!Directory.Exists(folderPath))
+		{
+			throw new DirectoryNotFoundException($"The specified folder path does not exist: {folderPath}");
+		}
+
+		if (recursive)
+		{
+			var directories = Directory.GetDirectories(folderPath, "*", new EnumerationOptions { RecurseSubdirectories = true });
+			var relativeNames = directories.Select(dirPath => Path.GetRelativePath(folderPath, dirPath).Split(Path.DirectorySeparatorChar));
+			return Task.FromResult(relativeNames);
+		}
+		else
+		{
+			var directories = Directory.GetDirectories(folderPath, "*", SearchOption.TopDirectoryOnly);
+			var folderNames = directories.Select(dirPath => Path.GetFileName(dirPath));
+			return Task.FromResult(folderNames.Select(name => new string[] { name }));
+		}
 	}
 
 

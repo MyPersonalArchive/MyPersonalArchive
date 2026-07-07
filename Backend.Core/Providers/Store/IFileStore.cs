@@ -1,22 +1,23 @@
 namespace Backend.Core.Providers.Store;
 
 
-
 public interface IFileStore
 {
-	public void Configure(IEnumerable<string> baseContainerNames);
+	void Configure(IEnumerable<string> baseContainerNames);
 
-	public Task<bool> FileExists(IEnumerable<string> containerNames, string filename);
+	Task<bool> FileExists(IEnumerable<string> containerNames, string filename);
 
-	public Task<IEnumerable<string>> ListFiles(IEnumerable<string> containerNames);
+	Task<IEnumerable<string[]>> ListFiles(IEnumerable<string> containerNames, bool recursive = false);
 
-	public Task StoreFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
+	Task<IEnumerable<string[]>> ListFolders(IEnumerable<string> containerNames, bool recursive = false);
 
-	public Task<Stream> GetWritableFileStream(IEnumerable<string> containerNames, string filename);
+	Task StoreFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
+
+	Task<Stream> GetWritableFileStream(IEnumerable<string> containerNames, string filename);
 	
-	public Task AppendToFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
+	Task AppendToFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
 
-	public Task<Stream> GetFile(IEnumerable<string> containerNames, string filename);
+	Task<Stream> GetFile(IEnumerable<string> containerNames, string filename);
 
-	public Task DeleteFile(IEnumerable<string> containerNames, string filename);
+	Task DeleteFile(IEnumerable<string> containerNames, string filename);
 }

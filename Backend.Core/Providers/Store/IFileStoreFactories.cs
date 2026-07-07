@@ -17,7 +17,7 @@ public class ObjectStoreFileStoreFactory
 		_fileStore.Configure(["Blobs", tenantId.ToString()]);
 	}
 
-	public IFileStore GetFileStore(IEnumerable<string> containerNames)
+	public IFileStore GetFileStore()
 	{
 		return _fileStore;
 	}

@@ -9,7 +9,7 @@ public class ObjectStore : IObjectStore
 	private readonly IFileStore _fileStore;
 	public ObjectStore(ObjectStoreFileStoreFactory fileStoreFactory)
 	{
-		_fileStore = fileStoreFactory.GetFileStore([]);
+		_fileStore = fileStoreFactory.GetFileStore();
 	}
 
 	public async Task<bool> ObjectExists(Guid objectId)
@@ -17,29 +17,19 @@ public class ObjectStore : IObjectStore
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 
 		var files = await _fileStore.ListFiles(ObjectPathPartsFromObjectId(objectId));
-		return files.Any(filename => filename.StartsWith(objectIdStringDashed));
+		return files.Any(pathParts => pathParts[^1].StartsWith(objectIdStringDashed));
 	}
 
-	public Task<IEnumerable<Guid>> ListObjectIds()
+	public async Task<IEnumerable<Guid>> ListObjectIds()
 	{
-		// var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
-		// if (!Directory.Exists(folderPath))
-		// {
-		// 	return Task.FromResult(Enumerable.Empty<Guid>());
-		// }
+		var allFiles = await _fileStore.ListFiles([], recursive: true);
+		var allObjectIds = allFiles.Select(pathParts => pathParts[^1].Split('.'))
+						.Select(parts => parts[0]) // Get the filename without extension, which should be the objectId
+						.Distinct()
+						.Select(Guid.Parse);
+		System.Diagnostics.Debug.WriteLine($"Guids in store: {string.Join(", ", allObjectIds)}");
 
-		// var objectIds = Directory
-		// 	.GetDirectories(folderPath)             // Folders at level 1 (00-ff)
-		// 	.SelectMany(Directory.GetDirectories)   // Folders at level 2 (0000-ffff)
-		// 	.SelectMany(Directory.GetDirectories)   // Folders at level 3 (000000-ffffff)
-		// 	.SelectMany(level3 => Directory.GetFiles(level3))
-		// 	.Select(filePath => Path.GetFileNameWithoutExtension(filePath))                 // Get the filename without extension, which should be the objectId
-		// 	.Distinct()
-		// 	.Select(Guid.Parse);
-
-		// return Task.FromResult(objectIds);
-
-		throw new NotImplementedException();
+		return allObjectIds;
 	}
 
 
@@ -49,7 +39,9 @@ public class ObjectStore : IObjectStore
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 
 		var allFiles = await _fileStore.ListFiles(ObjectPathPartsFromObjectId(objectId));
-		var filesForObject = allFiles.Where(filename => filename.StartsWith(objectIdStringDashed));
+		var filesForObject = allFiles
+			.Select(pathParts => pathParts[^1])
+			.Where(filename => filename.StartsWith(objectIdStringDashed));
 
 		var extensions = filesForObject
 			.Select(filename => Path.GetExtension(filename))
@@ -86,7 +78,9 @@ public class ObjectStore : IObjectStore
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 
 		var allFiles = await _fileStore.ListFiles(ObjectPathPartsFromObjectId(objectId));
-		var filesForObject = allFiles.Where(filename => filename.StartsWith(objectIdStringDashed));
+		var filesForObject = allFiles
+			.Select(pathParts => pathParts[^1])
+			.Where(filename => filename.StartsWith(objectIdStringDashed));
 
 		foreach (var file in filesForObject)
 		{
