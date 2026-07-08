@@ -75,4 +75,29 @@ public static class PreviewGenerator
 				return 1;
 		}
 	}
+
+	public static ITypeSpecificMetadata? GetFileTypeSpecificMetadata(string mimeType, Stream stream)
+	{
+		switch (mimeType)
+		{
+			case "application/pdf":
+				return new PdfMetadata
+				{
+					PageCount = GetDocumentPageCount(mimeType, stream)
+				};
+
+			case "image/jpeg":
+			case "image/png":
+				{
+					using var image = Image.NewFromStream(stream);
+					return new RasterImageMetadata
+					{
+						Width = image.Width,
+						Height = image.Height
+					};
+				}
+			default:
+				return null;
+		}
+	}
 }

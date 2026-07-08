@@ -99,17 +99,11 @@ public class ArchiveItemsHandler :
 		{
 			Id = archiveItem.Id,
 			Title = archiveItem.Title,
-			Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
+			Tags = ["This", "is", "not", "implemented", "yet", "GetArchiveItem"], //[.. archiveItem.Tags.Select(tag => tag.Title)],
 			Metadata = archiveItem.Metadata,
 			CreatedAt = archiveItem.CreatedAt,
 			DocumentDate = archiveItem.DocumentDate,
-			BlobDisplayInfos = [.. archiveItem.Blobs?.Select(blob => new GetArchiveItem.Response.BlobDisplayInfo
-				{
-					Id = blob.Id,
-					NumberOfPages = blob.PageCount,
-					MimeType = blob.MimeType
-				}).ToList() ?? []
-			]
+			BlobIds = archiveItem.BlobIds
 		};
 	}
 
@@ -121,16 +115,11 @@ public class ArchiveItemsHandler :
 			{
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
-				Tags = archiveItem.Tags.Select(tag => tag.Title),
-				DocumentDate = archiveItem.DocumentDate,
+				Tags = ["This", "is", "not", "implemented", "yet", "ListArchiveItems"], //archiveItem.Tags.Select(tag => tag.Title),
+				BlobIds = archiveItem.BlobIds,
+				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
 				CreatedAt = archiveItem.CreatedAt,
-				Metadata = archiveItem.Metadata,
-				BlobDisplayInfos = archiveItem.Blobs!.Select(blob => new ListArchiveItems.Response.BlobDisplayInfo()
-				{
-					Id = blob.Id,
-					MimeType = blob.MimeType,
-					NumberOfPages = blob.PageCount
-				}),
+				DocumentDate = archiveItem.DocumentDate
 			})
 			// .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.IndexOf(titleFilter, StringComparison.InvariantCultureIgnoreCase))
 			// .ThenBy(archItem => archItem.Title == null ? null : archItem.Title, StringComparer.InvariantCultureIgnoreCase);

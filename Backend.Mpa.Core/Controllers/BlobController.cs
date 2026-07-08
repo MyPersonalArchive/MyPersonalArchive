@@ -28,10 +28,13 @@ public class BlobController : ControllerBase
 		{
 			return NotFound();
 		}
-		var (contentStream, metadata, blob) = tuple.Value;
+		
+		// var (contentStream, metadata, blob) = tuple.Value;
+		using var contentStream = tuple.Value.contentStream;
+		var metadata = tuple.Value.metadata;
 
 		//User our libvips preview mechanism if image or pdf
-		if (dimension != DimensionEnum.Full && (blob.MimeType!.StartsWith("image/") || blob.MimeType == "application/pdf"))
+		if (dimension != DimensionEnum.Full && (metadata.MimeType!.StartsWith("image/") || metadata.MimeType == "application/pdf"))
 		{
 			int maxX, maxY;
 			switch (dimension)

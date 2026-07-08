@@ -1,154 +1,174 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
-using Microsoft.EntityFrameworkCore;
+using Backend.Mpa.Core.Cqrs;
+using Backend.Mpa.Core.Store;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace Backend.Mpa.Core.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
 public class ArchiveItemCommandService
 {
-	private readonly ArchiveItemPublicationService _archiveItemPublicationService;
-	private readonly MpaDbContext _dbContext;
-	private readonly BlobQueryService _blobQueryService;
-	private readonly BlobCommandService _blobCommandService;
-	private readonly BlobPublicationService _blobPublicationService;
-
+	private readonly ISignalRService _signalRService;
+	private readonly ArchiveObjectStore _archiveObjectStore;
+	private readonly BlobService _blobService;
 	private readonly IAmbientDataResolver _resolver;
-	
-	public ArchiveItemCommandService(ArchiveItemPublicationService archiveItemPublicationService, MpaDbContext dbContext, BlobQueryService blobQueryService, BlobCommandService blobCommandService, BlobPublicationService blobPublicationService, IAmbientDataResolver resolver)
+
+	public ArchiveItemService(ISignalRService signalRService, ArchiveObjectStore archiveObjectStore, BlobService blobService, IAmbientDataResolver resolver)
 	{
-		_archiveItemPublicationService = archiveItemPublicationService;
-		_dbContext = dbContext;
-		_blobQueryService = blobQueryService;
-		_blobCommandService = blobCommandService;
-		_blobPublicationService = blobPublicationService;
+		_signalRService = signalRService;
+		_archiveObjectStore = archiveObjectStore;
+		_blobService = blobService;
 		_resolver = resolver;
 	}
 
 
-	public async Task<ArchiveItem> CreateArchiveItem(string title,
-												  	 IEnumerable<string> tags,
-												  	 JsonObject? metadata,
-												  	 IEnumerable<Guid> blobIds,
-												  	 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+	public async Task<ArchiveItem?> GetArchiveItem(Guid archiveItemGuid)
 	{
-		var existingBlobEntities = await _blobQueryService.GetBlobEntities(blobIds);
+		using var archiveItemStream = await _archiveObjectStore.GetObject(archiveItemGuid, "json");
+		var archiveItem = JsonSerializer.Deserialize<ArchiveItem>(archiveItemStream, JsonSerializerOptions.Web);
 
-		var newBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		return await archiveItems.SingleOrDefaultAsync();
+	}
 
-		ICollection<Blob> connectedBlobEntities = [.. existingBlobEntities, .. newBlobEntities];
 
+	public async Task<IEnumerable<ArchiveItem>> ListArchiveItems()
+	{
+		var archiveItemGuids = await _archiveObjectStore.ListObjectIds();
+		var archiveItemStreams = (
+			await Task.WhenAll(archiveItemGuids.Select(async objectId => await _archiveObjectStore.GetObject(objectId, "json")))
+		).ToList();
+		var archiveItems = archiveItemStreams
+			.Select(stream => JsonSerializer.Deserialize<ArchiveItem>(stream, JsonSerializerOptions.Web))
+			.Where(item => item != null)
+			.Select(item => item!)
+			.ToList();
+
+		archiveItemStreams.ForEach(stream => stream.Dispose());
+
+		return archiveItems;
+	}
+
+
+	public async Task<ArchiveItem> CreateArchiveItem(string title, IEnumerable<string> tags, JsonObject? metadata, IEnumerable<Guid> existingBlobIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+	{
+		var newBlobEntities = await _blobService.UploadBlobs(uploadedBlobs);
+		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobEntities]);
+
+		var newArchiveItemId = Guid.NewGuid();
 		var newArchiveItem = new ArchiveItem
 		{
+			Id = newArchiveItemId,
 			Title = title,
+			Tags = tags,
+			Metadata = metadata ?? new(),
+			DocumentDate = null,
+			BlobIds = connectedBlobIds,
 			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			CreatedAt = DateTimeOffset.Now,
-			Blobs = connectedBlobEntities,
-			Tags = Tags.Ensure(_dbContext, tags),
-			Metadata = metadata ?? new JsonObject(),
 			LastUpdated = DateTimeOffset.Now
 		};
 
-		_dbContext.ArchiveItems.Add(newArchiveItem);
-		await _dbContext.SaveChangesAsync();
+		await _archiveObjectStore.StoreObject(newArchiveItemId, "json", new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)));
 
-		await _archiveItemPublicationService.PublishArchiveItemsAddedMessage([newArchiveItem]);
-		await _blobPublicationService.PublishBlobsUpdatedMessage(connectedBlobEntities);
+		await PublishArchiveItemsAddedMessage([newArchiveItem]);
+		await _blobService.PublishBlobsUpdatedMessage(connectedBlobIds);
 
 		return newArchiveItem;
 	}
 
 
-	public async Task<ArchiveItem?> UpdateArchiveItem(Guid archiveItemId,
-													  string title,
-													  IEnumerable<string> tags,
-													  JsonObject? metadata,
-													  DateTimeOffset? documentDate,
-													  IEnumerable<Guid> blobIds,
-													  IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+	public async Task<ArchiveItem?> UpdateArchiveItem(Guid archiveItemId, string title, IEnumerable<string> tags, JsonObject? metadata, DateTimeOffset? documentDate, IEnumerable<Guid> existingBlobIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(item => item.Blobs)
-			.Include(item => item.Tags)
-			.SingleOrDefaultAsync(item => item.Id == archiveItemId);
+		var uploadedBlobIds = await _blobService.UploadBlobs(uploadedBlobs);
+		var archiveItem = await GetArchiveItem(archiveItemId) ?? throw new Exception($"ArchiveItem with ID {archiveItemId} not found.");
 
-		if (archiveItem == null)
+		await _archiveObjectStore.UpdateObjectStream(archiveItemId, "json", stream =>
 		{
-			return null;
+			var archiveItemBeforeUpdate = JsonSerializer.Deserialize<ArchiveItem>(stream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
+
+			archiveItemBeforeUpdate.Title = title;
+			archiveItemBeforeUpdate.Tags = tags;
+			archiveItemBeforeUpdate.Metadata = metadata ?? new JsonObject();
+			archiveItemBeforeUpdate.DocumentDate = documentDate;
+			archiveItemBeforeUpdate.LastUpdated = DateTimeOffset.Now;
+			archiveItemBeforeUpdate.BlobIds = new HashSet<Guid>([.. existingBlobIds, .. uploadedBlobIds]);
+
+			stream.SetLength(0); // Clear the stream before writing
+			JsonSerializer.Serialize(stream, archiveItemBeforeUpdate, JsonSerializerOptions.Web);
+		});
+
+		var addedBlobIds = existingBlobIds.Except(archiveItem.BlobIds);
+		foreach (var blobId in addedBlobIds)
+		{
+			archiveItem.BlobIds.Add(blobId);
 		}
 
-		var addedBlobIds = blobIds.Except(archiveItem.Blobs!.Select(blob => blob.Id));
-		foreach(var blobEntity in await _blobQueryService.GetBlobEntities(addedBlobIds))
-		{
-			archiveItem.Blobs!.Add(blobEntity);
-		}
-
-		var removedBlobIds = archiveItem.Blobs!.Select(blob => blob.Id).Except(blobIds);
+		var removedBlobIds = archiveItem.BlobIds.Except(existingBlobIds);
 		foreach (var blobId in removedBlobIds)
 		{
-			var blobEntity = archiveItem.Blobs!.Single(blob => blob.Id == blobId);
-			archiveItem.Blobs!.Remove(blobEntity);
+			archiveItem.BlobIds.Remove(blobId);
 		}
 
-		var uploadedBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
-		foreach (var blobEntity in uploadedBlobEntities)
+		foreach (var blobId in uploadedBlobIds)
 		{
-			archiveItem.Blobs!.Add(blobEntity);
+			archiveItem.BlobIds.Add(blobId);
 		}
 
-		archiveItem.Title = title;
-		archiveItem.Tags = Tags.Ensure(_dbContext, tags);
-		archiveItem.Metadata = metadata ?? new JsonObject();
-		archiveItem.DocumentDate = documentDate;
-		archiveItem.LastUpdated = DateTimeOffset.Now;
+		await PublishArchiveItemsUpdatedMessage([archiveItem]);
 
-
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemPublicationService.PublishArchiveItemsUpdatedMessage([archiveItem]);
-
-		await _blobPublicationService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
-		await _blobPublicationService.PublishBlobsAddedMessage(uploadedBlobEntities);
+		await _blobService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
+		await _blobService.PublishBlobsAddedMessage(uploadedBlobIds);
 
 		return archiveItem;
 	}
 
 
-	public async Task<bool> DeleteArchiveItem(Guid id)
+	public async Task<bool> DeleteArchiveItem(Guid archiveItemId)
 	{
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Blobs)
-			.Include(archiveItem => archiveItem.Tags)
-				.ThenInclude(tag => tag.ArchiveItems)
-				.SingleOrDefaultAsync(x => x.Id == id);
-
-		if (archiveItem == null)
-		{
-			return false;
-		}
-
-		if (archiveItem.Blobs != null)
-		{
-			var blobGuids = archiveItem.Blobs.Select(blob => blob.Id);
-			await _blobCommandService.DeleteBlobs(blobGuids);
-			_dbContext.Blobs.RemoveRange(archiveItem.Blobs);
-		}
-
-		var removedTags = archiveItem.Tags.Where(tag => tag.ArchiveItems != null && tag.ArchiveItems.Count == 1 && tag.ArchiveItems.Contains(archiveItem));
-		foreach (var tag in removedTags)
-		{
-			_dbContext.Tags.Remove(tag);
-		}
-
-		_dbContext.ArchiveItems.Remove(archiveItem);
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemPublicationService.PublishArchiveItemsDeletedMessage([archiveItem]);
-
+		await _archiveObjectStore.DeleteObject(archiveItemId);
+		await PublishArchiveItemsDeletedMessage([archiveItemId]);
 		return true;
 	}
+
+
+	#region SignalR message creators
+	private async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	private async Task PublishArchiveItemsAddedMessage(IEnumerable<Guid> archiveItemGuids)
+	{
+		if (archiveItemGuids == null || !archiveItemGuids.Any())
+		{
+			return;
+		}
+
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsAdded", archiveItemGuids));
+	}
+
+
+	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<Guid> archiveItemGuids)
+	{
+		if (archiveItemGuids == null || !archiveItemGuids.Any())
+		{
+			return;
+		}
+
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsUpdated", archiveItemGuids));
+	}
+
+
+	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<Guid> archiveItemGuids)
+	{
+		if (archiveItemGuids == null || !archiveItemGuids.Any())
+		{
+			return;
+		}
+
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsDeleted", archiveItemGuids));
+	}
+	#endregion
 }

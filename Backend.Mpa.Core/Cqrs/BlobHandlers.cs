@@ -1,5 +1,6 @@
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.Core.Store;
 
 namespace Backend.Mpa.Core.Cqrs;
 
@@ -76,12 +77,12 @@ public class BlobHandlers :
 		{
 			Id = blob.Id,
 			FileName = blob.OriginalFilename,
-			FileSize = blob.FileSize,
-			PageCount = blob.PageCount,
+			FileSize = blob.Size,
+			PageCount = (blob.TypeSpecificMetadata as PdfMetadata)?.PageCount ?? 1,
 			UploadedAt = blob.UploadedAt,
-			UploadedByUser = blob.UploadedBy!.Fullname,
+			UploadedByUser = blob.UploadedBy,
 			MimeType = blob.MimeType,
-			IsAllocated = blob.ArchiveItem != null
+			// IsAllocated = blob.ArchiveItem != null
 		};
 	}
 
@@ -95,12 +96,12 @@ public class BlobHandlers :
 			{
 				Id = blob.Id,
 				FileName = blob.OriginalFilename,
-				FileSize = blob.FileSize,
-				PageCount = blob.PageCount,
+				FileSize = blob.Size,
+				PageCount = (blob.TypeSpecificMetadata as PdfMetadata)?.PageCount ?? 1,
 				UploadedAt = blob.UploadedAt,
-				UploadedByUser = blob.UploadedBy!.Fullname,
+				UploadedByUser = blob.UploadedBy,
 				MimeType = blob.MimeType,
-				IsAllocated = blob.ArchiveItem != null
+				// IsAllocated = blob.ArchiveItem != null
 			});
 	}
 
