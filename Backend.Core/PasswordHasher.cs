@@ -29,28 +29,17 @@ public class PasswordHasher
 
 	public static (byte[] hashedPassword, byte[] salt) HashPassword(string password)
 	{
-		byte[] salt = new byte[SaltSize];
-		using (var rng = RandomNumberGenerator.Create())
-		{
-			rng.GetBytes(salt);
-		}
+		var salt = RandomNumberGenerator.GetBytes(SaltSize);
+		var hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
 
-		// Derive the key using PBKDF2
-		using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
-		{
-			byte[] hash = pbkdf2.GetBytes(HashSize);
-			return (hash, salt);
-		}
+		return (hash, salt);
 	}
 
 	public bool VerifyPassword(string enteredPassword, byte[] storedHash, byte[] storedSalt)
 	{
-		// Derive the key from the entered password and stored salt
-		using (var pbkdf2 = new Rfc2898DeriveBytes(enteredPassword, storedSalt, Iterations, HashAlgorithmName.SHA256))
-		{
-			byte[] enteredHash = pbkdf2.GetBytes(HashSize);
-			return enteredHash.SequenceEqual(storedHash);
-		}
+		var enteredHash = Rfc2898DeriveBytes.Pbkdf2(enteredPassword, storedSalt, Iterations, HashAlgorithmName.SHA256, HashSize);
+		
+		return enteredHash.SequenceEqual(storedHash);
 	}
 
 	public string GenerateAccessToken(IEnumerable<Claim> claims)
