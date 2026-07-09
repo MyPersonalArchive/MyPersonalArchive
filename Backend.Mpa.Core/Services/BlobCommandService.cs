@@ -48,7 +48,7 @@ public class BlobCommandService
 				UploadedAt = DateTimeOffset.Now,
 				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			};
-			await using var objectStream = await _blobObjectStore.GetWritableObjectStream(blobId, "metadata");
+			await using var objectStream = await _blobObjectStore.GetWritableObjectStream(blobId, "metadata.json");
 			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
 
 			blobs.Add(blobId);
@@ -83,7 +83,7 @@ public class BlobCommandService
 
 	public async Task<BlobMetadata?> GetBlobEntity(Guid blobId)
 	{
-		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata");
+		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
 		if (metadataStream is null)
 		{
 			return null;
@@ -113,7 +113,7 @@ public class BlobCommandService
 	{
 		var blobIds = await _blobObjectStore.ListObjectIds();
 		var metadataStreams = (
-			await Task.WhenAll(blobIds.Select(async blobId => await _blobObjectStore.GetObject(blobId, "metadata")))
+			await Task.WhenAll(blobIds.Select(async blobId => await _blobObjectStore.GetObject(blobId, "metadata.json")))
 		).ToList();
 		var blobs = metadataStreams
 			.Where(stream => stream is not null)

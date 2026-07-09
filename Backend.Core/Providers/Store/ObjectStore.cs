@@ -22,8 +22,8 @@ public abstract class ObjectStore
 	public async Task<IEnumerable<Guid>> ListObjectIds()
 	{
 		var allFiles = await _fileStore.ListFiles([], recursive: true);
-		var allObjectIds = allFiles.Select(pathParts => pathParts[^1].Split('.'))
-						.Select(parts => parts[0]) // Get the filename without extension, which should be the objectId
+		var allObjectIds = allFiles.Select(pathParts => pathParts[^1])
+						.Select(filename => filename.Split('.')[0]) // Get the filename without extension, which should be the objectId
 						.Distinct()
 						.Select(Guid.Parse);
 		System.Diagnostics.Debug.WriteLine($"Guids in store: {string.Join(", ", allObjectIds)}");
