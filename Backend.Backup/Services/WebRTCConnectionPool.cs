@@ -137,7 +137,7 @@ public class WebRTCConnectionPool(IServiceProvider serviceProvider, PeerMappingS
 
     public async Task CloseAllConnectionsAsync()
     {
-        var tasks = _connections.Keys.Select(id => CloseConnectionAsync(id)).ToList();
+        var tasks = _connections.Keys.Select(async id => await CloseConnectionAsync(id)).ToList();
         await Task.WhenAll(tasks);
     }
 

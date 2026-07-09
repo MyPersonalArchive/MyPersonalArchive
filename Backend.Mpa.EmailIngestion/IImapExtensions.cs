@@ -18,7 +18,7 @@ public static class IImapExtensions
 			var mailFolder = client.GetFolder(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-			return await Task.WhenAll(uniqueIds.Select(uniqueId => GetEmailAsync(mailFolder, uniqueId)));
+			return await Task.WhenAll(uniqueIds.Select(async uniqueId => await GetEmailAsync(mailFolder, uniqueId)));
 		}
 
 		private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
