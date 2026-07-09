@@ -39,7 +39,8 @@ public class PasswordHasher
 	{
 		var enteredHash = Rfc2898DeriveBytes.Pbkdf2(enteredPassword, storedSalt, Iterations, HashAlgorithmName.SHA256, HashSize);
 		
-		return enteredHash.SequenceEqual(storedHash);
+		// return enteredHash.SequenceEqual(storedHash);
+		return CryptographicOperations.FixedTimeEquals(enteredHash, storedHash);	// FixedTimeEquals is used to prevent timing attacks
 	}
 
 	public string GenerateAccessToken(IEnumerable<Claim> claims)
