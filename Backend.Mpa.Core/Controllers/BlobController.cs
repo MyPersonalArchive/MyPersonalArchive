@@ -30,7 +30,7 @@ public class BlobController : ControllerBase
 		}
 		
 		// var (contentStream, metadata, blob) = tuple.Value;
-		using var contentStream = tuple.Value.contentStream;
+		var contentStream = tuple.Value.contentStream;	//TODO: using - to dispose the stream after returning the file?
 		var metadata = tuple.Value.metadata;
 
 		//User our libvips preview mechanism if image or pdf
@@ -52,7 +52,7 @@ public class BlobController : ControllerBase
 					return BadRequest();
 			}
 
-			var previewStream = PreviewGenerator.GeneratePreview(contentStream, metadata.MimeType, maxX, maxY, 0);
+			var previewStream = PreviewGenerator.GeneratePreview(contentStream, metadata.MimeType, maxX, maxY, 0);	//TODO: using - to dispose the stream after returning the file?
 			return File(previewStream, "image/png", $"{metadata.OriginalFilename}_preview(0).png");
 		}
 

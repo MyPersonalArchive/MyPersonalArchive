@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.Core.Store;
 
 namespace Backend.Mpa.Core.Cqrs;
 
@@ -78,13 +79,13 @@ public class ArchiveItemsHandler :
 	// IAsyncCommandHandler<CreateArchiveItem>,
 	IAsyncCommandHandler<DeleteArchiveItem>
 {
-	private readonly ArchiveItemQueryService _archiveItemQueryService;
-	private readonly ArchiveItemCommandService _archiveItemCommandService;
+	private readonly ArchiveItemService _archiveItemService;
+	private readonly BlobService _blobService;
 
-	public ArchiveItemsHandler(ArchiveItemQueryService archiveItemQueryService, ArchiveItemCommandService archiveItemCommandService)
+	public ArchiveItemsHandler(ArchiveItemService archiveItemService, BlobService blobService)
 	{
-		_archiveItemQueryService = archiveItemQueryService;
-		_archiveItemCommandService = archiveItemCommandService;
+		_archiveItemService = archiveItemService;
+		_blobService = blobService;
 	}
 
 	public async Task<GetArchiveItem.Response> Handle(GetArchiveItem query)
@@ -103,8 +104,28 @@ public class ArchiveItemsHandler :
 			Metadata = archiveItem.Metadata,
 			CreatedAt = archiveItem.CreatedAt,
 			DocumentDate = archiveItem.DocumentDate,
-			BlobIds = archiveItem.BlobIds
+			BlobDisplayInfos = await GetDisplayInfos(archiveItem.BlobIds)
 		};
+	}
+
+
+	private async Task<IEnumerable<GetArchiveItem.Response.BlobDisplayInfo>> GetDisplayInfos(IEnumerable<Guid> blobIds)
+	{
+		var tasks = blobIds
+			.Select(async blobId => await _blobService.GetBlobEntity(blobId));
+
+		var blobMetadatas = await Task.WhenAll(tasks);
+		return blobMetadatas
+			.Where(blobMetadata => blobMetadata != null)
+			.Select(blobMetadata =>
+			{
+				return new GetArchiveItem.Response.BlobDisplayInfo
+				{
+					Id = blobMetadata!.Id,
+					MimeType = blobMetadata.MimeType,
+					NumberOfPages = blobMetadata.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 0
+				};
+			});
 	}
 
 	public async Task<IEnumerable<ListArchiveItems.Response>> Handle(ListArchiveItems query)

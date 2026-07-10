@@ -22,10 +22,12 @@ public interface ITypeSpecificMetadata
 	// Marker interface for type-specific metadata
 }
 
+
 public class PdfMetadata : ITypeSpecificMetadata
 {
 	public required int PageCount { get; set; }
 }
+
 
 public class RasterImageMetadata : ITypeSpecificMetadata
 {
