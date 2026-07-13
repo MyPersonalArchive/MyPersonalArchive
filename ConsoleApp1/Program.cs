@@ -69,11 +69,12 @@ internal class Program
 
 		await SeedArchiveItems(serviceProvider);
 
-		await DoSomethingWithArchiveItemService(serviceProvider);
+		// await DoSomethingWithArchiveItemService(serviceProvider);
 
 
 		Console.WriteLine("Goodbye!");
 	}
+
 
 	private static async Task DoSomethingWithArchiveItemService(ServiceProvider serviceProvider)
 	{
