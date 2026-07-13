@@ -1,111 +1,96 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Backend.Core;
 using Backend.Core.Infrastructure;
+using Backend.Core.Providers.Store;
+using Backend.Core.Services;
+using Backend.Mpa.Core.Services;
 using Backend.Mpa.DbModel.Database;
+using ConsoleApp1;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Reflection;
 
 
 internal class Program
 {
-    private static void Main(string[] args)
-    {
-        var (hashedPassword, salt ) = PasswordHasher.HashPassword("some-password");
-        Console.WriteLine("hashedPassword: " + Convert.ToBase64String(hashedPassword));
-        Console.WriteLine("salt: " + Convert.ToBase64String(salt));
-        
+	private static async Task Main(string[] args)
+	{
+		// var (hashedPassword, salt ) = PasswordHasher.HashPassword("some-password");
+		// Console.WriteLine($"hashedPassword: {Convert.ToBase64String(hashedPassword)}");
+		// Console.WriteLine($"salt: {Convert.ToBase64String(salt)}");
 
-        // Console.WriteLine("Hello!");
+		Console.WriteLine("Hello!");
 
-        // var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+		var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-        // var config = new ConfigurationBuilder()
-        //     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // Set the base path
-        //     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from JSON
-        //     .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true) // Load from JSON
-        //     .AddEnvironmentVariables() // Load from Environment Variables
-        //     .AddCommandLine(args) // Load from Command-Line Arguments
-        //     .Build();
+		var config = new ConfigurationBuilder()
+			.SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // Set the base path
+			.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from JSON
+			.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true) // Load from JSON
+			.AddEnvironmentVariables() // Load from Environment Variables
+			.AddCommandLine(args) // Load from Command-Line Arguments
+			.Build();
+
+		var serviceCollection = new ServiceCollection();
+		var serviceDiscovery = new ServiceDiscovery(serviceCollection, new LoggerFactory().CreateLogger<ServiceDiscovery>());
+
+		var otherRelevantAssemblies = Directory
+			.GetFiles(AppContext.BaseDirectory, "Backend.*.dll")
+			.Select(f => Assembly.Load(AssemblyName.GetAssemblyName(f)));
+
+		// serviceDiscovery.RegisterServices([Assembly.GetExecutingAssembly(), .. otherRelevantAssemblies]);
+
+		var serviceProvider = serviceCollection
+			.AddLogging()
+			.AddScoped<IAmbientDataResolver>(sp => new DummyAmbientDataResolver())
+			.AddTransient<MpaDbContext>(sp =>
+			{
+				var dbConfig = sp.GetRequiredService<IOptions<DbConfig>>().Value;
+				var ambientDataResolver = (DummyAmbientDataResolver)sp.GetRequiredService<IAmbientDataResolver>();
+				var tenantId = ambientDataResolver.TenantId;
+				return new MpaDbContext(dbConfig, tenantId);
+			})
+			.AddTransient<IFileStore, FileSystemFileStore>()
+			.AddScoped<ArchiveItemService>()
+			.AddScoped<BlobService>()
+			.AddScoped<IObjectStore, ObjectStore>()
+			.AddScoped<ObjectStoreFileStoreFactory>()
+			.AddScoped<ISignalRService, DummySignalRService>()
+			.AddScoped<DemoDataGenerator>()
+			.AddOptions()
+			.Configure<AppConfig>(config.GetSection(nameof(AppConfig)))
+			.Configure<DbConfig>(config.GetSection(nameof(AppConfig)))
+			.BuildServiceProvider();
+
+		await SeedArchiveItems(serviceProvider);
+
+		await DoSomethingWithArchiveItemService(serviceProvider);
 
 
-        // var serviceProvider = new ServiceCollection()
-        //     .Configure<DbConfig>(config.GetSection("AppConfig"))
-        //     .Configure<JwtConfig>(options => JwtConfig.Mapper(options, config))
-        //     .AddTransient<AmbientDataResolver, DummyAmbientDataResolver>()
-        //     .AddTransient<PasswordHasher>()
-        //     .AddDbContext<MpaDbContext>()
-        //     .BuildServiceProvider();
+		Console.WriteLine("Goodbye!");
+	}
 
-        // serviceProvider.GetRequiredService<MpaDbContext>();
+	private static async Task DoSomethingWithArchiveItemService(ServiceProvider serviceProvider)
+	{
+		using var scope = serviceProvider.CreateScope();
+		var dummyAmbientDataResolver = (DummyAmbientDataResolver)scope.ServiceProvider.GetService<IAmbientDataResolver>()!;
+		dummyAmbientDataResolver.TenantId = 1;
+		dummyAmbientDataResolver.Username = "admin@localhost";
+	
+		var archiveItemService = scope.ServiceProvider.GetService<ArchiveItemService>()!;
+	
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		// var allocatedBlobCount = await archiveItemService.CountAllocatedBlobs();
+		stopwatch.Stop();
+		// Console.WriteLine($"Retrieved {allocatedBlobCount} allocated blobs in {stopwatch.ElapsedMilliseconds} ms");
+	}
 
-        // serviceProvider.GetRequiredService<PasswordHasher>();
 
-
-        // Console.WriteLine("Goodbye!");
-
-        #region db stuff
-        // using var db = new MpaDbContext();
-        // // CreateArchiveItem(db);
-        // // CreateUser(db);
-        // // db.SaveChanges();
-
-        // // var entry = db.Entry(receipt);
-        // // entry.Collection(x => x.Tags).Load();
-        // // entry.Reference(x => x.Currency).Load();
-
-        // IEnumerable<Tag> EnsureTags(params string[] tagTitles)
-        // {
-        //     var tags = tagTitles.Distinct().Select(EnsureTag);
-        //     return tags;
-        // }
-        // Tag EnsureTag(string tagTitle) => db.Tags.FirstOrDefault(x => x.Title == tagTitle) ?? db.Tags.Add(new Tag { Title = tagTitle }).Entity;
-        #endregion
-    }
-
-    // private static void CreateArchiveItem(MpaDbContext db)
-    // {
-    //     var archiveItem = new ArchiveItem
-    //     {
-    //         Title = "Something 1",
-    //         // Tags = new List<Tag>([new Tag { Title = "tag1" }, new Tag { Title = "tag2" }, new Tag { Title = "tag3" }]),
-    //         Created = DateTimeOffset.Now,
-    //     };
-
-    //     var fromEntity = db.ArchiveItems.Add(archiveItem).Entity;
-
-    //     Console.WriteLine(fromEntity == archiveItem);
-
-    //     foreach (var tag in EnsureTags("tag1", "tag3", "tag5"))
-    //     {
-    //         archiveItem.Tags.Add(tag);
-    //     }
-    // }
-
-    private static void CreateUser(MpaDbContext db)
-    {
-        // var jwtConfig = new JwtConfig{
-        //     // JwtBearer = "",
-        //     JwtIssuer = "",
-        //     JwtSecret = "",
-        //     Audience = ""
-        // };
-
-        // var passwordHasher = new PasswordHasher(jwtConfig);
-
-        // var user = new User
-        // {
-        //     Id = 1,
-        //     Username = "admin@localhost",
-        //     Fullname = "Administrator",
-        //     HashedPassword = passwordHasher.HashPassword("pass").hashedPassword,
-        //     Salt = passwordHasher.HashPassword("Pa$$w0rd").salt,
-        //     Tenants = [db.Tenants.Find(-1)!, new Tenant { Id = 2, Title = "Other tenant" }]
-        // };
-        // db.Users.Add(user);
-    }
-}
-
-internal class DummyAmbientDataResolver : IAmbientDataResolver
-{
-    public int? GetCurrentTenantId() => -1;
-
-    public string GetCurrentUsername() => "Dummy Username";
+	private static async Task SeedArchiveItems(ServiceProvider serviceProvider)
+	{
+		var demoDataGenerator = new DemoDataGenerator(serviceProvider);
+		await demoDataGenerator!.Seed();
+	}
 }

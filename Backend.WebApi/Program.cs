@@ -245,15 +245,9 @@ public static class Program
 
 		var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
 		var tenantId = -1;
-		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts and seeding database
+		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts
 		dbContext.Database.Migrate();
-
-		if (app.Environment.IsDevelopment())
-		{
-			DemoDataGenerator.Seed(dbConfig);
-		}
 	}
-
 
 	private static void Configure(this WebApplication app)
 	{
