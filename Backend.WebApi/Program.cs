@@ -73,7 +73,6 @@ public static class Program
 
 		var app = builder.Build();
 
-		app.PrepareDatabase();
 		app.Configure();
 
 		app.Run();
@@ -237,16 +236,6 @@ public static class Program
 		});
 	}
 
-
-	private static void PrepareDatabase(this WebApplication app)
-	{
-		var services = app.Services;
-
-		var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
-		var tenantId = -1;
-		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts
-		dbContext.Database.Migrate();
-	}
 
 	private static void Configure(this WebApplication app)
 	{

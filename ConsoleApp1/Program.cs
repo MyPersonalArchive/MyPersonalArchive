@@ -5,11 +5,9 @@ using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Backend.Mpa.Core.Services;
 using Backend.Mpa.Core.Store;
-using Backend.Mpa.DbModel.Database;
 using ConsoleApp1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System.Reflection;
 
 
@@ -45,26 +43,16 @@ internal class Program
 			.AddLogging()
 			.AddScoped<IAmbientDataResolver>(sp => new DummyAmbientDataResolver())
 			.AddTransient<IFileStore, FileSystemFileStore>()
-			.AddScoped<ArchiveItemQueryService>()
-			.AddScoped<ArchiveItemCommandService>()
-			.AddScoped<ArchiveItemPublicationService>()
-			.AddScoped<BlobQueryService>()
-			.AddScoped<BlobCommandService>()
-			.AddScoped<BlobPublicationService>()
+			.AddScoped<ArchiveObjectStore>()
+			.AddScoped<ArchiveObjectStoreFileStoreFactory>()
+			.AddScoped<ArchiveItemService>()
+			.AddScoped<BlobService>()
 			.AddScoped<BlobObjectStore>()
 			.AddScoped<BlobObjectStoreFileStoreFactory>()
 			.AddScoped<ISignalRService, DummySignalRService>()
 			.AddScoped<DemoDataGenerator>()
 			.AddOptions()
 			.Configure<AppConfig>(config.GetSection(nameof(AppConfig)))
-			.AddTransient<MpaDbContext>(sp =>
-			{
-				var dbConfig = sp.GetRequiredService<IOptions<DbConfig>>().Value;
-				var ambientDataResolver = (DummyAmbientDataResolver)sp.GetRequiredService<IAmbientDataResolver>();
-				var tenantId = ambientDataResolver.TenantId;
-				return new MpaDbContext(dbConfig, tenantId);
-			})
-			.Configure<DbConfig>(config.GetSection(nameof(AppConfig)))
 			.BuildServiceProvider();
 
 		await SeedArchiveItems(serviceProvider);
