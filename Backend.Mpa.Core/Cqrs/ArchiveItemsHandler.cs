@@ -101,9 +101,9 @@ public class ArchiveItemsHandler :
 			Id = archiveItem.Id,
 			Title = archiveItem.Title,
 			Tags = ["This", "is", "not", "implemented", "yet", "GetArchiveItem"], //[.. archiveItem.Tags.Select(tag => tag.Title)],
-			Metadata = archiveItem.Metadata,
-			CreatedAt = archiveItem.CreatedAt,
 			DocumentDate = archiveItem.DocumentDate,
+			CreatedAt = archiveItem.CreatedAt,
+			MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
 			BlobDisplayInfos = await GetDisplayInfos(archiveItem.BlobIds)
 		};
 	}
@@ -137,10 +137,13 @@ public class ArchiveItemsHandler :
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = ["This", "is", "not", "implemented", "yet", "ListArchiveItems"], //archiveItem.Tags.Select(tag => tag.Title),
-				BlobIds = archiveItem.BlobIds,
-				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
+				DocumentDate = archiveItem.DocumentDate,
 				CreatedAt = archiveItem.CreatedAt,
-				DocumentDate = archiveItem.DocumentDate
+				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
+				BlobDisplayInfos = archiveItem.BlobIds.Select(blobId => new ListArchiveItems.Response.BlobDisplayInfo
+				{
+					Id = blobId,
+				})
 			})
 			// .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.IndexOf(titleFilter, StringComparison.InvariantCultureIgnoreCase))
 			// .ThenBy(archItem => archItem.Title == null ? null : archItem.Title, StringComparer.InvariantCultureIgnoreCase);

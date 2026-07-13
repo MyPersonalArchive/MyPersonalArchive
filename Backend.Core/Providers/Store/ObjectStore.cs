@@ -26,7 +26,6 @@ public abstract class ObjectStore
 						.Select(filename => filename.Split('.')[0]) // Get the filename without extension, which should be the objectId
 						.Distinct()
 						.Select(Guid.Parse);
-		System.Diagnostics.Debug.WriteLine($"Guids in store: {string.Join(", ", allObjectIds)}");
 
 		return allObjectIds;
 	}
