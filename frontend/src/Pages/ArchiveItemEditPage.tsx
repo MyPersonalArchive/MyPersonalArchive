@@ -65,9 +65,6 @@ export const ArchiveItemEditPage = () => {
 	useEffect(() => {
 		apiClient.query<GetResponse>("GetArchiveItem", { id: params.id! as UUID })
 			.then(item => {
-				console.log("***", item!.blobDisplayInfos.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
-				console.log("*** Loaded item2:", item)
-
 				setId(item!.id)
 				setTitle(item!.title)
 				setTags(item!.tags)
