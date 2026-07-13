@@ -29,7 +29,11 @@ public class ArchiveItemCommandService
 	public async Task<ArchiveItem?> GetArchiveItem(Guid archiveItemGuid)
 	{
 		using var archiveItemStream = await _archiveObjectStore.GetObject(archiveItemGuid, "json");
-		var archiveItem = JsonSerializer.Deserialize<ArchiveItem>(archiveItemStream, JsonSerializerOptions.Web);
+		if (archiveItemStream == null)
+		{
+			return null;
+		}
+		var archiveItem = JsonSerializer.Deserialize<ArchiveItem>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize ArchiveItem");
 
 		return await archiveItems.SingleOrDefaultAsync();
 	}
@@ -42,12 +46,14 @@ public class ArchiveItemCommandService
 			await Task.WhenAll(archiveItemGuids.Select(async objectId => await _archiveObjectStore.GetObject(objectId, "json")))
 		).ToList();
 		var archiveItems = archiveItemStreams
+			.Where(stream => stream != null)
+			.Select(stream => stream!)
 			.Select(stream => JsonSerializer.Deserialize<ArchiveItem>(stream, JsonSerializerOptions.Web))
 			.Where(item => item != null)
 			.Select(item => item!)
 			.ToList();
 
-		archiveItemStreams.ForEach(stream => stream.Dispose());
+		archiveItemStreams.ForEach(stream => stream?.Dispose());
 
 		return archiveItems;
 	}
@@ -66,7 +72,7 @@ public class ArchiveItemCommandService
 			Tags = tags,
 			Metadata = metadata ?? new(),
 			DocumentDate = null,
-			BlobIds = connectedBlobIds,
+			BlobDisplayInfos = await GetBlobDisplayInfos(connectedBlobIds),
 			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			CreatedAt = DateTimeOffset.Now,
 			LastUpdated = DateTimeOffset.Now
@@ -81,45 +87,45 @@ public class ArchiveItemCommandService
 	}
 
 
+	private async Task<IEnumerable<ArchiveItem.BlobDisplayInfo>> GetBlobDisplayInfos(IEnumerable<Guid> connectedBlobIds)
+	{
+		var blobEntities = await _blobService.GetBlobEntities(connectedBlobIds);
+		return blobEntities
+			.Where(blobEntity => blobEntity != null)
+			.Select(blobEntity => new ArchiveItem.BlobDisplayInfo
+			{
+				Id = blobEntity!.Id,
+				MimeType = blobEntity.MimeType,
+				NumberOfPages = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 0
+			});
+	}
+
+
 	public async Task<ArchiveItem?> UpdateArchiveItem(Guid archiveItemId, string title, IEnumerable<string> tags, JsonObject? metadata, DateTimeOffset? documentDate, IEnumerable<Guid> existingBlobIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
 		var uploadedBlobIds = await _blobService.UploadBlobs(uploadedBlobs);
 		var archiveItem = await GetArchiveItem(archiveItemId) ?? throw new Exception($"ArchiveItem with ID {archiveItemId} not found.");
 
-		await _archiveObjectStore.UpdateObjectStream(archiveItemId, "json", stream =>
+		await _archiveObjectStore.UpdateObjectStream(archiveItemId, "json", async archiveItemStream =>
 		{
-			var archiveItemBeforeUpdate = JsonSerializer.Deserialize<ArchiveItem>(stream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
+			var archiveItemToUpdate = JsonSerializer.Deserialize<ArchiveItem>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
 
-			archiveItemBeforeUpdate.Title = title;
-			archiveItemBeforeUpdate.Tags = tags;
-			archiveItemBeforeUpdate.Metadata = metadata ?? new JsonObject();
-			archiveItemBeforeUpdate.DocumentDate = documentDate;
-			archiveItemBeforeUpdate.LastUpdated = DateTimeOffset.Now;
-			archiveItemBeforeUpdate.BlobIds = new HashSet<Guid>([.. existingBlobIds, .. uploadedBlobIds]);
+			archiveItemToUpdate.Title = title;
+			archiveItemToUpdate.Tags = tags;
+			archiveItemToUpdate.DocumentDate = documentDate;
+			archiveItemToUpdate.LastUpdated = DateTimeOffset.Now;
+			archiveItemToUpdate.BlobDisplayInfos = await GetBlobDisplayInfos(new HashSet<Guid>([.. existingBlobIds, .. uploadedBlobIds]));
+			archiveItemToUpdate.Metadata = metadata ?? new JsonObject();
 
-			stream.SetLength(0); // Clear the stream before writing
-			JsonSerializer.Serialize(stream, archiveItemBeforeUpdate, JsonSerializerOptions.Web);
+			archiveItemStream.SetLength(0); // Clear the stream before writing
+			JsonSerializer.Serialize(archiveItemStream, archiveItemToUpdate, JsonSerializerOptions.Web);
 		});
-
-		var addedBlobIds = existingBlobIds.Except(archiveItem.BlobIds);
-		foreach (var blobId in addedBlobIds)
-		{
-			archiveItem.BlobIds.Add(blobId);
-		}
-
-		var removedBlobIds = archiveItem.BlobIds.Except(existingBlobIds);
-		foreach (var blobId in removedBlobIds)
-		{
-			archiveItem.BlobIds.Remove(blobId);
-		}
-
-		foreach (var blobId in uploadedBlobIds)
-		{
-			archiveItem.BlobIds.Add(blobId);
-		}
 
 		await PublishArchiveItemsUpdatedMessage([archiveItem]);
 
+		var addedBlobIds = existingBlobIds.Except(archiveItem.BlobDisplayInfos.Select(b => b.Id));
+
+		var removedBlobIds = archiveItem.BlobDisplayInfos.Select(b => b.Id).Except(existingBlobIds);
 		await _blobService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
 		await _blobService.PublishBlobsAddedMessage(uploadedBlobIds);
 

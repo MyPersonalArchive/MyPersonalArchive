@@ -99,6 +99,8 @@ public class DemoDataGenerator
 
 		var rng = new Random(data.TenantId);
 
+		var count = 0;
+		var stopwatch = Stopwatch.StartNew();
 		foreach (var first in data.FirstPart)
 			foreach (var second in data.SecondPart)
 				foreach (var third in data.ThirdPart)
@@ -121,7 +123,11 @@ public class DemoDataGenerator
 						Metadata = new JsonObject() { }
 					};
 
-					await archiveItemCommandService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
+					await archiveItemService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
+
+					count++;
 				}
+
+		Debug.WriteLine($"Seeded {count} items for tenant {data.TenantId} in {stopwatch.Elapsed}");
 	}
 }

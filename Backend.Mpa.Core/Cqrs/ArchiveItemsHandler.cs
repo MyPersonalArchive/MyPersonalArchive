@@ -100,11 +100,16 @@ public class ArchiveItemsHandler :
 		{
 			Id = archiveItem.Id,
 			Title = archiveItem.Title,
-			Tags = ["This", "is", "not", "implemented", "yet", "GetArchiveItem"], //[.. archiveItem.Tags.Select(tag => tag.Title)],
+			Tags = archiveItem.Tags,
 			DocumentDate = archiveItem.DocumentDate,
 			CreatedAt = archiveItem.CreatedAt,
-			MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
-			BlobDisplayInfos = await GetDisplayInfos(archiveItem.BlobIds)
+			Metadata = archiveItem.Metadata,
+			BlobDisplayInfos = archiveItem.BlobDisplayInfos.Select(blobDisplayInfo => new GetArchiveItem.Response.BlobDisplayInfo
+			{
+				Id = blobDisplayInfo.Id,
+				MimeType = blobDisplayInfo.MimeType,
+				NumberOfPages = blobDisplayInfo.NumberOfPages
+			})
 		};
 	}
 
@@ -123,7 +128,7 @@ public class ArchiveItemsHandler :
 				{
 					Id = blobMetadata!.Id,
 					MimeType = blobMetadata.MimeType,
-					NumberOfPages = blobMetadata.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 0
+					NumberOfPages = blobMetadata.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
 				};
 			});
 	}
@@ -136,13 +141,15 @@ public class ArchiveItemsHandler :
 			{
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
-				Tags = ["This", "is", "not", "implemented", "yet", "ListArchiveItems"], //archiveItem.Tags.Select(tag => tag.Title),
+				Tags = archiveItem.Tags,
 				DocumentDate = archiveItem.DocumentDate,
 				CreatedAt = archiveItem.CreatedAt,
-				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
-				BlobDisplayInfos = archiveItem.BlobIds.Select(blobId => new ListArchiveItems.Response.BlobDisplayInfo
+				Metadata = archiveItem.Metadata,
+				BlobDisplayInfos = archiveItem.BlobDisplayInfos.Select(blobDisplayInfo => new ListArchiveItems.Response.BlobDisplayInfo
 				{
-					Id = blobId,
+					Id = blobDisplayInfo.Id,
+					MimeType = blobDisplayInfo.MimeType,
+					NumberOfPages = blobDisplayInfo.NumberOfPages
 				})
 			})
 			// .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.IndexOf(titleFilter, StringComparison.InvariantCultureIgnoreCase))
