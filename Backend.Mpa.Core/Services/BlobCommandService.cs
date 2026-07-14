@@ -65,7 +65,7 @@ public class BlobCommandService
 	/// </summary>
 	public async Task<(Stream contentStream, BlobMetadata metadata)?> GetBlob(Guid blobId)
 	{
-		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata");
+		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
 		if (metadataStream is null)
 		{
 			return null;

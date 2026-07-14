@@ -26,6 +26,34 @@ public class ArchiveItemCommandService
 	}
 
 
+	public async Task<ArchiveItem> CreateArchiveItem(string title, IEnumerable<string> tags, JsonObject? metadata, IEnumerable<Guid> existingBlobIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+	{
+		var newBlobEntities = await _blobService.UploadBlobs(uploadedBlobs);
+		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobEntities]);
+
+		var newArchiveItemId = Guid.NewGuid();
+		var newArchiveItem = new ArchiveItem
+		{
+			Id = newArchiveItemId,
+			Title = title,
+			Tags = tags,
+			Metadata = metadata ?? new(),
+			DocumentDate = null,
+			BlobDisplayInfos = await GetBlobDisplayInfos(connectedBlobIds),
+			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
+			CreatedAt = DateTimeOffset.Now,
+			LastUpdated = DateTimeOffset.Now
+		};
+
+		await _archiveObjectStore.StoreObject(newArchiveItemId, "json", new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)));
+
+		await PublishArchiveItemsAddedMessage([newArchiveItem]);
+		await _blobService.PublishBlobsUpdatedMessage(connectedBlobIds);
+
+		return newArchiveItem;
+	}
+
+
 	public async Task<ArchiveItem?> GetArchiveItem(Guid archiveItemGuid)
 	{
 		using var archiveItemStream = await _archiveObjectStore.GetObject(archiveItemGuid, "json");
@@ -56,34 +84,6 @@ public class ArchiveItemCommandService
 		archiveItemStreams.ForEach(stream => stream?.Dispose());
 
 		return archiveItems;
-	}
-
-
-	public async Task<ArchiveItem> CreateArchiveItem(string title, IEnumerable<string> tags, JsonObject? metadata, IEnumerable<Guid> existingBlobIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
-	{
-		var newBlobEntities = await _blobService.UploadBlobs(uploadedBlobs);
-		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobEntities]);
-
-		var newArchiveItemId = Guid.NewGuid();
-		var newArchiveItem = new ArchiveItem
-		{
-			Id = newArchiveItemId,
-			Title = title,
-			Tags = tags,
-			Metadata = metadata ?? new(),
-			DocumentDate = null,
-			BlobDisplayInfos = await GetBlobDisplayInfos(connectedBlobIds),
-			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
-			CreatedAt = DateTimeOffset.Now,
-			LastUpdated = DateTimeOffset.Now
-		};
-
-		await _archiveObjectStore.StoreObject(newArchiveItemId, "json", new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)));
-
-		await PublishArchiveItemsAddedMessage([newArchiveItem]);
-		await _blobService.PublishBlobsUpdatedMessage(connectedBlobIds);
-
-		return newArchiveItem;
 	}
 
 
