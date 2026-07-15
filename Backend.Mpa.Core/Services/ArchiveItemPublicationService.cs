@@ -1,6 +1,6 @@
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
-using Backend.Mpa.DbModel.Database.EntityModels;
+using Backend.Mpa.Core.Store;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Mpa.Core.Services;

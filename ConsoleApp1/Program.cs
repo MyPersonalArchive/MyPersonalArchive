@@ -45,8 +45,12 @@ internal class Program
 			.AddTransient<IFileStore, FileSystemFileStore>()
 			.AddScoped<ArchiveObjectStore>()
 			.AddScoped<ArchiveObjectStoreFileStoreFactory>()
-			.AddScoped<ArchiveItemService>()
-			.AddScoped<BlobService>()
+			.AddScoped<ArchiveItemQueryService>()
+			.AddScoped<ArchiveItemCommandService>()
+			.AddScoped<ArchiveItemPublicationService>()
+			.AddScoped<BlobQueryService>()
+			.AddScoped<BlobCommandService>()
+			.AddScoped<BlobPublicationService>()
 			.AddScoped<BlobObjectStore>()
 			.AddScoped<BlobObjectStoreFileStoreFactory>()
 			.AddScoped<ISignalRService, DummySignalRService>()
@@ -57,12 +61,11 @@ internal class Program
 
 		await SeedArchiveItems(serviceProvider);
 
-		// await DoSomethingWithArchiveItemService(serviceProvider);
+		await DoSomethingWithArchiveItemService(serviceProvider);
 
 
 		Console.WriteLine("Goodbye!");
 	}
-
 
 	private static async Task DoSomethingWithArchiveItemService(ServiceProvider serviceProvider)
 	{

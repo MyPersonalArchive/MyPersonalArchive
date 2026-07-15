@@ -29,7 +29,6 @@ public class BlobController : ControllerBase
 			return NotFound();
 		}
 		
-		// var (contentStream, metadata, blob) = tuple.Value;
 		var contentStream = tuple.Value.contentStream;	//TODO: using - to dispose the stream after returning the file?
 		var metadata = tuple.Value.metadata;
 

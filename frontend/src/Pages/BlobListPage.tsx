@@ -32,7 +32,7 @@ export const BlobListPage = () => {
 		}
 	}, [selectionOfBlobs.selectedItems, blobs])
 
-	const visibleBlobs = blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)
+	const visibleBlobs = blobs /*.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)  //TODO:... */
 
 	const selectedVisibleBlobs = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
 

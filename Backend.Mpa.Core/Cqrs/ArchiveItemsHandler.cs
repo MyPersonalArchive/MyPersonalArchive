@@ -79,13 +79,15 @@ public class ArchiveItemsHandler :
 	// IAsyncCommandHandler<CreateArchiveItem>,
 	IAsyncCommandHandler<DeleteArchiveItem>
 {
-	private readonly ArchiveItemService _archiveItemService;
-	private readonly BlobService _blobService;
+	private readonly ArchiveItemQueryService _archiveItemQueryService;
+	private readonly ArchiveItemCommandService _archiveItemCommandService;
+	private readonly BlobQueryService _blobQueryService;
 
-	public ArchiveItemsHandler(ArchiveItemService archiveItemService, BlobService blobService)
+	public ArchiveItemsHandler(ArchiveItemQueryService archiveItemQueryService, ArchiveItemCommandService archiveItemCommandService, BlobQueryService blobQueryService)
 	{
-		_archiveItemService = archiveItemService;
-		_blobService = blobService;
+		_archiveItemQueryService = archiveItemQueryService;
+		_archiveItemCommandService = archiveItemCommandService;
+		_blobQueryService = blobQueryService;
 	}
 
 	public async Task<GetArchiveItem.Response> Handle(GetArchiveItem query)
@@ -113,25 +115,6 @@ public class ArchiveItemsHandler :
 		};
 	}
 
-
-	private async Task<IEnumerable<GetArchiveItem.Response.BlobDisplayInfo>> GetDisplayInfos(IEnumerable<Guid> blobIds)
-	{
-		var tasks = blobIds
-			.Select(async blobId => await _blobService.GetBlobEntity(blobId));
-
-		var blobMetadatas = await Task.WhenAll(tasks);
-		return blobMetadatas
-			.Where(blobMetadata => blobMetadata != null)
-			.Select(blobMetadata =>
-			{
-				return new GetArchiveItem.Response.BlobDisplayInfo
-				{
-					Id = blobMetadata!.Id,
-					MimeType = blobMetadata.MimeType,
-					NumberOfPages = blobMetadata.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
-				};
-			});
-	}
 
 	public async Task<IEnumerable<ListArchiveItems.Response>> Handle(ListArchiveItems query)
 	{

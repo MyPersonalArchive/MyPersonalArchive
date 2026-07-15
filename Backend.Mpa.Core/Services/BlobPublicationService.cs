@@ -1,13 +1,6 @@
-using System.Text.Json;
-using Backend.Core;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers;
 using Backend.Core.Services;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
 using Backend.Mpa.Core.Store;
 
 
@@ -24,8 +17,9 @@ public class BlobPublicationService
 	}
 
 
+
 	#region SignalR message creators
-	public async Task PublishBlobsAddedMessage(IEnumerable<Blob> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
+	public async Task PublishBlobsAddedMessage(IEnumerable<BlobMetadata> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
 	public async Task PublishBlobsAddedMessage(IEnumerable<Guid> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
@@ -37,7 +31,7 @@ public class BlobPublicationService
 	}
 
 
-	public async Task PublishBlobsUpdatedMessage(IEnumerable<Blob> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
+	public async Task PublishBlobsUpdatedMessage(IEnumerable<BlobMetadata> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
 	public async Task PublishBlobsUpdatedMessage(IEnumerable<Guid> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
@@ -49,7 +43,7 @@ public class BlobPublicationService
 	}
 
 
-	public async Task PublishBlobsDeletedMessage(IEnumerable<Blob> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id).ToList());
+	public async Task PublishBlobsDeletedMessage(IEnumerable<BlobMetadata> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id));
 	public async Task PublishBlobsDeletedMessage(IEnumerable<Guid> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())

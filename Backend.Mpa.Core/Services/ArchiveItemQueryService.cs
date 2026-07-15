@@ -1,9 +1,6 @@
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using Backend.Core.Infrastructure;
-using Backend.Core.Services;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
-using Microsoft.EntityFrameworkCore;
+using Backend.Mpa.Core.Store;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Mpa.Core.Services;
@@ -11,35 +8,59 @@ namespace Backend.Mpa.Core.Services;
 [RegisterService(ServiceLifetime.Scoped)]
 public class ArchiveItemQueryService
 {
-	private readonly MpaDbContext _dbContext;
+	private readonly ArchiveObjectStore _archiveObjectStore;
+	private readonly BlobQueryService _blobQueryService;
 
-	public ArchiveItemQueryService(MpaDbContext dbContext)
+	public ArchiveItemQueryService(ArchiveObjectStore archiveObjectStore, BlobQueryService blobQueryService)
 	{
-		_dbContext = dbContext;
+		_archiveObjectStore = archiveObjectStore;
+		_blobQueryService = blobQueryService;
 	}
 
 
 	public async Task<ArchiveItem?> GetArchiveItem(Guid id)
 	{
-		var archiveItems = _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Blobs)
-			.Include(archiveItem => archiveItem.Tags)
-			.Where(archiveItem => archiveItem.Id == id);
+		using var archiveItemStream = await _archiveObjectStore.GetObject(id, "json");
+		if (archiveItemStream == null)
+		{
+			return null;
+		}
+		var archiveItem = JsonSerializer.Deserialize<ArchiveItem>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize ArchiveItem");
 
-		return await archiveItems.SingleOrDefaultAsync();
+		return archiveItem;
 	}
 
 
-	public async Task<IEnumerable<ArchiveItem>> ListArchiveItems(string? titleFilter = null, IEnumerable<string>? tagsFilter = null, IEnumerable<string>? metadataTypesFilter = null)
+	public async Task<IEnumerable<ArchiveItem>> ListArchiveItems()
 	{
-		var archiveItems = _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Tags)
-			.Include(archiveItem => archiveItem.Blobs)
-			.ConditionalWhere(!string.IsNullOrEmpty(titleFilter), archiveItem => archiveItem.Title!.ToLower().Contains(titleFilter!, StringComparison.InvariantCultureIgnoreCase))
-			.ToList()
-			.ConditionalWhere(tagsFilter != null && tagsFilter!.Any(), archiveItem => tagsFilter!.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
-			.ConditionalWhere(metadataTypesFilter != null && metadataTypesFilter!.Any(), archiveItem => metadataTypesFilter!.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))
+		var archiveItemGuids = await _archiveObjectStore.ListObjectIds();
+		var archiveItemStreams = (
+			await Task.WhenAll(archiveItemGuids.Select(async objectId => await _archiveObjectStore.GetObject(objectId, "json")))
+		).ToList();
+		var archiveItems = archiveItemStreams
+			.Where(stream => stream != null)
+			.Select(stream => stream!)
+			.Select(stream => JsonSerializer.Deserialize<ArchiveItem>(stream, JsonSerializerOptions.Web))
+			.Where(item => item != null)
+			.Select(item => item!)
 			.ToList();
+
+		archiveItemStreams.ForEach(stream => stream?.Dispose());
+
 		return archiveItems;
+	}
+
+
+	public async Task<IEnumerable<ArchiveItem.BlobDisplayInfo>> GetBlobDisplayInfos(IEnumerable<Guid> connectedBlobIds)
+	{
+		var blobEntities = await _blobQueryService.GetBlobEntities(connectedBlobIds);
+		return blobEntities
+			.Where(blobEntity => blobEntity != null)
+			.Select(blobEntity => new ArchiveItem.BlobDisplayInfo
+			{
+				Id = blobEntity!.Id,
+				MimeType = blobEntity.MimeType,
+				NumberOfPages = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 0
+			});
 	}
 }

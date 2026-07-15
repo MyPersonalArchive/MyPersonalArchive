@@ -19,7 +19,6 @@ public class GetBlob : IQuery<GetBlob, GetBlob.Response>
 		public required string UploadedByUser { get; set; }
 		public int PageCount { get; set; }
 		public string? MimeType { get; set; }
-		public bool IsAllocated { get; internal set; }
 	}
 }
 
@@ -38,7 +37,6 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 		public required string UploadedByUser { get; set; }
 		public int PageCount { get; set; }
 		public string? MimeType { get; set; }
-		public bool IsAllocated { get; internal set; }
 	}
 }
 
@@ -81,8 +79,7 @@ public class BlobHandlers :
 			PageCount = blob.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1,
 			UploadedAt = blob.UploadedAt,
 			UploadedByUser = blob.UploadedBy,
-			MimeType = blob.MimeType,
-			// IsAllocated = blob.ArchiveItem != null
+			MimeType = blob.MimeType
 		};
 	}
 
@@ -100,8 +97,7 @@ public class BlobHandlers :
 				PageCount = blob.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1,
 				UploadedAt = blob.UploadedAt,
 				UploadedByUser = blob.UploadedBy,
-				MimeType = blob.MimeType,
-				// IsAllocated = blob.ArchiveItem != null
+				MimeType = blob.MimeType
 			});
 	}
 

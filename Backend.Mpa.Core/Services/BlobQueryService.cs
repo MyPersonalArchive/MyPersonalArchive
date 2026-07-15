@@ -1,13 +1,7 @@
 using System.Text.Json;
-using Backend.Core;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers;
 using Backend.Core.Services;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
 using Backend.Mpa.Core.Store;
 
 
@@ -17,72 +11,74 @@ namespace Backend.Mpa.Core.Services;
 public class BlobQueryService
 {
 	private readonly BlobObjectStore _blobObjectStore;
-	private readonly MpaDbContext _dbContext;
 
-	public BlobQueryService(BlobObjectStore blobObjectStore, MpaDbContext dbContext)
+	public BlobQueryService(BlobObjectStore blobObjectStore, ISignalRService signalRService, IAmbientDataResolver resolver)
 	{
 		_blobObjectStore = blobObjectStore;
-		_dbContext = dbContext;
 	}
 
 
-	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)?> GetBlob(Guid blobId)
+	/// <summary>
+	/// Retrieves a blob's content stream and metadata by its ID.
+	/// The contentStream must be disposed by the caller after use.
+	/// </summary>
+	public async Task<(Stream contentStream, BlobMetadata metadata)?> GetBlob(Guid blobId)
 	{
-		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-		if (blob == null)
+		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
+		if(metadataStream == null)
 		{
 			return null;
 		}
-		var filename = blob.PathInStore.Split('/').Last();
-		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+		var blobMetadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception($"Metadata for blob with Id:{blobId} was null after deserialization, this should never happen");
+		var contentStream = await _blobObjectStore.GetObject(blobId, Path.GetExtension(blobMetadata.OriginalFilename).TrimStart('.')) ?? throw new Exception($"Content stream for blob with Id:{blobId} was null, this should never happen");
 
-		var metadataStream = await _blobObjectStore.GetObject(objectId, "metadata");
-		if(metadataStream is null)
-		{
-			return null;
-		}
-		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
-	
-		var contentStream = await _blobObjectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
-		if(contentStream is null)
-		{
-			return null;
-		}
-
-		return (contentStream, metadata, blob);
+		return (contentStream, blobMetadata);
 	}
 
 
-	public async Task<Blob?> GetBlobEntity(Guid blobId)
+	public async Task<BlobMetadata?> GetBlobEntity(Guid blobId)
 	{
-		var blob = await _dbContext.Blobs
-			.Include(blob => blob.UploadedBy)
-			.Include(blob => blob.ArchiveItem)
-			.SingleOrDefaultAsync(blob => blob.Id == blobId);
-		return blob;
+		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
+		if (metadataStream == null)
+		{
+			return null;
+		}
+
+		var metadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web);
+		return metadata;
 	}
 
 
-	public async Task<ICollection<Blob>> GetBlobEntities(IEnumerable<Guid> blobIds)
+	public async Task<ICollection<BlobMetadata>> GetBlobEntities(IEnumerable<Guid> blobIds)
 	{
-		var blobs = await _dbContext.Blobs
-			.Include(blob => blob.UploadedBy)
-			.Include(blob => blob.ArchiveItem)
-			.Where(blob => blobIds.Contains(blob.Id))
-			.ToListAsync();
-			
+		var blobs = new List<BlobMetadata>();
+		foreach (var blobId in blobIds)
+		{
+			var blobMetadata = await GetBlobEntity(blobId);
+			if (blobMetadata != null)
+			{
+				blobs.Add(blobMetadata);
+			}
+		}
 		return blobs;
 	}
 
 
-	public async Task<IEnumerable<Blob>> ListBlobEntities()
+	public async Task<IEnumerable<BlobMetadata>> ListBlobEntities()
 	{
-		var blobs = await _dbContext.Blobs
-			.Include(blob => blob.UploadedBy)
-			.Include(blob => blob.ArchiveItem)
-			.ToListAsync();
+		var blobIds = await _blobObjectStore.ListObjectIds();
+		var metadataStreams = (
+			await Task.WhenAll(blobIds.Select(async blobId => await _blobObjectStore.GetObject(blobId, "metadata.json")))
+		).ToList();
+		var blobs = metadataStreams
+			.Where(stream => stream != null)
+			.Select(stream => JsonSerializer.Deserialize<BlobMetadata>(stream!, JsonSerializerOptions.Web))
+			.Where(metadata => metadata != null)
+			.Select(metadata => metadata!)
+			.ToList();
+
+		metadataStreams.ForEach(stream => stream?.Dispose());
 
 		return blobs;
 	}
-
 }

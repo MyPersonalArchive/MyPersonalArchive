@@ -14,9 +14,9 @@ public class BlobCommandService
 	private readonly BlobObjectStore _blobObjectStore;
 	private readonly IAmbientDataResolver _resolver;
 
-	public BlobService(ISignalRService signalRService, BlobObjectStore blobObjectStore, IAmbientDataResolver resolver)
+	public BlobCommandService(BlobPublicationService blobPublicationService, BlobObjectStore blobObjectStore, IAmbientDataResolver resolver)
 	{
-		_blobPublicationService = new BlobPublicationService(signalRService);
+		_blobPublicationService = blobPublicationService;
 		_blobObjectStore = blobObjectStore;
 		_resolver = resolver;
 	}
@@ -54,124 +54,22 @@ public class BlobCommandService
 			blobs.Add(blobId);
 		}
 
-		await PublishBlobsAddedMessage(blobs);
-		return blobs;
-	}
-
-
-	/// <summary>
-	/// Retrieves a blob's content stream and metadata by its ID.
-	/// The contentStream must be disposed by the caller after use.
-	/// </summary>
-	public async Task<(Stream contentStream, BlobMetadata metadata)?> GetBlob(Guid blobId)
-	{
-		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
-		if (metadataStream is null)
-		{
-			return null;
-		}
-		var blobMetadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
-
-		var contentStream = await _blobObjectStore.GetObject(blobId, Path.GetExtension(blobMetadata.OriginalFilename).TrimStart('.'));
-		if (contentStream is null)
-		{
-			return null;
-		}
-		return (contentStream, blobMetadata);
-	}
-
-
-	public async Task<BlobMetadata?> GetBlobEntity(Guid blobId)
-	{
-		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
-		if (metadataStream is null)
-		{
-			return null;
-		}
-
-		var metadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web);
-		return metadata;
-	}
-
-
-	public async Task<ICollection<BlobMetadata>> GetBlobEntities(IEnumerable<Guid> blobIds)
-	{
-		var blobs = new List<BlobMetadata>();
-		foreach (var blobId in blobIds)
-		{
-			var blobMetadata = await GetBlobEntity(blobId);
-			if (blobMetadata is not null)
-			{
-				blobs.Add(blobMetadata);
-			}
-		}
-		return blobs;
-	}
-
-
-	public async Task<IEnumerable<BlobMetadata>> ListBlobEntities()
-	{
-		var blobIds = await _blobObjectStore.ListObjectIds();
-		var metadataStreams = (
-			await Task.WhenAll(blobIds.Select(async blobId => await _blobObjectStore.GetObject(blobId, "metadata.json")))
-		).ToList();
-		var blobs = metadataStreams
-			.Where(stream => stream is not null)
-			.Select(stream => stream!)
-			.Select(stream => JsonSerializer.Deserialize<BlobMetadata>(stream, JsonSerializerOptions.Web))
-			.Where(metadata => metadata != null)
-			.Select(metadata => metadata!)
-			.ToList();
-
-		metadataStreams.ForEach(stream => stream?.Dispose());
-
+		await _blobPublicationService.PublishBlobsAddedMessage(blobs);
 		return blobs;
 	}
 
 
 	public async Task DeleteBlobs(IEnumerable<Guid> blobIds)
 	{
+		if (blobIds.Count() == 0)
+		{
+			return;
+		}
+
 		foreach (var blobId in blobIds)
 		{
 			await _blobObjectStore.DeleteObject(blobId);
 		}
+		await _blobPublicationService.PublishBlobsDeletedMessage(blobIds);
 	}
-
-
-	#region SignalR message creators
-	internal async Task PublishBlobsAddedMessage(IEnumerable<BlobMetadata> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
-	internal async Task PublishBlobsAddedMessage(IEnumerable<Guid> blobIds)
-	{
-		if (blobIds == null || !blobIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsAdded", blobIds));
-	}
-
-
-	internal async Task PublishBlobsUpdatedMessage(IEnumerable<BlobMetadata> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
-	internal async Task PublishBlobsUpdatedMessage(IEnumerable<Guid> blobIds)
-	{
-		if (blobIds == null || !blobIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsUpdated", blobIds));
-	}
-
-
-	internal async Task PublishBlobsDeletedMessage(IEnumerable<BlobMetadata> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id));
-	private async Task PublishBlobsDeletedMessage(IEnumerable<Guid> blobIds)
-	{
-		if (blobIds == null || !blobIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("BlobsDeleted", blobIds));
-	}
-	#endregion
 }
