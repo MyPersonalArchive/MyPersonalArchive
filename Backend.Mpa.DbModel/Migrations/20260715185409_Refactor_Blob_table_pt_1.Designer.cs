@@ -3,6 +3,7 @@ using System;
 using Backend.Mpa.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Mpa.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    partial class MpaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260715185409_Refactor_Blob_table_pt_1")]
+    partial class Refactor_Blob_table_pt_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");

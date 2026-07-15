@@ -17,9 +17,10 @@ public class Blob : TenantEntity
 {
     public int Id { get; set; }
 
+	public Guid Guid { get; set; }
+
     [Required]
     public required string PathInStore { get; set; }    // Relative to the blob store root
-    public required string StoreRoot { get; set; }   // Multiple blob stores could exist (local, cloud, etc.)
 
     public required string UploadedByUsername { get; set; }
     public User? UploadedBy { get; set; }
@@ -30,7 +31,6 @@ public class Blob : TenantEntity
     public string? MimeType { get; set; }
     public required int PageCount { get; set; }
 
-    public required byte[] FileHash { get; set; }
     public long FileSize { get; set; }
 
     public ArchiveItem? ArchiveItem { get; set; }

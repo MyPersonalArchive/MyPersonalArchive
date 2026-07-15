@@ -83,18 +83,17 @@ public class BlobService
 			{
 				TenantId = currentTenantId,
 				ArchiveItem = null,
-				FileHash = stream.ComputeSha256Hash(),
 				MimeType = file.mimeType,
 				OriginalFilename = file.fileName,
 				PageCount = PreviewGenerator.GetDocumentPageCount(file.mimeType, stream),
 				FileSize = file.contentStream.Length,
 				UploadedAt = DateTimeOffset.Now,
 				UploadedByUsername = currentUsername,
-				StoreRoot = StoreRoot.FileStorage.ToString(),
 
 				// `pathInStore` is not necessarily the actual path where the file is stored, but we keep it for backward
 				// compatibility with existing data in the database. The objectId can be extracted from the filename.
 				// The actual storage is handled by the IObjectStore implementation, which can have its own internal structure.
+				Guid = objectId,
 				PathInStore = Path.Combine(GetFolderPath(objectId), $"{objectId:D}{Path.GetExtension(file.fileName)}")
 			};
 			blobs.Add(blob);
@@ -157,6 +156,7 @@ public class BlobService
 			.Include(blob => blob.ArchiveItem)
 			.Where(blob => blobIds.Contains(blob.Id))
 			.ToListAsync();
+			
 		return blobs;
 	}
 
