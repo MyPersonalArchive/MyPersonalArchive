@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtomValue } from "jotai"
-import { Blob, blobsAtom } from "../Utils/Atoms/blobsAtom"
+import { BlobMetadata, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "../Components/PreviewList"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
@@ -97,7 +97,7 @@ export const BlobListPage = () => {
 				</button>
 			</div>
 
-			<PreviewList<Blob> items={visibleBlobs}
+			<PreviewList<BlobMetadata> items={visibleBlobs}
 				keySelector={blob => blob.id}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
@@ -130,10 +130,10 @@ export const BlobListPage = () => {
 
 
 type BlobCardProps = {
-	blob: Blob
+	blob: BlobMetadata
 	attachBlob: (id: number) => void
 	deleteBlob: (blobId: number) => void
-	maximize: (blob: Blob) => void
+	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<number>
 }
 const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: BlobCardProps) => {

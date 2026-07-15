@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtomValue } from "jotai"
-import { Blob, blobsAtom } from "../Utils/Atoms/blobsAtom"
+import { BlobMetadata, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "./PreviewList"
 import { BlobIdAndNumberOfPages } from "./Preview"
 import { DimensionEnum } from "./Preview"
@@ -183,7 +183,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 					</button>
 				</div>
 
-				<PreviewList<Blob> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
+				<PreviewList<BlobMetadata> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
 					keySelector={blob => blob.id}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>
@@ -218,9 +218,9 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 
 
 type BlobCardProps = {
-	blob: Blob
+	blob: BlobMetadata
 	attachBlob: (id: number) => void
-	maximize: (blob: Blob) => void
+	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<number>
 }
 const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProps) => {

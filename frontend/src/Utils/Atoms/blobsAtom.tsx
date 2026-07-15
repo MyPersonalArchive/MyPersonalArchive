@@ -1,7 +1,7 @@
 import { atom } from "jotai"
 
 
-export type Blob = {
+export type BlobMetadata = {
 	id: number
 	fileName: string
 	fileSize: number
@@ -11,4 +11,4 @@ export type Blob = {
 	mimeType?: string
 	isAllocated: boolean
 }
-export const blobsAtom = atom<Blob[]>([])
+export const blobsAtom = atom<BlobMetadata[]>([])

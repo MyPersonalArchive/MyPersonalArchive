@@ -1,6 +1,6 @@
 import { useSetAtom } from "jotai"
 import { useSignalR } from "./useSignalR"
-import { Blob, blobsAtom } from "../Atoms/blobsAtom"
+import { BlobMetadata, blobsAtom } from "../Atoms/blobsAtom"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
 
@@ -50,7 +50,7 @@ export const useBlobsPrefetching = () => {
 					.then(responses => responses.map(response => ({
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
-					})) as Blob[])
+					})) as BlobMetadata[])
 					.then(addedBlobs => {
 						setBlobs(blobs => [
 							...blobs,
@@ -68,7 +68,7 @@ export const useBlobsPrefetching = () => {
 					.then(responses => responses.map(response => ({
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
-					})) as Blob[])
+					})) as BlobMetadata[])
 					.then(updatedBlobs => {
 						setBlobs(blobs => [
 							...blobs.filter(blob => !blobIds.includes(blob.id)),
