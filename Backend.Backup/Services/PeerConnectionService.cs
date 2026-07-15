@@ -205,7 +205,7 @@ public class PeerConnectionService(IServiceProvider serviceProvider, IOptions<Ap
                 // Create WebRTC peer connection as responder
                 await EstablishConnectionAsResponderAsync(mapping.DestinationId, fromPeerId, offerSdp, connectionPool);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Failed to handle reconnection request
             }
