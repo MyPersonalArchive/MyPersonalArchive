@@ -1,8 +1,9 @@
+import { UUID } from "crypto"
 import { atom } from "jotai"
 
 
 export type BlobMetadata = {
-	id: number
+	id: UUID
 	fileName: string
 	fileSize: number
 	pageCount: number

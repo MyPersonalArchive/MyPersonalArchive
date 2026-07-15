@@ -2,9 +2,10 @@ import { useEffect, useState } from "react"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { BaseViewer, BaseViewerProps } from "./BaseViewer"
 import { DimensionEnum } from "../Preview"
+import { UUID } from "crypto"
 
 interface Props extends BaseViewerProps {
-	blobId: number
+	blobId: UUID
 }
 
 export const ServerViewer = ({ blobId, mimeType, dimension }: Props) => {

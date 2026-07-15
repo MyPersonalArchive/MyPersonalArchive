@@ -107,6 +107,15 @@ public class MpaDbContext : DbContext
 				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
 			)
 			.HasColumnType("TEXT");
+
+		modelBuilder.Entity<Blob>()
+			.Property(blob => blob.Id)
+			.HasConversion(
+				id => id.ToString("D"),
+				value => Guid.Parse(value)
+			)
+			.HasColumnType("TEXT")
+			.ValueGeneratedNever();
 	}
 
 	private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)

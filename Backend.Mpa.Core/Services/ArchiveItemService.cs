@@ -50,9 +50,13 @@ public class ArchiveItemService
 	}
 
 
-	public async Task<ArchiveItem> CreateArchiveItem(string title, IEnumerable<string> tags, JsonObject? metadata, IEnumerable<int> blobsIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+	public async Task<ArchiveItem> CreateArchiveItem(string title,
+												  	 IEnumerable<string> tags,
+												  	 JsonObject? metadata,
+												  	 IEnumerable<Guid> blobIds,
+												  	 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
-		var existingBlobEntities = await _blobService.GetBlobEntities(blobsIds);
+		var existingBlobEntities = await _blobService.GetBlobEntities(blobIds);
 
 		var newBlobEntities = await _blobService.UploadBlobs(uploadedBlobs);
 
@@ -79,7 +83,13 @@ public class ArchiveItemService
 	}
 
 
-	public async Task<ArchiveItem?> UpdateArchiveItem(int archiveItemId, string title, IEnumerable<string> tags, JsonObject? metadata, DateTimeOffset? documentDate, IEnumerable<int> blobsIds, IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+	public async Task<ArchiveItem?> UpdateArchiveItem(int archiveItemId,
+													  string title,
+													  IEnumerable<string> tags,
+													  JsonObject? metadata,
+													  DateTimeOffset? documentDate,
+													  IEnumerable<Guid> blobIds,
+													  IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
 		var archiveItem = await _dbContext.ArchiveItems
 			.Include(item => item.Blobs)
@@ -91,13 +101,13 @@ public class ArchiveItemService
 			return null;
 		}
 
-		var addedBlobIds = blobsIds.Except(archiveItem.Blobs!.Select(blob => blob.Id));
+		var addedBlobIds = blobIds.Except(archiveItem.Blobs!.Select(blob => blob.Id));
 		foreach(var blobEntity in await _blobService.GetBlobEntities(addedBlobIds))
 		{
 			archiveItem.Blobs!.Add(blobEntity);
 		}
 
-		var removedBlobIds = archiveItem.Blobs!.Select(blob => blob.Id).Except(blobsIds);
+		var removedBlobIds = archiveItem.Blobs!.Select(blob => blob.Id).Except(blobIds);
 		foreach (var blobId in removedBlobIds)
 		{
 			var blobEntity = archiveItem.Blobs!.Single(blob => blob.Id == blobId);
@@ -143,8 +153,8 @@ public class ArchiveItemService
 
 		if (archiveItem.Blobs != null)
 		{
-			var blobIds = archiveItem.Blobs.Select(blob => blob.Id);
-			await _blobService.DeleteBlobs(blobIds);
+			var blobGuids = archiveItem.Blobs.Select(blob => blob.Id);
+			await _blobService.DeleteBlobs(blobGuids);
 			_dbContext.Blobs.RemoveRange(archiveItem.Blobs);
 		}
 

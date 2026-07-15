@@ -54,7 +54,7 @@ public class ArchiveController : ControllerBase
 
 
 	[HttpGet]
-	public async Task<ActionResult<int>> CreateAndAttachBlobs([FromQuery] List<int> blobIds)
+	public async Task<ActionResult<int>> CreateAndAttachBlobs([FromQuery] List<Guid> blobIds)
 	{
 		var newArchiveItem = await _archiveItemService.CreateArchiveItem("New archive item", [], null, blobIds, []);
 		return newArchiveItem.Id;
@@ -98,7 +98,7 @@ public class ArchiveController : ControllerBase
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required List<string> Tags { get; set; }
 		public required JsonObject Metadata { get; set; }
-		public int[]? BlobsFromUnallocated { get; set; }
+		public Guid[]? BlobsFromUnallocated { get; set; }
 	}
 
 	public class CreateResponse
@@ -113,8 +113,7 @@ public class ArchiveController : ControllerBase
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required List<string> Tags { get; set; }
 		public required JsonObject Metadata { get; set; }
-		public int[]? BlobsFromUnallocated { get; set; }
-		public int[]? RemovedBlobs { get; set; }
+		public Guid[]? BlobsFromUnallocated { get; set; }
 	}
 	#endregion
 }

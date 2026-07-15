@@ -19,7 +19,7 @@ public class BlobController : ControllerBase
 	}
 
 
-	public async Task<ActionResult> GetFile([FromQuery] int blobId, [FromQuery] DimensionEnum dimension)
+	public async Task<ActionResult> GetFile([FromQuery] Guid blobId, [FromQuery] DimensionEnum dimension)
 	{
 		var tuple = await _blobService.GetBlob(blobId);
 		if(!tuple.HasValue)

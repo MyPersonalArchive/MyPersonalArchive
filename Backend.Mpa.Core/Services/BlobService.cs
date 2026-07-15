@@ -34,7 +34,7 @@ public class BlobService
 	}
 
 
-	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)?> GetBlob(int blobId)
+	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)?> GetBlob(Guid blobId)
 	{
 		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
 		if (blob == null)
@@ -93,7 +93,7 @@ public class BlobService
 				// `pathInStore` is not necessarily the actual path where the file is stored, but we keep it for backward
 				// compatibility with existing data in the database. The objectId can be extracted from the filename.
 				// The actual storage is handled by the IObjectStore implementation, which can have its own internal structure.
-				Guid = objectId,
+				Id = objectId,
 				PathInStore = Path.Combine(GetFolderPath(objectId), $"{objectId:D}{Path.GetExtension(file.fileName)}")
 			};
 			blobs.Add(blob);
@@ -116,7 +116,7 @@ public class BlobService
 
 
 
-	public async Task DeleteBlobs(IEnumerable<int> blobIds)
+	public async Task DeleteBlobs(IEnumerable<Guid> blobIds)
 	{
 		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
 		if (blobs.Count == 0)
@@ -139,7 +139,7 @@ public class BlobService
 	}
 
 
-	public async Task<Blob?> GetBlobEntity(int blobId)
+	public async Task<Blob?> GetBlobEntity(Guid blobId)
 	{
 		var blob = await _dbContext.Blobs
 			.Include(blob => blob.UploadedBy)
@@ -149,7 +149,7 @@ public class BlobService
 	}
 
 
-	public async Task<ICollection<Blob>> GetBlobEntities(IEnumerable<int> blobIds)
+	public async Task<ICollection<Blob>> GetBlobEntities(IEnumerable<Guid> blobIds)
 	{
 		var blobs = await _dbContext.Blobs
 			.Include(blob => blob.UploadedBy)
@@ -174,7 +174,7 @@ public class BlobService
 
 	#region SignalR message creators
 	internal async Task PublishBlobsAddedMessage(IEnumerable<Blob> blobs) => await PublishBlobsAddedMessage(blobs.Select(blob => blob.Id));
-	private async Task PublishBlobsAddedMessage(IEnumerable<int> blobIds)
+	private async Task PublishBlobsAddedMessage(IEnumerable<Guid> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
 		{
@@ -186,7 +186,7 @@ public class BlobService
 
 
 	internal async Task PublishBlobsUpdatedMessage(IEnumerable<Blob> blobs) => await PublishBlobsUpdatedMessage(blobs.Select(blob => blob.Id));
-	internal async Task PublishBlobsUpdatedMessage(IEnumerable<int> blobIds)
+	internal async Task PublishBlobsUpdatedMessage(IEnumerable<Guid> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
 		{
@@ -198,7 +198,7 @@ public class BlobService
 
 
 	private async Task PublishBlobsDeletedMessage(IEnumerable<Blob> blobs) => await PublishBlobsDeletedMessage(blobs.Select(blob => blob.Id).ToList());
-	private async Task PublishBlobsDeletedMessage(IEnumerable<int> blobIds)
+	private async Task PublishBlobsDeletedMessage(IEnumerable<Guid> blobIds)
 	{
 		if (blobIds == null || !blobIds.Any())
 		{

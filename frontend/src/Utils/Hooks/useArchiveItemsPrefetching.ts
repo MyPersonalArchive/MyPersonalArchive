@@ -3,13 +3,14 @@ import { useSignalR } from "./useSignalR"
 import { ArchiveItem, archiveItemsAtom } from "../Atoms/archiveItemsAtom"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
+import { UUID } from "crypto"
 
 
 type ListResponse = {
 	id: number
 	title: string
 	tags: string[]
-	blobs: { id: number }[],
+	blobs: { id: UUID }[],
 	metadataTypes: string[]
 	createdAt: string
 	documentDate?: string
@@ -19,7 +20,7 @@ type GetResponse = {
 	id: number
 	title: string
 	tags: string[]
-	blobs: { id: number, numberOfPages: number, mimeType?: string }[]
+	blobs: { id: UUID, numberOfPages: number, mimeType?: string }[]
 	metadata: object
 	createdAt: string
 	documentDate?: string
@@ -31,9 +32,13 @@ export const useArchiveItemsPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.query<ListResponse[]>("listArchiveItems")
+		apiClient.query<ListResponse[]>("ListArchiveItems")
 			.then(response => setArchiveItems(response!.map(item => ({
-				...item,
+				id: item.id,
+				title: item.title,
+				tags: item.tags,
+				blobs: item.blobs.map(blob => ({ id: blob.id })),
+				metadataTypes: item.metadataTypes,
 				createdAt: new Date(item.createdAt),
 				documentDate: item.documentDate ? new Date(item.documentDate) : undefined
 			} as ArchiveItem))))
@@ -45,7 +50,7 @@ export const useArchiveItemsPrefetching = () => {
 				const archiveItemIds = message.data as number[]
 
 				Promise
-					.all(archiveItemIds.map(id => apiClient.query<GetResponse>("getArchiveItem", { id })))
+					.all(archiveItemIds.map(id => apiClient.query<GetResponse>("GetArchiveItem", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						blobs: response!.blobs.map(blob => ({id: blob.id})),
@@ -66,7 +71,7 @@ export const useArchiveItemsPrefetching = () => {
 				const archiveItemIds = message.data as number[]
 
 				Promise
-					.all(archiveItemIds.map(id => apiClient.query<GetResponse>("getArchiveItem", { id })))
+					.all(archiveItemIds.map(id => apiClient.query<GetResponse>("GetArchiveItem", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						blobs: response!.blobs.map(blob => ({id: blob.id})),

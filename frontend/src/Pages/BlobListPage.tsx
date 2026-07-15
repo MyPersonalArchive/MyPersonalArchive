@@ -13,6 +13,7 @@ import { RoutePaths } from "../RoutePaths"
 import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
+import { UUID } from "crypto"
 
 
 export const BlobListPage = () => {
@@ -22,7 +23,7 @@ export const BlobListPage = () => {
 
 	const blobs = useAtomValue(blobsAtom)
 
-	const selectionOfBlobs = useSelection<number>(new Set(blobs.map(blob => blob.id)))
+	const selectionOfBlobs = useSelection<UUID>(new Set(blobs.map(blob => blob.id)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
@@ -44,7 +45,7 @@ export const BlobListPage = () => {
 		selectionOfBlobs.clearSelection()
 	}
 
-	const deleteBlob = (blobId: number) => {
+	const deleteBlob = (blobId: UUID) => {
 		apiClient.execute("DeleteBlobs", { blobIds: [blobId] })
 	}
 
@@ -58,7 +59,7 @@ export const BlobListPage = () => {
 		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
 	}
 
-	const attachBlob = async (id: number) => {
+	const attachBlob = async (id: UUID) => {
 		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
 		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
 	}
@@ -131,10 +132,10 @@ export const BlobListPage = () => {
 
 type BlobCardProps = {
 	blob: BlobMetadata
-	attachBlob: (id: number) => void
-	deleteBlob: (blobId: number) => void
+	attachBlob: (id: UUID) => void
+	deleteBlob: (blobId: UUID) => void
 	maximize: (blob: BlobMetadata) => void
-	selectionOfBlobs: Selection<number>
+	selectionOfBlobs: Selection<UUID>
 }
 const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
 	return (
@@ -179,6 +180,7 @@ const Filter = () => {
 	const navigate = useNavigate()
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setHideAllocatedBlobs((searchParams.get("hideAllocatedBlobs") ?? "true") === "true")
 	}, [searchParams])
 

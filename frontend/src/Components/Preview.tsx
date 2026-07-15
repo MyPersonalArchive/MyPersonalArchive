@@ -1,3 +1,4 @@
+import { UUID } from "crypto"
 import { ServerViewer } from "./Viewers/ServerViewer"
 
 
@@ -8,7 +9,7 @@ export enum DimensionEnum {
 }
 
 export interface BlobIdAndNumberOfPages {
-	id: number
+	id: UUID
 	numberOfPages?: number
 	mimeType?: string
 }

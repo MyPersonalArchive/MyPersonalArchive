@@ -5,19 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Backend.Mpa.DbModel.Database.EntityModels;
 
 
-public enum StoreRoot
-{
-    FileStorage,
-    CloudStorage
-}
-
-
 [Table(nameof(Blob))]
 public class Blob : TenantEntity
 {
-    public int Id { get; set; }
-
-	public Guid Guid { get; set; }
+	public Guid Id { get; set; }
 
     [Required]
     public required string PathInStore { get; set; }    // Relative to the blob store root

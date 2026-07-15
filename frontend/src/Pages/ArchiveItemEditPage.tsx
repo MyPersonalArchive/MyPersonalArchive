@@ -22,6 +22,7 @@ import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@f
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
+import { UUID } from "crypto"
 
 type GetResponse = {
 	id: number
@@ -34,7 +35,7 @@ type GetResponse = {
 }
 
 type BlobResponse = {
-	id: number
+	id: UUID
 	numberOfPages: number
 	mimeType?: string
 }
@@ -54,7 +55,6 @@ export const ArchiveItemEditPage = () => {
 	const [documentDate, setDocumentDate] = useState("")
 	const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
-	const [removedBlobs, setRemovedBlobs] = useState<number[]>([])
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
 	const allTags = useAtomValue(tagsAtom)
@@ -66,7 +66,7 @@ export const ArchiveItemEditPage = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.query<GetResponse>("getArchiveItem", { id: Number.parseInt(params.id!) })
+		apiClient.query<GetResponse>("GetArchiveItem", { id: Number.parseInt(params.id!) })
 			.then(item => {
 				setId(item!.id)
 				setTitle(item!.title)
@@ -88,7 +88,6 @@ export const ArchiveItemEditPage = () => {
 			title: title!,
 			tags,
 			blobsFromUnallocated: blobs.map(blob => blob.id),
-			removedBlobs,
 			metadata,
 			label,
 			documentDate
@@ -123,13 +122,11 @@ export const ArchiveItemEditPage = () => {
 	const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
 		blobs.forEach(blob => {
 			setBlobs(blobs => [...blobs, blob])
-			setRemovedBlobs(removedBlobs => removedBlobs.filter(id => id !== blob.id))
 		})
 	}
 
 	const removeUnallocatedBlob = (blob: BlobIdAndNumberOfPages) => {
 		setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
-		setRemovedBlobs(removedBlobs => [...removedBlobs, blob.id])
 	}
 
 	return (

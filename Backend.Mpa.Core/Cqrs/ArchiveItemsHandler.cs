@@ -23,7 +23,7 @@ public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 
 		public class Blob
 		{
-			public int Id { get; set; }
+			public Guid Id { get; set; }
 			public int NumberOfPages { get; set; }
 			public string? MimeType { get; set; }
 		}
@@ -52,7 +52,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 
 		public class Blob
 		{
-			public int Id { get; set; }
+			public Guid Id { get; set; }
 		}
 	}
 }

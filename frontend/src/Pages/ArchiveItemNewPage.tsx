@@ -61,7 +61,7 @@ export const ArchiveItemNewPage = () => {
 		})
 
 		apiClient.postFormData<CreateResponse>("/api/archive/create", formData)
-		navigate(RoutePaths.Archive)
+		navigate(RoutePaths.Archive.List)
 	}
 
 	const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {

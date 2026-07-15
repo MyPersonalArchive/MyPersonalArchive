@@ -9,11 +9,11 @@ namespace Backend.Mpa.Core.Cqrs;
 [RequireAllowedTenantId]
 public class GetBlob : IQuery<GetBlob, GetBlob.Response>
 {
-	public int Id { get; set; }
+	public Guid Id { get; set; }
 
 	public class Response
 	{
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 		public string? FileName { get; set; }
 		public long FileSize { get; set; }
 		public DateTimeOffset UploadedAt { get; set; }
@@ -32,7 +32,7 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 
 	public class Response
 	{
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 		public string? FileName { get; set; }
 		public long FileSize { get; set; }
 		public DateTimeOffset UploadedAt { get; set; }
@@ -47,7 +47,7 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 [RequireAllowedTenantId]
 public class DeleteBlobs : ICommand<DeleteBlobs>
 {
-	public required int[] BlobIds { get; set; }
+	public required Guid[] BlobIds { get; set; }
 }
 
 
