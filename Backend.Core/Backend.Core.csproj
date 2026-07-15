@@ -10,11 +10,8 @@
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" Version="10.0.1" />
 
-		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.6" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.1" />
 		<PackageReference Include="NetVips" Version="3.0.0" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
