@@ -12,6 +12,8 @@ public class ArchiveItem : TenantEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+	public Guid Guid { get; set; }
+
     [StringLength(80)]
     public required string Title { get; set; }
 
