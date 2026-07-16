@@ -10,5 +10,6 @@ public class ArchiveItemAndTag : TenantEntity
 {
     public int Id { get; set; }
     public int ArchiveItemId { get; set; }
+	public Guid ArchiveItemGuid { get; set; }
     public int TagId { get; set; }
 }
