@@ -48,7 +48,7 @@ public class ArchiveController : ControllerBase
 
 		return new CreateResponse
 		{
-			Id = newArchiveItem.Guid
+			Id = newArchiveItem.Id
 		};
 	}
 
@@ -57,7 +57,7 @@ public class ArchiveController : ControllerBase
 	public async Task<ActionResult<Guid>> CreateAndAttachBlobs([FromQuery] List<Guid> blobIds)
 	{
 		var newArchiveItem = await _archiveItemService.CreateArchiveItem("New archive item", [], null, blobIds, []);
-		return newArchiveItem.Guid;
+		return newArchiveItem.Id;
 	}
 
 

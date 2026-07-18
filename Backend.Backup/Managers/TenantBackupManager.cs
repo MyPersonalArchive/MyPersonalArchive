@@ -256,12 +256,12 @@ public class TenantBackupManager
 
     private BackupLog CreateBackupLog(TenantBackup backup, ArchiveItem archiveItem, IBackupProvider backupProvider)
     {
-        var backupFileName = $"ArchiveItem_{archiveItem.Guid}.zip.enc";
+        var backupFileName = $"ArchiveItem_{archiveItem.Id}.zip.enc";
         return new BackupLog
         {
             ItemType = "ArchiveItem",
             ItemId = -1, //TODO: was: ItemId = archiveItem.Guid,
-            ItemName = archiveItem.Title ?? $"ArchiveItem_{archiveItem.Guid}",
+            ItemName = archiveItem.Title ?? $"ArchiveItem_{archiveItem.Id}",
             StartedAt = DateTimeOffset.UtcNow,
             ItemLastUpdated = archiveItem.LastUpdated,
             Status = BackupLog.BackupStatus.InProgress,

@@ -26,5 +26,5 @@ public class Blob : TenantEntity
 
     public ArchiveItem? ArchiveItem { get; set; }
 
-	public Guid? ArchiveItemGuid { get; set; }
+	public Guid? ArchiveItemId { get; set; }
 }
