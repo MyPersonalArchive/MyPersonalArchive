@@ -9,11 +9,11 @@ namespace Backend.Mpa.Core.Cqrs;
 [RequireAllowedTenantId]
 public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 {
-	public int Id { get; set; }
+	public Guid Id { get; set; }
 
 	public class Response
 	{
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 		public required string Title { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
 		public DateTimeOffset CreatedAt { get; set; }
@@ -41,7 +41,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 
 	public class Response
 	{
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 		public required string Title { get; set; }
 		public required IEnumerable<string> Tags { get; set; }
 		public required IEnumerable<Blob> Blobs { get; set; }
@@ -72,7 +72,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 [RequireAllowedTenantId]
 public class DeleteArchiveItem : ICommand<DeleteArchiveItem>
 {
-	public int Id { get; set; }
+	public Guid Id { get; set; }
 }
 
 
@@ -83,12 +83,10 @@ public class ArchiveItemsHandler :
 	IAsyncCommandHandler<DeleteArchiveItem>
 {
 	private readonly ArchiveItemService _archiveItemService;
-	private readonly StoredFilterService _storedFilterService;
 
-	public ArchiveItemsHandler(ArchiveItemService archiveItemService, StoredFilterService storedFilterService)
+	public ArchiveItemsHandler(ArchiveItemService archiveItemService)
 	{
 		_archiveItemService = archiveItemService;
-		_storedFilterService = storedFilterService;
 	}
 
 	public async Task<GetArchiveItem.Response> Handle(GetArchiveItem query)
@@ -101,7 +99,7 @@ public class ArchiveItemsHandler :
 
 		return new GetArchiveItem.Response
 		{
-			Id = archiveItem.Id,
+			Id = archiveItem.Guid,
 			Title = archiveItem.Title,
 			Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
 			Metadata = archiveItem.Metadata,
@@ -145,7 +143,7 @@ public class ArchiveItemsHandler :
 		return archiveItems
 			.Select(archiveItem => new ListArchiveItems.Response
 			{
-				Id = archiveItem.Id,
+				Id = archiveItem.Guid,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
 				Blobs = archiveItem.Blobs!.Select(blob => new ListArchiveItems.Response.Blob() { Id = blob.Id }),

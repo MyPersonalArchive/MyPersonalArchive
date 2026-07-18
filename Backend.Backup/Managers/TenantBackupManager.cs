@@ -248,7 +248,7 @@ public class TenantBackupManager
         return allItems
             .Where(item => !successfulBackups.Any(log => 
                 log.ItemType == "ArchiveItem" &&
-                log.ItemId == item.Id &&
+                log.ItemId == -1 && //TODO: was: log.ItemId == item.Guid &&
                 log.ItemLastUpdated == item.LastUpdated &&
                 log.Status == BackupLog.BackupStatus.Success))
             .ToList();
@@ -256,12 +256,12 @@ public class TenantBackupManager
 
     private BackupLog CreateBackupLog(TenantBackup backup, ArchiveItem archiveItem, IBackupProvider backupProvider)
     {
-        var backupFileName = $"ArchiveItem_{archiveItem.Id}.zip.enc";
+        var backupFileName = $"ArchiveItem_{archiveItem.Guid}.zip.enc";
         return new BackupLog
         {
             ItemType = "ArchiveItem",
-            ItemId = archiveItem.Id,
-            ItemName = archiveItem.Title ?? $"ArchiveItem_{archiveItem.Id}",
+            ItemId = -1, //TODO: was: ItemId = archiveItem.Guid,
+            ItemName = archiveItem.Title ?? $"ArchiveItem_{archiveItem.Guid}",
             StartedAt = DateTimeOffset.UtcNow,
             ItemLastUpdated = archiveItem.LastUpdated,
             Status = BackupLog.BackupStatus.InProgress,

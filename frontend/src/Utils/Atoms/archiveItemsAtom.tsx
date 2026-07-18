@@ -3,7 +3,7 @@ import { UUID } from "crypto"
 
 
 export type ArchiveItem = {
-	id: number
+	id: UUID
 	title: string
 	tags: string[]
 	blobs: { id: UUID; }[]

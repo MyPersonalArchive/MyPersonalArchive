@@ -7,7 +7,7 @@ import { UUID } from "crypto"
 
 
 type ListResponse = {
-	id: number
+	id: UUID
 	title: string
 	tags: string[]
 	blobs: { id: UUID }[],
@@ -17,7 +17,7 @@ type ListResponse = {
 }
 
 type GetResponse = {
-	id: number
+	id: UUID
 	title: string
 	tags: string[]
 	blobs: { id: UUID, numberOfPages: number, mimeType?: string }[]

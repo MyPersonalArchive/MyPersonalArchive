@@ -25,14 +25,14 @@ public class ArchiveItemService
 	}
 
 
-	public async Task<ArchiveItem?> GetArchiveItem(int id)
+	public async Task<ArchiveItem?> GetArchiveItem(Guid id)
 	{
-		var archiveItem = await _dbContext.ArchiveItems
+		var archiveItems = _dbContext.ArchiveItems
 			.Include(archiveItem => archiveItem.Blobs)
 			.Include(archiveItem => archiveItem.Tags)
-			.SingleOrDefaultAsync(x => x.Id == id);
+			.Where(archiveItem => archiveItem.Guid == id);
 
-		return archiveItem;
+		return await archiveItems.SingleOrDefaultAsync();
 	}
 
 
@@ -83,7 +83,7 @@ public class ArchiveItemService
 	}
 
 
-	public async Task<ArchiveItem?> UpdateArchiveItem(int archiveItemId,
+	public async Task<ArchiveItem?> UpdateArchiveItem(Guid archiveItemId,
 													  string title,
 													  IEnumerable<string> tags,
 													  JsonObject? metadata,
@@ -94,7 +94,7 @@ public class ArchiveItemService
 		var archiveItem = await _dbContext.ArchiveItems
 			.Include(item => item.Blobs)
 			.Include(item => item.Tags)
-			.SingleOrDefaultAsync(item => item.Id == archiveItemId);
+			.SingleOrDefaultAsync(item => item.Guid == archiveItemId);
 
 		if (archiveItem == null)
 		{
@@ -138,13 +138,13 @@ public class ArchiveItemService
 	}
 
 
-	public async Task<bool> DeleteArchiveItem(int id)
+	public async Task<bool> DeleteArchiveItem(Guid id)
 	{
 		var archiveItem = await _dbContext.ArchiveItems
 			.Include(archiveItem => archiveItem.Blobs)
 			.Include(archiveItem => archiveItem.Tags)
 				.ThenInclude(tag => tag.ArchiveItems)
-			.SingleOrDefaultAsync(x => x.Id == id);
+				.SingleOrDefaultAsync(x => x.Guid == id);
 
 		if (archiveItem == null)
 		{
@@ -174,8 +174,8 @@ public class ArchiveItemService
 
 
 	#region SignalR message creators
-	private async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
-	private async Task PublishArchiveItemsAddedMessage(IEnumerable<int> archiveItemIds)
+	private async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Guid));
+	private async Task PublishArchiveItemsAddedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
 		{
@@ -186,8 +186,8 @@ public class ArchiveItemService
 	}
 
 
-	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
-	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<int> archiveItemIds)
+	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Guid));
+	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
 		{
@@ -198,8 +198,8 @@ public class ArchiveItemService
 	}
 
 
-	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id).ToList());
-	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<int> archiveItemIds)
+	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Guid).ToList());
+	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
 		{

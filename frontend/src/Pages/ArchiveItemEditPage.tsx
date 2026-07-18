@@ -25,9 +25,8 @@ import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
 
 type GetResponse = {
-	id: number
+	id: UUID
 	title: string
-	label: string
 	tags: string[]
 	blobs: BlobResponse[]
 	metadata: Record<string, any>
@@ -48,10 +47,9 @@ type LocalBlob = {
 
 
 export const ArchiveItemEditPage = () => {
-	const [id, setId] = useState<number | null>(null)
+	const [id, setId] = useState<UUID | null>(null)
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
-	const [label, setLabel] = useState<string>()
 	const [documentDate, setDocumentDate] = useState("")
 	const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
@@ -66,13 +64,12 @@ export const ArchiveItemEditPage = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.query<GetResponse>("GetArchiveItem", { id: Number.parseInt(params.id!) })
+		apiClient.query<GetResponse>("GetArchiveItem", { id: params.id as UUID })
 			.then(item => {
 				setId(item!.id)
 				setTitle(item!.title)
 				setTags(item!.tags)
 				setBlobs(item!.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
-				setLabel(item!.label)
 				setDocumentDate(item!.documentDate)
 
 				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item!.metadata, dispatch: dispatch })
@@ -89,7 +86,6 @@ export const ArchiveItemEditPage = () => {
 			tags,
 			blobsFromUnallocated: blobs.map(blob => blob.id),
 			metadata,
-			label,
 			documentDate
 		}
 
