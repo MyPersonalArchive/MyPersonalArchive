@@ -9,11 +9,11 @@ namespace Backend.Mpa.DbModel.Database.EntityModels;
 [Table(nameof(ArchiveItem))]
 public class ArchiveItem : TenantEntity
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    // [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    // public int Id { get; set; }
 
 	[Key]
-	public Guid Guid { get; set; }
+	public Guid Id { get; set; }
 
     [StringLength(80)]
     public required string Title { get; set; }

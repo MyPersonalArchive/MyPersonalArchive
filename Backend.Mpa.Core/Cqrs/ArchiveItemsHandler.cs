@@ -99,7 +99,7 @@ public class ArchiveItemsHandler :
 
 		return new GetArchiveItem.Response
 		{
-			Id = archiveItem.Guid,
+			Id = archiveItem.Id,
 			Title = archiveItem.Title,
 			Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
 			Metadata = archiveItem.Metadata,
@@ -143,7 +143,7 @@ public class ArchiveItemsHandler :
 		return archiveItems
 			.Select(archiveItem => new ListArchiveItems.Response
 			{
-				Id = archiveItem.Guid,
+				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
 				Blobs = archiveItem.Blobs!.Select(blob => new ListArchiveItems.Response.Blob() { Id = blob.Id }),

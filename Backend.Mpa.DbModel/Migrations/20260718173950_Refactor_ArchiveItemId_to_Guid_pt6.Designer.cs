@@ -3,6 +3,7 @@ using System;
 using Backend.Mpa.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,16 +11,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Mpa.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    partial class MpaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260718173950_Refactor_ArchiveItemId_to_Guid_pt6")]
+    partial class Refactor_ArchiveItemId_to_Guid_pt6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
             modelBuilder.Entity("Backend.Mpa.DbModel.Database.EntityModels.ArchiveItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("Guid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT COLLATE NOCASE");
 
@@ -50,7 +53,7 @@ namespace Backend.Mpa.DbModel.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("Guid");
 
                     b.HasIndex("CreatedByUsername");
 
@@ -63,7 +66,7 @@ namespace Backend.Mpa.DbModel.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ArchiveItemId")
+                    b.Property<Guid>("ArchiveItemGuid")
                         .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.Property<int>("TagId")
@@ -74,10 +77,10 @@ namespace Backend.Mpa.DbModel.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArchiveItemId", "TagId")
+                    b.HasIndex("ArchiveItemGuid", "TagId")
                         .IsUnique();
 
-                    b.HasIndex("ArchiveItemId", "TenantId");
+                    b.HasIndex("ArchiveItemGuid", "TenantId");
 
                     b.HasIndex("TagId", "TenantId");
 
@@ -89,7 +92,7 @@ namespace Backend.Mpa.DbModel.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ArchiveItemId")
+                    b.Property<Guid?>("ArchiveItemGuid")
                         .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.Property<int?>("ArchiveItemTenantId")
@@ -128,7 +131,7 @@ namespace Backend.Mpa.DbModel.Migrations
 
                     b.HasIndex("UploadedByUsername");
 
-                    b.HasIndex("ArchiveItemId", "ArchiveItemTenantId");
+                    b.HasIndex("ArchiveItemGuid", "ArchiveItemTenantId");
 
                     b.ToTable("Blob");
                 });
@@ -373,8 +376,8 @@ namespace Backend.Mpa.DbModel.Migrations
                 {
                     b.HasOne("Backend.Mpa.DbModel.Database.EntityModels.ArchiveItem", null)
                         .WithMany()
-                        .HasForeignKey("ArchiveItemId", "TenantId")
-                        .HasPrincipalKey("Id", "TenantId")
+                        .HasForeignKey("ArchiveItemGuid", "TenantId")
+                        .HasPrincipalKey("Guid", "TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -397,8 +400,8 @@ namespace Backend.Mpa.DbModel.Migrations
 
                     b.HasOne("Backend.Mpa.DbModel.Database.EntityModels.ArchiveItem", "ArchiveItem")
                         .WithMany("Blobs")
-                        .HasForeignKey("ArchiveItemId", "ArchiveItemTenantId")
-                        .HasPrincipalKey("Id", "TenantId");
+                        .HasForeignKey("ArchiveItemGuid", "ArchiveItemTenantId")
+                        .HasPrincipalKey("Guid", "TenantId");
 
                     b.Navigation("ArchiveItem");
 
