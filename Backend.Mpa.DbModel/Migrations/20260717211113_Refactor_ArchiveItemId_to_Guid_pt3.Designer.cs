@@ -3,6 +3,7 @@ using System;
 using Backend.Mpa.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Mpa.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    partial class MpaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717211113_Refactor_ArchiveItemId_to_Guid_pt3")]
+    partial class Refactor_ArchiveItemId_to_Guid_pt3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
@@ -21,7 +24,7 @@ namespace Backend.Mpa.DbModel.Migrations
                 {
                     b.Property<Guid>("Guid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT COLLATE NOCASE");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -68,7 +71,10 @@ namespace Backend.Mpa.DbModel.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("ArchiveItemGuid")
-                        .HasColumnType("TEXT COLLATE NOCASE");
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ArchiveItemId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TagId")
                         .HasColumnType("INTEGER");
@@ -83,6 +89,9 @@ namespace Backend.Mpa.DbModel.Migrations
 
                     b.HasIndex("ArchiveItemGuid", "TenantId");
 
+                    b.HasIndex("ArchiveItemId", "TagId")
+                        .IsUnique();
+
                     b.HasIndex("TagId", "TenantId");
 
                     b.ToTable("ArchiveItemAndTag");
@@ -94,7 +103,7 @@ namespace Backend.Mpa.DbModel.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("ArchiveItemGuid")
-                        .HasColumnType("TEXT COLLATE NOCASE");
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("ArchiveItemTenantId")
                         .HasColumnType("INTEGER");

@@ -48,16 +48,16 @@ public class ArchiveController : ControllerBase
 
 		return new CreateResponse
 		{
-			Id = newArchiveItem.Id
+			Id = newArchiveItem.Guid
 		};
 	}
 
 
 	[HttpGet]
-	public async Task<ActionResult<int>> CreateAndAttachBlobs([FromQuery] List<Guid> blobIds)
+	public async Task<ActionResult<Guid>> CreateAndAttachBlobs([FromQuery] List<Guid> blobIds)
 	{
 		var newArchiveItem = await _archiveItemService.CreateArchiveItem("New archive item", [], null, blobIds, []);
-		return newArchiveItem.Id;
+		return newArchiveItem.Guid;
 	}
 
 
@@ -103,12 +103,12 @@ public class ArchiveController : ControllerBase
 
 	public class CreateResponse
 	{
-		public required int Id { get; set; }
+		public required Guid Id { get; set; }
 	}
 
 	public class UpdateRequest
 	{
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 		public required string Title { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required List<string> Tags { get; set; }

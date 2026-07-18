@@ -5,11 +5,10 @@ namespace Backend.Mpa.DbModel.Database.EntityModels;
 
 
 [Table(nameof(ArchiveItemAndTag))]
-[Index(nameof(ArchiveItemId), nameof(TagId), IsUnique = true)]
+[Index(nameof(ArchiveItemGuid), nameof(TagId), IsUnique = true)]
 public class ArchiveItemAndTag : TenantEntity
 {
     public int Id { get; set; }
-    public int ArchiveItemId { get; set; }
 	public Guid ArchiveItemGuid { get; set; }
     public int TagId { get; set; }
 }

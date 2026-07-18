@@ -12,6 +12,7 @@ public class ArchiveItem : TenantEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+	[Key]
 	public Guid Guid { get; set; }
 
     [StringLength(80)]

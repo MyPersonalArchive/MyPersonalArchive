@@ -23,13 +23,13 @@ public class BackupService(IServiceScope scope, int tenantId)
             var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
             var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
 
-            var backupFileName = $"ArchiveItem_{archiveItem.Id}.zip.enc";
+            var backupFileName = $"ArchiveItem_{archiveItem.Guid}.zip.enc";
             result.BackupFileName = backupFileName;
 
             var json = JsonConvert.SerializeObject(archiveItem);
             var zipEntries = new Dictionary<string, Stream>
             {
-                { $"ArchiveItem_{archiveItem.Id}.json", new MemoryStream(Encoding.UTF8.GetBytes(json)) }
+                { $"ArchiveItem_{archiveItem.Guid}.json", new MemoryStream(Encoding.UTF8.GetBytes(json)) }
             };
 
             long totalFileSize = Encoding.UTF8.GetBytes(json).Length;

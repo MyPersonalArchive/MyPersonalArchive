@@ -46,6 +46,17 @@ public class MpaDbContext : DbContext
 	{
 		base.OnModelCreating(modelBuilder);
 
+		foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+		{
+			foreach (var property in entityType.GetProperties())
+			{
+				if (property.ClrType == typeof(Guid) || Nullable.GetUnderlyingType(property.ClrType) == typeof(Guid))
+				{
+					property.SetColumnType("TEXT COLLATE NOCASE");
+				}
+			}
+		}
+
 		// Apply global filter to enforce tenant isolation
 		ConfigureTenantReadIsolation(modelBuilder);
 
@@ -94,7 +105,7 @@ public class MpaDbContext : DbContext
 				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
 			)
 			.HasColumnType("TEXT");
-		
+
 		// Configure LastUpdated with default value
 		modelBuilder.Entity<ArchiveItem>()
 			.Property(e => e.LastUpdated)
@@ -149,7 +160,7 @@ public class MpaDbContext : DbContext
 
 		modelBuilder.Entity<ArchiveItem>(builder =>
 		{
-			builder.HasAlternateKey(item => new { item.Id, item.TenantId });
+			builder.HasAlternateKey(item => new { item.Guid, item.TenantId });
 
 			//HERE
 			builder.HasOne(archiveItem => archiveItem.CreatedBy)
@@ -161,12 +172,12 @@ public class MpaDbContext : DbContext
 				.WithMany(tag => tag.ArchiveItems)
 				.UsingEntity<ArchiveItemAndTag>(
 					l => l.HasOne<Tag>().WithMany().HasForeignKey(m2m => new { m2m.TagId, m2m.TenantId }).HasPrincipalKey(tag => new { tag.Id, tag.TenantId }),
-					r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(m2m => new { m2m.ArchiveItemId, m2m.TenantId }).HasPrincipalKey(item => new { item.Id, item.TenantId })
+					r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(m2m => new { m2m.ArchiveItemGuid, m2m.TenantId }).HasPrincipalKey(item => new { item.Guid, item.TenantId })
 				);
 
 			builder.HasMany(archiveItem => archiveItem.Blobs)
 				.WithOne(blob => blob.ArchiveItem)
-				.HasPrincipalKey(archiveItem => new { archiveItem.Id, archiveItem.TenantId });
+				.HasPrincipalKey(archiveItem => new { archiveItem.Guid, archiveItem.TenantId });
 		});
 
 		modelBuilder.Entity<Blob>(builder =>

@@ -25,6 +25,6 @@ public class Blob : TenantEntity
     public long FileSize { get; set; }
 
     public ArchiveItem? ArchiveItem { get; set; }
-	public int? ArchiveItemId { get; set; }
+
 	public Guid? ArchiveItemGuid { get; set; }
 }
