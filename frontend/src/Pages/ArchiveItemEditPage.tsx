@@ -64,7 +64,7 @@ export const ArchiveItemEditPage = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.query<GetResponse>("GetArchiveItem", { id: params.id as UUID })
+		apiClient.query<GetResponse>("GetArchiveItem", { id: params.id! as UUID })
 			.then(item => {
 				setId(item!.id)
 				setTitle(item!.title)

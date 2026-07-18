@@ -54,7 +54,7 @@ public class ArchiveController : ControllerBase
 
 
 	[HttpGet]
-	public async Task<ActionResult<Guid>> CreateAndAttachBlobs([FromQuery] List<Guid> blobIds)
+	public async Task<ActionResult<Guid>> CreateAndAttachBlobs([FromQuery] IEnumerable<Guid> blobIds)
 	{
 		var newArchiveItem = await _archiveItemService.CreateArchiveItem("New archive item", [], null, blobIds, []);
 		return newArchiveItem.Id;
