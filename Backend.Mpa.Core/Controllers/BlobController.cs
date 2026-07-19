@@ -1,9 +1,10 @@
 using Backend.Mpa.Core;
 using Backend.Mpa.Core.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.Mpa.Core.Controllers;
 
 
 [ApiController]

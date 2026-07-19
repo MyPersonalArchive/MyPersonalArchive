@@ -5,9 +5,10 @@ using Backend.Mpa.Core.Services;
 using Backend.Mpa.DbModel.Database;
 using Backend.Mpa.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.Mpa.Core.Controllers;
 
 
 [ApiController]

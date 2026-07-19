@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.WebApi.Controllers;
+namespace Backend.Mpa.Core.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
