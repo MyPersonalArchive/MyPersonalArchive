@@ -6,9 +6,9 @@ export type ArchiveItem = {
 	id: UUID
 	title: string
 	tags: string[]
-	blobs: { id: UUID; }[]
-	metadataTypes: string[]
-	createdAt: Date
 	documentDate: Date
+	createdAt: Date
+	metadataTypes: string[]
+	blobs: { id: UUID; }[]
 }
 export const archiveItemsAtom = atom<ArchiveItem[]>([])

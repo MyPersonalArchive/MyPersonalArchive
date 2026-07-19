@@ -23,7 +23,6 @@ export const useTagsPrefetching = () => {
 
 		switch (message.messageType) {
 			case "TagsAdded": {
-				console.log("*** useTagsPrefetching, message: ", message)
 				setTags(tags => [...tags, message.data as string])
 				break
 			}

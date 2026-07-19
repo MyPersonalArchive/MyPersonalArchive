@@ -260,7 +260,7 @@ export const ArchiveItemEditPage = () => {
 				</div>
 
 				<div className="stack-horizontal to-the-right my-4">
-					<button className="btn" onClick={() => navigate(RoutePaths.Archive.List)}>
+					<button className="btn" onClick={() => navigate(RoutePaths.Archive.List)} type="button">
 						Back
 					</button>
 					<button className="btn btn-primary" type="submit">
