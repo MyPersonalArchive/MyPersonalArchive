@@ -12,6 +12,7 @@ import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
 import { formatDate, formatSize } from "../Utils/formatUtils"
 import { Dialog } from "./Dialog"
 import { LightBox } from "./LightBox"
+import { UUID } from "crypto"
 
 
 
@@ -110,7 +111,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 							<i>or</i>
 							<p>
 								<button className="link" type="button" onClick={() => { setOpenUnallocatedBlobsDialog(!openUnallocatedBlobDialog) }}>
-									Choose from unallocted heap.
+									Choose from unallocated heap.
 								</button>
 							</p>
 						</>
@@ -132,7 +133,7 @@ type UnallocatedBlobsDialogProps = {
 const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
 	const unallocatedHeap = useAtomValue(blobsAtom)
 
-	const selectionOfBlobs = useSelection<number>(new Set(unallocatedHeap.map(blob => blob.id)))
+	const selectionOfBlobs = useSelection<UUID>(new Set(unallocatedHeap.map(blob => blob.id)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
@@ -141,7 +142,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 		}
 	}, [selectionOfBlobs.selectedItems, unallocatedHeap])
 
-	const addBlob = (blobIds: number[]) => {
+	const addBlob = (blobIds: UUID[]) => {
 		const blobs = unallocatedHeap.filter(blob => blobIds.includes(blob.id)).map(blob => ({ id: blob.id, numberOfPages: blob.pageCount }))
 		onBlobAttached(blobs)
 		onCloseDialog()
@@ -219,9 +220,9 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 
 type BlobCardProps = {
 	blob: BlobMetadata
-	attachBlob: (id: number) => void
+	attachBlob: (id: UUID) => void
 	maximize: (blob: BlobMetadata) => void
-	selectionOfBlobs: Selection<number>
+	selectionOfBlobs: Selection<UUID>
 }
 const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
 	return (

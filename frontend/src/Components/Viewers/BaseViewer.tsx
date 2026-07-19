@@ -1,5 +1,5 @@
 // ViewerCore.tsx
-import { CSSProperties, ReactNode } from "react"
+import { CSSProperties, PropsWithChildren, ReactNode } from "react"
 import { ImageViewer } from "./ImageViewer"
 import { PdfViewer } from "./PdfViewer"
 import { TextViewer } from "./TextViewer"
@@ -12,7 +12,7 @@ export interface BaseViewerProps {
   forceImageViewer?: boolean
 }
 
-export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer }: BaseViewerProps) => {
+export const BaseViewer = ({ src, mimeType, dimension, forceImageViewer }: PropsWithChildren<BaseViewerProps>) => {
 	const isTextType = (mimeType: string): boolean =>{
 		return mimeType.startsWith("text/") || mimeType === "application/json" || mimeType === "application/xml"
 	}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import { UUID } from "crypto"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { PreviewList } from "../Components/PreviewList"
@@ -22,18 +23,17 @@ import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@f
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
-import { UUID } from "crypto"
 
 type GetResponse = {
 	id: UUID
 	title: string
 	tags: string[]
-	blobs: BlobResponse[]
+	blobs: BlobDisplayInfo[]
 	metadata: Record<string, any>
 	documentDate: string
 }
 
-type BlobResponse = {
+type BlobDisplayInfo = {
 	id: UUID
 	numberOfPages: number
 	mimeType?: string
@@ -178,7 +178,10 @@ export const ArchiveItemEditPage = () => {
 						))
 				}
 
-				<FileDropZone onBlobAdded={addFileBlobs} onBlobAttached={attachUnallocatedBlobs} showUnallocatedBlobs={true} />
+				<FileDropZone showUnallocatedBlobs={true}
+					onBlobAdded={addFileBlobs}
+					onBlobAttached={attachUnallocatedBlobs}
+				/>
 
 				{/* <div className="stack-horizontal my-4">
 					<div className="mt-4 text-green-600 bg-gray-900 font-mono text-sm w-full p-2">
@@ -200,12 +203,12 @@ export const ArchiveItemEditPage = () => {
 									className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
 									onClick={() => maximize(blob)}
 								>
-									<Preview blob={blob} dimension={DimensionEnum.small}/>
+									<Preview blob={blob} dimension={DimensionEnum.small} />
 									<div className="action-bar">
-										<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
+										<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
 											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
 										</button>
-										<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
+										<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
 											<FontAwesomeIcon icon={faTrash} size="1x" />
 										</button>
 									</div>
@@ -215,12 +218,12 @@ export const ArchiveItemEditPage = () => {
 							(blob, minimize) =>
 								<LightBox key={blob.id} onClose={() => minimize()}>
 									<div className="w-full h-full flex justify-center action-bar-host">
-										<Preview blob={blob} dimension={DimensionEnum.full}/>
+										<Preview blob={blob} dimension={DimensionEnum.full} />
 										<div className="action-bar">
-											<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
+											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 											</button>
-											<button type="button" onClick={e => {removeUnallocatedBlob(blob); e.stopPropagation()}} title="Delete">
+											<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
 												<FontAwesomeIcon icon={faTrash} size="1x" />
 											</button>
 										</div>

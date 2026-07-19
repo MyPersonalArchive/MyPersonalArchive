@@ -1,5 +1,5 @@
 // LocalViewer.tsx
-import { useEffect, useMemo } from "react"
+import { PropsWithChildren, useEffect, useMemo } from "react"
 import { BaseViewer, BaseViewerProps } from "./BaseViewer"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUpRightAndDownLeftFromCenter, faDownLeftAndUpRightToCenter, faTrash } from "@fortawesome/free-solid-svg-icons"
@@ -12,7 +12,7 @@ interface LocalViewerProps extends BaseViewerProps {
 	onMinimize?: () => void
 }
 
-export const LocalViewer = ({ blob, fileName, mimeType, dimension, children, removeBlob, onMaximize, onMinimize }: LocalViewerProps) => {
+export const LocalViewer = ({ blob, fileName, mimeType, dimension, children, removeBlob, onMaximize, onMinimize }: PropsWithChildren<LocalViewerProps>) => {
 	const src = useMemo(() => {
 		const blobUrl = URL.createObjectURL(blob)
 		return blobUrl

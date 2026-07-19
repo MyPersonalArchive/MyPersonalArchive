@@ -21,9 +21,10 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { LightBox } from "../Components/LightBox"
+import { UUID } from "crypto"
 
 type CreateResponse = {
-	id: number
+	id: UUID
 }
 
 export const ArchiveItemNewPage = () => {

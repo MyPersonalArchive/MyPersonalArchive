@@ -53,14 +53,14 @@ export const BlobListPage = () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
 
 		const visibleBlobIds = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id)).map(b => b.id)
-		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: visibleBlobIds })
+		const newArchiveItemId = await apiClient.get<UUID>("/api/archive/CreateAndAttachBlobs", { blobIds: visibleBlobIds })
 
 		selectionOfBlobs.clearSelection()
 		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
 	}
 
 	const attachBlob = async (id: UUID) => {
-		const newArchiveItemId = await apiClient.get<number>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
+		const newArchiveItemId = await apiClient.get<UUID>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
 		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
 	}
 
