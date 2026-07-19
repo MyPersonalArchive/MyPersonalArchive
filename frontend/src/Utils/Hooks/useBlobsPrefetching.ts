@@ -35,8 +35,14 @@ export const useBlobsPrefetching = () => {
 		apiClient.query<ListResponse[]>("ListBlobs")
 			.then(response => {
 				setBlobs(response!.map(blob => ({
-					...blob,
-					uploadedAt: new Date(blob.uploadedAt)
+					id: blob.id,
+					fileName: blob.fileName,
+					fileSize: blob.fileSize,
+					pageCount: blob.pageCount,
+					uploadedAt: new Date(blob.uploadedAt),
+					uploadedByUser: blob.uploadedByUser,
+					mimeType: blob.mimeType,
+					isAllocated: blob.isAllocated
 				})))
 			})
 	}, [])

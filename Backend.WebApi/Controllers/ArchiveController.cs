@@ -71,7 +71,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var updatedArchiveItem = await _archiveItemService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.BlobsFromUnallocated ?? [], uploadedBlobs);
+		var updatedArchiveItem = await _archiveItemService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.ExistingBlobIds ?? [], uploadedBlobs);
 		if (updatedArchiveItem == null)
 		{
 			return NotFound();
@@ -113,7 +113,7 @@ public class ArchiveController : ControllerBase
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required List<string> Tags { get; set; }
 		public required JsonObject Metadata { get; set; }
-		public Guid[]? BlobsFromUnallocated { get; set; }
+		public required Guid[] ExistingBlobIds { get; set; }
 	}
 	#endregion
 }

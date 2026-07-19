@@ -28,15 +28,14 @@ type GetResponse = {
 	id: UUID
 	title: string
 	tags: string[]
-	blobs: BlobDisplayInfo[]
-	metadata: Record<string, any>
-	documentDate: string
-}
-
-type BlobDisplayInfo = {
-	id: UUID
-	numberOfPages: number
-	mimeType?: string
+	documentDate?: string
+	createdAt: string
+	metadata: any
+	blobDisplayInfos: {
+		id: UUID
+		numberOfPages: number
+		mimeType?: string
+	}[]
 }
 
 type LocalBlob = {
@@ -69,8 +68,8 @@ export const ArchiveItemEditPage = () => {
 				setId(item!.id)
 				setTitle(item!.title)
 				setTags(item!.tags)
-				setBlobs(item!.blobs.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
-				setDocumentDate(item!.documentDate)
+				setBlobs(item!.blobDisplayInfos.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
+				setDocumentDate(item!.documentDate ? new Date(item!.documentDate).toISOString().split("T")[0] : "")
 
 				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item!.metadata, dispatch: dispatch })
 			})
@@ -84,9 +83,9 @@ export const ArchiveItemEditPage = () => {
 			id: id!,
 			title: title!,
 			tags,
-			blobsFromUnallocated: blobs.map(blob => blob.id),
+			existingBlobIds: blobs.map(blob => blob.id),
 			metadata,
-			documentDate
+			documentDate: documentDate ? new Date(documentDate) : undefined
 		}
 
 		formData.append("rawRequest", JSON.stringify(updateRequest))

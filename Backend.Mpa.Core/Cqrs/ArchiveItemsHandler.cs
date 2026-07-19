@@ -15,17 +15,17 @@ public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 	{
 		public Guid Id { get; set; }
 		public required string Title { get; set; }
+		public required IEnumerable<string> Tags { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
-		public DateTimeOffset CreatedAt { get; set; }
-		public required List<string> Tags { get; set; }
+		public required DateTimeOffset CreatedAt { get; set; }
 		public required JsonObject Metadata { get; set; }
-		public required List<Blob> Blobs { get; set; }
+		public required IEnumerable<BlobDisplayInfo> BlobDisplayInfos { get; set; }
 
-		public class Blob
+		public class BlobDisplayInfo
 		{
-			public Guid Id { get; set; }
-			public int NumberOfPages { get; set; }
-			public string? MimeType { get; set; }
+			public required Guid Id { get; set; }
+			public required string MimeType { get; set; }
+			public required int NumberOfPages { get; set; }
 		}
 	}
 }
@@ -34,25 +34,21 @@ public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 [RequireAllowedTenantId]
 public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchiveItems.Response>>
 {
-	// public string? Title { get; set; }
-	// public string[]? Tags { get; set; } = [];
-	// public string[]? MetadataTypes { get; set; }
-	// public string? Filter { get; set; }
-
 	public class Response
 	{
 		public Guid Id { get; set; }
 		public required string Title { get; set; }
 		public required IEnumerable<string> Tags { get; set; }
-		public required IEnumerable<Blob> Blobs { get; set; }
-		public required IEnumerable<string> MetadataTypes { get; set; }
-		// public required JsonObject Metadata { get; set; }
-		public DateTimeOffset CreatedAt { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
+		public required DateTimeOffset CreatedAt { get; set; }
+		public required JsonObject Metadata { get; set; }
+		public required IEnumerable<BlobDisplayInfo> BlobDisplayInfos { get; set; }
 
-		public class Blob
+		public class BlobDisplayInfo
 		{
-			public Guid Id { get; set; }
+			public required Guid Id { get; set; }
+			public required string MimeType { get; set; }
+			public required int NumberOfPages { get; set; }
 		}
 	}
 }
@@ -105,7 +101,7 @@ public class ArchiveItemsHandler :
 			Metadata = archiveItem.Metadata,
 			CreatedAt = archiveItem.CreatedAt,
 			DocumentDate = archiveItem.DocumentDate,
-			Blobs = [.. archiveItem.Blobs?.Select(blob => new GetArchiveItem.Response.Blob
+			BlobDisplayInfos = [.. archiveItem.Blobs?.Select(blob => new GetArchiveItem.Response.BlobDisplayInfo
 				{
 					Id = blob.Id,
 					NumberOfPages = blob.PageCount,
@@ -117,28 +113,6 @@ public class ArchiveItemsHandler :
 
 	public async Task<IEnumerable<ListArchiveItems.Response>> Handle(ListArchiveItems query)
 	{
-		// var titleFilter = query.Title?.ToLowerInvariant() ?? "";
-		// var tagsFilter = query.Tags ?? [];
-		// var metadataTypesFilter = query.MetadataTypes ?? [];
-
-		// if (!string.IsNullOrEmpty(query.Filter))
-		// {
-		// 	var storedFilterName = query.Filter;
-		// 	var filters = await _storedFilterService.GetStoredFilterSettingsAsync();
-		// 	var filter = filters.Filters.FirstOrDefault(f => f.Name == storedFilterName);
-		// 	if (filter == null)
-		// 	{
-		// 		//If the filter name is not found, return empty result
-		// 		return Array.Empty<ListArchiveItems.Response>();
-		// 	}
-		// 	else
-		// 	{
-		// 		titleFilter = filter.Definition.Title?.ToLowerInvariant() ?? "";
-		// 		tagsFilter = filter.Definition.Tags ?? [];
-		// 		metadataTypesFilter = filter.Definition.MetadataTypes ?? [];
-		// 	}
-		// }
-
 		var archiveItems = await _archiveItemService.ListArchiveItems();
 		return archiveItems
 			.Select(archiveItem => new ListArchiveItems.Response
@@ -146,8 +120,13 @@ public class ArchiveItemsHandler :
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
-				Blobs = archiveItem.Blobs!.Select(blob => new ListArchiveItems.Response.Blob() { Id = blob.Id }),
-				MetadataTypes = archiveItem.Metadata.Select(kvp => kvp.Key),
+				BlobDisplayInfos = archiveItem.Blobs!.Select(blob => new ListArchiveItems.Response.BlobDisplayInfo()
+				{
+					Id = blob.Id,
+					MimeType = blob.MimeType,
+					NumberOfPages = blob.PageCount
+				}),
+				Metadata = archiveItem.Metadata,
 				CreatedAt = archiveItem.CreatedAt,
 				DocumentDate = archiveItem.DocumentDate
 			})
@@ -174,5 +153,4 @@ public class ArchiveItemsHandler :
 			throw new HttpNotFoundException();
 		}
 	}
-
 }

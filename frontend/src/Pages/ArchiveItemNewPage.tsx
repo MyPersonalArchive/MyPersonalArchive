@@ -49,10 +49,10 @@ export const ArchiveItemNewPage = () => {
 		const createRequest = {
 			title,
 			tags,
-			blobsFromUnallocated: blobsFromUnallocated.map(b => b.id),
+			existingBlobIds: blobsFromUnallocated.map(b => b.id),
 			metadata,
 			label,
-			documentDate
+			documentDate: documentDate ? new Date(documentDate) : undefined
 		}
 
 		formData.append("rawRequest", JSON.stringify(createRequest))

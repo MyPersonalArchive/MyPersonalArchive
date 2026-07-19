@@ -38,7 +38,7 @@ export const ArchiveItemListPage = () => {
 
 		const metadataTypesFilter = storedFilter ? storedFilter.filterDefinition.metadataTypes : searchParams.getAll("metadataTypes") ?? []
 		for (const metadataType of metadataTypesFilter) {
-			if (!item.metadataTypes.includes(metadataType)) {
+			if (!Object.keys(item.metadata).includes(metadataType)) {
 				return false
 			}
 		}
@@ -105,7 +105,7 @@ const Row = ({ archiveItem }: RowProps) => {
 		<tr>
 			<td>
 				<Link to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`} className="link">{archiveItem.title}</Link>
-				{archiveItem.blobs.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
+				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 				<br />
 				{
 					archiveItem.tags.map((tag) => (
@@ -113,7 +113,7 @@ const Row = ({ archiveItem }: RowProps) => {
 					))
 				}
 				<br />
-				{archiveItem.metadataTypes.map((type) => (
+				{Object.keys(archiveItem.metadata).map((type) => (
 					<span key={type} className="inline-block bg-blue-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{type}</span>
 				))}
 			</td>
