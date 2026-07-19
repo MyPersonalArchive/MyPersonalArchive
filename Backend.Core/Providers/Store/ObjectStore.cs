@@ -3,13 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Core.Providers.Store;
 
-[RegisterService(ServiceLifetime.Scoped)]
-public class ObjectStore
+
+public abstract class ObjectStore
 {
 	private readonly IFileStore _fileStore;
-	public ObjectStore(ObjectStoreFileStoreFactory fileStoreFactory)
+	public ObjectStore(IFileStore fileStore)
 	{
-		_fileStore = fileStoreFactory.GetFileStore();
+		_fileStore = fileStore;
 	}
 
 	public async Task<bool> ObjectExists(Guid objectId)

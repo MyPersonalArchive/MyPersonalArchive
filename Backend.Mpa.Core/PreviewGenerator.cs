@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using NetVips;
 
-namespace Backend.Core;
+namespace Backend.Mpa.Core;
 
 public static class PreviewGenerator
 {

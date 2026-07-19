@@ -5,11 +5,11 @@ namespace Backend.Core.Providers.Store;
 
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class ObjectStoreFileStoreFactory
+public class BlobObjectStoreFileStoreFactory
 {
 	private readonly IFileStore _fileStore;
 
-	public ObjectStoreFileStoreFactory(IFileStore fileStore, IAmbientDataResolver resolver)
+	public BlobObjectStoreFileStoreFactory(IFileStore fileStore, IAmbientDataResolver resolver)
 	{
 		var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
 

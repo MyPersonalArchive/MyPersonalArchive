@@ -4,6 +4,7 @@ using Backend.Core.Infrastructure;
 using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.Core.Store;
 using Backend.Mpa.DbModel.Database;
 using ConsoleApp1;
 using Microsoft.Extensions.Configuration;
@@ -34,12 +35,11 @@ internal class Program
 			.Build();
 
 		var serviceCollection = new ServiceCollection();
-		var serviceDiscovery = new ServiceDiscovery(serviceCollection, new LoggerFactory().CreateLogger<ServiceDiscovery>());
 
+		// var serviceDiscovery = new ServiceDiscovery(serviceCollection, new LoggerFactory().CreateLogger<ServiceDiscovery>());
 		var otherRelevantAssemblies = Directory
 			.GetFiles(AppContext.BaseDirectory, "Backend.*.dll")
 			.Select(f => Assembly.Load(AssemblyName.GetAssemblyName(f)));
-
 		// serviceDiscovery.RegisterServices([Assembly.GetExecutingAssembly(), .. otherRelevantAssemblies]);
 
 		var serviceProvider = serviceCollection
@@ -55,8 +55,8 @@ internal class Program
 			.AddTransient<IFileStore, FileSystemFileStore>()
 			.AddScoped<ArchiveItemService>()
 			.AddScoped<BlobService>()
-			.AddScoped<ObjectStore>()
-			.AddScoped<ObjectStoreFileStoreFactory>()
+			.AddScoped<BlobObjectStore>()
+			.AddScoped<BlobObjectStoreFileStoreFactory>()
 			.AddScoped<ISignalRService, DummySignalRService>()
 			.AddScoped<DemoDataGenerator>()
 			.AddOptions()

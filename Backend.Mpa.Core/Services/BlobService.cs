@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Backend.Mpa.DbModel.Database;
 using Backend.Mpa.DbModel.Database.EntityModels;
+using Backend.Mpa.Core.Store;
 
 
 namespace Backend.Mpa.Core.Services;
@@ -17,15 +18,15 @@ namespace Backend.Mpa.Core.Services;
 public class BlobService
 {
 	private readonly ISignalRService _signalRService;
-	private readonly ObjectStore _objectStore;
+	private readonly BlobObjectStore _blobObjectStore;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private string _baseFolder;
 
-	public BlobService(IOptions<AppConfig> config, ISignalRService signalRService, ObjectStore objectStore, MpaDbContext dbContext, IAmbientDataResolver resolver)
+	public BlobService(IOptions<AppConfig> config, ISignalRService signalRService, BlobObjectStore blobObjectStore, MpaDbContext dbContext, IAmbientDataResolver resolver)
 	{
 		_signalRService = signalRService;
-		_objectStore = objectStore;
+		_blobObjectStore = blobObjectStore;
 		_dbContext = dbContext;
 		_resolver = resolver;
 
@@ -41,7 +42,7 @@ public class BlobService
 		{
 			var objectId = Guid.NewGuid();
 			var stream = file.contentStream;
-			await _objectStore.StoreObject(objectId, Path.GetExtension(file.fileName).TrimStart('.'), stream);
+			await _blobObjectStore.StoreObject(objectId, Path.GetExtension(file.fileName).TrimStart('.'), stream);
 
 			var metadata = new FileMetadata
 			{
@@ -53,7 +54,7 @@ public class BlobService
 				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim")
 			};
 
-			await using (var objectStream = await _objectStore.GetWritableObjectStream(objectId, "metadata"))
+			await using (var objectStream = await _blobObjectStore.GetWritableObjectStream(objectId, "metadata"))
 			{
 				await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
 			}
@@ -107,9 +108,9 @@ public class BlobService
 		var filename = blob.PathInStore.Split('/').Last();
 		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
 
-		var metadataStream = await _objectStore.GetObject(objectId, "metadata");
+		var metadataStream = await _blobObjectStore.GetObject(objectId, "metadata");
 		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
-		var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
+		var contentStream = await _blobObjectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
 
 		return (contentStream, metadata, blob);
 	}
@@ -161,7 +162,7 @@ public class BlobService
 			var filename = blob.PathInStore.Split('/').Last();
 			var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
 
-			await _objectStore.DeleteObject(objectId);
+			await _blobObjectStore.DeleteObject(objectId);
 		}
 
 		_dbContext.Blobs.RemoveRange(blobs);
