@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Backend.Core.Providers.Store;
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class ObjectStore : IObjectStore
+public class ObjectStore
 {
 	private readonly IFileStore _fileStore;
 	public ObjectStore(ObjectStoreFileStoreFactory fileStoreFactory)

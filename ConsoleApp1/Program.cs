@@ -55,7 +55,7 @@ internal class Program
 			.AddTransient<IFileStore, FileSystemFileStore>()
 			.AddScoped<ArchiveItemService>()
 			.AddScoped<BlobService>()
-			.AddScoped<IObjectStore, ObjectStore>()
+			.AddScoped<ObjectStore>()
 			.AddScoped<ObjectStoreFileStoreFactory>()
 			.AddScoped<ISignalRService, DummySignalRService>()
 			.AddScoped<DemoDataGenerator>()

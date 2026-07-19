@@ -17,12 +17,12 @@ namespace Backend.Mpa.Core.Services;
 public class BlobService
 {
 	private readonly ISignalRService _signalRService;
-	private readonly IObjectStore _objectStore;
+	private readonly ObjectStore _objectStore;
 	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
 	private string _baseFolder;
 
-	public BlobService(IOptions<AppConfig> config, ISignalRService signalRService, IObjectStore objectStore, MpaDbContext dbContext, IAmbientDataResolver resolver)
+	public BlobService(IOptions<AppConfig> config, ISignalRService signalRService, ObjectStore objectStore, MpaDbContext dbContext, IAmbientDataResolver resolver)
 	{
 		_signalRService = signalRService;
 		_objectStore = objectStore;
@@ -33,25 +33,6 @@ public class BlobService
 		_baseFolder = Path.Combine(config.Value.RootFolder, "Blobs", currentTenantId.ToString());
 	}
 
-
-	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)?> GetBlob(Guid blobId)
-	{
-		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
-		if (blob == null)
-		{
-			return null; //(null, null, null);
-		}
-
-		var filename = blob.PathInStore.Split('/').Last();
-		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
-
-		var metadataStream = await _objectStore.GetObject(objectId, "metadata");
-		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
-		var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
-
-		return (contentStream, metadata, blob);
-	}
-	
 
 	public async Task<IEnumerable<Blob>> UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
 	{
@@ -115,27 +96,22 @@ public class BlobService
 	}
 
 
-
-	public async Task DeleteBlobs(IEnumerable<Guid> blobIds)
+	public async Task<(Stream contentStream, FileMetadata metadata, Blob blob)?> GetBlob(Guid blobId)
 	{
-		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
-		if (blobs.Count == 0)
+		var blob = await _dbContext.Blobs.SingleOrDefaultAsync(blob => blob.Id == blobId);
+		if (blob == null)
 		{
-			return;
+			return null;
 		}
 
-		foreach (var blob in blobs)
-		{
-			var filename = blob.PathInStore.Split('/').Last();
-			var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+		var filename = blob.PathInStore.Split('/').Last();
+		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
 
-			await _objectStore.DeleteObject(objectId);
-		}
+		var metadataStream = await _objectStore.GetObject(objectId, "metadata");
+		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
+		var contentStream = await _objectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
 
-		_dbContext.Blobs.RemoveRange(blobs);
-		await _dbContext.SaveChangesAsync();
-
-		await PublishBlobsDeletedMessage(blobs);
+		return (contentStream, metadata, blob);
 	}
 
 
@@ -169,6 +145,29 @@ public class BlobService
 			.ToListAsync();
 
 		return blobs;
+	}
+
+
+	public async Task DeleteBlobs(IEnumerable<Guid> blobIds)
+	{
+		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
+		if (blobs.Count == 0)
+		{
+			return;
+		}
+
+		foreach (var blob in blobs)
+		{
+			var filename = blob.PathInStore.Split('/').Last();
+			var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
+
+			await _objectStore.DeleteObject(objectId);
+		}
+
+		_dbContext.Blobs.RemoveRange(blobs);
+		await _dbContext.SaveChangesAsync();
+
+		await PublishBlobsDeletedMessage(blobs);
 	}
 
 

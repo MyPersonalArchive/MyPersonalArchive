@@ -3,9 +3,10 @@ import { useSignalR } from "./useSignalR"
 import { BlobMetadata, blobsAtom } from "../Atoms/blobsAtom"
 import { useEffect } from "react"
 import { useApiClient } from "./useApiClient"
+import { UUID } from "crypto"
 
 type ListResponse = {
-	id: number
+	id: UUID
 	fileName: string
 	fileSize: number
 	pageCount: number
@@ -16,7 +17,7 @@ type ListResponse = {
 }
 
 type GetResponse = {
-	id: number
+	id: UUID
 	fileName: string
 	fileSize: number
 	pageCount: number
@@ -31,7 +32,7 @@ export const useBlobsPrefetching = () => {
 	const apiClient = useApiClient()
 
 	useEffect(() => {
-		apiClient.query<ListResponse[]>("listBlobs")
+		apiClient.query<ListResponse[]>("ListBlobs")
 			.then(response => {
 				setBlobs(response!.map(blob => ({
 					...blob,
@@ -43,10 +44,10 @@ export const useBlobsPrefetching = () => {
 	useSignalR(message => {
 		switch (message.messageType) {
 			case "BlobsAdded": {
-				const blobIds = message.data as number[]
+				const blobIds = message.data as UUID[]
 
 				Promise
-					.all(blobIds.map(id => apiClient.query<GetResponse>("getBlob", { id })))
+					.all(blobIds.map(id => apiClient.query<GetResponse>("GetBlob", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
@@ -61,10 +62,10 @@ export const useBlobsPrefetching = () => {
 			}
 
 			case "BlobsUpdated": {
-				const blobIds = message.data as number[]
+				const blobIds = message.data as UUID[]
 
 				Promise
-					.all(blobIds.map(id => apiClient.query<GetResponse>("getBlob", { id })))
+					.all(blobIds.map(id => apiClient.query<GetResponse>("GetBlob", { id })))
 					.then(responses => responses.map(response => ({
 						...response,
 						uploadedAt: new Date(response!.uploadedAt)
@@ -79,7 +80,7 @@ export const useBlobsPrefetching = () => {
 			}
 
 			case "BlobsDeleted": {
-				const blobIds = message.data as number[]
+				const blobIds = message.data as UUID[]
 
 				setBlobs(blobs => blobs.filter(blob => !blobIds.includes(blob.id)))
 				break
