@@ -15,9 +15,11 @@ public interface IFileStore
 
 	Task<Stream> GetWritableFileStream(IEnumerable<string> containerNames, string filename);
 	
+	Task<Stream> GetReadWriteFileStream(IEnumerable<string> containerNames, string filename);
+
 	Task AppendToFile(IEnumerable<string> containerNames, string filename, Stream contentStream);
 
-	Task<Stream> GetFile(IEnumerable<string> containerNames, string filename);
+	Task<Stream?> GetFile(IEnumerable<string> containerNames, string filename);
 
 	Task DeleteFile(IEnumerable<string> containerNames, string filename);
 }

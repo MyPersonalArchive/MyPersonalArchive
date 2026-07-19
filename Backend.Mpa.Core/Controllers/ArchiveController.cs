@@ -45,7 +45,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var newArchiveItem = await _archiveItemService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Metadata, createRequest.BlobsFromUnallocated ?? [], uploadedBlobs);
+		var newArchiveItem = await _archiveItemService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Metadata, createRequest.ExistingBlobIds ?? [], uploadedBlobs);
 
 		return new CreateResponse
 		{
@@ -82,15 +82,6 @@ public class ArchiveController : ControllerBase
 	}
 
 
-	private async Task<IEnumerable<Blob>> CreateBlobsFromUploadedFiles(IFormFileCollection files)
-	{
-		var payloads = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var uploadedBlobs = await _blobService.UploadBlobs(payloads);
-
-		return uploadedBlobs;
-	}
-
-
 	#region Request and response models
 
 	public class CreateRequest
@@ -99,7 +90,7 @@ public class ArchiveController : ControllerBase
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required List<string> Tags { get; set; }
 		public required JsonObject Metadata { get; set; }
-		public Guid[]? BlobsFromUnallocated { get; set; }
+		public Guid[]? ExistingBlobIds { get; set; }
 	}
 
 	public class CreateResponse

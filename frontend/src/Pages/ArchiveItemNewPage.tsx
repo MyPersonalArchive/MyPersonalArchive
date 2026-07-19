@@ -33,7 +33,7 @@ export const ArchiveItemNewPage = () => {
 	const [label] = useState<string>()
 	const [documentDate, setDocumentDate] = useState<string | undefined>(undefined)
 	const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
-	const [blobsFromUnallocated, setBlobsFromUnallocated] = useState<BlobIdAndNumberOfPages[]>([])
+	const [existingBlobIds, setExistingBlobIds] = useState<BlobIdAndNumberOfPages[]>([])
 
 	const allTags = useAtomValue(tagsAtom)
 
@@ -49,7 +49,7 @@ export const ArchiveItemNewPage = () => {
 		const createRequest = {
 			title,
 			tags,
-			existingBlobIds: blobsFromUnallocated.map(b => b.id),
+			existingBlobIds: existingBlobIds.map(b => b.id),
 			metadata,
 			label,
 			documentDate: documentDate ? new Date(documentDate) : undefined
@@ -74,11 +74,11 @@ export const ArchiveItemNewPage = () => {
 	}
 
 	const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
-		setBlobsFromUnallocated(blobsFromUnallocated => [...blobsFromUnallocated, ...blobs])
+		setExistingBlobIds(existingBlobIds => [...existingBlobIds, ...blobs])
 	}
 
 	const removeUnallocatedBlob = (blob: BlobIdAndNumberOfPages) => {
-		setBlobsFromUnallocated(blobsFromUnallocated => blobsFromUnallocated.filter(x => x.id !== blob.id))
+		setExistingBlobIds(existingBlobIds => existingBlobIds.filter(x => x.id !== blob.id))
 	}
 
 	return (
@@ -137,7 +137,7 @@ export const ArchiveItemNewPage = () => {
 				/>
 
 				<div>
-					<PreviewList items={blobsFromUnallocated} containerClassName="flex flex-wrap"
+					<PreviewList items={existingBlobIds} containerClassName="flex flex-wrap"
 						keySelector={blob => blob.id}
 						thumbnailPreviewTemplate={(blob, maximize) =>
 							<div key={blob.id} className="action-bar-host">

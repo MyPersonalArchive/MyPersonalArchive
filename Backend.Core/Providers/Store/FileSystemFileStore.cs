@@ -121,6 +121,18 @@ public class FileSystemFileStore : IFileStore
 	}
 
 
+	public async Task<Stream> GetReadWriteFileStream(IEnumerable<string> containerNames, string filename)
+	{
+		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
+		Directory.CreateDirectory(folderPath);
+
+		var filePath = Path.Combine(folderPath, filename);
+
+		var fileStream = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+		return fileStream;
+	}
+
+
 	public async Task AppendToFile(IEnumerable<string> containerNames, string filename, Stream contentStream)
 	{
 		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames]);
@@ -134,12 +146,15 @@ public class FileSystemFileStore : IFileStore
 	}
 
 
-	public Task<Stream> GetFile(IEnumerable<string> containerNames, string filename)
+	public Task<Stream?> GetFile(IEnumerable<string> containerNames, string filename)
 	{
 		var filePath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames, filename]);
-		// var fileStream = File.OpenRead(filePath);
+		if(!File.Exists(filePath))
+		{
+			return Task.FromResult<Stream?>(null);
+		}
 		var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-		return Task.FromResult((Stream)fileStream);
+		return Task.FromResult<Stream?>(fileStream);
 	}
 
 
