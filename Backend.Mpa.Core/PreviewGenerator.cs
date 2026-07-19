@@ -1,28 +1,29 @@
 // See https://aka.ms/new-console-template for more information
 using System.Diagnostics;
+using Backend.Mpa.Core.Store;
 using NetVips;
 
 namespace Backend.Mpa.Core;
 
 public static class PreviewGenerator
 {
-    public static Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
-    {
-        switch (mimeType)
-        {
-            case "application/pdf":
-                return GeneratePreviewOfPDF(originalStream, maxX, maxY, pageNumber);
+	public static Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
+	{
+		switch (mimeType)
+		{
+			case "application/pdf":
+				return GeneratePreviewOfPDF(originalStream, maxX, maxY, pageNumber);
 
-            default:
-                return GeneratePreviewOfImage(originalStream, maxX, maxY);
-        }
-    }
+			default:
+				return GeneratePreviewOfImage(originalStream, maxX, maxY);
+		}
+	}
 
 
-    public static Stream GeneratePreviewOfImage(Stream originalStream, int maxX, int maxY)
-    {
+	public static Stream GeneratePreviewOfImage(Stream originalStream, int maxX, int maxY)
+	{
 		Debug.WriteLine("Generating image preview using libvips");
-        var previewStream = new MemoryStream();
+		var previewStream = new MemoryStream();
 
 		using (var image = Image.NewFromStream(originalStream))
 		{
@@ -37,12 +38,12 @@ public static class PreviewGenerator
 
 		previewStream.Position = 0;
 		return previewStream;
-    }
+	}
 
-    public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 0)
-    {
+	public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 0)
+	{
 		Debug.WriteLine("Generating PDF preview using libvips");
-        var previewStream = new MemoryStream();
+		var previewStream = new MemoryStream();
 
 		using (var image = Image.PdfloadStream(originalStream, page: pageNumber, dpi: 200))
 		{
@@ -57,22 +58,22 @@ public static class PreviewGenerator
 
 		previewStream.Position = 0;
 		return previewStream;
-    }
+	}
 
-    public static int GetDocumentPageCount(string mimeType, Stream stream)
-    {
+	public static int GetDocumentPageCount(string mimeType, Stream stream)
+	{
 		Debug.WriteLine("Getting document page count using libvips");
-        stream.Seek(0, SeekOrigin.Begin);
+		stream.Seek(0, SeekOrigin.Begin);
 
-        switch (mimeType)
-        {
-            case "application/pdf":
-                {
-                    using var image = Image.NewFromStream(stream);
-                    return (int)image.Get("n-pages");
-                }
-            default:
-                return 1;
-        }
-    }
+		switch (mimeType)
+		{
+			case "application/pdf":
+				{
+					using var image = Image.NewFromStream(stream);
+					return (int)image.Get("n-pages");
+				}
+			default:
+				return 1;
+		}
+	}
 }
