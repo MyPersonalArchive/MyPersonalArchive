@@ -23,20 +23,20 @@ public static class IImapExtensions
 
 		private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
 		{
-			var message = await mailFolder.GetMessageAsync(uniqueId);
+			var message = await mailFolder.GetMessageAsync(uniqueId) ?? throw new Exception($"Email with UniqueId {uniqueId.Id} not found in folder {mailFolder.FullName}");
 			var email = new FullEmail
 			{
 				UniqueId = uniqueId.Id,
-				Subject = message.Subject,
+				Subject = message.Subject ?? string.Empty,
 				From = message.From
 					.Select(address => address is MailboxAddress mb
 						? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-						: new FullEmail.EmailAddress(address.Name, null)
+						: new FullEmail.EmailAddress(address.Name ?? string.Empty, null)
 					),
 				To = message.To
 					.Select(address => address is MailboxAddress mb
 						? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-						: new FullEmail.EmailAddress(address.Name, null)
+						: new FullEmail.EmailAddress(address.Name ?? string.Empty, null)
 					),
 				ReceivedTime = message.Date,
 				Body = message.TextBody,
@@ -181,16 +181,16 @@ public static class IImapExtensions
 			UniqueId = summary.UniqueId.Id,
 			Subject = summary.NormalizedSubject,
 			PreviewText = summary.PreviewText ?? "n/a",
-			From = summary.Envelope.From
+			From = summary.Envelope?.From
 				.Select(address => address is MailboxAddress mb
 					? new EmailSummary.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-					: new EmailSummary.EmailAddress(address.Name, address.Name)
-				),
-			To = summary.Envelope.To
+					: new EmailSummary.EmailAddress(address.Name ?? string.Empty, address.Name)
+				) ?? Enumerable.Empty<EmailSummary.EmailAddress>(),
+			To = summary.Envelope?.To
 				.Select(address => address is MailboxAddress mb
 					? new EmailSummary.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-					: new EmailSummary.EmailAddress(address.Name, address.Name)
-				),
+					: new EmailSummary.EmailAddress(address.Name ?? string.Empty, address.Name)
+				) ?? Enumerable.Empty<EmailSummary.EmailAddress>(),
 			ReceivedTime = summary.InternalDate ?? DateTimeOffset.MinValue,
 			Attachments = summary.Attachments.Select(a => new EmailSummary.EmailAttachment(a.FileName ?? "attachment", a.ContentType.MimeType, a.PartSpecifier))
 		};

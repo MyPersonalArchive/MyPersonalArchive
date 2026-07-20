@@ -68,6 +68,7 @@ public class ImapClientFactory
 		switch (auth)
 		{
 			case OAuthContext oauth:
+				if(oauth.AccessToken is null) throw new InvalidOperationException("OAuthContext must have a valid access token.");
 				await imapClient.AuthenticateAsync(new SaslMechanismOAuth2(emailAddress, oauth.AccessToken));
 				break;
 

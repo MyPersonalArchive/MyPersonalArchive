@@ -46,7 +46,7 @@ public class EmailController : ControllerBase
 		var imapClient = await _imapClientFactory.GetImapClient(externalAccountId);
 
 		var mimeEntity = await imapClient.DownloadAttachmentAsync(folder, messageId, partSpecifier);
-		if (mimeEntity is not MimePart mimePart) return NotFound();
+		if (mimeEntity is not MimePart mimePart || mimePart.Content is null) return NotFound();
 
 		var stream = new MemoryStream();
 		await mimePart.Content.DecodeToAsync(stream);

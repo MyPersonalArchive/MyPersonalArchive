@@ -104,13 +104,21 @@ public class BlobService
 		{
 			return null;
 		}
-
 		var filename = blob.PathInStore.Split('/').Last();
 		var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
 
 		var metadataStream = await _blobObjectStore.GetObject(objectId, "metadata");
+		if(metadataStream is null)
+		{
+			return null;
+		}
 		var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize metadata");
+	
 		var contentStream = await _blobObjectStore.GetObject(objectId, Path.GetExtension(filename).TrimStart('.'));
+		if(contentStream is null)
+		{
+			return null;
+		}
 
 		return (contentStream, metadata, blob);
 	}

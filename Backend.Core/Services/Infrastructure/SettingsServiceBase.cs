@@ -25,7 +25,7 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 			return new T { SchemaVersion = "1.0" };
 		}
 
-		await using var stream = await _fileStore.GetFile([], FileName);
+		await using var stream = await _fileStore.GetFile([], FileName) ?? throw new InvalidOperationException($"Unable to obtain stream for {FileName}.");
 		return JsonSerializer.Deserialize<T>(stream, JsonSerializerOptions.Web) ?? new T { SchemaVersion = "1.0" };
 	}
 

@@ -67,7 +67,7 @@ public abstract class ObjectStore
 		return _fileStore.GetWritableFileStream(ObjectPathPartsFromObjectId(objectId), filename);
 	}
 
-	public async Task<Stream> GetObject(Guid objectId, string extension)
+	public async Task<Stream?> GetObject(Guid objectId, string extension)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
 		return await _fileStore.GetFile(ObjectPathPartsFromObjectId(objectId), $"{objectIdStringDashed}.{extension}");

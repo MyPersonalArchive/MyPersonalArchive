@@ -84,7 +84,7 @@ public class EmailCommandHandler :
 				var mimeEntity = await imapClient.DownloadAttachmentAsync(command.EmailFolder, email.UniqueId, attachmentReference.PartSpecifier);
 				if (mimeEntity == null) continue;
 
-				if (mimeEntity is not MimePart mimePart) continue;
+				if (mimeEntity is not MimePart mimePart || mimePart.Content is null) continue;
 
 				var stream = new MemoryStream() as Stream;
 				await mimePart.Content.DecodeToAsync(stream);
@@ -114,7 +114,7 @@ public class EmailCommandHandler :
 			if (mimeEntity == null) continue;
 
 
-			if (mimeEntity is not MimePart mimePart) continue;
+			if (mimeEntity is not MimePart mimePart || mimePart.Content is null) continue;
 
 			var stream = new MemoryStream();
 			await mimePart.Content.DecodeToAsync(stream);
