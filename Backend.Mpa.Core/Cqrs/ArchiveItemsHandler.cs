@@ -108,7 +108,7 @@ public class ArchiveItemsHandler :
 					Id = blob.Id,
 					NumberOfPages = blob.PageCount,
 					MimeType = blob.MimeType
-				}).ToList() ?? []
+				}) ?? []
 			]
 		};
 	}

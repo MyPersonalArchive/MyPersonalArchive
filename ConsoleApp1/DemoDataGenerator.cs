@@ -127,7 +127,7 @@ public class DemoDataGenerator
 
 						count++;
 					}
-					
+
 		Debug.WriteLine($"Seeded {count} items for tenant {data.TenantId} in {stopwatch.Elapsed}");
 	}
 }
