@@ -52,7 +52,8 @@ internal class Program
 				return new MpaDbContext(dbConfig, tenantId);
 			})
 			.AddTransient<IFileStore, FileSystemFileStore>()
-			.AddScoped<ArchiveItemService>()
+			.AddScoped<ArchiveItemQueryService>()
+			.AddScoped<ArchiveItemCommandService>()
 			.AddScoped<BlobService>()
 			.AddScoped<BlobObjectStore>()
 			.AddScoped<BlobObjectStoreFileStoreFactory>()
@@ -78,7 +79,7 @@ internal class Program
 		dummyAmbientDataResolver.TenantId = 1;
 		dummyAmbientDataResolver.Username = "admin@localhost";
 	
-		var archiveItemService = scope.ServiceProvider.GetService<ArchiveItemService>()!;
+		var archiveItemService = scope.ServiceProvider.GetService<ArchiveItemQueryService>()!;
 	
 		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 		// var allocatedBlobCount = await archiveItemService.CountAllocatedBlobs();

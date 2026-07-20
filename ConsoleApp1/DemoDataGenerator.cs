@@ -87,12 +87,11 @@ public class DemoDataGenerator
 		var dummyAmbientDataResolver = (DummyAmbientDataResolver)scope.ServiceProvider.GetService<IAmbientDataResolver>()!;
 		dummyAmbientDataResolver.TenantId = data.TenantId;
 		dummyAmbientDataResolver.Username = data.Usernames.First();
-		Debug.WriteLine($"Object#{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(dummyAmbientDataResolver)}: {dummyAmbientDataResolver.GetType().FullName} for tenant {data.TenantId} and user {dummyAmbientDataResolver.Username}");
 
-		var archiveItemService = scope.ServiceProvider.GetService<ArchiveItemService>()!;
-		Debug.WriteLine($"Object#{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(archiveItemService)}: {archiveItemService.GetType().FullName} for tenant {data.TenantId} and user {dummyAmbientDataResolver.Username}");
+		var archiveItemQueryService = scope.ServiceProvider.GetService<ArchiveItemQueryService>()!;
+		var archiveItemCommandService = scope.ServiceProvider.GetService<ArchiveItemCommandService>()!;
 
-		var items = await archiveItemService.ListArchiveItems();
+		var items = await archiveItemQueryService.ListArchiveItems();
 		if (items.Any())
 		{
 			return;
@@ -122,7 +121,7 @@ public class DemoDataGenerator
 						Metadata = new JsonObject() { }
 					};
 
-					await archiveItemService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
+					await archiveItemCommandService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
 				}
 	}
 }

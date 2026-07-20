@@ -39,15 +39,15 @@ public class EmailCommandHandler :
 {
 	private readonly ImapClientFactory _imapClientFactory;
 	private readonly BlobService _blobService;
-	private readonly ArchiveItemService _archiveItemService;
+	private readonly ArchiveItemCommandService _archiveItemCommandService;
 
 	public EmailCommandHandler(ImapClientFactory imapClientFactory,
 							BlobService blobService,
-							ArchiveItemService archiveItemService)
+							ArchiveItemCommandService archiveItemCommandService)
 	{
 		_imapClientFactory = imapClientFactory;
 		_blobService = blobService;
-		_archiveItemService = archiveItemService;
+		_archiveItemCommandService = archiveItemCommandService;
 	}
 
 
@@ -91,7 +91,7 @@ public class EmailCommandHandler :
 				uploadedBlobs.Add((stream, mimePart.FileName ?? attachmentReference.FileName, mimePart.ContentType.MimeType));
 			}
 
-			await _archiveItemService.CreateArchiveItem(title, [], metadata, [], uploadedBlobs);
+			await _archiveItemCommandService.CreateArchiveItem(title, [], metadata, [], uploadedBlobs);
 		}
 	}
 

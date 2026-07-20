@@ -78,16 +78,18 @@ public class ArchiveItemsHandler :
 	// IAsyncCommandHandler<CreateArchiveItem>,
 	IAsyncCommandHandler<DeleteArchiveItem>
 {
-	private readonly ArchiveItemService _archiveItemService;
+	private readonly ArchiveItemQueryService _archiveItemQueryService;
+	private readonly ArchiveItemCommandService _archiveItemCommandService;
 
-	public ArchiveItemsHandler(ArchiveItemService archiveItemService)
+	public ArchiveItemsHandler(ArchiveItemQueryService archiveItemQueryService, ArchiveItemCommandService archiveItemCommandService)
 	{
-		_archiveItemService = archiveItemService;
+		_archiveItemQueryService = archiveItemQueryService;
+		_archiveItemCommandService = archiveItemCommandService;
 	}
 
 	public async Task<GetArchiveItem.Response> Handle(GetArchiveItem query)
 	{
-		var archiveItem = await _archiveItemService.GetArchiveItem(query.Id);
+		var archiveItem = await _archiveItemQueryService.GetArchiveItem(query.Id);
 		if (archiveItem == null)
 		{
 			throw new HttpNotFoundException();
@@ -113,22 +115,22 @@ public class ArchiveItemsHandler :
 
 	public async Task<IEnumerable<ListArchiveItems.Response>> Handle(ListArchiveItems query)
 	{
-		var archiveItems = await _archiveItemService.ListArchiveItems();
+		var archiveItems = await _archiveItemQueryService.ListArchiveItems();
 		return archiveItems
 			.Select(archiveItem => new ListArchiveItems.Response
 			{
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags.Select(tag => tag.Title),
+				DocumentDate = archiveItem.DocumentDate,
+				CreatedAt = archiveItem.CreatedAt,
+				Metadata = archiveItem.Metadata,
 				BlobDisplayInfos = archiveItem.Blobs!.Select(blob => new ListArchiveItems.Response.BlobDisplayInfo()
 				{
 					Id = blob.Id,
 					MimeType = blob.MimeType,
 					NumberOfPages = blob.PageCount
 				}),
-				Metadata = archiveItem.Metadata,
-				CreatedAt = archiveItem.CreatedAt,
-				DocumentDate = archiveItem.DocumentDate
 			})
 			// .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.IndexOf(titleFilter, StringComparison.InvariantCultureIgnoreCase))
 			// .ThenBy(archItem => archItem.Title == null ? null : archItem.Title, StringComparer.InvariantCultureIgnoreCase);
@@ -147,7 +149,7 @@ public class ArchiveItemsHandler :
 
 	public async Task Handle(DeleteArchiveItem command)
 	{
-		var success = await _archiveItemService.DeleteArchiveItem(command.Id);
+		var success = await _archiveItemCommandService.DeleteArchiveItem(command.Id);
 		if (!success)
 		{
 			throw new HttpNotFoundException();

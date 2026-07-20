@@ -9,16 +9,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Backend.Mpa.Core.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class ArchiveItemService
+public class ArchiveItemCommandService
 {
-	private readonly ISignalRService _signalRService;
+	private readonly ArchiveItemPublicationService _archiveItemPublicationService;
 	private readonly MpaDbContext _dbContext;
 	private readonly BlobService _blobService;
 	private readonly IAmbientDataResolver _resolver;
 
-	public ArchiveItemService(ISignalRService signalRService, MpaDbContext dbContext, BlobService blobService, IAmbientDataResolver resolver)
+	public ArchiveItemCommandService(ArchiveItemPublicationService archiveItemPublicationService, MpaDbContext dbContext, BlobService blobService, IAmbientDataResolver resolver)
 	{
-		_signalRService = signalRService;
+		_archiveItemPublicationService = archiveItemPublicationService;
 		_dbContext = dbContext;
 		_blobService = blobService;
 		_resolver = resolver;
@@ -51,35 +51,10 @@ public class ArchiveItemService
 		_dbContext.ArchiveItems.Add(newArchiveItem);
 		await _dbContext.SaveChangesAsync();
 
-		await PublishArchiveItemsAddedMessage([newArchiveItem]);
+		await _archiveItemPublicationService.PublishArchiveItemsAddedMessage([newArchiveItem]);
 		await _blobService.PublishBlobsUpdatedMessage(connectedBlobEntities);
 
 		return newArchiveItem;
-	}
-
-
-	public async Task<ArchiveItem?> GetArchiveItem(Guid id)
-	{
-		var archiveItems = _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Blobs)
-			.Include(archiveItem => archiveItem.Tags)
-			.Where(archiveItem => archiveItem.Id == id);
-
-		return await archiveItems.SingleOrDefaultAsync();
-	}
-
-
-	public async Task<IEnumerable<ArchiveItem>> ListArchiveItems(string? titleFilter = null, IEnumerable<string>? tagsFilter = null, IEnumerable<string>? metadataTypesFilter = null)
-	{
-		var archiveItems = _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Tags)
-			.Include(archiveItem => archiveItem.Blobs)
-			.ConditionalWhere(!string.IsNullOrEmpty(titleFilter), archiveItem => archiveItem.Title!.ToLower().Contains(titleFilter!, StringComparison.InvariantCultureIgnoreCase))
-			.ToList()
-			.ConditionalWhere(tagsFilter != null && tagsFilter!.Any(), archiveItem => tagsFilter!.All(tag => archiveItem.Tags.Any(t => t.Title == tag)))
-			.ConditionalWhere(metadataTypesFilter != null && metadataTypesFilter!.Any(), archiveItem => metadataTypesFilter!.All(metadataType => archiveItem.Metadata.ContainsKey(metadataType.ToLower())))
-			.ToList();
-		return archiveItems;
 	}
 
 
@@ -129,7 +104,7 @@ public class ArchiveItemService
 
 		await _dbContext.SaveChangesAsync();
 
-		await PublishArchiveItemsUpdatedMessage([archiveItem]);
+		await _archiveItemPublicationService.PublishArchiveItemsUpdatedMessage([archiveItem]);
 
 		await _blobService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
 		await _blobService.PublishBlobsAddedMessage(uploadedBlobEntities);
@@ -167,46 +142,8 @@ public class ArchiveItemService
 		_dbContext.ArchiveItems.Remove(archiveItem);
 		await _dbContext.SaveChangesAsync();
 
-		await PublishArchiveItemsDeletedMessage([archiveItem]);
+		await _archiveItemPublicationService.PublishArchiveItemsDeletedMessage([archiveItem]);
 
 		return true;
 	}
-
-
-	#region SignalR message creators
-	private async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
-	private async Task PublishArchiveItemsAddedMessage(IEnumerable<Guid> archiveItemIds)
-	{
-		if(archiveItemIds == null || !archiveItemIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsAdded", archiveItemIds));
-	}
-
-
-	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
-	private async Task PublishArchiveItemsUpdatedMessage(IEnumerable<Guid> archiveItemIds)
-	{
-		if(archiveItemIds == null || !archiveItemIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsUpdated", archiveItemIds));
-	}
-
-
-	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id).ToList());
-	private async Task PublishArchiveItemsDeletedMessage(IEnumerable<Guid> archiveItemIds)
-	{
-		if(archiveItemIds == null || !archiveItemIds.Any())
-		{
-			return;
-		}
-
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("ArchiveItemsDeleted", archiveItemIds));
-	}
-	#endregion
 }

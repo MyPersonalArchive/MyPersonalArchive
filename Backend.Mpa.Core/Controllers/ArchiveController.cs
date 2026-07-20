@@ -18,11 +18,11 @@ public class ArchiveController : ControllerBase
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
-	private readonly ArchiveItemService _archiveItemService;
+	private readonly ArchiveItemCommandService _archiveItemCommandService;
 
-	public ArchiveController(ArchiveItemService archiveItemService)
+	public ArchiveController(ArchiveItemCommandService archiveItemCommandService)
 	{
-		_archiveItemService = archiveItemService;
+		_archiveItemCommandService = archiveItemCommandService;
 	}
 
 
@@ -36,7 +36,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var newArchiveItem = await _archiveItemService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Metadata, createRequest.ExistingBlobIds ?? [], uploadedBlobs);
+		var newArchiveItem = await _archiveItemCommandService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Metadata, createRequest.ExistingBlobIds ?? [], uploadedBlobs);
 
 		return new CreateResponse
 		{
@@ -48,7 +48,7 @@ public class ArchiveController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Guid>> CreateAndAttachBlobs([FromQuery] IEnumerable<Guid> blobIds)
 	{
-		var newArchiveItem = await _archiveItemService.CreateArchiveItem("New archive item", [], null, blobIds, []);
+		var newArchiveItem = await _archiveItemCommandService.CreateArchiveItem("New archive item", [], null, blobIds, []);
 		return newArchiveItem.Id;
 	}
 
@@ -63,7 +63,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var updatedArchiveItem = await _archiveItemService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.ExistingBlobIds ?? [], uploadedBlobs);
+		var updatedArchiveItem = await _archiveItemCommandService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.ExistingBlobIds ?? [], uploadedBlobs);
 		if (updatedArchiveItem == null)
 		{
 			return NotFound();
