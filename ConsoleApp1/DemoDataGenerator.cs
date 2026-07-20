@@ -99,29 +99,35 @@ public class DemoDataGenerator
 
 		var rng = new Random(data.TenantId);
 
+		var count = 0;
+		var stopwatch = Stopwatch.StartNew();
 		foreach (var first in data.FirstPart)
 			foreach (var second in data.SecondPart)
 				foreach (var third in data.ThirdPart)
 					foreach (var fourth in data.FourthPart)
-				{
-					var title = $"{first} {second} {third} {fourth}";
-					var tags = data.Tags.OrderBy(x => rng.Next()).Take(rng.Next(0, 7));
-					var username = data.Usernames.OrderBy(x => rng.Next()).First();
-
-					var createdAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440));
-					var item = new
 					{
-						Id = Guid.NewGuid(),
-						Title = title,
-						Tags = tags,
-						BlobIds = new List<Guid> { },
-						CreatedByUsername = username,
-						CreatedAt = createdAt,
-						LastUpdated = createdAt,
-						Metadata = new JsonObject() { }
-					};
+						var title = $"{first} {second} {third} {fourth}";
+						var tags = data.Tags.OrderBy(x => rng.Next()).Take(rng.Next(0, 7));
+						var username = data.Usernames.OrderBy(x => rng.Next()).First();
 
-					await archiveItemCommandService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
-				}
+						var createdAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440));
+						var item = new
+						{
+							Id = Guid.NewGuid(),
+							Title = title,
+							Tags = tags,
+							BlobIds = new List<Guid> { },
+							CreatedByUsername = username,
+							CreatedAt = createdAt,
+							LastUpdated = createdAt,
+							Metadata = new JsonObject() { }
+						};
+
+						await archiveItemCommandService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
+
+						count++;
+					}
+					
+		Debug.WriteLine($"Seeded {count} items for tenant {data.TenantId} in {stopwatch.Elapsed}");
 	}
 }
