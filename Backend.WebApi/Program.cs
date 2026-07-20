@@ -6,7 +6,6 @@ using Backend.Core;
 using Backend.Backup;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;

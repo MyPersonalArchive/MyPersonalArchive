@@ -1,9 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Backend.Core.Infrastructure;
 using Backend.Mpa.Core.Services;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,17 +18,11 @@ public class ArchiveController : ControllerBase
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 	};
 
-	private readonly MpaDbContext _dbContext;
-	private readonly IAmbientDataResolver _resolver;
 	private readonly ArchiveItemService _archiveItemService;
-	private readonly BlobService _blobService;
 
-	public ArchiveController(MpaDbContext dbContext, IAmbientDataResolver resolver, ArchiveItemService archiveItemService, BlobService blobService)
+	public ArchiveController(ArchiveItemService archiveItemService)
 	{
-		_dbContext = dbContext;
-		_resolver = resolver;
 		_archiveItemService = archiveItemService;
-		_blobService = blobService;
 	}
 
 

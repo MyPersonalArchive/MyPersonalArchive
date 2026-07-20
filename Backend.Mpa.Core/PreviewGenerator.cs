@@ -1,6 +1,5 @@
 // See https://aka.ms/new-console-template for more information
 using System.Diagnostics;
-using Backend.Mpa.Core.Store;
 using NetVips;
 
 namespace Backend.Mpa.Core;

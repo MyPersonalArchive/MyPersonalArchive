@@ -1,6 +1,3 @@
-using Backend.Core.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Backend.Core.Providers.Store;
 
 

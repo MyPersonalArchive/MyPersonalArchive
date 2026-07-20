@@ -1,9 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core.Cqrs.Infrastructure;
-using Backend.Core.Infrastructure;
 using Backend.Mpa.Core.Services;
-using Backend.Mpa.DbModel.Database;
 using MimeKit;
 
 namespace Backend.Mpa.EmailIngestion.Cqrs;

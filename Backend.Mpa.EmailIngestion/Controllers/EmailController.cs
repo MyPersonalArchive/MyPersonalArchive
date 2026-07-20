@@ -1,7 +1,6 @@
 using MimeKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Backend.Mpa.EmailIngestion;
 using Microsoft.AspNetCore.Http;
 
 namespace Backend.Mpa.EmailIngestion.Controllers;

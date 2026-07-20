@@ -2,7 +2,6 @@ using System.Text.Json;
 using Backend.Core;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers;
-using Backend.Core.Providers.Store;
 using Backend.Core.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;

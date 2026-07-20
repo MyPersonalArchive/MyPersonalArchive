@@ -1,7 +1,6 @@
 using MailKit;
 using MailKit.Net.Imap;
 using MimeKit;
-using System.Linq;
 
 namespace Backend.Mpa.EmailIngestion;
 
@@ -106,12 +105,6 @@ public static class IImapExtensions
 				toIndex = fromIndex - 1;
 			}
 
-			// yield return new EmailMetadata
-			// {
-			// 	GetMoreEmailsFromUniqueId = toIndex >= 0 ? lastUniqueIdFetched : (uint?)null
-			// };
-
-
 			await client.DisconnectAsync(true);
 			client.Dispose();
 		}
@@ -196,75 +189,14 @@ public static class IImapExtensions
 		};
 	}
 
-
-	// private static async Task<FullEmail> GetEmailAsync(IMailFolder mailFolder, UniqueId uniqueId)
-	// {
-	// 	var message = await mailFolder.GetMessageAsync(uniqueId);
-	// 	var email = new FullEmail
-	// 	{
-	// 		UniqueId = uniqueId.Id.ToString(),
-	// 		Subject = message.Subject,
-	// 		From = message.From
-	// 			.Select(address => address is MailboxAddress mb
-	// 				? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-	// 				: new FullEmail.EmailAddress(address.Name, address.Name)
-	// 			),
-	// 		To = message.To
-	// 			.Select(address => address is MailboxAddress mb
-	// 				? new FullEmail.EmailAddress(mb.ToString(), string.IsNullOrWhiteSpace(mb.Name) ? mb.Address : mb.Name)
-	// 				: new FullEmail.EmailAddress(address.Name, address.Name)
-	// 			),
-	// 		ReceivedTime = message.Date,
-	// 		Body = message.TextBody,
-	// 		HtmlBody = message.HtmlBody,
-	// 		Attachments = message.BodyParts.OfType<MimePart>().Where(part => part.IsAttachment)
-	// 			.Select(part => new FullEmail.EmailAttachment(part.FileName ?? "attachment", part.ContentType.MimeType, null /* FileSize is not set here, as it would require fully downloading the attachment */))
-	// 	};
-
-	// 	return email;
-	// }
-
-
-
-	// 	private static SearchQuery GenerateSearchQuery(EmailSearchCriteria criteria)
-	// 	{
-	// 		var query = SearchQuery.All;
-	// 		if (criteria?.Subject != null)
-	// 		{
-	// 			query = query.And(SearchQuery.SubjectContains(criteria.Subject));
-	// 		}
-	// 		if (criteria?.From != null)
-	// 		{
-	// 			query = query.And(SearchQuery.FromContains(criteria.From));
-	// 		}
-	// 		if (criteria?.To != null)
-	// 		{
-	// 			query = query.And(SearchQuery.ToContains(criteria.To));
-	// 		}
-	// 		if (criteria?.Since != null)
-	// 		{
-	// 			query = query.And(SearchQuery.DeliveredAfter(criteria.Since.Value));
-	// 		}
-	// 		return query;
-	// 	}
 }
 
-
-// public class Attachment
-// {
-// 	public MemoryStream Stream { get; internal set; }
-// 	public string FileName { get; internal set; }
-// 	public string ContentType { get; internal set; }
-// 	public long FileSize { get; internal set; }
-// }
 
 public class EmailSummary
 {
 	public uint UniqueId { get; set; }
 	public string Subject { get; set; } = string.Empty;
 	public string PreviewText { get; internal set; } = string.Empty;
-	// public string? Body { get; set; }
-	// public string? HtmlBody { get; set; }
 	public DateTimeOffset ReceivedTime { get; set; }
 	public IEnumerable<EmailAddress> From { get; set; } = [];
 	public IEnumerable<EmailAddress> To { get; set; } = [];
