@@ -1,9 +1,6 @@
-using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
-using Backend.Mpa.DbModel.Database;
 using Backend.Mpa.DbModel.Database.EntityModels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Mpa.Core.Services;
@@ -44,7 +41,7 @@ public class ArchiveItemPublicationService
 	}
 
 
-	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id).ToList());
+	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
