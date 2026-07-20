@@ -11,17 +11,19 @@ namespace Backend.Mpa.Core.Controllers;
 [Authorize(Policy = "TenantIdPolicy")]
 public class BlobController : ControllerBase
 {
-	private readonly BlobService _blobService;
+	private readonly BlobQueryService _blobQueryService;
+	private readonly BlobCommandService _blobCommandService;
 
-	public BlobController(BlobService blobService)
+	public BlobController(BlobQueryService blobQueryService, BlobCommandService blobCommandService)
 	{
-		_blobService = blobService;
+		_blobQueryService = blobQueryService;
+		_blobCommandService = blobCommandService;
 	}
 
 
 	public async Task<ActionResult> GetFile([FromQuery] Guid blobId, [FromQuery] DimensionEnum dimension)
 	{
-		var tuple = await _blobService.GetBlob(blobId);
+		var tuple = await _blobQueryService.GetBlob(blobId);
 		if(!tuple.HasValue)
 		{
 			return NotFound();
@@ -58,7 +60,7 @@ public class BlobController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult> Upload(IFormFileCollection files)
 	{
-		await _blobService.UploadBlobs(files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType)));
+		await _blobCommandService.UploadBlobs(files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType)));
 		return NoContent();
 	}
 

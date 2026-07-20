@@ -54,17 +54,19 @@ public class BlobHandlers :
 	IAsyncQueryHandler<ListBlobs, IEnumerable<ListBlobs.Response>>,
 	IAsyncCommandHandler<DeleteBlobs>
 {
-	private readonly BlobService _blobService;
+	private readonly BlobQueryService _blobQueryService;
+	private readonly BlobCommandService _blobCommandService;
 
-	public BlobHandlers(BlobService blobService)
+	public BlobHandlers(BlobQueryService blobQueryService, BlobCommandService blobCommandService)
 	{
-		_blobService = blobService;
+		_blobQueryService = blobQueryService;
+		_blobCommandService = blobCommandService;
 	}
 
 
 	public async Task<GetBlob.Response> Handle(GetBlob query)
 	{
-		var blob = await _blobService.GetBlobEntity(query.Id);
+		var blob = await _blobQueryService.GetBlobEntity(query.Id);
 		if (blob == null)
 		{
 			throw new HttpNotFoundException($"Blob with id {query.Id} not found");
@@ -86,7 +88,7 @@ public class BlobHandlers :
 
 	public async Task<IEnumerable<ListBlobs.Response>> Handle(ListBlobs query)
 	{
-		var blobEntities = await _blobService.ListBlobEntities();
+		var blobEntities = await _blobQueryService.ListBlobEntities();
 		return blobEntities
 			.OrderByDescending(blob => blob.UploadedAt)
 			.Select(blob => new ListBlobs.Response
@@ -104,6 +106,6 @@ public class BlobHandlers :
 
 	public async Task Handle(DeleteBlobs command)
 	{
-		await _blobService.DeleteBlobs(command.BlobIds);
+		await _blobCommandService.DeleteBlobs(command.BlobIds);
 	}
 }

@@ -13,14 +13,19 @@ public class ArchiveItemCommandService
 {
 	private readonly ArchiveItemPublicationService _archiveItemPublicationService;
 	private readonly MpaDbContext _dbContext;
-	private readonly BlobService _blobService;
-	private readonly IAmbientDataResolver _resolver;
+	private readonly BlobQueryService _blobQueryService;
+	private readonly BlobCommandService _blobCommandService;
+	private readonly BlobPublicationService _blobPublicationService;
 
-	public ArchiveItemCommandService(ArchiveItemPublicationService archiveItemPublicationService, MpaDbContext dbContext, BlobService blobService, IAmbientDataResolver resolver)
+	private readonly IAmbientDataResolver _resolver;
+	
+	public ArchiveItemCommandService(ArchiveItemPublicationService archiveItemPublicationService, MpaDbContext dbContext, BlobQueryService blobQueryService, BlobCommandService blobCommandService, BlobPublicationService blobPublicationService, IAmbientDataResolver resolver)
 	{
 		_archiveItemPublicationService = archiveItemPublicationService;
 		_dbContext = dbContext;
-		_blobService = blobService;
+		_blobQueryService = blobQueryService;
+		_blobCommandService = blobCommandService;
+		_blobPublicationService = blobPublicationService;
 		_resolver = resolver;
 	}
 
@@ -31,9 +36,9 @@ public class ArchiveItemCommandService
 												  	 IEnumerable<Guid> blobIds,
 												  	 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
-		var existingBlobEntities = await _blobService.GetBlobEntities(blobIds);
+		var existingBlobEntities = await _blobQueryService.GetBlobEntities(blobIds);
 
-		var newBlobEntities = await _blobService.UploadBlobs(uploadedBlobs);
+		var newBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
 
 		ICollection<Blob> connectedBlobEntities = [.. existingBlobEntities, .. newBlobEntities];
 
@@ -52,7 +57,7 @@ public class ArchiveItemCommandService
 		await _dbContext.SaveChangesAsync();
 
 		await _archiveItemPublicationService.PublishArchiveItemsAddedMessage([newArchiveItem]);
-		await _blobService.PublishBlobsUpdatedMessage(connectedBlobEntities);
+		await _blobPublicationService.PublishBlobsUpdatedMessage(connectedBlobEntities);
 
 		return newArchiveItem;
 	}
@@ -77,7 +82,7 @@ public class ArchiveItemCommandService
 		}
 
 		var addedBlobIds = blobIds.Except(archiveItem.Blobs!.Select(blob => blob.Id));
-		foreach(var blobEntity in await _blobService.GetBlobEntities(addedBlobIds))
+		foreach(var blobEntity in await _blobQueryService.GetBlobEntities(addedBlobIds))
 		{
 			archiveItem.Blobs!.Add(blobEntity);
 		}
@@ -89,7 +94,7 @@ public class ArchiveItemCommandService
 			archiveItem.Blobs!.Remove(blobEntity);
 		}
 
-		var uploadedBlobEntities = await _blobService.UploadBlobs(uploadedBlobs);
+		var uploadedBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
 		foreach (var blobEntity in uploadedBlobEntities)
 		{
 			archiveItem.Blobs!.Add(blobEntity);
@@ -106,8 +111,8 @@ public class ArchiveItemCommandService
 
 		await _archiveItemPublicationService.PublishArchiveItemsUpdatedMessage([archiveItem]);
 
-		await _blobService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
-		await _blobService.PublishBlobsAddedMessage(uploadedBlobEntities);
+		await _blobPublicationService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
+		await _blobPublicationService.PublishBlobsAddedMessage(uploadedBlobEntities);
 
 		return archiveItem;
 	}
@@ -129,7 +134,7 @@ public class ArchiveItemCommandService
 		if (archiveItem.Blobs != null)
 		{
 			var blobGuids = archiveItem.Blobs.Select(blob => blob.Id);
-			await _blobService.DeleteBlobs(blobGuids);
+			await _blobCommandService.DeleteBlobs(blobGuids);
 			_dbContext.Blobs.RemoveRange(archiveItem.Blobs);
 		}
 

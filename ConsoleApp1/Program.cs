@@ -44,6 +44,19 @@ internal class Program
 		var serviceProvider = serviceCollection
 			.AddLogging()
 			.AddScoped<IAmbientDataResolver>(sp => new DummyAmbientDataResolver())
+			.AddTransient<IFileStore, FileSystemFileStore>()
+			.AddScoped<ArchiveItemQueryService>()
+			.AddScoped<ArchiveItemCommandService>()
+			.AddScoped<ArchiveItemPublicationService>()
+			.AddScoped<BlobQueryService>()
+			.AddScoped<BlobCommandService>()
+			.AddScoped<BlobPublicationService>()
+			.AddScoped<BlobObjectStore>()
+			.AddScoped<BlobObjectStoreFileStoreFactory>()
+			.AddScoped<ISignalRService, DummySignalRService>()
+			.AddScoped<DemoDataGenerator>()
+			.AddOptions()
+			.Configure<AppConfig>(config.GetSection(nameof(AppConfig)))
 			.AddTransient<MpaDbContext>(sp =>
 			{
 				var dbConfig = sp.GetRequiredService<IOptions<DbConfig>>().Value;
@@ -51,16 +64,6 @@ internal class Program
 				var tenantId = ambientDataResolver.TenantId;
 				return new MpaDbContext(dbConfig, tenantId);
 			})
-			.AddTransient<IFileStore, FileSystemFileStore>()
-			.AddScoped<ArchiveItemQueryService>()
-			.AddScoped<ArchiveItemCommandService>()
-			.AddScoped<BlobService>()
-			.AddScoped<BlobObjectStore>()
-			.AddScoped<BlobObjectStoreFileStoreFactory>()
-			.AddScoped<ISignalRService, DummySignalRService>()
-			.AddScoped<DemoDataGenerator>()
-			.AddOptions()
-			.Configure<AppConfig>(config.GetSection(nameof(AppConfig)))
 			.Configure<DbConfig>(config.GetSection(nameof(AppConfig)))
 			.BuildServiceProvider();
 
