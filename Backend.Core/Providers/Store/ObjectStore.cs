@@ -65,7 +65,7 @@ public abstract class ObjectStore
 	/// </summary>
 	public async Task UpdateObjectStream(Guid objectId, string extension, Action<Stream> updateFunc)
 	{
-		using var stream = await _fileStore.GetReadWriteFileStream(ObjectPathPartsFromObjectId(objectId), $"{objectId.ToString("D")}.{extension}");
+		using var stream = await _fileStore.GetReadWriteFileStream(ObjectPathPartsFromObjectId(objectId), $"{objectId:D}.{extension}");
 
 		updateFunc(stream);
 	}
