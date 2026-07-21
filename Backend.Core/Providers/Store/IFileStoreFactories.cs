@@ -32,7 +32,7 @@ public class SystemSettingsFileStoreFactory
 	public SystemSettingsFileStoreFactory(IFileStore fileStore)
 	{
 		_fileStore = fileStore;
-		_fileStore.Configure(["Settings", "System"]);
+		_fileStore.Configure(["Owner", "Settings"]);
 	}
 
 	public IFileStore GetFileStore()
@@ -52,7 +52,7 @@ public class TenantSettingsFileStoreFactory
 		var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
 
 		_fileStore = fileStore;
-		_fileStore.Configure(["Settings", tenantId.ToString()]);
+		_fileStore.Configure(["Tenants", tenantId.ToString(), "Settings"]);
 	}
 
 	public IFileStore GetFileStore()
@@ -74,7 +74,7 @@ public class UserSettingsFileStoreFactory
 		var username = resolver?.GetCurrentUsername() ?? throw new Exception("Missing username in ambient data");
 
 		_fileStore = fileStore;
-		_fileStore.Configure(["Settings", tenantId.ToString(), username]);
+		_fileStore.Configure(["Tenants", tenantId.ToString(), "Settings", "Users", username]);
 	}
 
 
