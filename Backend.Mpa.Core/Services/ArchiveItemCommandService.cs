@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
+using Backend.Mpa.Core.Store;
 using Backend.Mpa.DbModel.Database;
 using Backend.Mpa.DbModel.Database.EntityModels;
 using Microsoft.EntityFrameworkCore;
@@ -38,16 +39,22 @@ public class ArchiveItemCommandService
 	{
 		var existingBlobEntities = await _blobQueryService.GetBlobEntities(blobIds);
 
-		var newBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var newBlobGuids = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var newBlobEntities = await _blobQueryService.GetBlobEntities(newBlobGuids);
 
-		ICollection<Blob> connectedBlobEntities = [.. existingBlobEntities, .. newBlobEntities];
+		ICollection<BlobMetadata> connectedBlobEntities = [.. existingBlobEntities, .. newBlobEntities];
 
 		var newArchiveItem = new ArchiveItem
 		{
 			Title = title,
 			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			CreatedAt = DateTimeOffset.Now,
-			Blobs = connectedBlobEntities,
+			Blobs = connectedBlobEntities.Select(blobMetadata => new Blob
+			{
+				Id = blobMetadata.Id,
+				MimeType = blobMetadata.MimeType,
+				PageCount = blobMetadata.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
+			}).ToList(),
 			Tags = Tags.Ensure(_dbContext, tags),
 			Metadata = metadata ?? new JsonObject(),
 			LastUpdated = DateTimeOffset.Now
@@ -84,20 +91,32 @@ public class ArchiveItemCommandService
 		var addedBlobIds = blobIds.Except(archiveItem.Blobs!.Select(blob => blob.Id));
 		foreach(var blobEntity in await _blobQueryService.GetBlobEntities(addedBlobIds))
 		{
-			archiveItem.Blobs!.Add(blobEntity);
+			var dbBlob = new Blob
+			{
+				Id = blobEntity.Id,
+				MimeType = blobEntity.MimeType,
+				PageCount = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
+			};
+			archiveItem.Blobs!.Add(dbBlob);
 		}
 
-		var removedBlobIds = archiveItem.Blobs!.Select(blob => blob.Id).Except(blobIds);
+		var removedBlobIds = archiveItem.Blobs!.Select(blob => blob.Id).Except(blobIds).ToList();
 		foreach (var blobId in removedBlobIds)
 		{
 			var blobEntity = archiveItem.Blobs!.Single(blob => blob.Id == blobId);
-			archiveItem.Blobs!.Remove(blobEntity);
+			_dbContext.Blobs.Remove(blobEntity);
 		}
 
 		var uploadedBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
-		foreach (var blobEntity in uploadedBlobEntities)
+		foreach (var blobEntity in await _blobQueryService.GetBlobEntities(uploadedBlobEntities))
 		{
-			archiveItem.Blobs!.Add(blobEntity);
+			var dbBlob = new Blob
+			{
+				Id = blobEntity.Id,
+				MimeType = blobEntity.MimeType,
+				PageCount = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
+			};
+			archiveItem.Blobs!.Add(dbBlob);
 		}
 
 		archiveItem.Title = title;

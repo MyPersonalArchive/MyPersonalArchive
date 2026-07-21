@@ -183,12 +183,6 @@ public class MpaDbContext : DbContext
 		modelBuilder.Entity<Blob>(builder =>
 		{
 			builder.HasAlternateKey(blob => new { blob.Id, blob.TenantId });
-
-			//HERE
-			builder.HasOne(blob => blob.UploadedBy)
-				.WithMany()
-				.HasForeignKey(blob => blob.UploadedByUsername)
-				.HasPrincipalKey(user => user.Username);
 		});
 	}
 

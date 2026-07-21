@@ -1,13 +1,7 @@
 using System.Text.Json;
-using Backend.Core;
 using Backend.Core.Infrastructure;
-using Backend.Core.Providers;
 using Backend.Core.Services;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
 using Backend.Mpa.Core.Store;
 
 
@@ -18,103 +12,64 @@ public class BlobCommandService
 {
 	private readonly BlobPublicationService _blobPublicationService;
 	private readonly BlobObjectStore _blobObjectStore;
-	private readonly MpaDbContext _dbContext;
 	private readonly IAmbientDataResolver _resolver;
-	private string _baseFolder;
 
-	public BlobCommandService(IOptions<AppConfig> config, ISignalRService signalRService, BlobObjectStore blobObjectStore, MpaDbContext dbContext, IAmbientDataResolver resolver)
+	public BlobCommandService(BlobPublicationService blobPublicationService, BlobObjectStore blobObjectStore, IAmbientDataResolver resolver)
 	{
-		_blobPublicationService = new BlobPublicationService(signalRService);
+		_blobPublicationService = blobPublicationService;
 		_blobObjectStore = blobObjectStore;
-		_dbContext = dbContext;
 		_resolver = resolver;
-
-		var currentTenantId = resolver.GetCurrentTenantId() ?? throw new Exception("Missing tenant ID");
-		_baseFolder = Path.Combine(config.Value.RootFolder, "Blobs", currentTenantId.ToString());
 	}
 
 
-	public async Task<IEnumerable<Blob>> UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
+	public async Task<IEnumerable<Guid>> UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
 	{
-		var blobs = new List<Blob>();
+		var blobs = new List<Guid>();
 		foreach (var file in files)
 		{
-			var objectId = Guid.NewGuid();
-			var stream = file.contentStream;
-			await _blobObjectStore.StoreObject(objectId, Path.GetExtension(file.fileName).TrimStart('.'), stream);
+			var blobId = Guid.NewGuid();
+			file.contentStream.Seek(0, SeekOrigin.Begin);
+			await _blobObjectStore.StoreObject(blobId, Path.GetExtension(file.fileName).TrimStart('.'), file.contentStream);
 
-			var metadata = new FileMetadata
+			file.contentStream.Seek(0, SeekOrigin.Begin);
+			var hash = Convert.ToHexString(file.contentStream.ComputeSha256Hash());
+
+			file.contentStream.Seek(0, SeekOrigin.Begin);
+			var typeSpecificMetadata = PreviewGenerator.GetFileTypeSpecificMetadata(file.mimeType, file.contentStream);
+
+			var metadata = new BlobMetadata
 			{
+				Id = blobId,
+				OriginalFilename = file.fileName,
 				MimeType = file.mimeType,
 				Size = file.contentStream.Length,
-				OriginalFilename = file.fileName,
-				Hash = Convert.ToHexString(stream.ComputeSha256Hash()),
+				Hash = hash,
+				TypeSpecificMetadata = typeSpecificMetadata,
 				UploadedAt = DateTimeOffset.Now,
-				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim")
+				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			};
+			await using var objectStream = await _blobObjectStore.GetWritableObjectStream(blobId, "metadata.json");
+			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
 
-			await using (var objectStream = await _blobObjectStore.GetWritableObjectStream(objectId, "metadata"))
-			{
-				await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
-			}
-
-			int currentTenantId = _resolver.GetCurrentTenantId() ?? throw new Exception("Missing tenant ID");
-			string currentUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
-			var blob = new Blob
-			{
-				TenantId = currentTenantId,
-				ArchiveItem = null,
-				MimeType = file.mimeType,
-				OriginalFilename = file.fileName,
-				PageCount = PreviewGenerator.GetDocumentPageCount(file.mimeType, stream),
-				FileSize = file.contentStream.Length,
-				UploadedAt = DateTimeOffset.Now,
-				UploadedByUsername = currentUsername,
-
-				// `pathInStore` is not necessarily the actual path where the file is stored, but we keep it for backward
-				// compatibility with existing data in the database. The objectId can be extracted from the filename.
-				// The actual storage is handled by the IObjectStore implementation, which can have its own internal structure.
-				Id = objectId,
-				PathInStore = Path.Combine(GetFolderPath(objectId), $"{objectId:D}{Path.GetExtension(file.fileName)}")
-			};
-			blobs.Add(blob);
+			blobs.Add(blobId);
 		}
-
-		await _dbContext.Blobs.AddRangeAsync(blobs);
-		await _dbContext.SaveChangesAsync();
 
 		await _blobPublicationService.PublishBlobsAddedMessage(blobs);
 		return blobs;
 	}
 
 
-	// TODO: This is a duplicate function. Look for others with same signature and code and remove when no longer relevant.
-	private string GetFolderPath(Guid objectId)
-	{
-		var objectIdStringDashed = objectId.ToString("D");
-		return Path.Combine(_baseFolder, objectIdStringDashed[..2], objectIdStringDashed[..4], objectIdStringDashed[..6]);
-	}
-
-
 	public async Task DeleteBlobs(IEnumerable<Guid> blobIds)
 	{
-		var blobs = await _dbContext.Blobs.Where(x => blobIds.Contains(x.Id)).ToListAsync();
-		if (blobs.Count == 0)
+		if (blobIds.Count() == 0)
 		{
 			return;
 		}
 
-		foreach (var blob in blobs)
+		foreach (var blobId in blobIds)
 		{
-			var filename = blob.PathInStore.Split('/').Last();
-			var objectId = Guid.Parse(Path.GetFileNameWithoutExtension(filename));
-
-			await _blobObjectStore.DeleteObject(objectId);
+			await _blobObjectStore.DeleteObject(blobId);
 		}
-
-		_dbContext.Blobs.RemoveRange(blobs);
-		await _dbContext.SaveChangesAsync();
-
-		await _blobPublicationService.PublishBlobsDeletedMessage(blobs);
+		await _blobPublicationService.PublishBlobsDeletedMessage(blobIds);
 	}
 }

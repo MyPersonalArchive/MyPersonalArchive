@@ -10,21 +10,11 @@ public class Blob : TenantEntity
 {
 	public Guid Id { get; set; }
 
-    [Required]
-    public required string PathInStore { get; set; }    // Relative to the blob store root
+	[MaxLength(32)]
+	public string? MimeType { get; set; }
+	public required int PageCount { get; set; }
 
-    public required string UploadedByUsername { get; set; }
-    public User? UploadedBy { get; set; }
-    public required DateTimeOffset UploadedAt { get; set; }
+	public ArchiveItem ArchiveItem { get; set; }
 
-    public string? OriginalFilename { get; set; }
-    [MaxLength(32)]
-    public string? MimeType { get; set; }
-    public required int PageCount { get; set; }
-
-    public long FileSize { get; set; }
-
-    public ArchiveItem? ArchiveItem { get; set; }
-
-	public Guid? ArchiveItemId { get; set; }
+	public Guid ArchiveItemId { get; set; }
 }
