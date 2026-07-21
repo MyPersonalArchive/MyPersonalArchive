@@ -63,6 +63,7 @@ public class DemoDataGenerator
 			Tags = ["Blanc", "Noir", "Rouge", "Vert", "Bleu", "Jaune", "Violet", "Orange", "Rose", "Marron", "Gris"]
 		}
 	];
+	
 	private readonly IServiceProvider _services;
 
 	public DemoDataGenerator(IServiceProvider services)

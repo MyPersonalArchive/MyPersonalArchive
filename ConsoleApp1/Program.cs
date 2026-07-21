@@ -67,10 +67,11 @@ internal class Program
 			.Configure<DbConfig>(config.GetSection(nameof(AppConfig)))
 			.BuildServiceProvider();
 
-		await SeedArchiveItems(serviceProvider);
+		// await SeedArchiveItems(serviceProvider);
 
-		await DoSomethingWithArchiveItemService(serviceProvider);
+		// await DoSomethingWithArchiveItemService(serviceProvider);
 
+		await ConvertFileStructure(serviceProvider);
 
 		Console.WriteLine("Goodbye!");
 	}
@@ -96,4 +97,12 @@ internal class Program
 		var demoDataGenerator = new DemoDataGenerator(serviceProvider);
 		await demoDataGenerator!.Seed();
 	}
+
+
+	private static async Task ConvertFileStructure(ServiceProvider serviceProvider)
+	{
+		var fileStructureConverter = new FileStructureConverter(serviceProvider);
+		await fileStructureConverter!.ConvertFileStructure();
+	}
+
 }
