@@ -24,7 +24,7 @@ public class ArchiveItem : TenantEntity
     public DateTimeOffset? DocumentDate { get; set; }
 	public DateTimeOffset LastUpdated { get; set; }
 
-    public ICollection<Blob>? Blobs { get; set; }
+    public ICollection<Blob> Blobs { get; set; } = [];
 
     public required ICollection<Tag> Tags { get; set; }
 

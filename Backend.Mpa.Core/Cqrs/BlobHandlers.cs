@@ -1,5 +1,6 @@
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.Core.Store;
 
 namespace Backend.Mpa.Core.Cqrs;
 
@@ -18,7 +19,6 @@ public class GetBlob : IQuery<GetBlob, GetBlob.Response>
 		public required string UploadedByUser { get; set; }
 		public int PageCount { get; set; }
 		public string? MimeType { get; set; }
-		public bool IsAllocated { get; internal set; }
 	}
 }
 
@@ -37,7 +37,6 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 		public required string UploadedByUser { get; set; }
 		public int PageCount { get; set; }
 		public string? MimeType { get; set; }
-		public bool IsAllocated { get; internal set; }
 	}
 }
 
@@ -76,12 +75,11 @@ public class BlobHandlers :
 		{
 			Id = blob.Id,
 			FileName = blob.OriginalFilename,
-			FileSize = blob.FileSize,
-			PageCount = blob.PageCount,
+			FileSize = blob.Size,
+			PageCount = blob.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1,
 			UploadedAt = blob.UploadedAt,
-			UploadedByUser = blob.UploadedBy!.Fullname,
-			MimeType = blob.MimeType,
-			IsAllocated = blob.ArchiveItem != null
+			UploadedByUser = blob.UploadedBy,
+			MimeType = blob.MimeType
 		};
 	}
 
@@ -95,12 +93,11 @@ public class BlobHandlers :
 			{
 				Id = blob.Id,
 				FileName = blob.OriginalFilename,
-				FileSize = blob.FileSize,
-				PageCount = blob.PageCount,
+				FileSize = blob.Size,
+				PageCount = blob.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1,
 				UploadedAt = blob.UploadedAt,
-				UploadedByUser = blob.UploadedBy!.Fullname,
-				MimeType = blob.MimeType,
-				IsAllocated = blob.ArchiveItem != null
+				UploadedByUser = blob.UploadedBy,
+				MimeType = blob.MimeType
 			});
 	}
 

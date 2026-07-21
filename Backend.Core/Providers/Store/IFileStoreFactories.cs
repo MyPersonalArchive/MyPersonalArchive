@@ -14,7 +14,7 @@ public class BlobObjectStoreFileStoreFactory
 		var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
 
 		_fileStore = fileStore;
-		_fileStore.Configure(["Blobs", tenantId.ToString()]);
+		_fileStore.Configure(["Tenants", tenantId.ToString(), "Blobs"]);
 	}
 
 	public IFileStore GetFileStore()

@@ -31,10 +31,9 @@ public class BlobController : ControllerBase
 
 		var contentStream = tuple.Value.contentStream;	//TODO: using - to dispose the stream after returning the file?
 		var metadata = tuple.Value.metadata;
-		var blob = tuple.Value.blob;
 
 		//User our libvips preview mechanism if image or pdf
-		if (dimension != DimensionEnum.Full && (blob.MimeType!.StartsWith("image/") || blob.MimeType == "application/pdf"))
+		if (dimension != DimensionEnum.Full && (metadata.MimeType!.StartsWith("image/") || metadata.MimeType == "application/pdf"))
 		{
 			int maxX, maxY;
 			switch (dimension)

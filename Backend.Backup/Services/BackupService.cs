@@ -10,79 +10,81 @@ namespace Backend.Backup.Services;
 public class BackupService(IServiceScope scope, int tenantId)
 {
 	public async Task<BackupResult> BackupArchiveItemAsync(ArchiveItem archiveItem, string target, string password, CancellationToken cancellationToken)
-    {
-        var result = new BackupResult();
-        
-        try
-        {
-            var fileProvider = ActivatorUtilities.CreateInstance<FileStorageProvider>(
-                scope.ServiceProvider,
-                new StaticAmbientDataResolver(tenantId)
-            );
+	{
+		throw new NotImplementedException();
 
-            var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
-            var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
+		// var result = new BackupResult();
 
-            var backupFileName = $"ArchiveItem_{archiveItem.Id}.zip.enc";
-            result.BackupFileName = backupFileName;
+		// try
+		// {
+		// 	var fileProvider = ActivatorUtilities.CreateInstance<FileStorageProvider>(
+		// 		scope.ServiceProvider,
+		// 		new StaticAmbientDataResolver(tenantId)
+		// 	);
 
-            var json = JsonConvert.SerializeObject(archiveItem);
-            var zipEntries = new Dictionary<string, Stream>
-            {
-                { $"ArchiveItem_{archiveItem.Id}.json", new MemoryStream(Encoding.UTF8.GetBytes(json)) }
-            };
+		// 	var backupProviderFactory = scope.ServiceProvider.GetService<BackupProviderFactory>()!;
+		// 	var encryptionServiceFactory = scope.ServiceProvider.GetService<EncryptionProviderFactory>()!;
 
-            long totalFileSize = Encoding.UTF8.GetBytes(json).Length;
+		// 	var backupFileName = $"ArchiveItem_{archiveItem.Id}.zip.enc";
+		// 	result.BackupFileName = backupFileName;
 
-            if (archiveItem.Blobs != null)
-            {
-                foreach (var blob in archiveItem.Blobs)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    
-                    var stream = fileProvider.GetFile(blob.PathInStore, out var metadata);
-                    if (stream == null)
-                        continue;
+		// 	var json = JsonConvert.SerializeObject(archiveItem);
+		// 	var zipEntries = new Dictionary<string, Stream>
+		// 	{
+		// 		{ $"ArchiveItem_{archiveItem.Id}.json", new MemoryStream(Encoding.UTF8.GetBytes(json)) }
+		// 	};
 
-                    zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.PathInStore)}", stream);
-                    zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.PathInStore)}" + ".metadata", 
-                        new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
-                    
-                    totalFileSize += stream.Length;
-                    if (metadata != null)
-                        totalFileSize += Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata)).Length;
-                }
-            }
+		// 	long totalFileSize = Encoding.UTF8.GetBytes(json).Length;
 
-            var zipStream = await ZipUtils.CreateZipFromStreamsAsync(zipEntries);
-            var encryptedStream = encryptionServiceFactory.CurrentProvider!.Encrypt(zipStream, password);
+		// 	if (archiveItem.Blobs != null)
+		// 	{
+		// 		foreach (var blob in archiveItem.Blobs)
+		// 		{
+		// 			cancellationToken.ThrowIfCancellationRequested();
 
-            await backupProviderFactory.CurrentProvider!.BackupAsync(tenantId, backupFileName, encryptedStream);
+		// 			var stream = fileProvider.GetFile(blob.PathInStore, out var metadata);
+		// 			if (stream == null)
+		// 				continue;
 
-            // Clean up resources
-            zipEntries.Values.ToList().ForEach(d => d.Dispose());
-            zipStream.Dispose();
-            encryptedStream.Dispose();
+		// 			zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.PathInStore)}", stream);
+		// 			zipEntries.Add($"{Path.GetFileNameWithoutExtension(blob.PathInStore)}" + ".metadata",
+		// 				new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata))));
 
-            result.Success = true;
-            result.FileSizeBytes = totalFileSize;
-        }
-        catch (Exception ex)
-        {
-            result.Success = false;
-            result.ErrorMessage = ex.Message;
-        }
+		// 			totalFileSize += stream.Length;
+		// 			if (metadata != null)
+		// 				totalFileSize += Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(metadata)).Length;
+		// 		}
+		// 	}
 
-        return result;
-    }
+		// 	var zipStream = await ZipUtils.CreateZipFromStreamsAsync(zipEntries);
+		// 	var encryptedStream = encryptionServiceFactory.CurrentProvider!.Encrypt(zipStream, password);
+
+		// 	await backupProviderFactory.CurrentProvider!.BackupAsync(tenantId, backupFileName, encryptedStream);
+
+		// 	// Clean up resources
+		// 	zipEntries.Values.ToList().ForEach(d => d.Dispose());
+		// 	zipStream.Dispose();
+		// 	encryptedStream.Dispose();
+
+		// 	result.Success = true;
+		// 	result.FileSizeBytes = totalFileSize;
+		// }
+		// catch (Exception ex)
+		// {
+		// 	result.Success = false;
+		// 	result.ErrorMessage = ex.Message;
+		// }
+
+		// return result;
+	}
 }
 
 #region Models
 public class BackupResult
 {
-    public bool Success { get; set; }
-    public string? ErrorMessage { get; set; }
-    public long FileSizeBytes { get; set; }
-    public string BackupFileName { get; set; } = string.Empty;
+	public bool Success { get; set; }
+	public string? ErrorMessage { get; set; }
+	public long FileSizeBytes { get; set; }
+	public string BackupFileName { get; set; } = string.Empty;
 }
 #endregion

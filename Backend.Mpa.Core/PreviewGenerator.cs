@@ -1,5 +1,6 @@
 // See https://aka.ms/new-console-template for more information
 using System.Diagnostics;
+using Backend.Mpa.Core.Store;
 using NetVips;
 
 namespace Backend.Mpa.Core;
@@ -73,6 +74,31 @@ public static class PreviewGenerator
 				}
 			default:
 				return 1;
+		}
+	}
+
+	public static ITypeSpecificMetadata? GetFileTypeSpecificMetadata(string mimeType, Stream stream)
+	{
+		switch (mimeType)
+		{
+			case "application/pdf":
+				return new PdfMetadata
+				{
+					PageCount = GetDocumentPageCount(mimeType, stream)
+				};
+
+			case "image/jpeg":
+			case "image/png":
+				{
+					using var image = Image.NewFromStream(stream);
+					return new RasterImageMetadata
+					{
+						Width = image.Width,
+						Height = image.Height
+					};
+				}
+			default:
+				return null;
 		}
 	}
 }
