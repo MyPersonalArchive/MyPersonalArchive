@@ -13,6 +13,7 @@ import { formatDate, formatSize } from "../Utils/formatUtils"
 import { Dialog } from "./Dialog"
 import { LightBox } from "./LightBox"
 import { UUID } from "crypto"
+import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 
 
 
@@ -131,20 +132,22 @@ type UnallocatedBlobsDialogProps = {
 	onBlobAttached: (blob: BlobIdAndNumberOfPages[]) => void
 }
 const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
-	const unallocatedHeap = useAtomValue(blobsAtom)
+	const blobs = useAtomValue(blobsAtom)
+	const archiveItems = useAtomValue(archiveItemsAtom)
+	const allocatedBlobs = new Set<UUID>(archiveItems.flatMap(ai => ai.blobIds))
 
-	const selectionOfBlobs = useSelection<UUID>(new Set(unallocatedHeap.map(blob => blob.id)))
+	const selectionOfBlobs = useSelection<UUID>(new Set(blobs.map(blob => blob.id)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
 			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 || selectionOfBlobs.areOnlySomeItemsSelected
 			selectAllCheckboxRef.current.checked = selectionOfBlobs.allPossibleItems.size > 0 && selectionOfBlobs.areAllItemsSelected
 		}
-	}, [selectionOfBlobs.selectedItems, unallocatedHeap])
+	}, [selectionOfBlobs.selectedItems, blobs])
 
 	const addBlob = (blobIds: UUID[]) => {
-		const blobs = unallocatedHeap.filter(blob => blobIds.includes(blob.id)).map(blob => ({ id: blob.id, numberOfPages: blob.pageCount }))
-		onBlobAttached(blobs)
+		const blobsToAdd = blobs.filter(blob => blobIds.includes(blob.id)).map(blob => ({ id: blob.id, numberOfPages: blob.pageCount }))
+		onBlobAttached(blobsToAdd)
 		onCloseDialog()
 	}
 
@@ -184,7 +187,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 					</button>
 				</div>
 
-				<PreviewList<BlobMetadata> items={unallocatedHeap.filter(blob => !blob.isAllocated)}
+				<PreviewList<BlobMetadata> items={blobs.filter(blob => !allocatedBlobs.has(blob.id))}
 					keySelector={blob => blob.id}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>

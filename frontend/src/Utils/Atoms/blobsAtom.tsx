@@ -10,6 +10,5 @@ export type BlobMetadata = {
 	uploadedAt: Date
 	uploadedByUser: string
 	mimeType?: string
-	isAllocated: boolean
 }
 export const blobsAtom = atom<BlobMetadata[]>([])

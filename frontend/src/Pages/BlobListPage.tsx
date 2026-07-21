@@ -14,6 +14,7 @@ import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@f
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
+import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 
 
 export const BlobListPage = () => {
@@ -22,6 +23,8 @@ export const BlobListPage = () => {
 	const [searchParams] = useSearchParams()
 
 	const blobs = useAtomValue(blobsAtom)
+	const archiveItems = useAtomValue(archiveItemsAtom)
+	const allocatedBlobs = new Set<UUID>(archiveItems.flatMap(ai => ai.blobIds))
 
 	const selectionOfBlobs = useSelection<UUID>(new Set(blobs.map(blob => blob.id)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -32,7 +35,7 @@ export const BlobListPage = () => {
 		}
 	}, [selectionOfBlobs.selectedItems, blobs])
 
-	const visibleBlobs = blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !blob.isAllocated)
+	const visibleBlobs = blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !allocatedBlobs.has(blob.id))
 
 	const selectedVisibleBlobs = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
 

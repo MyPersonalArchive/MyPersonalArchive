@@ -13,7 +13,6 @@ type ListResponse = {
 	uploadedAt: Date
 	uploadedByUser: string
 	mimeType?: string
-	isAllocated: boolean
 }
 
 type GetResponse = {
@@ -24,7 +23,6 @@ type GetResponse = {
 	uploadedAt: Date
 	uploadedByUser: string
 	mimeType?: string
-	isAllocated: boolean
 }
 
 export const useBlobsPrefetching = () => {
@@ -41,8 +39,7 @@ export const useBlobsPrefetching = () => {
 					pageCount: blob.pageCount,
 					uploadedAt: new Date(blob.uploadedAt),
 					uploadedByUser: blob.uploadedByUser,
-					mimeType: blob.mimeType,
-					isAllocated: blob.isAllocated
+					mimeType: blob.mimeType
 				})))
 			})
 	}, [])

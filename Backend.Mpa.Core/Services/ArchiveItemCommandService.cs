@@ -32,10 +32,10 @@ public class ArchiveItemCommandService
 
 
 	public async Task<ArchiveItem> CreateArchiveItem(string title,
-												  	 IEnumerable<string> tags,
-												  	 JsonObject? metadata,
-												  	 IEnumerable<Guid> blobIds,
-												  	 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+													 IEnumerable<string> tags,
+													 JsonObject? metadata,
+													 IEnumerable<Guid> blobIds,
+													 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
 		var existingBlobEntities = await _blobQueryService.GetBlobEntities(blobIds);
 
