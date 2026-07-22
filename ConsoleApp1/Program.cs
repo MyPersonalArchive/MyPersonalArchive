@@ -71,7 +71,7 @@ internal class Program
 
 		// await DoSomethingWithArchiveItemService(serviceProvider);
 
-		await ConvertFileStructure(serviceProvider);
+		// await ConvertFileStructure(serviceProvider);
 
 		Console.WriteLine("Goodbye!");
 	}

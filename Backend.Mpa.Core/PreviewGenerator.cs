@@ -101,4 +101,15 @@ public static class PreviewGenerator
 				return null;
 		}
 	}
+
+	public static bool AcceptsMimeType(string mimeType)
+	{
+		return mimeType switch
+		{
+			"application/pdf" => true,
+			"image/jpeg" => true,
+			"image/png" => true,
+			_ => false
+		};
+	}
 }

@@ -23,39 +23,26 @@ public class BlobController : ControllerBase
 
 	public async Task<ActionResult> GetFile([FromQuery] Guid blobId, [FromQuery] DimensionEnum dimension)
 	{
-		var tuple = await _blobQueryService.GetBlob(blobId);
-		if(!tuple.HasValue)
+		int maxX, maxY;
+		maxX = maxY = dimension switch
+		{
+			DimensionEnum.Thumbnail => 150,
+			DimensionEnum.Small => 300,
+			DimensionEnum.Full => int.MaxValue,
+			_ => throw new ArgumentOutOfRangeException(nameof(dimension), dimension, null)
+		};
+
+		var tuple = dimension == DimensionEnum.Full
+			? await _blobQueryService.GetBlobOriginal(blobId)
+			: await _blobQueryService.GetBlobPreview(blobId, maxX, maxY, 0, storePreview: true);
+		if (!tuple.HasValue)
 		{
 			return NotFound();
 		}
 
-		var contentStream = tuple.Value.contentStream;	//TODO: using - to dispose the stream after returning the file?
-		var metadata = tuple.Value.metadata;
+		var (contentStream, mimeType, suggestedFilename) = tuple.Value;
 
-		//User our libvips preview mechanism if image or pdf
-		if (dimension != DimensionEnum.Full && (metadata.MimeType!.StartsWith("image/") || metadata.MimeType == "application/pdf"))
-		{
-			int maxX, maxY;
-			switch (dimension)
-			{
-				case DimensionEnum.Thumbnail:
-					maxX = maxY = 150;
-					break;
-				case DimensionEnum.Small:
-					maxX = maxY = 300;
-					break;
-				case DimensionEnum.Full:
-					maxX = maxY = 800;
-					break;
-				default:
-					return BadRequest();
-			}
-
-			var previewStream = PreviewGenerator.GeneratePreview(contentStream, metadata.MimeType, maxX, maxY, 0);	//TODO: using - to dispose the stream after returning the file?
-			return File(previewStream, "image/png", $"{metadata.OriginalFilename}_preview(0).png");
-		}
-
-		return File(contentStream, metadata.MimeType, metadata.OriginalFilename);
+		return File(contentStream, mimeType, suggestedFilename);
 	}
 
 
