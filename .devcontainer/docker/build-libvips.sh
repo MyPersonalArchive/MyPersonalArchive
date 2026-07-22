@@ -34,6 +34,7 @@ sudo apt install --yes \
     libheif-dev \
     libde265-dev \
     libx265-dev \
+    libheif-plugin-aomenc \
     libavif-dev
 
 wget https://github.com/libvips/libvips/releases/download/v8.13.3/vips-8.13.3.tar.gz
