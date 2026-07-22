@@ -12,12 +12,15 @@ public class BlobCommandService
 {
 	private readonly BlobPublicationService _blobPublicationService;
 	private readonly BlobObjectStore _blobObjectStore;
+	private readonly PreviewGenerator _previewGenerator;
 	private readonly IAmbientDataResolver _resolver;
 
-	public BlobCommandService(BlobPublicationService blobPublicationService, BlobObjectStore blobObjectStore, IAmbientDataResolver resolver)
+
+	public BlobCommandService(BlobPublicationService blobPublicationService, BlobObjectStore blobObjectStore, PreviewGenerator previewGenerator, IAmbientDataResolver resolver)
 	{
 		_blobPublicationService = blobPublicationService;
 		_blobObjectStore = blobObjectStore;
+		_previewGenerator = previewGenerator;
 		_resolver = resolver;
 	}
 
@@ -35,7 +38,7 @@ public class BlobCommandService
 			var hash = Convert.ToHexString(file.contentStream.ComputeSha256Hash());
 
 			file.contentStream.Seek(0, SeekOrigin.Begin);
-			var typeSpecificMetadata = PreviewGenerator.GetFileTypeSpecificMetadata(file.mimeType, file.contentStream);
+			var typeSpecificMetadata = _previewGenerator.GetFileTypeSpecificMetadata(file.mimeType, file.contentStream);
 
 			var metadata = new BlobMetadata
 			{

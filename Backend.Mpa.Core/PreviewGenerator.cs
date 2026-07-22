@@ -1,26 +1,80 @@
 // See https://aka.ms/new-console-template for more information
 using System.Diagnostics;
+using Backend.Core.Infrastructure;
 using Backend.Mpa.Core.Store;
+using Microsoft.Extensions.DependencyInjection;
 using NetVips;
 
 namespace Backend.Mpa.Core;
 
-public static class PreviewGenerator
-{
-	public static Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
-	{
-		switch (mimeType)
-		{
-			case "application/pdf":
-				return GeneratePreviewOfPDF(originalStream, maxX, maxY, pageNumber);
 
-			default:
-				return GeneratePreviewOfImage(originalStream, maxX, maxY);
-		}
+[RegisterService(ServiceLifetime.Scoped)]
+public class PreviewGenerator
+{
+	private readonly Dictionary<string, Type> _previewGenerators = new Dictionary<string, Type>()
+	{
+		["application/pdf"] = typeof(PdfPreviewGenerator),
+
+		["image/jpeg"] = typeof(RasterImagePreviewGenerator),
+		["image/png"] = typeof(RasterImagePreviewGenerator),
+		["image/webp"] = typeof(RasterImagePreviewGenerator),
+		["image/tiff"] = typeof(RasterImagePreviewGenerator),
+		["image/gif"] = typeof(RasterImagePreviewGenerator),
+		["image/jp2"] = typeof(RasterImagePreviewGenerator),
+		["image/jpeg2000"] = typeof(RasterImagePreviewGenerator),
+		["image/jpeg2000-image"] = typeof(RasterImagePreviewGenerator),
+		["image/x-portable-pixmap"] = typeof(RasterImagePreviewGenerator),
+		["image/x-portable-graymap"] = typeof(RasterImagePreviewGenerator),
+		["image/x-portable-bitmap"] = typeof(RasterImagePreviewGenerator),
+		["image/x-portable-floatmap"] = typeof(RasterImagePreviewGenerator)
+	};
+
+	private readonly IServiceScope _serviceScope;
+
+	public PreviewGenerator(IServiceScopeFactory serviceScopeFactory)
+	{
+		_serviceScope = serviceScopeFactory.CreateScope();
 	}
 
 
-	public static Stream GeneratePreviewOfImage(Stream originalStream, int maxX, int maxY)
+	public bool AcceptsMimeType(string mimeType)
+	{
+		return _previewGenerators.ContainsKey(mimeType);
+	}
+
+
+	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
+	{
+		var generatorType = _previewGenerators.GetValueOrDefault(mimeType) ?? throw new NotSupportedException($"No preview generator available for mime type: {mimeType}");
+		var generator = (IPreviewGenerator)_serviceScope.ServiceProvider.GetRequiredService(generatorType);
+
+		Debug.WriteLine($"Generating preview for {mimeType} using libvips");
+		return generator.GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
+	}
+
+
+	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(string mimeType, Stream stream)
+	{
+		var generatorType = _previewGenerators.GetValueOrDefault(mimeType) ?? throw new NotSupportedException($"No preview generator available for mime type: {mimeType}");
+		var generator = (IPreviewGenerator)_serviceScope.ServiceProvider.GetRequiredService(generatorType);
+
+		return generator.GetFileTypeSpecificMetadata(stream, mimeType);
+	}
+
+}
+
+
+public interface IPreviewGenerator
+{
+	Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber);
+	ITypeSpecificMetadata? GetFileTypeSpecificMetadata(Stream stream, string mimeType);
+}
+
+
+[RegisterService(ServiceLifetime.Scoped, RegistrationMode.RegisterAsSelf)]
+public class RasterImagePreviewGenerator : IPreviewGenerator
+{
+	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
 	{
 		Debug.WriteLine("Generating image preview using libvips");
 		var previewStream = new MemoryStream();
@@ -40,12 +94,27 @@ public static class PreviewGenerator
 		return previewStream;
 	}
 
-	public static Stream GeneratePreviewOfPDF(Stream originalStream, int maxX, int maxY, int pageNumber = 0)
+	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(Stream stream, string mimeType)
+	{
+		using var image = Image.NewFromStream(stream);
+		return new RasterImageMetadata
+		{
+			Width = image.Width,
+			Height = image.Height
+		};
+	}
+}
+
+
+[RegisterService(ServiceLifetime.Scoped, RegistrationMode.RegisterAsSelf)]
+public class PdfPreviewGenerator : IPreviewGenerator
+{
+	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
 	{
 		Debug.WriteLine("Generating PDF preview using libvips");
 		var previewStream = new MemoryStream();
 
-		using (var image = Image.PdfloadStream(originalStream, page: pageNumber, dpi: 200))
+		using (var image = Image.NewFromStream(originalStream))
 		{
 			var thumb = image.ThumbnailImage(maxX, maxY);
 
@@ -60,56 +129,12 @@ public static class PreviewGenerator
 		return previewStream;
 	}
 
-	public static int GetDocumentPageCount(string mimeType, Stream stream)
+	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(Stream stream, string mimeType)
 	{
-		Debug.WriteLine("Getting document page count using libvips");
-		stream.Seek(0, SeekOrigin.Begin);
-
-		switch (mimeType)
+		using var image = Image.NewFromStream(stream);
+		return new PdfMetadata
 		{
-			case "application/pdf":
-				{
-					using var image = Image.NewFromStream(stream);
-					return (int)image.Get("n-pages");
-				}
-			default:
-				return 1;
-		}
-	}
-
-	public static ITypeSpecificMetadata? GetFileTypeSpecificMetadata(string mimeType, Stream stream)
-	{
-		switch (mimeType)
-		{
-			case "application/pdf":
-				return new PdfMetadata
-				{
-					PageCount = GetDocumentPageCount(mimeType, stream)
-				};
-
-			case "image/jpeg":
-			case "image/png":
-				{
-					using var image = Image.NewFromStream(stream);
-					return new RasterImageMetadata
-					{
-						Width = image.Width,
-						Height = image.Height
-					};
-				}
-			default:
-				return null;
-		}
-	}
-
-	public static bool AcceptsMimeType(string mimeType)
-	{
-		return mimeType switch
-		{
-			"application/pdf" => true,
-			"image/jpeg" => true,
-			"image/png" => true,
-			_ => false
+			PageCount = (int)image.Get("n-pages")
 		};
 	}
 }

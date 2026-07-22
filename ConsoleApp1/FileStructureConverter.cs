@@ -10,10 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 public class FileStructureConverter
 {
 	private ServiceProvider _serviceProvider;
+	private readonly PreviewGenerator _previewGenerator;
 
 	public FileStructureConverter(ServiceProvider serviceProvider)
 	{
 		_serviceProvider = serviceProvider;
+		_previewGenerator = serviceProvider.GetRequiredService<PreviewGenerator>();
 	}
 
 
@@ -149,7 +151,7 @@ public class FileStructureConverter
 			var hash = Convert.ToHexString(file.contentStream.ComputeSha256Hash());
 
 			file.contentStream.Seek(0, SeekOrigin.Begin);
-			var typeSpecificMetadata = PreviewGenerator.GetFileTypeSpecificMetadata(file.mimeType, file.contentStream);
+			var typeSpecificMetadata = _previewGenerator.GetFileTypeSpecificMetadata(file.mimeType, file.contentStream);
 
 			var metadata = new BlobMetadata
 			{

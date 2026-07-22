@@ -3,6 +3,7 @@ using Backend.Core;
 using Backend.Core.Infrastructure;
 using Backend.Core.Providers.Store;
 using Backend.Core.Services;
+using Backend.Mpa.Core;
 using Backend.Mpa.Core.Services;
 using Backend.Mpa.Core.Store;
 using Backend.Mpa.DbModel.Database;
@@ -54,6 +55,9 @@ internal class Program
 			.AddScoped<BlobObjectStore>()
 			.AddScoped<BlobObjectStoreFileStoreFactory>()
 			.AddScoped<ISignalRService, DummySignalRService>()
+			.AddScoped<PreviewGenerator>()
+			.AddScoped<RasterImagePreviewGenerator>()
+			.AddScoped<PdfPreviewGenerator>()
 			.AddScoped<DemoDataGenerator>()
 			.AddOptions()
 			.Configure<AppConfig>(config.GetSection(nameof(AppConfig)))
