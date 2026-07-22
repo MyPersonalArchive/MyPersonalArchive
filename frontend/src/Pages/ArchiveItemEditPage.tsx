@@ -4,7 +4,7 @@ import { UUID } from "crypto"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { PreviewList } from "../Components/PreviewList"
-import { BlobIdAndNumberOfPages } from "../Components/Preview"
+import { BlobDisplayInfo } from "../Components/Preview"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { tagsAtom } from "../Utils/Atoms/tagsAtom"
@@ -50,7 +50,7 @@ export const ArchiveItemEditPage = () => {
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
 	const [documentDate, setDocumentDate] = useState("")
-	const [blobs, setBlobs] = useState<BlobIdAndNumberOfPages[]>([])
+	const [blobs, setBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
@@ -114,13 +114,13 @@ export const ArchiveItemEditPage = () => {
 		setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
 	}
 
-	const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
-		blobs.forEach(blob => {
+	const attachUnallocatedBlobs = (newBlobs: BlobDisplayInfo[]) => {
+		newBlobs.forEach(blob => {
 			setBlobs(blobs => [...blobs, blob])
 		})
 	}
 
-	const removeUnallocatedBlob = (blob: BlobIdAndNumberOfPages) => {
+	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
 		setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
 	}
 
@@ -193,7 +193,7 @@ export const ArchiveItemEditPage = () => {
 
 				<div>
 					{/* Previewlist of files from DB */}
-					<PreviewList<BlobIdAndNumberOfPages> items={blobs}
+					<PreviewList<BlobDisplayInfo> items={blobs}
 						keySelector={blob => blob.id}
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={

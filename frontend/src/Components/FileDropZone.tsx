@@ -5,7 +5,7 @@ import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtomValue } from "jotai"
 import { BlobMetadata, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "./PreviewList"
-import { BlobIdAndNumberOfPages } from "./Preview"
+import { BlobDisplayInfo } from "./Preview"
 import { DimensionEnum } from "./Preview"
 import { Preview } from "./Preview"
 import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
@@ -19,7 +19,7 @@ import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 
 export type FileDropZoneProps = {
 	onBlobAdded?: (files: { fileName: string; fileData: Blob }[]) => void
-	onBlobAttached: (blob: BlobIdAndNumberOfPages[]) => void
+	onBlobAttached: (blob: BlobDisplayInfo[]) => void
 	showUnallocatedBlobs?: boolean
 }
 export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs }: FileDropZoneProps) => {
@@ -72,7 +72,6 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
 	const handleDragOver = (event: any) => {
 		event.preventDefault()
-
 	}
 
 
@@ -129,7 +128,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
 type UnallocatedBlobsDialogProps = {
 	onCloseDialog: () => void
-	onBlobAttached: (blob: BlobIdAndNumberOfPages[]) => void
+	onBlobAttached: (blob: BlobDisplayInfo[]) => void
 }
 const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBlobsDialogProps) => {
 	const blobs = useAtomValue(blobsAtom)
@@ -146,7 +145,8 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 	}, [selectionOfBlobs.selectedItems, blobs])
 
 	const addBlob = (blobIds: UUID[]) => {
-		const blobsToAdd = blobs.filter(blob => blobIds.includes(blob.id)).map(blob => ({ id: blob.id, numberOfPages: blob.pageCount }))
+		const blobsToAdd = blobs.filter(blob => blobIds.includes(blob.id))
+			.map(blob => ({ id: blob.id, mimeType: blob.mimeType, numberOfPages: blob.pageCount }))
 		onBlobAttached(blobsToAdd)
 		onCloseDialog()
 	}
@@ -157,7 +157,6 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 			closeOnEscape={true}
 		>
 			<div className="bg-gray-100 p-4 sticky top-0">
-			
 				<div className="flex flex-horizontal justify-between mb-2">
 					<div>
 						<span className="heading-2">Select from unallocated blobs</span>
@@ -177,13 +176,13 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 								? selectionOfBlobs.clearSelection()
 								: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
 							} />
-							Select all
+						Select all
 					</label>
 					<button className="btn"
 						disabled={selectionOfBlobs.areNoItemsSelected}
 						onClick={() => addBlob(Array.from(selectionOfBlobs.selectedItems))}
 					>
-							Add {selectionOfBlobs.selectedItems.size} selected blobs
+						Add {selectionOfBlobs.selectedItems.size} selected blobs
 					</button>
 				</div>
 
@@ -207,7 +206,7 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 								<div className="w-full h-full flex justify-center action-bar-host">
 									<Preview blob={blob} dimension={DimensionEnum.full} />
 									<div className="action-bar">
-										<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
+										<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 										</button>
 									</div>

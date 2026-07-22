@@ -12,7 +12,7 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { PreviewList } from "../Components/PreviewList"
-import { BlobIdAndNumberOfPages } from "../Components/Preview"
+import { BlobDisplayInfo } from "../Components/Preview"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { DatePicker } from "../Components/DatePicker"
@@ -33,7 +33,7 @@ export const ArchiveItemNewPage = () => {
 	const [label] = useState<string>()
 	const [documentDate, setDocumentDate] = useState<string | undefined>(undefined)
 	const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
-	const [existingBlobIds, setExistingBlobIds] = useState<BlobIdAndNumberOfPages[]>([])
+	const [existingBlobIds, setExistingBlobIds] = useState<BlobDisplayInfo[]>([])
 
 	const allTags = useAtomValue(tagsAtom)
 
@@ -73,11 +73,11 @@ export const ArchiveItemNewPage = () => {
 		setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
 	}
 
-	const attachUnallocatedBlobs = (blobs: BlobIdAndNumberOfPages[]) => {
+	const attachUnallocatedBlobs = (blobs: BlobDisplayInfo[]) => {
 		setExistingBlobIds(existingBlobIds => [...existingBlobIds, ...blobs])
 	}
 
-	const removeUnallocatedBlob = (blob: BlobIdAndNumberOfPages) => {
+	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
 		setExistingBlobIds(existingBlobIds => existingBlobIds.filter(x => x.id !== blob.id))
 	}
 

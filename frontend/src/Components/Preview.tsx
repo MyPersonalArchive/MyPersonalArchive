@@ -8,18 +8,18 @@ export enum DimensionEnum {
 	full = 3
 }
 
-export interface BlobIdAndNumberOfPages {
+export interface BlobDisplayInfo {
 	id: UUID
 	numberOfPages?: number
-	mimeType?: string
+	mimeType: string
 }
 
 
-export type PreviewProps<T extends BlobIdAndNumberOfPages> = {
+export type PreviewProps<T extends BlobDisplayInfo> = {
 	blob: T
 	dimension: DimensionEnum
 }
-export const Preview = <T extends BlobIdAndNumberOfPages,>({ blob, dimension }: PreviewProps<T>) => {
+export const Preview = <T extends BlobDisplayInfo,>({ blob, dimension }: PreviewProps<T>) => {
 	return (
 		<ServerViewer
 			blobId={blob.id}
