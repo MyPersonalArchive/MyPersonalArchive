@@ -23,8 +23,8 @@ public class PreviewGenerator
 		["image/jp2"] = typeof(RasterImagePreviewGenerator),
 		["image/jpeg2000"] = typeof(RasterImagePreviewGenerator),
 		["image/jpeg2000-image"] = typeof(RasterImagePreviewGenerator),
-		["image/heic"] = typeof(RasterImagePreviewGenerator),
-		["image/heic-sequence"] = typeof(RasterImagePreviewGenerator),
+		// ["image/heic"] = typeof(RasterImagePreviewGenerator),
+		// ["image/heic-sequence"] = typeof(RasterImagePreviewGenerator),
 		["image/heif"] = typeof(RasterImagePreviewGenerator),
 		["image/heif-sequence"] = typeof(RasterImagePreviewGenerator),
 		["image/avif"] = typeof(RasterImagePreviewGenerator),
@@ -52,22 +52,25 @@ public class PreviewGenerator
 
 	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
 	{
-		var generatorType = _previewGenerators.GetValueOrDefault(mimeType) ?? throw new NotSupportedException($"No preview generator available for mime type: {mimeType}");
-		var generator = (IPreviewGenerator)_serviceScope.ServiceProvider.GetRequiredService(generatorType);
+		IPreviewGenerator generator = GetPreviewGenerator(mimeType);
 
-		Debug.WriteLine($"Generating preview for {mimeType} using libvips");
 		return generator.GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
 	}
 
 
 	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(string mimeType, Stream stream)
 	{
-		var generatorType = _previewGenerators.GetValueOrDefault(mimeType) ?? throw new NotSupportedException($"No preview generator available for mime type: {mimeType}");
-		var generator = (IPreviewGenerator)_serviceScope.ServiceProvider.GetRequiredService(generatorType);
-
+		var generator = GetPreviewGenerator(mimeType);
 		return generator.GetFileTypeSpecificMetadata(stream, mimeType);
 	}
 
+
+	private IPreviewGenerator GetPreviewGenerator(string mimeType)
+	{
+		var generatorType = _previewGenerators.GetValueOrDefault(mimeType) ?? typeof(FallbackPreviewGenerator);
+		var generator = (IPreviewGenerator)_serviceScope.ServiceProvider.GetRequiredService(generatorType);
+		return generator;
+	}
 }
 
 
@@ -79,30 +82,52 @@ public interface IPreviewGenerator
 
 
 [RegisterService(ServiceLifetime.Scoped, RegistrationMode.RegisterAsSelf)]
+public class FallbackPreviewGenerator : IPreviewGenerator
+{
+	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
+	{
+		return originalStream;
+	}
+
+	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(Stream stream, string mimeType)
+	{
+		return null;
+	}
+}
+
+
+[RegisterService(ServiceLifetime.Scoped, RegistrationMode.RegisterAsSelf)]
 public class RasterImagePreviewGenerator : IPreviewGenerator
 {
 	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
 	{
-		Debug.WriteLine("Generating image preview using libvips");
-		var previewStream = new MemoryStream();
-
-		using (var image = Image.NewFromStream(originalStream))
+		if (originalStream.CanSeek)
 		{
-			var thumb = image.ThumbnailImage(maxX, maxY);
-
-			thumb.WriteToStream(previewStream, ".png", new VOption
-			{
-				{ "compression", 3 },
-				{ "interlace", true }
-			});
+			originalStream.Position = 0;
 		}
 
-		previewStream.Position = 0;
+
+		using var image = Image.NewFromStream(originalStream);
+		var thumb = image.ThumbnailImage(maxX, maxY);
+
+		var previewStream = new MemoryStream();
+		thumb.WriteToStream(previewStream, ".png", new VOption
+		{
+			{ "compression", 3 },
+			{ "interlace", true }
+		});
+
+		// previewStream.Position = 0;
 		return previewStream;
 	}
 
 	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(Stream stream, string mimeType)
 	{
+		if (stream.CanSeek)
+		{
+			stream.Position = 0;
+		}
+
 		using var image = Image.NewFromStream(stream);
 		return new RasterImageMetadata
 		{
