@@ -30,7 +30,11 @@ sudo apt install --yes \
     libpango1.0-dev \
     libopenjp2-7-dev \
     liblcms2-dev \
-    libimagequant-dev
+    libimagequant-dev \
+    libheif-dev \
+    libde265-dev \
+    libx265-dev \
+    libavif-dev
 
 wget https://github.com/libvips/libvips/releases/download/v8.13.3/vips-8.13.3.tar.gz
 tar xf vips-8.13.3.tar.gz
