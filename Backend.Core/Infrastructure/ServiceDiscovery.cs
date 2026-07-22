@@ -30,24 +30,50 @@ public class ServiceDiscovery
 			if (attribute == null) continue;
 
 			var interfacetypes = serviceType.GetInterfaces();
-			if (interfacetypes.Length == 0)
+
+			if (attribute.Mode == RegistrationMode.Auto)
 			{
-				// No interfaces, register the class itself
-				_logger.LogInformation($"Registering service {serviceType.FullName} with lifetime {attribute.Lifetime} in assembly {serviceType.Assembly.FullName}");
-				RegisterService(serviceType, serviceType, attribute.Lifetime);
+				if (interfacetypes.Length == 0)
+				{
+					RegisterAsSelf(serviceType, attribute);
+				}
+				else
+				{
+					RegisterInterfaces(serviceType, attribute, interfacetypes);
+				}
 			}
 			else
 			{
-				// Register each interface implemented by the class
-				_logger.LogInformation($"Registering service {serviceType.FullName} with interfaces [{string.Join(", ", interfacetypes.Select(i => i.FullName))}] and lifetime {attribute.Lifetime} in assembly {serviceType.Assembly.FullName}");
-				foreach (var interfaceType in interfacetypes)
+				if (attribute.Mode.HasFlag(RegistrationMode.RegisterAsSelf))
 				{
-					RegisterService(interfaceType, serviceType, attribute.Lifetime);
+					RegisterAsSelf(serviceType, attribute);
+				}
+
+				if (attribute.Mode.HasFlag(RegistrationMode.RegisterInterfaces))
+				{
+					RegisterInterfaces(serviceType, attribute, interfacetypes);
 				}
 			}
 		}
 
 		return this;
+	}
+
+	private void RegisterInterfaces(Type serviceType, RegisterServiceAttribute attribute, Type[] interfacetypes)
+	{
+		// Register each interface implemented by the class
+		_logger.LogInformation($"Registering service {serviceType.FullName} with interfaces [{string.Join(", ", interfacetypes.Select(i => i.FullName))}] and lifetime {attribute.Lifetime} in assembly {serviceType.Assembly.FullName}");
+		foreach (var interfaceType in interfacetypes)
+		{
+			RegisterService(interfaceType, serviceType, attribute.Lifetime);
+		}
+	}
+
+	private void RegisterAsSelf(Type serviceType, RegisterServiceAttribute attribute)
+	{
+		// No interfaces, register the class itself
+		_logger.LogInformation($"Registering service {serviceType.FullName} with lifetime {attribute.Lifetime} in assembly {serviceType.Assembly.FullName}");
+		RegisterService(serviceType, serviceType, attribute.Lifetime);
 	}
 
 	private void RegisterService(Type interfaceType, Type serviceType, ServiceLifetime lifetime)
