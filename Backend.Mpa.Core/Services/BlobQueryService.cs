@@ -11,10 +11,12 @@ namespace Backend.Mpa.Core.Services;
 public class BlobQueryService
 {
 	private readonly BlobObjectStore _blobObjectStore;
+	private readonly PreviewGenerator _previewGenerator; 
 
-	public BlobQueryService(BlobObjectStore blobObjectStore)
+	public BlobQueryService(BlobObjectStore blobObjectStore, PreviewGenerator previewGenerator)
 	{
 		_blobObjectStore = blobObjectStore;
+		_previewGenerator = previewGenerator;
 	}
 
 
@@ -49,7 +51,7 @@ public class BlobQueryService
 
 
 		var extension = Path.GetExtension(blobMetadata.OriginalFilename).TrimStart('.');
-		if(PreviewGenerator.AcceptsMimeType(blobMetadata.MimeType))
+		if(_previewGenerator.AcceptsMimeType(blobMetadata.MimeType))
 		{
 			var previewExtension = $"size({maxX},{maxY}).page({pageNo}).png";
 
@@ -62,7 +64,7 @@ public class BlobQueryService
 			else
 			{
 				using var contentStream = await _blobObjectStore.GetObject(blobId, extension) ?? throw new Exception($"Content stream for blob with Id:{blobId} was null, this should never happen");
-				previewStream = PreviewGenerator.GeneratePreview(contentStream, blobMetadata.MimeType, maxX, maxY, pageNo);
+				previewStream = _previewGenerator.GeneratePreview(contentStream, blobMetadata.MimeType, maxX, maxY, pageNo);
 				if (storePreview)
 				{
 					await _blobObjectStore.StoreObject(blobId, previewExtension, previewStream);
