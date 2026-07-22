@@ -9,6 +9,6 @@ export type BlobMetadata = {
 	pageCount: number
 	uploadedAt: Date
 	uploadedByUser: string
-	mimeType?: string
+	mimeType: string
 }
 export const blobsAtom = atom<BlobMetadata[]>([])

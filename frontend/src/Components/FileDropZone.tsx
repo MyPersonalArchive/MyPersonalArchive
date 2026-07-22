@@ -18,7 +18,7 @@ import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 
 
 export type FileDropZoneProps = {
-	onBlobAdded?: (files: { fileName: string; fileData: Blob }[]) => void
+	onBlobAdded?: (files: { fileName: string; fileData: Blob, mimeType: string }[]) => void
 	onBlobAttached: (blob: BlobDisplayInfo[]) => void
 	showUnallocatedBlobs?: boolean
 }
@@ -28,7 +28,7 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 	const inputFileRef = useRef<HTMLInputElement | null>(null)
 	const [openUnallocatedBlobDialog, setOpenUnallocatedBlobsDialog] = useState(false)
 
-	const uploadBlobs = (blobs: { fileName: string; fileData: Blob }[]): void => {
+	const uploadBlobs = (blobs: { fileName: string; fileData: Blob, mimeType: string }[]): void => {
 		if (onBlobAdded) {
 			onBlobAdded(blobs)
 			return
@@ -64,7 +64,8 @@ export const FileDropZone = ({ onBlobAdded, onBlobAttached, showUnallocatedBlobs
 
 		const fileDataArray = Array.from(files).map(file => ({
 			fileName: file.name,
-			fileData: file as Blob
+			fileData: file as Blob,
+			mimeType: file.type
 		}))
 
 		uploadBlobs(fileDataArray)

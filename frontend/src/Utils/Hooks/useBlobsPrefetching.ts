@@ -12,7 +12,7 @@ type ListResponse = {
 	pageCount: number
 	uploadedAt: Date
 	uploadedByUser: string
-	mimeType?: string
+	mimeType: string
 }
 
 type GetResponse = {
@@ -22,7 +22,7 @@ type GetResponse = {
 	pageCount: number
 	uploadedAt: Date
 	uploadedByUser: string
-	mimeType?: string
+	mimeType: string
 }
 
 export const useBlobsPrefetching = () => {

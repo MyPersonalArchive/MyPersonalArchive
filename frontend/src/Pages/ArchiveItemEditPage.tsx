@@ -34,14 +34,14 @@ type GetResponse = {
 	blobDisplayInfos: {
 		id: UUID
 		numberOfPages: number
-		mimeType?: string
+		mimeType: string
 	}[]
 }
 
 type LocalBlob = {
 	fileName: string
 	fileData: Blob
-	mimeType?: string
+	mimeType: string
 }
 
 
@@ -106,7 +106,7 @@ export const ArchiveItemEditPage = () => {
 		navigate(RoutePaths.Archive.List)
 	}
 
-	const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
+	const addFileBlobs = (blobs: { fileName: string, fileData: Blob, mimeType: string }[]) => {
 		setLocalBlobs([...localBlobs, ...blobs])
 	}
 
@@ -182,18 +182,9 @@ export const ArchiveItemEditPage = () => {
 					onBlobAttached={attachUnallocatedBlobs}
 				/>
 
-				{/* <div className="stack-horizontal my-4">
-					<div className="mt-4 text-green-600 bg-gray-900 font-mono text-sm w-full p-2">
-					//TODO: How can we connect the FileDrop in the nav area when on this page? I want files dropped/uploaded to connct to this archive item.
-					</div>
-
-					<button className="btn">Upload a file to add</button>
-					<button className="btn">Select from uploaded documents and media</button>
-				</div> */}
-
 				<div>
 					{/* Previewlist of files from DB */}
-					<PreviewList<BlobDisplayInfo> items={blobs}
+					<PreviewList items={blobs}
 						keySelector={blob => blob.id}
 						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
@@ -232,30 +223,50 @@ export const ArchiveItemEditPage = () => {
 					/>
 
 					{/* Previewlist of local files (just added, not saved yet) */}
-					<PreviewList<LocalBlob> items={localBlobs}
+					<PreviewList items={localBlobs}
 						keySelector={blob => blob.fileName}
-						containerClassName="grid grid-cols-4 gap-4 pt-2"
+						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<LocalViewer
-									key={blob.fileName}
-									blob={blob.fileData}
-									fileName={blob.fileName}
-									dimension={DimensionEnum.small}
-									removeBlob={removeBlob}
-									onMaximize={() => maximize(blob)}
-								/>
+								<div key={blob.fileName}
+									className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+									onClick={() => maximize(blob)}
+								>
+									<LocalViewer
+										blob={blob.fileData}
+										fileName={blob.fileName}
+										dimension={DimensionEnum.small}
+										removeBlob={removeBlob}
+										onMaximize={() => maximize(blob)}
+									/>
+									<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
+										<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+									</button>
+									<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
+										<FontAwesomeIcon icon={faTrash} size="1x" />
+									</button>
+								</div>
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize) =>
 								<LightBox key={blob.fileName} onClose={() => minimize()}>
-									<LocalViewer
-										blob={blob.fileData}
-										fileName={blob.fileName}
-										dimension={DimensionEnum.full}
-										onMinimize={minimize}
-										removeBlob={removeBlob}
-									/>
+									<div className="w-full h-full flex justify-center action-bar-host">
+										<LocalViewer
+											blob={blob.fileData}
+											fileName={blob.fileName}
+											dimension={DimensionEnum.full}
+											onMinimize={minimize}
+											removeBlob={removeBlob}
+										/>
+										<div className="action-bar">
+											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
+												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+											</button>
+											<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
+												<FontAwesomeIcon icon={faTrash} size="1x" />
+											</button>
+										</div>
+									</div>
 								</LightBox>
 						}
 					/>

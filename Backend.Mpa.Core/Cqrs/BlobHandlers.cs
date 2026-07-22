@@ -18,7 +18,7 @@ public class GetBlob : IQuery<GetBlob, GetBlob.Response>
 		public DateTimeOffset UploadedAt { get; set; }
 		public required string UploadedByUser { get; set; }
 		public int PageCount { get; set; }
-		public string? MimeType { get; set; }
+		public required string MimeType { get; set; }
 	}
 }
 
@@ -36,7 +36,7 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 		public DateTimeOffset UploadedAt { get; set; }
 		public required string UploadedByUser { get; set; }
 		public int PageCount { get; set; }
-		public string? MimeType { get; set; }
+		public required string MimeType { get; set; }
 	}
 }
 
