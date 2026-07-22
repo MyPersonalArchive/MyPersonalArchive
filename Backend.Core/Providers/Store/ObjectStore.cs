@@ -42,7 +42,7 @@ public abstract class ObjectStore
 			.Where(filename => filename.StartsWith(objectIdStringDashed));
 
 		var extensions = filesForObject
-			.Select(filename => Path.GetExtension(filename))
+			.Select(filename => filename.Split('.').Skip(1).Aggregate((a, b) => a + "." + b)) // Get the full extension from the first dot
 			.Select(extension => extension.TrimStart('.'));
 
 		return extensions;
