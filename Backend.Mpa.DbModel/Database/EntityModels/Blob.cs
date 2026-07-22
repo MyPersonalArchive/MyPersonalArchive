@@ -11,7 +11,7 @@ public class Blob : TenantEntity
 	public Guid Id { get; set; }
 
 	[MaxLength(32)]
-	public string? MimeType { get; set; }
+	public required string MimeType { get; set; }
 	public required int PageCount { get; set; }
 
 	public ArchiveItem ArchiveItem { get; set; }

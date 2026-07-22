@@ -24,7 +24,7 @@ public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 		public class BlobDisplayInfo
 		{
 			public required Guid Id { get; set; }
-			public required string? MimeType { get; set; }
+			public required string MimeType { get; set; }
 			public required int NumberOfPages { get; set; }
 		}
 	}
@@ -47,7 +47,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 		public class BlobDisplayInfo
 		{
 			public required Guid Id { get; set; }
-			public required string? MimeType { get; set; }
+			public required string MimeType { get; set; }
 			public required int NumberOfPages { get; set; }
 		}
 	}
