@@ -187,7 +187,8 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 					</button>
 				</div>
 
-				<PreviewList<BlobMetadata> items={blobs.filter(blob => !allocatedBlobs.has(blob.id))}
+				<PreviewList items={blobs.filter(blob => !allocatedBlobs.has(blob.id))}
+					containerClassName="flex flex-col gap-3"
 					keySelector={blob => blob.id}
 					thumbnailPreviewTemplate={
 						(blob, maximize) =>

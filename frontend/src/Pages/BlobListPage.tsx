@@ -102,6 +102,7 @@ export const BlobListPage = () => {
 			</div>
 
 			<PreviewList<BlobMetadata> items={visibleBlobs}
+				containerClassName="flex flex-col gap-3"
 				keySelector={blob => blob.id}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
@@ -119,7 +120,7 @@ export const BlobListPage = () => {
 							<div className="w-full h-full flex justify-center action-bar-host">
 								<Preview blob={blob} dimension={DimensionEnum.full} />
 								<div className="action-bar">
-									<button type="button" onClick={e => {minimize(); e.stopPropagation()}} title="Minimize">
+									<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 										<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 									</button>
 								</div>
@@ -150,7 +151,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 				<Preview blob={blob} dimension={DimensionEnum.thumbnail} />
 
 				<div className="action-bar">
-					<button type="button" onClick={e => {maximize(blob); e.stopPropagation()}} title="Expand">
+					<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
 						<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
 					</button>
 				</div>

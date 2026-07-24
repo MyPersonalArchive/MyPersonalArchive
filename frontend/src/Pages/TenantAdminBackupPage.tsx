@@ -4,9 +4,9 @@ import { faClock, faPlay, faPlus, faRotate, faStop } from "@fortawesome/free-sol
 import { useState } from "react"
 
 
-export const BackupPage = () => {
+export const TenantAdminBackupPage = () => {
 	return (
-		<>
+		<div className="form">
 			{/* <header className="header">
 				<h1 className="heading-1">
 					Backup and external sync
@@ -16,7 +16,7 @@ export const BackupPage = () => {
 			<BackupActionButtons/> */}
 			
 			<BackupView />
-		</>
+		</div>
 	)
 }
 

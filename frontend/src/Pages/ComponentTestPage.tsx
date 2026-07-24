@@ -133,22 +133,43 @@ const ComponentTester = () => {
 				<div>with <span className="font-code">class="input"</span></div>
 			</div>
 
-			<div className="card w-full flex flex-row">
-				<div className="w-40 h-30 bg-black text-red-500 font-code p-4 text-center">class="card"</div>
-				<div className="p-2 grow relative">
-					<div className="flex flex-col py-2 px-4">
-						<div className="font-bold">Title</div>
-						<div className=" text-sm">Subtext</div>
-						<div className=" text-sm">More subtext</div>
+			<div className="flex flex-row gap-3 my-4">
+				<div className="card w-full flex flex-row">
+					<div className="w-40 h-30 bg-black text-red-500 font-code p-4 text-center">class="card"</div>
+					<div className="p-2 grow relative">
+						<div className="flex flex-col py-2 px-4">
+							<div className="font-bold">Title</div>
+							<div className=" text-sm">Subtext</div>
+							<div className=" text-sm">More subtext</div>
+						</div>
+
+
+						<div className="absolute bottom-2 right-2 space-x-2">
+							<button className="btn" type="button">Button 1</button>
+							<button className="btn" type="button">Button 2</button>
+						</div>
+
 					</div>
-
-
-					<div className="absolute bottom-2 right-2 space-x-2">
-						<button className="btn" type="button">Button 1</button>
-						<button className="btn" type="button">Button 2</button>
-					</div>
-
 				</div>
+
+				<div className="card w-full flex flex-row">
+					<div className="w-40 h-30 bg-black text-red-500 font-code p-4 text-center">class="card"</div>
+					<div className="p-2 grow relative">
+						<div className="flex flex-col py-2 px-4">
+							<div className="font-bold">Title</div>
+							<div className=" text-sm">Subtext</div>
+							<div className=" text-sm">More subtext</div>
+						</div>
+
+
+						<div className="absolute bottom-2 right-2 space-x-2">
+							<button className="btn" type="button">Button 1</button>
+							<button className="btn" type="button">Button 2</button>
+						</div>
+
+					</div>
+				</div>
+
 			</div>
 
 			<table className="table with-column-separators">

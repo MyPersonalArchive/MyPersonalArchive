@@ -9,88 +9,120 @@ import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 import { RequireTenant } from "./Frames/RequireTenant"
-import { Layout } from "./Frames/Layout"
+import { UserLayout } from "./Frames/UserLayout"
 import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
 import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { RootFrame } from "./Frames/RootFrame"
 import { EmailListPage } from "./Pages/EmailListPage"
-import { BackupPage } from "./Pages/BackupPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
 import { ComponentTestPage } from "./Pages/ComponentTestPage"
+import { TenantAdminLayout } from "./Frames/TenantAdminLayout"
+import { TenantAdminDashboardPage } from "./Pages/TenantAdminDashoardPage"
+import { TenantAdminUsersPage } from "./Pages/TenantAdminUsersPage"
+import { TenantAdminBackupPage } from "./Pages/TenantAdminBackupPage"
+import { TenantAdminLogsPage } from "./Pages/TenantAdminLogsPage"
+
 
 const router = createBrowserRouter([
 	{
 		element: (
 			<RootFrame>
 				<CurrentTenantIdFrame>
-					<Layout>
-						<Outlet />
-					</Layout>
+					<Outlet />
 				</CurrentTenantIdFrame>
 			</RootFrame>
 		),
 		children: [
-			{
-				path: RoutePaths.Index,
-				element: <IndexPage />
-			},
-			{
-				path: RoutePaths.SignIn,
-				element: <SignInPage />
-			},
-			{
+			{ /* Tenant admin layout */
 				element: (
-					<RequireTenant>
-						<PrefetchDataFrame>
-							<Outlet />
-						</PrefetchDataFrame>
-					</RequireTenant>
+					<TenantAdminLayout>
+						<Outlet />
+					</TenantAdminLayout>
 				),
 				children: [
 					{
-						path: RoutePaths.SignOut,
-						element: <SignOutPage />
+						path: RoutePaths.TenantAdmin.Dashboard,
+						element: <TenantAdminDashboardPage />
 					},
 					{
-						path: RoutePaths.Profile,
-						element: <UserProfilePage />
+						path: RoutePaths.TenantAdmin.Users,
+						element: <TenantAdminUsersPage />
 					},
 					{
-						path: RoutePaths.Archive.List,
-						element: <ArchiveItemListPage />
+						path: RoutePaths.TenantAdmin.Backup,
+						element: <TenantAdminBackupPage />
 					},
 					{
-						path: `${RoutePaths.Archive.Edit}/:id`,
-						element: <ArchiveItemEditPage />
-					},
-					{
-						path: RoutePaths.Archive.New,
-						element: <ArchiveItemNewPage />
-					},
-					{
-						path: RoutePaths.Blob.List,
-						element: <BlobListPage />
-					},
-					{
-						path: `${RoutePaths.Email}/:id`,
-						element: <EmailListPage />
-					},
-					{
-						path: `${RoutePaths.ExternalAuthentication.Basic}/:provider`,
-						element: <BasicAuthenticationPage />
-					},
-					{
-						path: RoutePaths.Backup,
-						element: <BackupPage />
-					},
-					{
-						path: "test",
-						element: <ComponentTestPage />
+						path: RoutePaths.TenantAdmin.Logs,
+						element: <TenantAdminLogsPage />
 					}
 				]
-			}
-		]
+			},
+			{ /* User layout */
+				element: (
+					<UserLayout>
+						<Outlet />
+					</UserLayout>
+				),
+				children: [
+					{
+						path: RoutePaths.Index,
+						element: <IndexPage />
+					},
+					{
+						path: RoutePaths.SignIn,
+						element: <SignInPage />
+					},
+					{
+						element: (
+							<RequireTenant>
+								<PrefetchDataFrame>
+									<Outlet />
+								</PrefetchDataFrame>
+							</RequireTenant>
+						),
+						children: [
+							{
+								path: RoutePaths.SignOut,
+								element: <SignOutPage />
+							},
+							{
+								path: RoutePaths.Profile,
+								element: <UserProfilePage />
+							},
+							{
+								path: RoutePaths.Archive.List,
+								element: <ArchiveItemListPage />
+							},
+							{
+								path: `${RoutePaths.Archive.Edit}/:id`,
+								element: <ArchiveItemEditPage />
+							},
+							{
+								path: RoutePaths.Archive.New,
+								element: <ArchiveItemNewPage />
+							},
+							{
+								path: RoutePaths.Blob.List,
+								element: <BlobListPage />
+							},
+							{
+								path: `${RoutePaths.Email}/:id`,
+								element: <EmailListPage />
+							},
+							{
+								path: `${RoutePaths.ExternalAuthentication.Basic}/:provider`,
+								element: <BasicAuthenticationPage />
+							},
+							{
+								path: "test",
+								element: <ComponentTestPage />
+							}
+						]
+					}
+				]
+			}]
 	}
 ])
 

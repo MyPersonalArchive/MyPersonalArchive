@@ -14,8 +14,13 @@ export const RoutePaths = {
 	},
 	StoredFilters: "/filters",
 	Email: "/email",
-	Backup: "/backup",
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic"
+	},
+	TenantAdmin: {
+		Dashboard: "/tenant-admin/dashboard",
+		Users: "/tenant-admin/users",
+		Backup: "/tenant-admin/backup",
+		Logs: "/tenant-admin/logs"
 	}
 }
