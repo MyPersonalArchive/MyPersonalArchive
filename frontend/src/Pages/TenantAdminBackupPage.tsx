@@ -4,19 +4,31 @@ import { faClock, faPlay, faPlus, faRotate, faStop } from "@fortawesome/free-sol
 import { useState } from "react"
 
 
-export const BackupPage = () => {
+export const TenantAdminBackupPage = () => {
 	return (
-		<>
-			{/* <header className="header">
-				<h1 className="heading-1">
-					Backup and external sync
-				</h1>
+		<div className="form">
+			<header className="header">
+				<h1>Backup and external sync</h1>
+				<div className="todo mt-2">
+					//TODO: Implement this, since this is a placeholder/sample page
+				</div>
 			</header>
-
-			<BackupActionButtons/> */}
 			
+			{/* <BackupActionButtons /> */}
 			<BackupView />
-		</>
+
+			<div className="todo mt-2">
+				<div>Backup and external sync should allow:</div>
+				- See current backup status<br />
+				<div className="pl-4">- Schedule backups</div>
+				<div className="pl-4">- Manually start and stop backups?</div>
+				<div className="pl-4">- Recovery options</div>
+				<div className="pl-4">- View backup history (Navigate to Logs page?)</div>
+				- External sync options<br />
+				<div className="pl-4">- Configure external sync destinations</div>
+				<div className="pl-4">- Manage backup destinations</div>
+			</div>
+		</div>
 	)
 }
 

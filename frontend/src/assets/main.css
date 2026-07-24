@@ -6,49 +6,53 @@
 @import "./backup.css";
 
 @font-face {
-        font-family: "Monaspace Neon";
-        src: url("./MonaspaceNeonVar.woff2") format("woff2"),
-             url("./MonaspaceNeonVar.woff") format("woff");
-        font-weight: 100 900;
-        font-style: normal;
+	font-family: "Monaspace Neon";
+	src: url("./MonaspaceNeonVar.woff2") format("woff2"),
+		url("./MonaspaceNeonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
 }
 
 @font-face {
-        font-family: "Monaspace Argon";
-        src: url("./MonaspaceArgonVar.woff2") format("woff2"),
-             url("./MonaspaceArgonVar.woff") format("woff");
-        font-weight: 100 900;
-        font-style: normal;
+	font-family: "Monaspace Argon";
+	src: url("./MonaspaceArgonVar.woff2") format("woff2"),
+		url("./MonaspaceArgonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
 }
 
 @font-face {
-        font-family: "Monaspace Xenon";
-        src: url("./MonaspaceXenonVar.woff2") format("woff2"),
-             url("./MonaspaceXenonVar.woff") format("woff");
-        font-weight: 100 900;
-        font-style: normal;
+	font-family: "Monaspace Xenon";
+	src: url("./MonaspaceXenonVar.woff2") format("woff2"),
+		url("./MonaspaceXenonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
 }
 
 @font-face {
-        font-family: "Monaspace Radon";
-        src: url("./MonaspaceRadonVar.woff2") format("woff2"),
-             url("./MonaspaceRadonVar.woff") format("woff");
-        font-weight: 100 900;
-        font-style: normal;
+	font-family: "Monaspace Radon";
+	src: url("./MonaspaceRadonVar.woff2") format("woff2"),
+		url("./MonaspaceRadonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
 }
 
 @font-face {
-        font-family: "Monaspace Krypton";
-        src: url("./MonaspaceKryptonVar.woff2") format("woff2"),
-             url("./MonaspaceKryptonVar.woff") format("woff");
-        font-weight: 100 900;
-        font-style: normal;
+	font-family: "Monaspace Krypton";
+	src: url("./MonaspaceKryptonVar.woff2") format("woff2"),
+		url("./MonaspaceKryptonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
 }
 
 @theme {
-	--color-main-color: hsl(210,45%,96%);
-	--color-nav-color: hsl(210,36%,30%);
-	--color-top-color: hsl(210,29%,24%);
+	--color-main-color: hsl(210, 45%, 96%);
+	--color-user-nav-color: hsl(210, 36%, 30%);
+	--color-tenant-admin-nav-color: hsl(255, 36%, 30%);
+	/* --color-nav-color: hsl(210, 36%, 30%); */
+	--color-user-top-color: hsl(210, 29%, 24%);
+	--color-tenant-admin-top-color: hsl(255, 29%, 24%);
+	/* --color-top-color: hsl(210, 29%, 24%); */
 	--font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	--font-code: "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
@@ -62,7 +66,15 @@ div#root {
 
 /* ── Header ── */
 div#topBar {
-	@apply [grid-area:header] bg-top-color text-white flex items-center px-5 gap-4 relative z-1;
+	@apply [grid-area:header] flex items-center px-5 gap-4 relative z-1;
+
+	&.user-layout {
+		@apply  bg-user-top-color text-white;
+	}
+
+	&.tenant-admin-layout {
+		@apply  bg-tenant-admin-top-color text-white;
+	}
 
 	& .logo {
 		@apply text-[1.2rem] font-bold tracking-[.05em];
@@ -97,7 +109,7 @@ div#topBar {
 	& a {
 		@apply flex items-center gap-[.65rem] py-[.65rem] px-4 no-underline text-[#333] text-sm transition-[background] duration-[120ms];
 	}
-	
+
 	& a:hover {
 		@apply bg-[#f3f6fa];
 	}
@@ -131,8 +143,16 @@ div#topBar {
 
 /* ── Side nav ── */
 nav#sideNav {
-	@apply [grid-area:nav] bg-nav-color text-[#d4f5e4] flex flex-col items-stretch pt-4 overflow-y-auto;
+	@apply [grid-area:nav] flex flex-col items-stretch pt-4 overflow-y-auto;
 	@apply max-sm:fixed max-sm:top-14 max-sm:left-0 max-sm:w-[280] max-sm:h-[calc(100dvh-56px)] max-sm:z-100 max-sm:-translate-x-full max-sm:transition-transform max-sm:duration-[250ms] max-sm:ease-in-out max-sm:shadow-[4px_0_16px_rgba(0,0,0,.3)];
+
+	&.user-layout {
+		@apply bg-user-nav-color text-[#d4f5e4];
+	}
+
+	&.tenant-admin-layout {
+		@apply bg-tenant-admin-nav-color text-[#d4f5e4];
+	}
 
 	&.open {
 		@apply max-sm:translate-x-0;
@@ -159,9 +179,10 @@ nav#sideNav {
 		@apply bg-white/12 border-l-[#7ef4b4] text-white;
 	}
 
-	& .adjustments-mode-toggle:hover{
+	& .adjustments-mode-toggle:hover {
 		@apply bg-white/12;
 	}
+
 	& .adjustments-mode-toggle.active {
 		@apply border-l-amber-500 text-white;
 	}
@@ -199,7 +220,7 @@ main {
 .lightbox-backdrop {
 	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto z-2;
 
-	> * {
+	>* {
 		@apply my-auto;
 	}
 }
@@ -210,7 +231,7 @@ main {
 }
 
 .dialog {
-	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-[80%]  flex flex-col overflow-auto;
+	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-[80%] flex flex-col overflow-auto;
 
 	&.small {
 		@apply w-[min(320px,80%)];
@@ -231,13 +252,16 @@ main {
 }
 
 
-.dialog-header
-{
-	@apply /*border-b border-gray-300*/ font-bold p-4;
+.dialog-header {
+	@apply
+	/*border-b border-gray-300*/
+	font-bold p-4;
 }
 
 .dialog-content {
-	@apply p-4 /*overflow-auto*/;
+	@apply p-4
+	/*overflow-auto*/
+	;
 }
 
 .dialog-footer {
@@ -251,7 +275,7 @@ main {
 
 .action-bar-host {
 	@apply relative;
-	
+
 	/* Hover Action Bar */
 	& .action-bar {
 		@apply absolute top-0 right-0 bg-black/40 flex p-2 gap-2 opacity-0 transition-opacity duration-300 ease-in-out pointer-events-none rounded-bl-xl backdrop-blur-[0.5px];
@@ -382,7 +406,7 @@ header.header {
 
 .grouped {
 	@apply inline-flex;
-	
+
 	&:has(:focus) {
 		@apply outline outline-2 outline-blue-200 rounded;
 	}
@@ -417,6 +441,7 @@ div.input {
 
 form,
 .form {
+
 	& input,
 	& select,
 	& .input,
@@ -479,7 +504,7 @@ span.tag {
 }
 
 .card {
-	@apply border border-gray-300 bg-white my-3 rounded-lg overflow-hidden shadow-lg shadow-gray-200;
+	@apply border border-gray-300 bg-white my-0 rounded-lg overflow-hidden shadow-lg shadow-gray-200;
 	transition: transform 0.2s ease;
 
 	&:hover {
@@ -495,6 +520,13 @@ span.tag {
 .todo {
 	@apply text-green-600 bg-gray-900 font-mono text-xs w-full p-2;
 }
+
+.log {
+	&>div {
+		@apply text-black bg-gray-200 font-mono text-xs p-1;
+	}
+}
+
 
 kbd {
 	@apply font-mono px-1 bg-gray-200 text-gray-800 border rounded;

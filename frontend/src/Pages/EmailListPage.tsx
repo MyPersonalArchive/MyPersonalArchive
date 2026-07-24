@@ -116,7 +116,8 @@ export const EmailListPage = () => {
 					</button>
 				</div>
 
-				<PreviewList<FullEmail>
+				<PreviewList
+					containerClassName="flex flex-col gap-3"
 					items={emails}
 					keySelector={email => email.uniqueId}
 					thumbnailPreviewTemplate={(email, maximize) =>
@@ -164,8 +165,6 @@ type EmailThumbnailProps = {
 	maximize: (email: FullEmail) => void
 }
 const EmailThumbnail = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: EmailThumbnailProps) => {
-
-
 
 	return (
 		<div key={email.uniqueId} className="card" >
@@ -215,7 +214,7 @@ type EmailPreviewProps = {
 	email: FullEmail
 	createArchiveItemFromEmails: (emails: FullEmail[]) => void
 	createBlobsFromAttachments: (messageId: number, attachments: EmailAttachment[]) => void
-	externalAccountId: string
+	externalAccountId: UUID
 	selectedFolder: string
 	maximize: (email: FullEmail) => void
 }

@@ -27,10 +27,10 @@ function peerToDestination(peer: PairedPeerInfo, logs: BackupLog[]): BackupDesti
 	const peerLogs = logs.filter(log => log.targetSystem === peer.target)
 	const lastLog = peerLogs.length > 0 ? peerLogs[0] : null
 	const successfulBackups = peerLogs.filter(log => log.status === 2)
-	
+
 	const itemsBackedUp = successfulBackups.reduce((sum) => sum + 1, 0)
 	const totalSize = peerLogs.reduce((sum, log) => sum + (log.fileSizeBytes || 0), 0)
-	
+
 	return {
 		id: peer.id,
 		name: peer.name,
@@ -51,7 +51,7 @@ function logToBackupItem(log: BackupLog): BackupItem {
 	const startedAt = new Date(log.startedAt)
 	const completedAt = log.completedAt ? new Date(log.completedAt) : undefined
 	const duration = completedAt ? (completedAt.getTime() - startedAt.getTime()) / 1000 : undefined
-	
+
 	return {
 		id: log.id,
 		name: log.itemName,
@@ -138,7 +138,7 @@ export function BackupView() {
 					currentFile: message.data.currentFile || "",
 					errorMessage: message.data.errorMessage
 				})
-				
+
 				// If finished or failed, clear the status after a brief delay
 				if (message.data.status === "Finished" || message.data.status === "Failed") {
 					setTimeout(() => {
@@ -157,22 +157,22 @@ export function BackupView() {
 				backupService.getPairedPeers(),
 				backupService.getBackupLogs(1, 100) // Get recent logs
 			])
-			
+
 			// Separate outbound (I backup TO them) and inbound (they backup TO me)
 			const outbound = peers
 				.filter(peer => peer.role === "Source")
 				.map(peer => peerToDestination(peer, logsResponse.logs))
-			
+
 			const inbound = peers
 				.filter(peer => peer.role === "Destination")
 				.map(peer => peerToDestination(peer, logsResponse.logs))
-			
+
 			setOutboundDestinations(outbound)
 			setInboundPeers(inbound)
-			
+
 			// Check connectivity for all outbound destinations in background
 			checkDestinationsConnectivity(outbound)
-		
+
 			// Check backup status
 			const status = await backupService.getBackupStatus()
 			setIsBackupRunning(status?.status === 1)
@@ -188,9 +188,9 @@ export function BackupView() {
 			if (dest.type === "WebRTC") {
 				try {
 					const isConnected = await backupService.checkConnectivity(dest.id)
-				
+
 					// Update the destination's connection status
-					setOutboundDestinations(prev => 
+					setOutboundDestinations(prev =>
 						prev.map(d => d.id === dest.id ? { ...d, isConnected } : d)
 					)
 				} catch (error) {
@@ -221,7 +221,7 @@ export function BackupView() {
 					isRestoring: status.status !== "Finished" && status.status !== "Failed"
 				}
 				setRestoreStatus(normalizedStatus)
-				
+
 				// Auto-clear finished/failed status after brief delay
 				if (status.status === "Finished" || status.status === "Failed") {
 					setTimeout(() => {
@@ -242,16 +242,16 @@ export function BackupView() {
 			alert("No backup destinations configured. Please pair with another instance first.")
 			return
 		}
-		
+
 		try {
 			// Use first destination for now
 			const firstDestination = outboundDestinations[0]
-			
+
 			// Set status to Pending immediately
 			setOutboundDestinations(prev =>
 				prev.map(d => d.id === firstDestination.id ? { ...d, status: BackupStatus.Pending } : d)
 			)
-			
+
 			await backupService.startBackup(firstDestination.target, "", "WebRTC", "None")
 			setIsBackupRunning(true)
 		} catch (error) {
@@ -290,20 +290,20 @@ export function BackupView() {
 			// Fetch logs for this specific destination - check both lists
 			const destination = [...outboundDestinations, ...inboundPeers].find(d => d.id === destinationId)
 			if (!destination) return
-			
+
 			const logsResponse = await backupService.getBackupLogs(1, 100)
 			const destinationLogs = logsResponse.logs.filter(log => log.targetSystem === destination.target)
-			
+
 			if (destinationLogs.length === 0) {
 				alert("No backup history for this destination")
 				return
 			}
-			
+
 			// Group logs by timestamp/run
 			const items = destinationLogs.map(logToBackupItem)
 			const firstLog = destinationLogs[0]
 			const lastLog = destinationLogs[destinationLogs.length - 1]
-			
+
 			const backupRun: BackupRun = {
 				id: destinationId,
 				destinationId: destination.id,
@@ -317,7 +317,7 @@ export function BackupView() {
 				transferredSize: items.filter(i => i.status === BackupStatus.Success).reduce((sum, i) => sum + i.size, 0),
 				items
 			}
-			
+
 			setSelectedBackupRun(backupRun)
 		} catch (error) {
 			console.error("Error loading backup details:", error)
@@ -330,12 +330,12 @@ export function BackupView() {
 			// Find the destination
 			const destination = outboundDestinations.find(d => d.id === destinationId)
 			if (!destination) return
-			
+
 			// Set status to Pending immediately
 			setOutboundDestinations(prev =>
 				prev.map(d => d.id === destinationId ? { ...d, status: BackupStatus.Pending } : d)
 			)
-			
+
 			// Start the backup
 			await backupService.startBackup(destination.target, "", "WebRTC", "None")
 			setIsBackupRunning(true)
@@ -351,7 +351,7 @@ export function BackupView() {
 		if (!confirm("Are you sure you want to remove this backup destination?")) {
 			return
 		}
-		
+
 		try {
 			await backupService.deletePairedPeer(destinationId)
 			await loadDestinations() // Refresh list
@@ -367,10 +367,6 @@ export function BackupView() {
 
 	return (
 		<>
-			<header className="header">
-				<h1>Backup and external sync</h1>
-			</header>
-			
 			{/* Restore Progress Overlay */}
 			{restoreStatus && (restoreStatus.isRestoring || restoreStatus.status === "Finished") && (
 				<RestoreStatusView {...restoreStatus} />
@@ -422,7 +418,7 @@ export function BackupView() {
 					<BackupTable
 						destinations={inboundPeers}
 						onViewDetails={handleViewDetails}
-						onRunBackup={() => {}} // Can't trigger their backup
+						onRunBackup={() => { }} // Can't trigger their backup
 						onDeleteDestination={handleDeleteDestination}
 						onNewTarget={handleNewTarget}
 					/>

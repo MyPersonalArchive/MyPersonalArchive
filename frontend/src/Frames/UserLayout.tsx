@@ -1,12 +1,12 @@
 
 import { PropsWithChildren, useEffect, useRef, useState } from "react"
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrashCan, faPlus, faUser, faBars, faChevronDown, faRightFromBracket, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear } from "@fortawesome/free-solid-svg-icons"
+import { faTrashCan, faPlus, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn, faGear } from "@fortawesome/free-solid-svg-icons"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
@@ -15,10 +15,11 @@ import classNames from "classnames"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 import { FileDrop } from "../Components/FileDrop"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
+import { TopBar } from "./TopBar"
 
 
 
-export const Layout = ({ children }: PropsWithChildren) => {
+export const UserLayout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
 	const [{ navIsOpen, profileDropdownIsOpen, adjustmentsModeIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
 
@@ -37,77 +38,12 @@ export const Layout = ({ children }: PropsWithChildren) => {
 
 	return (
 		<>
-			<div id="topBar">
-				<button className="menu-btn" id="menuBtn"
-					aria-label="Open navigation"
-					aria-expanded={navIsOpen}
-					aria-controls="sideNav"
-					onClick={() => dispatchLayoutCommand({ action: "TOGGLE_NAV" })}
-				>
-					<FontAwesomeIcon icon={faBars} />
-				</button>
-
-				<span className="logo">My Personal Archive</span>
-
-				<div className="flex-1"></div>
-
-				<div className="profile">
-					{!currentUser &&
-						<Link className="profile-btn"
-							id="profileBtn"
-							to={RoutePaths.SignIn}
-						>
-							<div className="profile-avatar">
-								<FontAwesomeIcon icon={faUser} />
-							</div>
-							Sign in
-						</Link>
-					}
-					{currentUser &&
-						<>
-							<button className="profile-btn"
-								// id="profileBtn"
-								aria-haspopup="true"
-								aria-expanded={profileDropdownIsOpen}
-								aria-controls="profileDropdown"
-								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PROFILE_DROPDOWN" })}
-							>
-								<div className="profile-avatar">
-									<FontAwesomeIcon icon={faUser} />
-								</div>
-								{currentUser?.fullname}
-								<FontAwesomeIcon icon={faChevronDown} />
-							</button>
-
-							<div className={classNames("profile-dropdown", { "open": profileDropdownIsOpen })}
-								role="menu"
-								id="profileDropdown"
-							>
-								<div className="profile-dropdown-header">
-									<strong>{currentUser?.fullname}</strong>
-									<span>{currentUser?.username}</span>
-								</div>
-								<Link role="menuitem"
-									to={RoutePaths.Profile}
-									onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
-								>
-									<FontAwesomeIcon icon={faUser} />
-									My profile
-								</Link>
-								<div className="divider"></div>
-								<Link
-									to={RoutePaths.SignOut} role="menuitem"
-									onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
-									className="danger"
-								>
-									<FontAwesomeIcon icon={faRightFromBracket} />
-									Sign Out
-								</Link>
-							</div>
-						</>
-					}
-				</div>
-			</div>
+			<TopBar className="user-layout"
+				navIsOpen={navIsOpen}
+				dispatchLayoutCommand={dispatchLayoutCommand}
+				currentUser={currentUser}
+				profileDropdownIsOpen={profileDropdownIsOpen}
+			/>
 
 			<div className={classNames("nav-overlay", { "open": navIsOpen })}
 				onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
@@ -115,7 +51,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
 			>
 			</div>
 
-			<nav id="sideNav" className={classNames({ "open": navIsOpen })}>
+			<nav id="sideNav" className={classNames("user-layout", { "open": navIsOpen })}>
 				{currentUser &&
 					<>
 						<div className="nav-group">
@@ -145,13 +81,6 @@ export const Layout = ({ children }: PropsWithChildren) => {
 						</FileDrop>
 
 						<div className="nav-group">
-							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
-								to={RoutePaths.Backup}
-							>
-								<FontAwesomeIcon icon={faGear} fixedWidth />
-								Backup and external sync
-							</NavLink>
-
 							<button
 								className={classNames("adjustments-mode-toggle", { "active": adjustmentsModeIsOpen })}
 								onClick={() => dispatchLayoutCommand({ action: "TOGGLE_ADJUSTMENTS_MODE" })}
@@ -310,3 +239,4 @@ export const ConnectNewAccount = () => {
 
 	)
 }
+
