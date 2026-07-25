@@ -1,10 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Core.Infrastructure;
-using Backend.Core.Services;
 using Backend.Mpa.Core.Store;
-using Backend.Mpa.DbModel.Database;
-using Backend.Mpa.DbModel.Database.EntityModels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Mpa.Core.Services;
@@ -12,126 +9,96 @@ namespace Backend.Mpa.Core.Services;
 [RegisterService(ServiceLifetime.Scoped)]
 public class ArchiveItemCommandService
 {
+	private readonly ArchiveItemQueryService _archiveItemQueryService;
 	private readonly ArchiveItemPublicationService _archiveItemPublicationService;
-	private readonly MpaDbContext _dbContext;
-	private readonly BlobQueryService _blobQueryService;
+	private readonly ArchiveObjectStore _archiveObjectStore;
 	private readonly BlobCommandService _blobCommandService;
 	private readonly BlobPublicationService _blobPublicationService;
-
 	private readonly IAmbientDataResolver _resolver;
-	
-	public ArchiveItemCommandService(ArchiveItemPublicationService archiveItemPublicationService, MpaDbContext dbContext, BlobQueryService blobQueryService, BlobCommandService blobCommandService, BlobPublicationService blobPublicationService, IAmbientDataResolver resolver)
+
+	public ArchiveItemCommandService(ArchiveItemQueryService archiveItemQueryService,
+									 ArchiveItemPublicationService archiveItemPublicationService,
+									 ArchiveObjectStore archiveObjectStore,
+									 BlobCommandService blobCommandService,
+									 BlobPublicationService blobPublicationService,
+									 IAmbientDataResolver resolver)
 	{
+		_archiveItemQueryService = archiveItemQueryService;
 		_archiveItemPublicationService = archiveItemPublicationService;
-		_dbContext = dbContext;
-		_blobQueryService = blobQueryService;
+		_archiveObjectStore = archiveObjectStore;
 		_blobCommandService = blobCommandService;
 		_blobPublicationService = blobPublicationService;
 		_resolver = resolver;
 	}
 
 
-	public async Task<ArchiveItem> CreateArchiveItem(string title,
+	public async Task<ArchiveItemMetadata> CreateArchiveItem(string title,
 													 IEnumerable<string> tags,
 													 JsonObject? metadata,
-													 IEnumerable<Guid> blobIds,
+													 IEnumerable<Guid> existingBlobIds,
 													 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
-		var existingBlobEntities = await _blobQueryService.GetBlobEntities(blobIds);
+		var newBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobEntities]);
 
-		var newBlobGuids = await _blobCommandService.UploadBlobs(uploadedBlobs);
-		var newBlobEntities = await _blobQueryService.GetBlobEntities(newBlobGuids);
-
-		ICollection<BlobMetadata> connectedBlobEntities = [.. existingBlobEntities, .. newBlobEntities];
-
-		var newArchiveItem = new ArchiveItem
+		var newArchiveItemId = Guid.NewGuid();
+		var newArchiveItem = new ArchiveItemMetadata
 		{
+			Id = newArchiveItemId,
 			Title = title,
-			CreatedByUsername = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
+			Tags = tags,
+			DocumentDate = null,
 			CreatedAt = DateTimeOffset.Now,
-			Blobs = connectedBlobEntities.Select(blobMetadata => new Blob
-			{
-				Id = blobMetadata.Id,
-				MimeType = blobMetadata.MimeType,
-				PageCount = blobMetadata.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
-			}).ToList(),
-			Tags = Tags.Ensure(_dbContext, tags),
-			Metadata = metadata ?? new JsonObject(),
-			LastUpdated = DateTimeOffset.Now
+			CreatedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
+			LastUpdatedAt = DateTimeOffset.Now,
+			LastUpdatedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
+			Blobs = await _archiveItemQueryService.GetBlobDisplayInfos(connectedBlobIds),
+			Metadata = metadata ?? new(),
 		};
 
-		_dbContext.ArchiveItems.Add(newArchiveItem);
-		await _dbContext.SaveChangesAsync();
+		await _archiveObjectStore.StoreObject(newArchiveItemId, "json", new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)));
 
 		await _archiveItemPublicationService.PublishArchiveItemsAddedMessage([newArchiveItem]);
-		await _blobPublicationService.PublishBlobsUpdatedMessage(connectedBlobEntities);
+		await _blobPublicationService.PublishBlobsUpdatedMessage(connectedBlobIds);
 
 		return newArchiveItem;
 	}
 
 
-	public async Task<ArchiveItem?> UpdateArchiveItem(Guid archiveItemId,
+	public async Task<ArchiveItemMetadata?> UpdateArchiveItem(Guid archiveItemId,
 													  string title,
 													  IEnumerable<string> tags,
 													  JsonObject? metadata,
 													  DateTimeOffset? documentDate,
-													  IEnumerable<Guid> blobIds,
+													  IEnumerable<Guid> existingBlobIds,
 													  IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(item => item.Blobs)
-			.Include(item => item.Tags)
-			.SingleOrDefaultAsync(item => item.Id == archiveItemId);
+		var uploadedBlobIds = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var archiveItem = await _archiveItemQueryService.GetArchiveItem(archiveItemId) ?? throw new Exception($"ArchiveItem with ID {archiveItemId} not found.");
 
-		if (archiveItem == null)
+		await _archiveObjectStore.UpdateObjectStream(archiveItemId, "json", async archiveItemStream =>
 		{
-			return null;
-		}
+			var archiveItemToUpdate = JsonSerializer.Deserialize<ArchiveItemMetadata>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
 
-		var addedBlobIds = blobIds.Except(archiveItem.Blobs!.Select(blob => blob.Id));
-		foreach(var blobEntity in await _blobQueryService.GetBlobEntities(addedBlobIds))
-		{
-			var dbBlob = new Blob
-			{
-				Id = blobEntity.Id,
-				MimeType = blobEntity.MimeType,
-				PageCount = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
-			};
-			archiveItem.Blobs!.Add(dbBlob);
-		}
+			archiveItemToUpdate.Title = title;
+			archiveItemToUpdate.Tags = tags;
+			archiveItemToUpdate.DocumentDate = documentDate;
+			archiveItemToUpdate.LastUpdatedAt = DateTimeOffset.Now;
+			archiveItemToUpdate.LastUpdatedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
+			archiveItemToUpdate.Blobs = await _archiveItemQueryService.GetBlobDisplayInfos(new HashSet<Guid>([.. existingBlobIds, .. uploadedBlobIds]));
+			// archiveItemToUpdate.Metadata = metadata ?? new JsonObject();
 
-		var removedBlobIds = archiveItem.Blobs!.Select(blob => blob.Id).Except(blobIds).ToList();
-		foreach (var blobId in removedBlobIds)
-		{
-			var blobEntity = archiveItem.Blobs!.Single(blob => blob.Id == blobId);
-			_dbContext.Blobs.Remove(blobEntity);
-		}
-
-		var uploadedBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
-		foreach (var blobEntity in await _blobQueryService.GetBlobEntities(uploadedBlobEntities))
-		{
-			var dbBlob = new Blob
-			{
-				Id = blobEntity.Id,
-				MimeType = blobEntity.MimeType,
-				PageCount = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 1
-			};
-			archiveItem.Blobs!.Add(dbBlob);
-		}
-
-		archiveItem.Title = title;
-		archiveItem.Tags = Tags.Ensure(_dbContext, tags);
-		archiveItem.Metadata = metadata ?? new JsonObject();
-		archiveItem.DocumentDate = documentDate;
-		archiveItem.LastUpdated = DateTimeOffset.Now;
-
-
-		await _dbContext.SaveChangesAsync();
+			archiveItemStream.SetLength(0); // Clear the stream before writing
+			JsonSerializer.Serialize(archiveItemStream, archiveItemToUpdate, JsonSerializerOptions.Web);
+		});
 
 		await _archiveItemPublicationService.PublishArchiveItemsUpdatedMessage([archiveItem]);
 
+		var addedBlobIds = existingBlobIds.Except(archiveItem.Blobs.Select(b => b.Id));
+
+		var removedBlobIds = archiveItem.Blobs.Select(b => b.Id).Except(existingBlobIds);
 		await _blobPublicationService.PublishBlobsUpdatedMessage([.. addedBlobIds, .. removedBlobIds]);
-		await _blobPublicationService.PublishBlobsAddedMessage(uploadedBlobEntities);
+		await _blobPublicationService.PublishBlobsAddedMessage(uploadedBlobIds);
 
 		return archiveItem;
 	}
@@ -139,35 +106,8 @@ public class ArchiveItemCommandService
 
 	public async Task<bool> DeleteArchiveItem(Guid id)
 	{
-		var archiveItem = await _dbContext.ArchiveItems
-			.Include(archiveItem => archiveItem.Blobs)
-			.Include(archiveItem => archiveItem.Tags)
-				.ThenInclude(tag => tag.ArchiveItems)
-				.SingleOrDefaultAsync(x => x.Id == id);
-
-		if (archiveItem == null)
-		{
-			return false;
-		}
-
-		if (archiveItem.Blobs != null)
-		{
-			var blobGuids = archiveItem.Blobs.Select(blob => blob.Id);
-			await _blobCommandService.DeleteBlobs(blobGuids);
-			_dbContext.Blobs.RemoveRange(archiveItem.Blobs);
-		}
-
-		var removedTags = archiveItem.Tags.Where(tag => tag.ArchiveItems != null && tag.ArchiveItems.Count == 1 && tag.ArchiveItems.Contains(archiveItem));
-		foreach (var tag in removedTags)
-		{
-			_dbContext.Tags.Remove(tag);
-		}
-
-		_dbContext.ArchiveItems.Remove(archiveItem);
-		await _dbContext.SaveChangesAsync();
-
-		await _archiveItemPublicationService.PublishArchiveItemsDeletedMessage([archiveItem]);
-
+		await _archiveObjectStore.DeleteObject(id);
+		await _archiveItemPublicationService.PublishArchiveItemsDeletedMessage([id]);
 		return true;
 	}
 }

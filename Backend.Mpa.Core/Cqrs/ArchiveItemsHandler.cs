@@ -99,14 +99,14 @@ public class ArchiveItemsHandler :
 		{
 			Id = archiveItem.Id,
 			Title = archiveItem.Title,
-			Tags = [.. archiveItem.Tags.Select(tag => tag.Title)],
+			Tags = [.. archiveItem.Tags],
 			Metadata = archiveItem.Metadata,
 			CreatedAt = archiveItem.CreatedAt,
 			DocumentDate = archiveItem.DocumentDate,
 			BlobDisplayInfos = [.. archiveItem.Blobs?.Select(blob => new GetArchiveItem.Response.BlobDisplayInfo
 				{
 					Id = blob.Id,
-					NumberOfPages = blob.PageCount,
+					NumberOfPages = blob.NumberOfPages,
 					MimeType = blob.MimeType
 				}) ?? []
 			]
@@ -121,7 +121,7 @@ public class ArchiveItemsHandler :
 			{
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
-				Tags = archiveItem.Tags.Select(tag => tag.Title),
+				Tags = archiveItem.Tags,
 				DocumentDate = archiveItem.DocumentDate,
 				CreatedAt = archiveItem.CreatedAt,
 				Metadata = archiveItem.Metadata,
@@ -129,7 +129,7 @@ public class ArchiveItemsHandler :
 				{
 					Id = blob.Id,
 					MimeType = blob.MimeType,
-					NumberOfPages = blob.PageCount
+					NumberOfPages = blob.NumberOfPages
 				}),
 			})
 			// .OrderBy(archItem => archItem.Title == null ? (int?)null : archItem.Title.IndexOf(titleFilter, StringComparison.InvariantCultureIgnoreCase))
