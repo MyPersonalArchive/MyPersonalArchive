@@ -25,6 +25,26 @@ public class BlobObjectStoreFileStoreFactory
 
 
 [RegisterService(ServiceLifetime.Scoped)]
+public class ArchiveObjectStoreFileStoreFactory
+{
+	private readonly IFileStore _fileStore;
+
+	public ArchiveObjectStoreFileStoreFactory(IFileStore fileStore, IAmbientDataResolver resolver)
+	{
+		var tenantId = resolver?.GetCurrentTenantId() ?? throw new Exception("Missing tenant id in ambient data");
+
+		_fileStore = fileStore;
+		_fileStore.Configure(["Tenants", tenantId.ToString(), "Archive"]);
+	}
+
+	public IFileStore GetFileStore()
+	{
+		return _fileStore;
+	}
+}
+
+
+[RegisterService(ServiceLifetime.Scoped)]
 public class SystemSettingsFileStoreFactory
 {
 	private readonly IFileStore _fileStore;

@@ -1,6 +1,6 @@
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
-using Backend.Mpa.DbModel.Database.EntityModels;
+using Backend.Mpa.Core.Store;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Mpa.Core.Services;
@@ -17,7 +17,7 @@ public class ArchiveItemPublicationService
 
 
 	#region SignalR message creators
-	public async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	public async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItemMetadata> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsAddedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
@@ -29,7 +29,7 @@ public class ArchiveItemPublicationService
 	}
 
 
-	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItemMetadata> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
@@ -41,7 +41,7 @@ public class ArchiveItemPublicationService
 	}
 
 
-	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItem> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItemMetadata> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
