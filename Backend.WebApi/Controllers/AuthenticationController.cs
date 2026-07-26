@@ -41,6 +41,13 @@ public class AuthenticationController : ControllerBase
 			return Unauthorized("Unable to login");
 		}
 
+		if(user.HashedPassword == null || user.Salt == null)
+		{
+			// If the user has no password set, we cannot verify the password.
+			// This happens when the user is created without a password, for example when using external authentication providers.
+			return Unauthorized("Unable to login");
+		}
+
 		if (!_passwordHasher.VerifyPassword(request.Password, user.HashedPassword, user.Salt))
 		{
 			return Unauthorized("Unable to login");

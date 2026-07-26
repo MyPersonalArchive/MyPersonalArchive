@@ -19,10 +19,10 @@ public class User : SharedEntity
     public required string Fullname { get; set; }
 
     [MaxLength(32)]
-    public required byte[] HashedPassword { get; set; }
+    public byte[]? HashedPassword { get; set; }
 
     [MaxLength(16)]
-    public required byte[] Salt { get; set; }
+    public byte[]? Salt { get; set; }
 
     public ICollection<Tenant> Tenants { get; set; } = [];
 }
