@@ -150,7 +150,7 @@ export const ArchiveItemEditPage = () => {
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="tags">Tags</label>
-					<TagsInput tags={tags} setTags={setTags} autocompleteList={allTags} htmlId="tags" />
+					<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} htmlId="tags" />
 				</div>
 
 
