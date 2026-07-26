@@ -38,8 +38,8 @@ public class ArchiveItemCommandService
 													 IEnumerable<Guid> existingBlobIds,
 													 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
 	{
-		var newBlobEntities = await _blobCommandService.UploadBlobs(uploadedBlobs);
-		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobEntities]);
+		var newBlobIds = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobIds]);
 
 		var newArchiveItemId = Guid.NewGuid();
 		var newArchiveItem = new ArchiveItemMetadata
@@ -56,7 +56,10 @@ public class ArchiveItemCommandService
 			Metadata = metadata ?? new(),
 		};
 
-		await _archiveObjectStore.StoreObject(newArchiveItemId, "json", new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)));
+		using (var stream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)))
+		{
+			await _archiveObjectStore.StoreObject(newArchiveItemId, "json", stream);
+		}
 
 		await _archiveItemPublicationService.PublishArchiveItemsAddedMessage([newArchiveItem]);
 		await _blobPublicationService.PublishBlobsUpdatedMessage(connectedBlobIds);

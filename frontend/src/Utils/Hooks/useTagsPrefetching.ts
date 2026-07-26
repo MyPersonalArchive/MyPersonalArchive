@@ -1,8 +1,9 @@
 import { useEffect } from "react"
-import { useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { tagsAtom } from "../Atoms/tagsAtom"
 import { useApiClient } from "./useApiClient"
 import { useSignalR } from "./useSignalR"
+import { archiveItemsAtom } from "../Atoms/archiveItemsAtom"
 
 
 /**
@@ -10,22 +11,7 @@ import { useSignalR } from "./useSignalR"
  */
 export const useTagsPrefetching = () => {
 	const setTags = useSetAtom(tagsAtom)
-	const apiClient = useApiClient()
 
-	useEffect(() => {
-		apiClient.get<string[]>("/api/tag/list")
-			.then(tags => {
-				setTags(tags!)
-			})
-	}, [])
-
-	useSignalR(message => {
-
-		switch (message.messageType) {
-			case "TagsAdded": {
-				setTags(tags => [...tags, message.data as string])
-				break
-			}
-		}
-	})
+	const archiveItems = useAtomValue(archiveItemsAtom)
+	setTags(new Set<string>(archiveItems.flatMap(item => item.tags)))
 }
