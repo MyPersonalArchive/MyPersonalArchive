@@ -20,8 +20,6 @@ services:
       - AUDIENCE=test-instance
       - AppConfig__DatabaseFolder=/data/Database
       - AppConfig__BlobFolder=/data/Blobs
-      - AppConfig__BackupFolder=/data/backup
-      - AppConfig__SignalingServerUrl=wss://mpasignalingserver-production.up.railway.app/signaling
     volumes:
       - test-instance-data:/data
     network_mode: bridge
