@@ -18,20 +18,20 @@ public class ArchiveItemQueryService
 	}
 
 
-	public async Task<ArchiveItemMetadata?> GetArchiveItem(Guid id)
+	public async Task<ArchiveItemModel?> GetArchiveItem(Guid id)
 	{
 		using var archiveItemStream = await _archiveObjectStore.GetObject(id, "json");
 		if (archiveItemStream == null)
 		{
 			return null;
 		}
-		var archiveItem = JsonSerializer.Deserialize<ArchiveItemMetadata>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize ArchiveItem");
+		var archiveItem = JsonSerializer.Deserialize<ArchiveItemModel>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize ArchiveItem");
 
 		return archiveItem;
 	}
 
 
-	public async Task<IEnumerable<ArchiveItemMetadata>> ListArchiveItems()
+	public async Task<IEnumerable<ArchiveItemModel>> ListArchiveItems()
 	{
 		var archiveItemGuids = await _archiveObjectStore.ListObjectIds();
 		var archiveItemStreams = (
@@ -40,7 +40,7 @@ public class ArchiveItemQueryService
 		var archiveItems = archiveItemStreams
 			.Where(stream => stream != null)
 			.Select(stream => stream!)
-			.Select(stream => JsonSerializer.Deserialize<ArchiveItemMetadata>(stream, JsonSerializerOptions.Web))
+			.Select(stream => JsonSerializer.Deserialize<ArchiveItemModel>(stream, JsonSerializerOptions.Web))
 			.Where(item => item != null)
 			.Select(item => item!)
 			.ToList();
@@ -51,16 +51,16 @@ public class ArchiveItemQueryService
 	}
 
 
-	public async Task<IEnumerable<ArchiveItemMetadata.BlobDisplayInfo>> GetBlobDisplayInfos(IEnumerable<Guid> connectedBlobIds)
+	public async Task<IEnumerable<ArchiveItemModel.BlobDisplayInfo>> GetBlobDisplayInfos(IEnumerable<Guid> connectedBlobIds)
 	{
-		var blobEntities = await _blobQueryService.GetBlobEntities(connectedBlobIds);
-		return blobEntities
-			.Where(blobEntity => blobEntity != null)
-			.Select(blobEntity => new ArchiveItemMetadata.BlobDisplayInfo
+		var blobs = await _blobQueryService.GetBlobs(connectedBlobIds);
+		return blobs
+			.Where(blob => blob != null)
+			.Select(blob => new ArchiveItemModel.BlobDisplayInfo
 			{
-				Id = blobEntity!.Id,
-				MimeType = blobEntity.MimeType,
-				NumberOfPages = blobEntity.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 0
+				Id = blob!.Id,
+				MimeType = blob.MimeType,
+				NumberOfPages = blob.TypeSpecificMetadata is PdfMetadata pdfMetadata ? pdfMetadata.PageCount : 0
 			});
 	}
 }

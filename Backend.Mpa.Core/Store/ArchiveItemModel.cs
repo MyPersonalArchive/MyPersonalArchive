@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace Backend.Mpa.Core.Store;
 
 
-public class ArchiveItemMetadata
+public class ArchiveItemModel
 {
 	public Guid Id { get; set; }
 

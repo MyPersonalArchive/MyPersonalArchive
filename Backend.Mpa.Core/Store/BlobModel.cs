@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Backend.Mpa.Core.Store;
 
-public class BlobMetadata
+public class BlobModel
 {
 	public required Guid Id { get; set; }
 	public required string OriginalFilename { get; set; }

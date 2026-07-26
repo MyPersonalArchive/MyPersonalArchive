@@ -32,7 +32,7 @@ public class ArchiveItemCommandService
 	}
 
 
-	public async Task<ArchiveItemMetadata> CreateArchiveItem(string title,
+	public async Task<ArchiveItemModel> CreateArchiveItem(string title,
 													 IEnumerable<string> tags,
 													 JsonObject? metadata,
 													 IEnumerable<Guid> existingBlobIds,
@@ -42,7 +42,7 @@ public class ArchiveItemCommandService
 		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobIds]);
 
 		var newArchiveItemId = Guid.NewGuid();
-		var newArchiveItem = new ArchiveItemMetadata
+		var newArchiveItem = new ArchiveItemModel
 		{
 			Id = newArchiveItemId,
 			Title = title,
@@ -68,7 +68,7 @@ public class ArchiveItemCommandService
 	}
 
 
-	public async Task<ArchiveItemMetadata?> UpdateArchiveItem(Guid archiveItemId,
+	public async Task<ArchiveItemModel?> UpdateArchiveItem(Guid archiveItemId,
 													  string title,
 													  IEnumerable<string> tags,
 													  JsonObject? metadata,
@@ -81,7 +81,7 @@ public class ArchiveItemCommandService
 
 		await _archiveObjectStore.UpdateObjectStream(archiveItemId, "json", async archiveItemStream =>
 		{
-			var archiveItemToUpdate = JsonSerializer.Deserialize<ArchiveItemMetadata>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
+			var archiveItemToUpdate = JsonSerializer.Deserialize<ArchiveItemModel>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
 
 			archiveItemToUpdate.Title = title;
 			archiveItemToUpdate.Tags = tags;

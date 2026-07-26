@@ -31,7 +31,7 @@ public class BlobQueryService
 		{
 			return null;
 		}
-		var blobMetadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception($"Metadata for blob with Id:{blobId} was null after deserialization, this should never happen");
+		var blobMetadata = JsonSerializer.Deserialize<BlobModel>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception($"Metadata for blob with Id:{blobId} was null after deserialization, this should never happen");
 
 		string extension = Path.GetExtension(blobMetadata.OriginalFilename).TrimStart('.');
 		var contentStream = await _blobObjectStore.GetObject(blobId, extension) ?? throw new Exception($"Content stream for blob with Id:{blobId} was null, this should never happen");
@@ -47,13 +47,13 @@ public class BlobQueryService
 		{
 			return null;
 		}
-		var blobMetadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception($"Metadata for blob with Id:{blobId} was null after deserialization, this should never happen");
+		var blobMetadata = JsonSerializer.Deserialize<BlobModel>(metadataStream, JsonSerializerOptions.Web) ?? throw new Exception($"Metadata for blob with Id:{blobId} was null after deserialization, this should never happen");
 
 
 		var extension = Path.GetExtension(blobMetadata.OriginalFilename).TrimStart('.');
 		if(_previewGenerator.AcceptsMimeType(blobMetadata.MimeType))
 		{
-			var previewExtension = $"size({maxX},{maxY}).page({pageNo}).png";
+			var previewExtension = $"cache-size({maxX},{maxY})-page({pageNo}).png";
 
 			Stream previewStream;
 			var existingExtensions = await _blobObjectStore.ListExtensions(blobId);
@@ -81,7 +81,7 @@ public class BlobQueryService
 	}
 
 
-	public async Task<BlobMetadata?> GetBlobEntity(Guid blobId)
+	public async Task<BlobModel?> GetBlob(Guid blobId)
 	{
 		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
 		if (metadataStream == null)
@@ -89,17 +89,17 @@ public class BlobQueryService
 			return null;
 		}
 
-		var metadata = JsonSerializer.Deserialize<BlobMetadata>(metadataStream, JsonSerializerOptions.Web);
+		var metadata = JsonSerializer.Deserialize<BlobModel>(metadataStream, JsonSerializerOptions.Web);
 		return metadata;
 	}
 
 
-	public async Task<ICollection<BlobMetadata>> GetBlobEntities(IEnumerable<Guid> blobIds)
+	public async Task<ICollection<BlobModel>> GetBlobs(IEnumerable<Guid> blobIds)
 	{
-		var blobs = new List<BlobMetadata>();
+		var blobs = new List<BlobModel>();
 		foreach (var blobId in blobIds)
 		{
-			var blobMetadata = await GetBlobEntity(blobId);
+			var blobMetadata = await GetBlob(blobId);
 			if (blobMetadata != null)
 			{
 				blobs.Add(blobMetadata);
@@ -109,7 +109,7 @@ public class BlobQueryService
 	}
 
 
-	public async Task<IEnumerable<BlobMetadata>> ListBlobEntities()
+	public async Task<IEnumerable<BlobModel>> ListBlobs()
 	{
 		var blobIds = await _blobObjectStore.ListObjectIds();
 		var metadataStreams = (
@@ -117,7 +117,7 @@ public class BlobQueryService
 		).ToList();
 		var blobs = metadataStreams
 			.Where(stream => stream != null)
-			.Select(stream => JsonSerializer.Deserialize<BlobMetadata>(stream!, JsonSerializerOptions.Web))
+			.Select(stream => JsonSerializer.Deserialize<BlobModel>(stream!, JsonSerializerOptions.Web))
 			.Where(metadata => metadata != null)
 			.Select(metadata => metadata!)
 			.ToList();

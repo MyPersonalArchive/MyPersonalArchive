@@ -65,7 +65,7 @@ public class BlobHandlers :
 
 	public async Task<GetBlob.Response> Handle(GetBlob query)
 	{
-		var blob = await _blobQueryService.GetBlobEntity(query.Id);
+		var blob = await _blobQueryService.GetBlob(query.Id);
 		if (blob == null)
 		{
 			throw new HttpNotFoundException($"Blob with id {query.Id} not found");
@@ -86,8 +86,8 @@ public class BlobHandlers :
 
 	public async Task<IEnumerable<ListBlobs.Response>> Handle(ListBlobs query)
 	{
-		var blobEntities = await _blobQueryService.ListBlobEntities();
-		return blobEntities
+		var blobs = await _blobQueryService.ListBlobs();
+		return blobs
 			.OrderByDescending(blob => blob.UploadedAt)
 			.Select(blob => new ListBlobs.Response
 			{

@@ -40,7 +40,7 @@ public class BlobCommandService
 			file.contentStream.Seek(0, SeekOrigin.Begin);
 			var typeSpecificMetadata = _previewGenerator.GetFileTypeSpecificMetadata(file.mimeType, file.contentStream);
 
-			var metadata = new BlobMetadata
+			var metadata = new BlobModel
 			{
 				Id = blobId,
 				OriginalFilename = file.fileName,

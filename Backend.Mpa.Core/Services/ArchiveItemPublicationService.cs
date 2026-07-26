@@ -17,7 +17,7 @@ public class ArchiveItemPublicationService
 
 
 	#region SignalR message creators
-	public async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItemMetadata> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	public async Task PublishArchiveItemsAddedMessage(IEnumerable<ArchiveItemModel> archiveItems) => await PublishArchiveItemsAddedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsAddedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
@@ -29,7 +29,7 @@ public class ArchiveItemPublicationService
 	}
 
 
-	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItemMetadata> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<ArchiveItemModel> archiveItems) => await PublishArchiveItemsUpdatedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsUpdatedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
@@ -41,7 +41,7 @@ public class ArchiveItemPublicationService
 	}
 
 
-	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItemMetadata> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
+	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<ArchiveItemModel> archiveItems) => await PublishArchiveItemsDeletedMessage(archiveItems.Select(archiveItem => archiveItem.Id));
 	public async Task PublishArchiveItemsDeletedMessage(IEnumerable<Guid> archiveItemIds)
 	{
 		if(archiveItemIds == null || !archiveItemIds.Any())
