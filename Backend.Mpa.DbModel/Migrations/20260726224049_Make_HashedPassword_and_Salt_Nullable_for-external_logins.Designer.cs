@@ -2,6 +2,7 @@
 using Backend.Mpa.DbModel.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Mpa.DbModel.Migrations
 {
     [DbContext(typeof(MpaDbContext))]
-    partial class MpaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726224049_Make_HashedPassword_and_Salt_Nullable_for-external_logins")]
+    partial class Make_HashedPassword_and_Salt_Nullable_forexternal_logins
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
