@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Core;
-using Backend.Backup;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -13,10 +12,7 @@ using Backend.WebApi.Middleware;
 using MailKit.Net.Imap;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
-using Backend.Backup.Services;
 using Backend.WebApi.Cqrs.Infrastructure;
-using Backend.Backup.Managers;
-using Backend.Backup.Providers;
 using Backend.Mpa.DbModel.Database;
 
 namespace Backend.WebApi;
@@ -55,8 +51,6 @@ public static class Program
 
 		builder.Services.AddDbContext<MpaDbContext>();
 
-		builder.Services.AddScoped<IFileStorageProvider, FileStorageProvider>();
-
 		builder.Services.AddHttpClient();
 		builder.Services.AddOptions();
 
@@ -65,8 +59,6 @@ public static class Program
 		builder.RegisterEndpoints();
 		builder.RegisterSignalRServices();
 		builder.RegisterAuthenticationServices();
-		builder.RegisterBackupProviders();
-
 
 		// builder.Services.AddScoped<IVersionRepository, VersionRepository>();
 		// builder.Services.AddScoped<ISeedService, SeedService>();
@@ -121,38 +113,6 @@ public static class Program
 			hubOptions.EnableDetailedErrors = true;
 			hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(15);
 		}));
-	}
-
-
-	private static void RegisterBackupProviders(this IHostApplicationBuilder builder)
-	{
-		var services = builder.Services;
-		var appConfig = builder.Configuration.GetSection("AppConfig").Get<AppConfig>();
-		// Use the new backup services extension method
-		services.AddBackupServices(options =>
-		{
-			options.BackupFolder = appConfig?.BackupFolder ?? "./backups";
-			options.DefaultInterval = TimeSpan.FromMinutes(30);
-			options.MaxConcurrentBackups = 3;
-			options.EnableProgressReporting = true;
-		});
-
-		// Register factories with signaling server URL, ICE servers, and connection pool
-		services.AddSingleton<BackupProviderFactory>(sp =>
-		{
-			var connectionPool = sp.GetRequiredService<WebRTCConnectionPool>();
-			return new BackupProviderFactory(appConfig?.SignalingServerUrl, appConfig?.IceServers, connectionPool);
-		});
-		services.AddSingleton<Func<IServiceScope, int, IBackupProgressReporter>>((sp) =>
-			(scope, tenantId) => new SignalRBackupProgressReporter(scope, tenantId));
-
-		// Register restore manager with progress reporter factory
-		services.AddSingleton<TenantRestoreManager>(sp =>
-		{
-			var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
-			var progressReporterFactory = sp.GetService<Func<IServiceScope, int, IBackupProgressReporter>>();
-			return new TenantRestoreManager(scopeFactory, progressReporterFactory);
-		});
 	}
 
 
