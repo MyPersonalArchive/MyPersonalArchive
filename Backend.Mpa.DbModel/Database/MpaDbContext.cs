@@ -98,35 +98,6 @@ public class MpaDbContext : DbContext
 		{
 			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		};
-		modelBuilder.Entity<ArchiveItem>()
-			.Property(e => e.Metadata)
-			.HasConversion(
-				v => v.ToJsonString(jsonSerializerOptions),
-				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
-			)
-			.HasColumnType("TEXT");
-
-		// Configure LastUpdated with default value
-		modelBuilder.Entity<ArchiveItem>()
-			.Property(e => e.LastUpdated)
-			.HasDefaultValueSql("datetime('now')");
-
-		modelBuilder.Entity<BackupDestination>()
-			.Property(e => e.Metadata)
-			.HasConversion(
-				v => v.ToJsonString(jsonSerializerOptions),
-				v => JsonSerializer.Deserialize<JsonObject>(v, jsonSerializerOptions) ?? new JsonObject(new JsonNodeOptions())
-			)
-			.HasColumnType("TEXT");
-
-		modelBuilder.Entity<Blob>()
-			.Property(blob => blob.Id)
-			.HasConversion(
-				id => id.ToString("D"),
-				value => Guid.Parse(value)
-			)
-			.HasColumnType("TEXT")
-			.ValueGeneratedNever();
 	}
 
 	private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)
@@ -148,41 +119,8 @@ public class MpaDbContext : DbContext
 		{
 		});
 
-
-		modelBuilder.Entity<Tag>(builder =>
-		{
-			builder.HasAlternateKey(tag => new { tag.Id, tag.TenantId });
-		});
-
 		modelBuilder.Entity<Tenant>(builder =>
 		{
-		});
-
-		modelBuilder.Entity<ArchiveItem>(builder =>
-		{
-			builder.HasAlternateKey(item => new { item.Id, item.TenantId });
-
-			//HERE
-			builder.HasOne(archiveItem => archiveItem.CreatedBy)
-				.WithMany()
-				.HasForeignKey(archiveItem => archiveItem.CreatedByUsername)
-				.HasPrincipalKey(user => user.Username);
-
-			builder.HasMany(archiveItem => archiveItem.Tags)
-				.WithMany(tag => tag.ArchiveItems)
-				.UsingEntity<ArchiveItemAndTag>(
-					l => l.HasOne<Tag>().WithMany().HasForeignKey(m2m => new { m2m.TagId, m2m.TenantId }).HasPrincipalKey(tag => new { tag.Id, tag.TenantId }),
-					r => r.HasOne<ArchiveItem>().WithMany().HasForeignKey(m2m => new { m2m.ArchiveItemId, m2m.TenantId }).HasPrincipalKey(item => new { item.Id, item.TenantId })
-				);
-
-			builder.HasMany(archiveItem => archiveItem.Blobs)
-				.WithOne(blob => blob.ArchiveItem)
-				.HasPrincipalKey(archiveItem => new { archiveItem.Id, archiveItem.TenantId });
-		});
-
-		modelBuilder.Entity<Blob>(builder =>
-		{
-			builder.HasAlternateKey(blob => new { blob.Id, blob.TenantId });
 		});
 	}
 
@@ -295,14 +233,8 @@ public class MpaDbContext : DbContext
 	}
 
 
-	public DbSet<ArchiveItem> ArchiveItems { get; set; }
-	public DbSet<Blob> Blobs { get; set; }
-	public DbSet<Tag> Tags { get; set; }
 	public DbSet<User> Users { get; set; }
 	public DbSet<Tenant> Tenants { get; set; }
-	public DbSet<ArchiveItemAndTag> ArchiveItemsAndTags { get; set; }
-	public DbSet<BackupDestination> BackupDestinations { get; set; }
-	public DbSet<BackupHistory> BackupHistory { get; set; }
 
 
 	#region Design time support for multi-tenant DbContext
