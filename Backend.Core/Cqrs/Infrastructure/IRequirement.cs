@@ -69,25 +69,32 @@ public class RequireAllowedTenantIdAttribute : RequireAuthenticationAttribute, I
 		if (user.Identity?.IsAuthenticated ?? false)
 		{
 			var allowedTenantsClaim = user.FindFirst("AllowedTenants")?.Value;
-			if (!string.IsNullOrEmpty(allowedTenantsClaim))
+			if (string.IsNullOrEmpty(allowedTenantsClaim))
 			{
-				var allowedTenants = allowedTenantsClaim.Split(',', StringSplitOptions.RemoveEmptyEntries)
-					.Select(t => int.TryParse(t.Trim(), out var id) ? id : (int?)null)
-					.Where(id => id != null)
-					.ToList();
-
-				if (!allowedTenants.Contains(tenantId))
-				{
-					failureReason = $"User does not have access to tenant {tenantId}";
-					logger.LogWarning("User does not have access to tenant {TenantId}. Allowed tenants: {AllowedTenants}",
-						tenantId, allowedTenantsClaim);
-					return false;
-				}
+				failureReason = "User does not have any allowed tenants";
+				logger.LogWarning("User {Username} does not have any allowed tenants", user.Identity?.Name);
+				return false;
 			}
+
+			var allowedTenants = allowedTenantsClaim.Split(',', StringSplitOptions.RemoveEmptyEntries)
+				.Select(t => int.TryParse(t.Trim(), out var id) ? id : (int?)null)
+				.Where(id => id != null)
+				.ToList();
+
+			if (allowedTenants.Contains(tenantId))
+			{
+				failureReason = null;
+				return true;
+			}
+
+			failureReason = $"User does not have access to tenant {tenantId}";
+			logger.LogWarning("User does not have access to tenant {TenantId}. Allowed tenants: {AllowedTenants}", tenantId, allowedTenantsClaim);
+			return false;
 		}
 
-		failureReason = null;
-		return true;
+		failureReason = $"User is not authenticated";
+		logger.LogWarning("User is not authenticated");
+		return false;
 	}
 }
 
