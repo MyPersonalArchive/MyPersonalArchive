@@ -6,5 +6,4 @@ ln -s /data /workspaces/MyPersonalArchive/data
 
 # Trust lab root CA inside the container. This is used for making external https requests to my lab services.
 cp /data/dev-secrets/rootCA.pem /usr/local/share/ca-certificates/lab-ca.crt
-ls /usr/local/share/ca-certificates/
 update-ca-certificates
