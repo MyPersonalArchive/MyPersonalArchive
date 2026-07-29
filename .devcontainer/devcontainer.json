@@ -28,7 +28,9 @@
 		"Oidc__Authority": "${localEnv:MPA_Oidc__Authority}",
 		"Oidc__ClientId": "${localEnv:MPA_Oidc__ClientId}",
 		"Oidc__ClientSecret": "${localEnv:MPA_Oidc__ClientSecret}",
-
+		"Oidc__CallbackPath": "${localEnv:MPA_Oidc__CallbackPath}",
+		"Oidc__SignedOutCallbackPath": "${localEnv:MPA_Oidc__SignedOutCallbackPath}",
+		
 		"Jwt__JwtIssuer": "${localEnv:MPA_Jwt__JwtIssuer}",
 		"Jwt__Audience": "${localEnv:MPA_Jwt__Audience}",
 		"Jwt__JwtSecret": "${localEnv:MPA_Jwt__JwtSecret}",
