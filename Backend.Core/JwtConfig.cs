@@ -5,17 +5,10 @@ namespace Backend.Core;
 
 public class JwtConfig
 {
-    public required string JwtSecret { get; set; }
+    public string? JwtSecret { get; set; }
 
-    public required string JwtIssuer { get; set; }
+    public string? JwtIssuer { get; set; }
 
-    public required string Audience { get; set; }
-
-    public static void Mapper(JwtConfig options, IConfigurationRoot config)
-    {
-        options.JwtSecret = config["JWT_SECRET"] ?? throw new Exception("Missing JWT Configuration (JWT_SECRET)");
-        options.JwtIssuer = config["JWT_ISSUER"] ?? throw new Exception("Missing JWT Configuration (ISSUER)");
-        options.Audience = config["AUDIENCE"] ?? throw new Exception("Missing JWT Configuration (AUDIENCE)");
-    }
+    public string? Audience { get; set; }
 }
 

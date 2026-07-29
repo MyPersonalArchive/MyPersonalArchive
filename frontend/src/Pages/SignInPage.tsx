@@ -96,6 +96,13 @@ export const SignInPage = () => {
 		}
 	}
 
+	const loginWithOidc = () => {
+		const redirect = new URLSearchParams(window.location.search).get("redirect")
+		const returnUrl = redirect ?? RoutePaths.Index
+		const query = new URLSearchParams({ returnUrl }).toString()
+		window.location.href = `/api/authentication/oidc/signin?${query}`
+	}
+
 
 	return (
 		<div className="flex flex-row">
@@ -147,6 +154,9 @@ export const SignInPage = () => {
 							</div>
 
 							<div className="stack-horizontal to-the-right my-4">
+								<button className="btn" type="button" onClick={loginWithOidc}>
+									Sign in with OIDC
+								</button>
 								<button className="btn btn-primary" type="submit">
 									Log in
 								</button>

@@ -1,7 +1,7 @@
 # MyPersonalArchive
 ## Safe archival storage for important stuff
 
-Our mission is to enable people to reliably archive digital artefacts.
+Our mission is to enable people to reliably archive their digital artefacts.
 
 
 ## Development
@@ -89,10 +89,31 @@ echo "Done! Files: server.key, server.crt, server.pfx, server.pem"
 ```
 
 ## Setup needed environment variables
+_Outside the dev-container_
 ```shell
 cat >> ~/.zshrc << EOF
-export MPA_GOOGLE_CLIENT_SECRET="<insert you google client secret here>"
-export MPA_GOOGLE_CLIENT_ID="<insert your google client id here>"
-export MPA_CERTIFICATE_PASSWORD="<insert your certificate password here>"
+export MPA_CertificatePassword="pass"
+
+# This is used by MPA to use an external IdP/OpenID Connect (aka. OIDC)
+export MPA_Oidc__Authority="..."
+export MPA_Oidc__ClientId="..."
+export MPA_Oidc__ClientSecret="..."
+export MPA_Oidc__CallbackPath="/signin-..."
+export MPA_Oidc__SignedOutCallbackPath="/signout-callback-..."
+
+# This is used by MPA to create tokens
+export MPA_Jwt__JwtIssuer="..."
+export MPA_Jwt__Audience="..."
+export MPA_Jwt__JwtSecret="..."
 EOF
 ```
+
+## Trust root-ca on dev-container
+_Inside the dev-container_
+The dev-container will need to trust your certificate. You can do this by trusting your root-ca.
+Copy the `.pem` or `.cert` file to `/usr/local/share/ca-certificates/`:
+```
+sudo cp my-root-ca.pem /usr/local/share/ca-certificates/lab-ca.crt
+sudo update-ca-certificate
+```
+_Replace your `.pem` file for `my-root-ca.pem`_
