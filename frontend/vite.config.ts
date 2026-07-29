@@ -20,6 +20,7 @@ export default defineConfig({
 		react()
 	],
 	server: {
+		strictPort: true,
 		host: true,
 		...(httpsEnabled && {
 			https: {

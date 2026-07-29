@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Core;
@@ -16,6 +18,7 @@ using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.Mpa.DbModel.Database;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Backend.WebApi.Configuration;
 
 namespace Backend.WebApi;
 
@@ -53,7 +56,8 @@ public static class Program
 
 		builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
 		builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
-		builder.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration));
+		builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
+		builder.Services.Configure<OidcConfig>(builder.Configuration.GetSection("Oidc"));
 
 		builder.Services.AddScoped<IAuthorizationHandler, TenantIdRequirementsAuthorizationHandler>();
 
@@ -67,9 +71,6 @@ public static class Program
 		builder.RegisterEndpoints();
 		builder.RegisterSignalRServices();
 		builder.RegisterAuthenticationServices();
-
-		// builder.Services.AddScoped<IVersionRepository, VersionRepository>();
-		// builder.Services.AddScoped<ISeedService, SeedService>();
 
 		var app = builder.Build();
 
@@ -126,15 +127,18 @@ public static class Program
 
 	private static void RegisterAuthenticationServices(this WebApplicationBuilder builder)
 	{
-		// Build a temporary serviceprovider to get the JWT configuration 
-		var jwtOptions = WebApplication
-			.CreateBuilder()
-			.Services.Configure<JwtConfig>(options => JwtConfig.Mapper(options, builder.Configuration))
-			.BuildServiceProvider()
-			.GetRequiredService<IOptions<JwtConfig>>()
-			.Value;
+		var jwtOptions = new JwtConfig();
+		builder.Configuration.GetSection("Jwt").Bind(jwtOptions);
 
-		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+		var oidcOptions = new OidcConfig();
+		builder.Configuration.GetSection("Oidc").Bind(oidcOptions);
+
+		var authenticationBuilder = builder.Services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+			options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+		})
 			.AddJwtBearer(options =>
 			{
 				options.TokenValidationParameters = new TokenValidationParameters
@@ -152,7 +156,7 @@ public static class Program
 				// options.Authority = jwtOptions.???;
 
 			})
-			.AddCookie("Cookies", options =>
+			.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
 			{
 				options.LoginPath = "/api/authentication/signin";
 				options.LogoutPath = "/api/authentication/signout";
@@ -187,6 +191,26 @@ public static class Program
 					return Task.CompletedTask;
 				};
 			});
+
+		if (oidcOptions.IsValidForLoginFlow())
+		{
+			authenticationBuilder.AddOpenIdConnect(OidcConfig.Scheme, options =>
+			{
+				options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				options.Authority = oidcOptions.Authority;
+				options.ClientId = oidcOptions.ClientId;
+				options.ClientSecret = string.IsNullOrWhiteSpace(oidcOptions.ClientSecret) ? null : oidcOptions.ClientSecret;
+				options.CallbackPath = oidcOptions.CallbackPath;
+				options.SignedOutCallbackPath = oidcOptions.SignedOutCallbackPath;
+				options.ResponseType = "code";
+				options.UsePkce = true;
+				options.SaveTokens = true;
+				options.GetClaimsFromUserInfoEndpoint = true;
+				options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+				options.Scope.Add("email");
+				options.Scope.Add("mpa-tenant-ids");
+			});
+		}
 
 		builder.Services.AddAuthorization(options =>
 		{

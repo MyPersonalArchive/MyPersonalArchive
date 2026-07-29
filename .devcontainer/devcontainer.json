@@ -23,13 +23,17 @@
 		// }
 	},
 	"containerEnv": {
-		"ASPNETCORE_ENVIRONMENT": "Development",
-		"JWT_SECRET": "=:|V7hblR0eD+7+S10F6e~4RPc_!87hd*1kashdh_dsada123*",
-		"JWT_ISSUER": "gotnonameapps.com",
-		"AUDIENCE": "gotnonameapps.com",
-		"GOOGLE__CLIENTSECRET": "${localEnv:MPA_GOOGLE_CLIENT_SECRET}",
-		"GOOGLE__CLIENTID": "${localEnv:MPA_GOOGLE_CLIENT_ID}",
-		"CERTIFICATEPASSWORD": "${localEnv:MPA_CERTIFICATE_PASSWORD}"
+		"CertificatePassword": "${localEnv:MPA_CertificatePassword}",
+		
+		"Oidc__Authority": "${localEnv:MPA_Oidc__Authority}",
+		"Oidc__ClientId": "${localEnv:MPA_Oidc__ClientId}",
+		"Oidc__ClientSecret": "${localEnv:MPA_Oidc__ClientSecret}",
+
+		"Jwt__JwtIssuer": "${localEnv:MPA_Jwt__JwtIssuer}",
+		"Jwt__Audience": "${localEnv:MPA_Jwt__Audience}",
+		"Jwt__JwtSecret": "${localEnv:MPA_Jwt__JwtSecret}",
+
+		"ASPNETCORE_ENVIRONMENT": "Development"
 	},
 	"mounts": [
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
