@@ -39,6 +39,14 @@ export default defineConfig({
 					})
 				}),
 				ws: true,
+				configure: (proxy) => {
+					proxy.on("proxyRes", (proxyRes) => {
+						if (proxyRes.headers.location) {
+							proxyRes.headers.location = proxyRes.headers.location
+								.replace("localhost:8080", "localhost:5173")
+						}
+					})
+				}
 				// configure: (proxy, _options) => {
 				//   proxy.on('error', (err, _req, _res) => {
 				//     console.log('proxy error', err);
