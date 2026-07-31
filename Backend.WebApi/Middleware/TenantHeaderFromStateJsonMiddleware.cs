@@ -38,7 +38,7 @@ public class TenantHeaderFromStateJsonMiddleware
 		{
 			try
 			{
-				var state = JsonSerializer.Deserialize<AuthState>(Uri.UnescapeDataString(encodedState.ToString()), JsonSerializerOptions.Web);
+				var state = JsonSerializer.Deserialize<AuthState>(Uri.UnescapeDataString(encodedState.ToString()), JsonSerializerDefaults.Options);
 				if (state != null && state.TenantId.HasValue)
 				{
 					context.Request.Headers["X-Tenant-Id"] = state.TenantId.Value.ToString();

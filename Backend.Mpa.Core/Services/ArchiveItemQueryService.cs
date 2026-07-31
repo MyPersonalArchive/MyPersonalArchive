@@ -25,7 +25,7 @@ public class ArchiveItemQueryService
 		{
 			return null;
 		}
-		var archiveItem = JsonSerializer.Deserialize<ArchiveItemModel>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize ArchiveItem");
+		var archiveItem = JsonSerializer.Deserialize<ArchiveItemModel>(archiveItemStream, JsonSerializerDefaults.Options) ?? throw new Exception("Failed to deserialize ArchiveItem");
 
 		return archiveItem;
 	}
@@ -40,7 +40,7 @@ public class ArchiveItemQueryService
 		var archiveItems = archiveItemStreams
 			.Where(stream => stream != null)
 			.Select(stream => stream!)
-			.Select(stream => JsonSerializer.Deserialize<ArchiveItemModel>(stream, JsonSerializerOptions.Web))
+			.Select(stream => JsonSerializer.Deserialize<ArchiveItemModel>(stream, JsonSerializerDefaults.Options))
 			.Where(item => item != null)
 			.Select(item => item!)
 			.ToList();

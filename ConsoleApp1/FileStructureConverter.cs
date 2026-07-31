@@ -117,7 +117,7 @@ public class FileStructureConverter
 				continue;
 			}
 
-			var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			var metadata = JsonSerializer.Deserialize<FileMetadata>(metadataJson, JsonSerializerDefaults.Options);
 			if (metadata == null)
 			{
 				Console.WriteLine($"Warning: Failed to deserialize metadata for blob {blobId}. Skipping.");
@@ -165,7 +165,7 @@ public class FileStructureConverter
 				UploadedBy = file.uploadedBy
 			};
 			await using var objectStream = await blobObjectStore.GetWritableObjectStream(blobId, "metadata.json");
-			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
+			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerDefaults.Options);
 		}
 	}
 

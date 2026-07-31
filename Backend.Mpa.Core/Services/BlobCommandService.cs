@@ -52,7 +52,7 @@ public class BlobCommandService
 				UploadedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
 			};
 			await using var objectStream = await _blobObjectStore.GetWritableObjectStream(blobId, "metadata.json");
-			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerOptions.Web);
+			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerDefaults.Options);
 
 			blobs.Add(blobId);
 		}

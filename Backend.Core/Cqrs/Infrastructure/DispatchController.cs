@@ -19,12 +19,6 @@ public class DispatchController : ControllerBase
 	private readonly IServiceProvider _services;
 	private readonly HandlerRegistry _handlerRegistry;
 
-	private readonly JsonSerializerOptions _serializerOptions = new()
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-	};
-
-
 	public DispatchController(IServiceProvider services, ILogger<DispatchController> logger, HandlerRegistry handlerRegistry)
 	{
 		_logger = logger;
@@ -118,7 +112,7 @@ public class DispatchController : ControllerBase
 		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
 
 		// Create query instance and map parameters
-		var query = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), queryType, _serializerOptions);
+		var query = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), queryType, JsonSerializerDefaults.Options);
 
 		try
 		{
@@ -178,7 +172,7 @@ public class DispatchController : ControllerBase
 		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
 
 		// Create query instance and map parameters
-		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, _serializerOptions);
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, JsonSerializerDefaults.Options);
 
 		try
 		{
@@ -232,7 +226,7 @@ public class DispatchController : ControllerBase
 		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
 
 		// Create query instance and map parameters
-		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, _serializerOptions);
+		var command = JsonSerializer.Deserialize(await new StreamReader(Request.Body).ReadToEndAsync(), commandType, JsonSerializerDefaults.Options);
 
 		try
 		{

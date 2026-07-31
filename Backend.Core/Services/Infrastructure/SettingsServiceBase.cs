@@ -25,13 +25,13 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 		}
 
 		await using var stream = await _fileStore.GetFile([], FileName) ?? throw new InvalidOperationException($"Unable to obtain stream for {FileName}.");
-		return JsonSerializer.Deserialize<T>(stream, JsonSerializerOptions.Web) ?? new T { SchemaVersion = "1.0" };
+		return JsonSerializer.Deserialize<T>(stream, JsonSerializerDefaults.Options) ?? new T { SchemaVersion = "1.0" };
 	}
 
 	protected async Task SaveSettingsAsync(T settings)
 	{
 		await using var fileStream = await _fileStore.GetWritableFileStream([], FileName);
-		await JsonSerializer.SerializeAsync(fileStream, settings, JsonSerializerOptions.Web);
+		await JsonSerializer.SerializeAsync(fileStream, settings, JsonSerializerDefaults.Options);
 	}
 
 	protected async Task ChangeSettingsAsync(Func<T, T> changeDelegate)
