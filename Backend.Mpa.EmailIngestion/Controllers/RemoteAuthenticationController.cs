@@ -114,7 +114,7 @@ public class RemoteAuthenticationController : ControllerBase
 			["scope"] = oauthSettings.Scopes != null ? string.Join(" ", oauthSettings.Scopes) : null,
 			["access_type"] = "offline",
 			["prompt"] = "consent",
-			["state"] = JsonSerializer.Serialize(state, JsonSerializerOptions.Web)
+			["state"] = JsonSerializer.Serialize(state, JsonSerializerDefaults.Options)
 		};
 
 		string redirectUrl = QueryHelpers.AddQueryString(oauthSettings.AuthEndpoint, parameters);
@@ -131,7 +131,7 @@ public class RemoteAuthenticationController : ControllerBase
 		[FromServices] EmailProviderService emailProviderService
 		)
 	{
-		var state = JsonSerializer.Deserialize<AuthState>(Uri.UnescapeDataString(encodedState), JsonSerializerOptions.Web);
+		var state = JsonSerializer.Deserialize<AuthState>(Uri.UnescapeDataString(encodedState), JsonSerializerDefaults.Options);
 		if (state == null)
 		{
 			return BadRequest("Invalid state");

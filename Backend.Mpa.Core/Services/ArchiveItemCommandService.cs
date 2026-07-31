@@ -56,7 +56,7 @@ public class ArchiveItemCommandService
 			Metadata = metadata ?? new(),
 		};
 
-		using (var stream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerOptions.Web)))
+		using (var stream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(newArchiveItem, JsonSerializerDefaults.Options)))
 		{
 			await _archiveObjectStore.StoreObject(newArchiveItemId, "json", stream);
 		}
@@ -81,7 +81,7 @@ public class ArchiveItemCommandService
 
 		await _archiveObjectStore.UpdateObjectStream(archiveItemId, "json", async archiveItemStream =>
 		{
-			var archiveItemToUpdate = JsonSerializer.Deserialize<ArchiveItemModel>(archiveItemStream, JsonSerializerOptions.Web) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
+			var archiveItemToUpdate = JsonSerializer.Deserialize<ArchiveItemModel>(archiveItemStream, JsonSerializerDefaults.Options) ?? throw new Exception("Failed to deserialize existing ArchiveItem");
 
 			archiveItemToUpdate.Title = title;
 			archiveItemToUpdate.Tags = tags;
@@ -92,7 +92,7 @@ public class ArchiveItemCommandService
 			// archiveItemToUpdate.Metadata = metadata ?? new JsonObject();
 
 			archiveItemStream.SetLength(0); // Clear the stream before writing
-			JsonSerializer.Serialize(archiveItemStream, archiveItemToUpdate, JsonSerializerOptions.Web);
+			JsonSerializer.Serialize(archiveItemStream, archiveItemToUpdate, JsonSerializerDefaults.Options);
 		});
 
 		await _archiveItemPublicationService.PublishArchiveItemsUpdatedMessage([archiveItem]);

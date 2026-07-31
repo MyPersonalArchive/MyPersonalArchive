@@ -78,7 +78,7 @@ public class AccessTokenHelper
 
 		response.EnsureSuccessStatusCode();
 
-		var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(content, JsonSerializerDefaults.Options);
 
 		if (tokenResponse?.AccessToken == null)
 		{

@@ -62,13 +62,10 @@ public class EmailController : ControllerBase
 		var imapClient = await _imapClientFactory.GetImapClient(externalAccountId);
 
 		Response.Headers.ContentType = "text/event-stream";
-		var jsonOptions = new System.Text.Json.JsonSerializerOptions
-		{
-			PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-		};
+		
 		await foreach (var email in imapClient.GetEmailsStreaming(folder))
 		{
-			var json = System.Text.Json.JsonSerializer.Serialize(email, jsonOptions);
+			var json = System.Text.Json.JsonSerializer.Serialize(email, JsonSerializerDefaults.Options);
 			await Response.WriteAsync($"data: {json}\n\n");
 			await Response.Body.FlushAsync();
 		}

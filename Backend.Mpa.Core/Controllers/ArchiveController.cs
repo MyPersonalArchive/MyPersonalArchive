@@ -13,11 +13,6 @@ namespace Backend.Mpa.Core.Controllers;
 [Authorize(Policy = "TenantIdPolicy")]
 public class ArchiveController : ControllerBase
 {
-	private readonly JsonSerializerOptions _jsonSerializerOptions = new()
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-	};
-
 	private readonly ArchiveItemCommandService _archiveItemCommandService;
 
 	public ArchiveController(ArchiveItemCommandService archiveItemCommandService)
@@ -29,7 +24,7 @@ public class ArchiveController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<CreateResponse>> Create([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
 	{
-		var createRequest = JsonSerializer.Deserialize<CreateRequest>(rawRequest, _jsonSerializerOptions);
+		var createRequest = JsonSerializer.Deserialize<CreateRequest>(rawRequest, JsonSerializerDefaults.Options);
 		if (createRequest == null)
 		{
 			return BadRequest();
@@ -56,7 +51,7 @@ public class ArchiveController : ControllerBase
 	[HttpPut]
 	public async Task<ActionResult> Update([FromForm] string rawRequest, [FromForm] IFormFileCollection files)
 	{
-		var updateRequest = JsonSerializer.Deserialize<UpdateRequest>(rawRequest, _jsonSerializerOptions);
+		var updateRequest = JsonSerializer.Deserialize<UpdateRequest>(rawRequest, JsonSerializerDefaults.Options);
 		if (updateRequest == null)
 		{
 			return BadRequest();
