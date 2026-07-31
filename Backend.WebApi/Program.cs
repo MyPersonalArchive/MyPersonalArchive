@@ -19,6 +19,8 @@ using Backend.Mpa.DbModel.Database;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.WebApi.Configuration;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Backend.WebApi;
 
@@ -37,6 +39,8 @@ public static class Program
 			{
 				options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 				options.JsonSerializerOptions.Converters.Add(new JsonSerializerDefaults.DateTimeOffsetConverter());
+
+				// options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 			});
 		builder.Services.AddHttpContextAccessor();
 
