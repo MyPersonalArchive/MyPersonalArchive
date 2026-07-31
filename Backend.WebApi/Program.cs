@@ -14,6 +14,8 @@ using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
 using Backend.WebApi.Cqrs.Infrastructure;
 using Backend.Mpa.DbModel.Database;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Backend.WebApi;
 
@@ -27,6 +29,12 @@ public static class Program
 		var builder = WebApplication.CreateBuilder(args);
 		InitializeLogger(builder);
 
+		builder.Services.AddControllers()
+			.AddJsonOptions(options =>
+			{
+				options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+				options.JsonSerializerOptions.Converters.Add(new JsonSerializerDefaults.DateTimeOffsetConverter());
+			});
 		builder.Services.AddHttpContextAccessor();
 
 		var executingAssembly = Assembly.GetExecutingAssembly();
