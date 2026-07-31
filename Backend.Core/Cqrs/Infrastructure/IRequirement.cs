@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 
 namespace Backend.Core.Cqrs.Infrastructure;
@@ -40,7 +41,7 @@ public class RequireAuthenticationAttribute : Attribute, IRequirement
 /// Requires the X-Tenant-Id header to be present, valid, and in the user's allowed tenants list.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-public class RequireAllowedTenantIdAttribute : RequireAuthenticationAttribute, IRequirement
+public class RequireOrganizationIdAttribute : RequireAuthenticationAttribute, IRequirement
 {
 	public override bool TryCheck(HttpContext httpContext, ILogger logger, out string? failureReason)
 	{
@@ -49,47 +50,23 @@ public class RequireAllowedTenantIdAttribute : RequireAuthenticationAttribute, I
 		{
 			return false;
 		}
-
-		if (!httpContext.Request.Headers.TryGetValue("X-Tenant-Id", out var tenantIdValue))
-		{
-			failureReason = "X-Tenant-Id header is required";
-			logger.LogWarning("X-Tenant-Id header missing");
-			return false;
-		}
-
-		if (!int.TryParse(tenantIdValue, out var tenantId) /*|| tenantId <= 0*/)
-		{
-			failureReason = "X-Tenant-Id header must be a valid integer";
-			logger.LogWarning("X-Tenant-Id header invalid: {TenantId}", tenantIdValue!);
-			return false;
-		}
-
-		// Check if user is authenticated and has access to this tenant
+		
+		// Check if user is authenticated and has the organization claim
 		var user = httpContext.User;
 		if (user.Identity?.IsAuthenticated ?? false)
 		{
-			var allowedTenantsClaim = user.FindFirst("AllowedTenants")?.Value;
-			if (string.IsNullOrEmpty(allowedTenantsClaim))
+			var username = user.Identity?.Name;
+
+			string? organizationClaim = httpContext.User.FindFirstValue("organization");
+			if (string.IsNullOrWhiteSpace(organizationClaim))
 			{
-				failureReason = "User does not have any allowed tenants";
-				logger.LogWarning("User {Username} does not have any allowed tenants", user.Identity?.Name);
+				failureReason = "User does not have an organization claim or it is empty";
+				logger.LogWarning("User {Username} has an empty organization claim", username);
 				return false;
 			}
 
-			var allowedTenants = allowedTenantsClaim.Split(',', StringSplitOptions.RemoveEmptyEntries)
-				.Select(t => int.TryParse(t.Trim(), out var id) ? id : (int?)null)
-				.Where(id => id != null)
-				.ToList();
-
-			if (allowedTenants.Contains(tenantId))
-			{
-				failureReason = null;
-				return true;
-			}
-
-			failureReason = $"User does not have access to tenant {tenantId}";
-			logger.LogWarning("User does not have access to tenant {TenantId}. Allowed tenants: {AllowedTenants}", tenantId, allowedTenantsClaim);
-			return false;
+			failureReason = null;
+			return true;
 		}
 
 		failureReason = $"User is not authenticated";

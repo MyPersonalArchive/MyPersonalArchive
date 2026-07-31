@@ -170,35 +170,29 @@ public class FileStructureConverter
 	}
 
 
-	private IEnumerable<int> GetTenantIdsForBlobs()
+	private IEnumerable<string> GetTenantIdsForBlobs()
 	{
 		// each tenant has a folder in data/Blobs/{tenantId}
 		var tenantFolders = Directory.GetDirectories("/data/Blobs");
 		foreach (var folder in tenantFolders)
 		{
-			if (int.TryParse(Path.GetFileName(folder), out var tenantId))
-			{
-				yield return tenantId;
-			}
+			yield return Path.GetFileName(folder);
 		}
 	}
 
 
-	private IEnumerable<int> GetTenantIdsForSettings()
+	private IEnumerable<string> GetTenantIdsForSettings()
 	{
 		// each tenant has a folder in data/Settings/{tenantId}
 		var tenantFolders = Directory.GetDirectories("/data/Settings").Where(f => Path.GetFileName(f) != "System");
 		foreach (var folder in tenantFolders)
 		{
-			if (int.TryParse(Path.GetFileName(folder), out var tenantId))
-			{
-				yield return tenantId;
-			}
+			yield return Path.GetFileName(folder);
 		}
 	}
 
 
-	private IEnumerable<string> GetUserIdsForSettings(int tenantId)
+	private IEnumerable<string> GetUserIdsForSettings(string tenantId)
 	{
 		// each user has a folder in data/Settings/{tenantId}/{userId}
 		var userFolders = Directory.GetDirectories($"/data/Settings/{tenantId}/");

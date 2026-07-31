@@ -20,13 +20,13 @@ public class FilterDefinition
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class SaveStoredFilters : ICommand<SaveStoredFilters>
 {
 	public required IEnumerable<StoredFilter> StoredFilters { get; set; }
 }
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class GetStoredFilters : IQuery<GetStoredFilters, IEnumerable<StoredFilter>>
 {
 	// No parameters to get all stored filters

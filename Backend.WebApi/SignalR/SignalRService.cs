@@ -9,7 +9,7 @@ namespace Backend.WebApi.SignalR;
 public class SignalRService : ISignalRService
 {
 	private readonly IHubContext<NotificationHub> _hubContext;
-	private readonly int? _tenantId;
+	private readonly string? _tenantId;
 	private readonly string _username;
 
 	public SignalRService(IHubContext<NotificationHub> hubContext, IAmbientDataResolver resolver)

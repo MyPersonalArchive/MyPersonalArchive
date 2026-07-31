@@ -2,7 +2,7 @@ using Backend.Core.Cqrs.Infrastructure;
 
 namespace Backend.WebApi.Cqrs;
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 // [RequirementFeatureFlag("ArjansDemoCommands")]
 // [RequirementPermission("ArjansDemoCommandsPermission")]
 public class Demo1Query : IQuery<Demo1Query, string>
@@ -22,6 +22,7 @@ public class Demo1QueryHandler : IAsyncQueryHandler<Demo1Query, string>
 
 //-------------------------------------------------------------
 
+[RequireOrganizationId]
 [RequireAuthentication(UserMustBeAuthorized = true)]
 public class Demo2Query : IQuery<Demo2Query, string>
 {
@@ -33,7 +34,7 @@ public class Demo3Query : IQuery<Demo3Query, string>
 	public int MyProperty { get; set; }
 }
 
-[RequireAllowedTenantId(UserMustBeAuthorized = false)]
+[RequireOrganizationId]
 public class Demo4Query : IQuery<Demo4Query, string>
 {
 	public int MyProperty { get; set; }
@@ -48,8 +49,8 @@ public class Demo4Query : IQuery<Demo4Query, string>
 
 public class Demo2QueryHandler :
 	IAsyncQueryHandler<Demo2Query, string>,
-	IQueryHandler<Demo3Query, string>,
-	IQueryHandler<Demo4Query, string>
+	IAsyncQueryHandler<Demo3Query, string>,
+	IAsyncQueryHandler<Demo4Query, string>
 {
 	public async Task<string> Handle(Demo2Query query)
 	{
@@ -58,13 +59,15 @@ public class Demo2QueryHandler :
 		return $"MyDescription backwards is: {new string(query.MyDescription?.Reverse().ToArray() ?? Array.Empty<char>())}";
 	}
 
-	public string Handle(Demo3Query query)
+	public async Task<string> Handle(Demo3Query query)
 	{
+		await Task.Delay(100);
 		return $"Hello from Demo3QueryHandler! Double of MyProperty value is: {query.MyProperty * 2}";
 	}
 
-	public string Handle(Demo4Query query)
+	public async Task<string> Handle(Demo4Query query)
 	{
+		await Task.Delay(100);
 		return $"Hello from Demo4QueryHandler! MyProperty: {query.MyProperty}, OtherProperty: {query.OtherProperty}, ComplexProperty.NestedProperty: {query.ComplexProperty?.NestedProperty}";
 	}
 }

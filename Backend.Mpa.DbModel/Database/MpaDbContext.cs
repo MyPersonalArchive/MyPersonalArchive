@@ -12,14 +12,14 @@ namespace Backend.Mpa.DbModel.Database;
 public class MpaDbContext : DbContext
 {
 	private readonly DbConfig _dbConfig;
-	private readonly int? _tenantId;
+	private readonly string? _tenantId;
 
 	public MpaDbContext(IOptions<DbConfig> dbConfig, IAmbientDataResolver resolver)
 		: this(dbConfig.Value, resolver.GetCurrentTenantId())
 	{
 	}
 
-	public MpaDbContext(DbConfig dbConfig, int? currentTenantId)
+	public MpaDbContext(DbConfig dbConfig, string? currentTenantId)
 	{
 		_dbConfig = dbConfig;
 		_tenantId = currentTenantId;
@@ -94,10 +94,6 @@ public class MpaDbContext : DbContext
 
 	private void ConfigureTypeConversions(ModelBuilder modelBuilder)
 	{
-		var jsonSerializerOptions = new JsonSerializerOptions
-		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-		};
 	}
 
 	private static void ConfigureEntityRelationships(ModelBuilder modelBuilder)
@@ -201,7 +197,7 @@ public class MpaDbContext : DbContext
 			var tenantId = _tenantId ?? throw new Exception("Missing _tenantId. (Probable cause: missing the 'X-Tenant-Id' http request header.)");
 			foreach (var entry in entries)
 			{
-				entry.Entity.TenantId = tenantId;
+				entry.Entity.TenantId = int.Parse(tenantId);
 			}
 		}
 	}
@@ -215,7 +211,7 @@ public class MpaDbContext : DbContext
 		if (modifiedEntries.Any())
 		{
 			var tenantId = _tenantId ?? throw new Exception("Missing _tenantId. (Probable cause: missing the 'X-Tenant-Id' http request header.)");
-			if (modifiedEntries.Any(e => e.Entity.TenantId != tenantId))
+			if (modifiedEntries.Any(e => e.Entity.TenantId != int.Parse(tenantId)))
 			{
 				throw new InvalidOperationException($"Cannot modify or delete TenantEntity across tenant boundaries.");
 			}

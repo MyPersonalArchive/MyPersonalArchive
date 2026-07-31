@@ -84,7 +84,7 @@ internal class Program
 	{
 		using var scope = serviceProvider.CreateScope();
 		var dummyAmbientDataResolver = (DummyAmbientDataResolver)scope.ServiceProvider.GetService<IAmbientDataResolver>()!;
-		dummyAmbientDataResolver.TenantId = 1;
+		dummyAmbientDataResolver.TenantId = "1";
 		dummyAmbientDataResolver.Username = "admin@localhost";
 	
 		var archiveItemService = scope.ServiceProvider.GetService<ArchiveItemQueryService>()!;

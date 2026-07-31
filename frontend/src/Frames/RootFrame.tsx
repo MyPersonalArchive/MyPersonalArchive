@@ -6,7 +6,6 @@ import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 type CurrentUserInfoResponse = {
 	username: string
 	fullname: string
-	availableTenantIds: number[]
 	accessToken: string
 }
 
@@ -19,7 +18,7 @@ export const RootFrame = ({ children }: PropsWithChildren) => {
 		if (currentUser === undefined) {
 			(async () => {
 				try {
-					const httpResponse = await fetch("/api/authentication/current-user-info", {
+					const httpResponse = await fetch("/api/oidc/current-user-info", {
 						credentials: "same-origin",
 						headers: {
 							"Content-Type": "application/json"
@@ -34,8 +33,7 @@ export const RootFrame = ({ children }: PropsWithChildren) => {
 					const response = await httpResponse.json() as CurrentUserInfoResponse
 					const user = {
 						username: response.username,
-						fullname: response.fullname,
-						availableTenantIds: response.availableTenantIds
+						fullname: response.fullname
 					}
 					setCurrentUser(user)
 				} catch (error) {

@@ -16,13 +16,13 @@ public class ExternalAccount
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class SaveExternalAccounts : ICommand<SaveExternalAccounts>
 {
 	public required IEnumerable<ExternalAccount> ExternalAccounts { get; set; }
 }
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class GetExternalAccounts : IQuery<GetExternalAccounts, IEnumerable<ExternalAccount>>
 {
 	// No parameters to get all stored filters

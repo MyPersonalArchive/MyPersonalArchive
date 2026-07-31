@@ -11,11 +11,11 @@ public class TenantIdRequirement : IAuthorizationRequirement
 
 
 // Handler
-public class TenantIdRequirementsAuthorizationHandler : AuthorizationHandler<TenantIdRequirement>
+public class OrganizationRequirementAuthorizationHandler : AuthorizationHandler<TenantIdRequirement>
 {
 	private readonly IHttpContextAccessor _httpContextAccessor;
 
-	public TenantIdRequirementsAuthorizationHandler(IHttpContextAccessor httpContextAccessor)
+	public OrganizationRequirementAuthorizationHandler(IHttpContextAccessor httpContextAccessor)
 	{
 		_httpContextAccessor = httpContextAccessor;
 	}
@@ -23,17 +23,16 @@ public class TenantIdRequirementsAuthorizationHandler : AuthorizationHandler<Ten
 	protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, TenantIdRequirement requirement)
 	{
 		var httpContext = _httpContextAccessor.HttpContext;
+		var user = httpContext?.User;
+		var organization = user?.FindFirst("organization")?.Value;
 
-		if (httpContext?.Request.Headers.TryGetValue("X-Tenant-Id", out var xTenantIdHeaderValues ) == true)
+		if (organization == null)
 		{
-			var userClaims = httpContext.User.Claims;
-			var allowedTenants = userClaims.SingleOrDefault(claim => "AllowedTenants" == claim.Type)?.Value.Split(',') ?? [];
-
-			if (allowedTenants.Contains(xTenantIdHeaderValues.ToString()))
-			{
-				context.Succeed(requirement);
-			}
+			context.Fail();
+			return Task.CompletedTask;
 		}
+
+		context.Succeed(requirement);
 
 		return Task.CompletedTask;
 	}

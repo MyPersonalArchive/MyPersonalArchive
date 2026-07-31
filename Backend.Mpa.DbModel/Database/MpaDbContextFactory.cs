@@ -17,6 +17,6 @@ public class MpaDbContextFactory : IDesignTimeDbContextFactory<MpaDbContext>
     public MpaDbContext CreateDbContext(string[] args)
     {
         var dbConfig = new DbConfig { DatabaseFolder = "/data/Database" };
-        return new MpaDbContext(dbConfig, 0);
+        return new MpaDbContext(dbConfig, "0");
     }
 }

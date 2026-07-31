@@ -7,7 +7,7 @@ using MimeKit;
 namespace Backend.Mpa.EmailIngestion.Cqrs;
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class CreateArchiveItemsFromEmails : ICommand<CreateArchiveItemsFromEmails>
 {
 	public required Guid ExternalAccountId { get; set; }
@@ -16,7 +16,7 @@ public class CreateArchiveItemsFromEmails : ICommand<CreateArchiveItemsFromEmail
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class CreateBlobsFromAttachments : ICommand<CreateBlobsFromAttachments>
 {
 	public required Guid ExternalAccountId { get; set; }

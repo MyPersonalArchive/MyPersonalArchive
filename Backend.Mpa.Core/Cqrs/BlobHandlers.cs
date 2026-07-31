@@ -5,7 +5,7 @@ using Backend.Mpa.Core.Store;
 namespace Backend.Mpa.Core.Cqrs;
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class GetBlob : IQuery<GetBlob, GetBlob.Response>
 {
 	public Guid Id { get; set; }
@@ -23,7 +23,7 @@ public class GetBlob : IQuery<GetBlob, GetBlob.Response>
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 {
 	// no params to list all blobs
@@ -41,7 +41,7 @@ public class ListBlobs : IQuery<ListBlobs, IEnumerable<ListBlobs.Response>>
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class DeleteBlobs : ICommand<DeleteBlobs>
 {
 	public required Guid[] BlobIds { get; set; }
