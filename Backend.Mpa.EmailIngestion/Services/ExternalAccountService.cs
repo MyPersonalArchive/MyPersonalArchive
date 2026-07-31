@@ -16,8 +16,8 @@ public class ExternalAccountService : SettingsServiceBase<ExternalAccountSetting
 
 	private readonly ISignalRService _signalRService;
 
-	public ExternalAccountService(IAmbientDataResolver resolver, ISignalRService signalRService, UserSettingsFileStoreFactory fileStoreFactory)
-		: base(resolver, fileStoreFactory.GetFileStore())
+	public ExternalAccountService(ISignalRService signalRService, UserSettingsFileStoreFactory fileStoreFactory)
+		: base(fileStoreFactory.GetFileStore())
 	{
 		_signalRService = signalRService;
 	}

@@ -6,14 +6,13 @@ namespace Backend.Core.Services.Infrastructure;
 
 public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 {
-	protected readonly IAmbientDataResolver Resolver;
+	// protected readonly IAmbientDataResolver Resolver;
 	private readonly IFileStore _fileStore;
 
 	protected abstract string FileName { get; }
 
-	protected SettingsServiceBase(IAmbientDataResolver resolver, IFileStore fileStore)
+	protected SettingsServiceBase(IFileStore fileStore)
 	{
-		Resolver = resolver;
 		_fileStore = fileStore;
 
 	}

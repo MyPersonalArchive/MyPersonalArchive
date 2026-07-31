@@ -14,8 +14,8 @@ public class EmailProviderService : SettingsServiceBase<EmailProviderSettings>
 
 	private readonly ISignalRService _signalRService;
 
-	public EmailProviderService(IAmbientDataResolver resolver, ISignalRService signalRService, SystemSettingsFileStoreFactory fileStoreFactory)
-		: base(resolver, fileStoreFactory.GetFileStore())
+	public EmailProviderService(ISignalRService signalRService, SystemSettingsFileStoreFactory fileStoreFactory)
+		: base(fileStoreFactory.GetFileStore())
 	{
 		_signalRService = signalRService;
 	}

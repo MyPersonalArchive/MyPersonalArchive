@@ -13,8 +13,8 @@ public class StoredFilterService : SettingsServiceBase<StoredFilterSettings>
 
 	private readonly ISignalRService _signalRService;
 
-	public StoredFilterService(IAmbientDataResolver resolver, ISignalRService signalRService, TenantSettingsFileStoreFactory fileStoreFactory)
-		: base(resolver, fileStoreFactory.GetFileStore())
+	public StoredFilterService(ISignalRService signalRService, TenantSettingsFileStoreFactory fileStoreFactory)
+		: base(fileStoreFactory.GetFileStore())
 	{
 		_signalRService = signalRService;
 	}
