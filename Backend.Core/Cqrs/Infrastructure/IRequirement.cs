@@ -38,7 +38,7 @@ public class RequireAuthenticationAttribute : Attribute, IRequirement
 
 
 /// <summary>
-/// Requires the X-Tenant-Id header to be present, valid, and in the user's allowed tenants list.
+/// Requires Organization claim to be present.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 public class RequireOrganizationIdAttribute : RequireAuthenticationAttribute, IRequirement
