@@ -3,14 +3,14 @@ using Backend.Core.Cqrs.Infrastructure;
 namespace Backend.Mpa.EmailIngestion.Cqrs;
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class ListFolders : IQuery<ListFolders, IEnumerable<string>>
 {
 	public required Guid ExternalAccountId { get; set; }
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class GetEmailContents : IQuery<GetEmailContents, GetEmailContents.EmailContents>
 {
 	public required Guid ExternalAccountId { get; set; }

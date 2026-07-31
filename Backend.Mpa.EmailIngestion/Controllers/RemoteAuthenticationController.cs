@@ -79,7 +79,7 @@ public class RemoteAuthenticationController : ControllerBase
 		switch (authTypeSettings)
 		{
 			case EmailProviderSettings.OAuthAuthType oauthSettings:
-				return StartAuthenticationWithOAuth(providerName, oauthSettings, returnUrl, tenantId.Value);
+				return StartAuthenticationWithOAuth(providerName, oauthSettings, returnUrl, tenantId);
 
 			case EmailProviderSettings.BasicAuthType:
 				return BadRequest("Basic auth does not support remote authentication flow");
@@ -92,7 +92,7 @@ public class RemoteAuthenticationController : ControllerBase
 	private IActionResult StartAuthenticationWithOAuth(string providerName,
 													EmailProviderSettings.OAuthAuthType oauthSettings,
 													string returnUrl,
-													int tenantId)
+													string tenantId)
 	{
 		var nonce = GenerateNonce();
 		HttpContext.Response.Cookies.Append($"{providerName}+{oauthSettings.Type}-nonce", nonce, _secureCookieOptions);
@@ -276,7 +276,7 @@ public class RemoteAuthenticationController : ControllerBase
 		public required string AuthenticationType { get; set; }
 		public required string Nonce { get; set; }
 		public required string ReturnUrl { get; set; }
-		public required int TenantId { get; set; }
+		public required string TenantId { get; set; }
 	}
 
 	public class BasicAuthRequest

@@ -6,7 +6,7 @@ using Backend.Mpa.Core.Services;
 namespace Backend.Mpa.Core.Cqrs;
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 {
 	public Guid Id { get; set; }
@@ -31,7 +31,7 @@ public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchiveItems.Response>>
 {
 	public class Response
@@ -55,7 +55,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 
 
 
-// [RequireAllowedTenantId]
+// [RequireOrganizationId]
 // public class CreateArchiveItem : ICommand<CreateArchiveItem>
 // {
 // 	public required string Title { get; set; }
@@ -65,7 +65,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 // }
 
 
-[RequireAllowedTenantId]
+[RequireOrganizationId]
 public class DeleteArchiveItem : ICommand<DeleteArchiveItem>
 {
 	public Guid Id { get; set; }

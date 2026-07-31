@@ -3,10 +3,10 @@ using Backend.Core.Infrastructure;
 
 internal class DummyAmbientDataResolver : IAmbientDataResolver
 {
-	public int? TenantId = null;
+	public string? TenantId = null;
 	public string? Username = null;
 	
-	public int? GetCurrentTenantId()
+	public string? GetCurrentTenantId()
 	{
 		return TenantId;
 	}

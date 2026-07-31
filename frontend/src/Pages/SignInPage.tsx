@@ -10,7 +10,6 @@ import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 type SignInResponse = {
 	username: string
 	fullname: string
-	availableTenantIds: number[]
 	accessToken: string
 }
 
@@ -84,8 +83,7 @@ export const SignInPage = () => {
 
 			const user = {
 				username: response.username,
-				fullname: response.fullname,
-				availableTenantIds: response.availableTenantIds
+				fullname: response.fullname
 			}
 			setCurrentUser(user)
 
@@ -100,7 +98,7 @@ export const SignInPage = () => {
 		const redirect = new URLSearchParams(window.location.search).get("redirect")
 		const returnUrl = redirect ?? RoutePaths.Index
 		const query = new URLSearchParams({ returnUrl }).toString()
-		window.location.href = `/api/authentication/oidc/signin?${query}`
+		window.location.href = `/api/oidc/signin?${query}`
 	}
 
 

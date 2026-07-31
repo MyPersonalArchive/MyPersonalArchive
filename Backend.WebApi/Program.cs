@@ -59,7 +59,7 @@ public static class Program
 		builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
 		builder.Services.Configure<OidcConfig>(builder.Configuration.GetSection("Oidc"));
 
-		builder.Services.AddScoped<IAuthorizationHandler, TenantIdRequirementsAuthorizationHandler>();
+		builder.Services.AddScoped<IAuthorizationHandler, OrganizationRequirementAuthorizationHandler>();
 
 		builder.Services.AddDbContext<MpaDbContext>();
 
@@ -205,9 +205,10 @@ public static class Program
 				options.ResponseType = "code";
 				options.UsePkce = true;
 				options.SaveTokens = true;
-				options.GetClaimsFromUserInfoEndpoint = true;
+				options.GetClaimsFromUserInfoEndpoint = false;
 				options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
 				options.Scope.Add("email");
+				options.Scope.Add("organization");
 				options.Scope.Add("mpa-tenant-ids");
 			});
 		}
@@ -235,7 +236,7 @@ public static class Program
 		var services = app.Services;
 
 		var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
-		var tenantId = -1;
+		var tenantId = "-1";
 		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts
 		dbContext.Database.Migrate();
 	}

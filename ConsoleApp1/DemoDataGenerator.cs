@@ -11,7 +11,7 @@ public class DemoDataGenerator
 
 	private class GeneratorData
 	{
-		public int TenantId;
+		public string TenantId;
 		public required IEnumerable<string> Usernames;
 		public required IEnumerable<string> FirstPart;
 		public required IEnumerable<string> SecondPart;
@@ -24,7 +24,7 @@ public class DemoDataGenerator
 	[
 		new GeneratorData
 		{
-			TenantId = -1,
+			TenantId = "-1",
 			Usernames = ["admin@localhost"],
 			FirstPart = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"],
 			SecondPart = ["demo", "test", "example", "sample", "trial", "pilot"],
@@ -34,7 +34,7 @@ public class DemoDataGenerator
 		},
 		new GeneratorData
 		{
-			TenantId = 1,
+			TenantId = "1",
 			Usernames = ["admin@localhost", "arjan@localhost"],
 			FirstPart = ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis", "Siete", "Ocho", "Nueve", "Diez"],
 			SecondPart = ["demo", "test", "example", "sample", "trial", "pilot"],
@@ -44,7 +44,7 @@ public class DemoDataGenerator
 		},
 		new GeneratorData
 		{
-			TenantId = 2,
+			TenantId = "2",
 			Usernames = ["admin@localhost", "stian@localhost"],
 			FirstPart = ["Eins", "Zwei", "Drei", "Vier", "Fünf", "Sechs", "Sieben", "Acht", "Neun", "Zehn"],
 			SecondPart = ["demo", "test", "example", "sample", "trial", "pilot"],
@@ -54,7 +54,7 @@ public class DemoDataGenerator
 		},
 		new GeneratorData
 		{
-			TenantId = 3,
+			TenantId = "3",
 			Usernames = ["arjan@localhost"],
 			FirstPart = ["Un", "Deux", "Trois", "Quatre", "Cinq", "Six", "Sept", "Huit", "Neuf", "Dix"],
 			SecondPart = ["demo", "test", "example", "sample", "trial", "pilot"],
@@ -98,7 +98,7 @@ public class DemoDataGenerator
 			return;
 		}
 
-		var rng = new Random(data.TenantId);
+		var rng = new Random(data.TenantId.GetHashCode());
 
 		var count = 0;
 		var stopwatch = Stopwatch.StartNew();

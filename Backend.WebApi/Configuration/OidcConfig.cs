@@ -13,7 +13,6 @@ public class OidcConfig
 	public string? CallbackPath { get; set; }
 	public string? SignedOutCallbackPath { get; set; }
 	public string DefaultRedirectPath { get; set; } = "/";
-	public string TenantClaimType { get; set; } = "allowedTenants";
 
 
 	public bool IsValidForLoginFlow()
