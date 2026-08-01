@@ -18,6 +18,7 @@ using Backend.Mpa.DbModel.Database;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.WebApi.Configuration;
+using Backend.Mpa.Core;
 
 namespace Backend.WebApi;
 
@@ -72,6 +73,7 @@ public static class Program
 		builder.RegisterEndpoints();
 		builder.RegisterSignalRServices();
 		builder.RegisterAuthenticationServices();
+		builder.RegisterKeycloakClient();
 
 		var app = builder.Build();
 
@@ -210,7 +212,6 @@ public static class Program
 				options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
 				options.Scope.Add("email");
 				options.Scope.Add("organization");
-				options.Scope.Add("mpa-tenant-ids");
 			});
 		}
 
@@ -232,6 +233,44 @@ public static class Program
 	}
 
 
+	private static void RegisterKeycloakClient(this WebApplicationBuilder builder)
+	{
+		var keycloakOptions = new KeycloakConfig();
+		builder.Configuration.GetSection("Keycloak").Bind(keycloakOptions);
+
+		builder.Services.AddHttpClient<KeycloakOrgGroupClient>(async (sp, client) =>
+		{
+			var config = sp.GetRequiredService<IConfiguration>();
+			var tokenEndpoint = $"realms/master/protocol/openid-connect/token";
+
+			// Fetch token (cache in production — use IHttpClientFactory + token caching)
+			using var tokenReq = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint)
+			{
+				Content = new FormUrlEncodedContent(new Dictionary<string, string>
+				{
+					["client_id"] = keycloakOptions.ClientId!,
+					["client_secret"] = keycloakOptions.ClientSecret!,
+					["grant_type"] = "client_credentials"
+
+				})
+			};
+
+			client.BaseAddress = new Uri(keycloakOptions.Authority!);
+			using var tokenRes = await client.SendAsync(tokenReq);
+			var token = await tokenRes.Content.ReadFromJsonAsync<TokenResponse>();
+			client.DefaultRequestHeaders.Authorization =
+				new("Bearer", token?.AccessToken);
+		});
+	}
+
+	public record TokenResponse
+	{
+		[JsonPropertyName("access_token")]
+		public string AccessToken { get; init; } = "";
+	}
+
+
+	
 	private static void PrepareDatabase(this WebApplication app)
 	{
 		var services = app.Services;

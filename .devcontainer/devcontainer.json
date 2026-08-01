@@ -27,17 +27,25 @@
 
 		"Keycloak__Admin__Username": "${localEnv:KEYCLOAK_ADMIN_USERNAME:-}",
 		"Keycloak__Admin__Password": "${localEnv:KEYCLOAK_ADMIN_PASSWORD:-}",
+
 		"Keycloak__BaseUrl": "${localEnv:KEYCLOAK_ORG_ADMIN_API_BASE_URL:-}",
+		"Keycloak__Authority": "${localEnv:KEYCLOAK_ORG_ADMIN_API_AUTHORITY:-}",
 		"Keycloak__Realm": "${localEnv:KEYCLOAK_ORG_ADMIN_API_REALM:-}",
 		"Keycloak__ClientId": "${localEnv:KEYCLOAK_ORG_ADMIN_API_CLIENT_ID:-}",
 		"Keycloak__ClientSecret": "${localEnv:KEYCLOAK_ORG_ADMIN_API_CLIENT_SECRET:-}",
 
 		"Oidc__Authority": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_AUTHORITY:-}",
 		"Oidc__BaseUrl": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_BASE_URL:-}",
+		"Oidc__Realm": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_REALM:-}",
 		"Oidc__ClientId": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CLIENT_ID:-}",
 		"Oidc__ClientSecret": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CLIENT_SECRET:-}",
-		"Oidc__Realm": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_REALM:-}"
+		"Oidc__CallbackPath": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CALLBACK_PATH:-}",
+		"Oidc__SignedOutCallbackPath": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_SIGNED_OUT_CALLBACK_PATH:-}",
+		"Oidc__DefaultRedirectPath": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_DEFAULT_REDIRECT_PATH:-}",
 
+		"JWT__JwtSecret": "${localEnv:LOCAL_AUTH_JWTSECRET:-}",
+		"JWT__JwtIssuer": "${localEnv:LOCAL_AUTH_JWTISSUER:-}",
+		"JWT__Audience": "${localEnv:LOCAL_AUTH_AUDIENCE:-}"
 	},
 	"mounts": [
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
