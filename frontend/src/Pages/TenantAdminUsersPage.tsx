@@ -1,8 +1,37 @@
 import { faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { useEffect } from "react"
+import { useApiClient } from "../Utils/Hooks/useApiClient"
+import { useAtom } from "jotai"
+import { usersAtom } from "../Utils/Atoms/usersAtom"
+
+export type UserRole = "accountOwner" | "administrator" | "user"
+
+export type ListUsersResponse = {
+	issuer: string
+	subject: string
+	fullname: string
+	roles: string[]
+}
 
 
 export const TenantAdminUsersPage = () => {
+	const apiClient = useApiClient()
+	const [users, setUsers] = useAtom(usersAtom)
+
+	useEffect(() => {
+		apiClient.query<ListUsersResponse[]>("ListUsers")
+			.then(response => {
+				setUsers(response!.map(user => ({
+					issuer: user.issuer,
+					subject: user.subject,
+					fullname: user.fullname,
+					roles: user.roles
+				})))
+			})
+
+	}, [])
+
 
 	return (
 		<div className="form">
@@ -20,6 +49,22 @@ export const TenantAdminUsersPage = () => {
 			</div>
 
 			<div className="flex gap-3 flex-wrap">
+				{
+					users.map(user => (
+						<div key={user.subject} className="card flex flex-row relative w-73">
+							<div className="p-2 grow">
+								<div className="flex flex-col py-2 px-4">
+									<div className="font-bold">
+										<FontAwesomeIcon icon={user.roles.includes("accountOwner") || user.roles.includes("administrator") ? faUserTie : faUser} fixedWidth />
+										{user.fullname}
+									</div>
+									<div className="text-sm">({user.roles.join(", ")})</div>
+									<div className="text-sm">Email: {user.subject}</div>
+								</div>
+							</div>
+						</div>
+					))}
+
 				<div className="card flex flex-row relative w-73">
 					<div className="p-2 grow">
 						<div className="flex flex-col py-2 px-4">

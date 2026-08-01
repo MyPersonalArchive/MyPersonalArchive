@@ -1,0 +1,41 @@
+### Variables — edit these for your environment
+@keycloak-host = {{$processEnv Keycloak__BaseUrl}}
+@realm = {{$processEnv Keycloak__Realm}}
+@org-id = 78324507-26e5-4143-8a7d-809e83632f36
+@client-id = {{$processEnv Keycloak__ClientId}}
+@client-secret = {{$processEnv Keycloak__ClientSecret}}
+
+
+### 1. Test — get a token with client_credentials
+# @name getServiceToken
+POST {{keycloak-host}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{client-id}}&client_secret={{client-secret}}&grant_type=client_credentials
+
+
+### 2. List all organizations (to find your org ID)
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations
+Authorization: Bearer {{getServiceToken.response.body.access_token}}
+Accept: application/json
+
+
+### 3. List members of an organization
+# Uses the access_token captured from the previous request
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations/{{org-id}}/members?briefRepresentation=false
+Authorization: Bearer {{getServiceToken.response.body.access_token}}
+Accept: application/json
+
+
+### 4. List all groups in the organization
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations/{{org-id}}/groups
+Authorization: Bearer {{getServiceToken.response.body.access_token}}
+Accept: application/json
+
+
+### 5. List members of a specific org group
+@group-id = 99515964-2db5-497d-9799-a1eac4153c2b
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations/{{org-id}}/groups/{{group-id}}/members
+Authorization: Bearer {{getServiceToken.response.body.access_token}}
+Accept: application/json
+

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Core;
@@ -19,8 +18,6 @@ using Backend.Mpa.DbModel.Database;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.WebApi.Configuration;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 
 namespace Backend.WebApi;
 
