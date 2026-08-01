@@ -2,11 +2,10 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
 	"name": "my-personal-archive-dev",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	// "image": "mcr.microsoft.com/devcontainers/dotnet:9.0-bookworm",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "devcontainer",
+	"workspaceFolder": "/workspaces/MyPersonalArchive",
+
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
@@ -23,25 +22,30 @@
 		// }
 	},
 	"containerEnv": {
-		"CertificatePassword": "${localEnv:MPA_CertificatePassword}",
-		
-		"Oidc__Authority": "${localEnv:MPA_Oidc__Authority}",
-		"Oidc__ClientId": "${localEnv:MPA_Oidc__ClientId}",
-		"Oidc__ClientSecret": "${localEnv:MPA_Oidc__ClientSecret}",
-		"Oidc__CallbackPath": "${localEnv:MPA_Oidc__CallbackPath}",
-		"Oidc__SignedOutCallbackPath": "${localEnv:MPA_Oidc__SignedOutCallbackPath}",
-		
-		"Jwt__JwtIssuer": "${localEnv:MPA_Jwt__JwtIssuer}",
-		"Jwt__Audience": "${localEnv:MPA_Jwt__Audience}",
-		"Jwt__JwtSecret": "${localEnv:MPA_Jwt__JwtSecret}",
+		"ASPNETCORE_ENVIRONMENT": "Development",
+		"CERTIFICATEPASSWORD": "${localEnv:MPA_CertificatePassword:-}",
 
-		"ASPNETCORE_ENVIRONMENT": "Development"
+		"Keycloak__Admin__Username": "${localEnv:KEYCLOAK_ADMIN_USERNAME:-}",
+		"Keycloak__Admin__Password": "${localEnv:KEYCLOAK_ADMIN_PASSWORD:-}",
+		"Keycloak__BaseUrl": "${localEnv:KEYCLOAK_ORG_ADMIN_API_BASE_URL:-}",
+		"Keycloak__Realm": "${localEnv:KEYCLOAK_ORG_ADMIN_API_REALM:-}",
+		"Keycloak__ClientId": "${localEnv:KEYCLOAK_ORG_ADMIN_API_CLIENT_ID:-}",
+		"Keycloak__ClientSecret": "${localEnv:KEYCLOAK_ORG_ADMIN_API_CLIENT_SECRET:-}",
+
+		"Oidc__Authority": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_AUTHORITY:-}",
+		"Oidc__BaseUrl": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_BASE_URL:-}",
+		"Oidc__ClientId": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CLIENT_ID:-}",
+		"Oidc__ClientSecret": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CLIENT_SECRET:-}",
+		"Oidc__Realm": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_REALM:-}"
+
 	},
 	"mounts": [
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/data/mpa,target=/data,type=bind,consistency=cached"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [5173],
+	"forwardPorts": [
+		5173
+	],
 	"portsAttributes": {
 		"5173": {
 			"protocol": "https",
@@ -69,9 +73,7 @@
 			]
 		}
 	},
-
 	"postCreateCommand": "chmod u=+rwx .devcontainer/*.sh && .devcontainer/setup-environment.sh && .devcontainer/setup-shell.sh && .devcontainer/setup-project.sh",
-	
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root"
 }
