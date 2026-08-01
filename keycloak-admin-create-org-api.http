@@ -1,0 +1,110 @@
+### Variables — edit these for your environment
+### admin-username/admin-password are read from .env, generated via: op inject -i .env.tpl -o .env
+@keycloak-host = {{$processEnv Keycloak__BaseUrl}}
+@realm = {{$processEnv Keycloak__Realm}}
+@admin-username = {{$processEnv KEYCLOAK_ADMIN_USERNAME}}
+@admin-password = {{$processEnv KEYCLOAK_ADMIN_PASSWORD}}
+@client-id = admin-cli
+@service-client-id = {{$processEnv Keycloak__ClientId}}
+@service-client-secret = {{$processEnv Keycloak__ClientSecret}}
+
+
+### 1. Get admin token (password grant from admin-cli) - to create the service account client and assign the manage-organizations role
+# @name getAdminToken
+POST {{keycloak-host}}/realms/master/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{client-id}}&username={{admin-username}}&password={{admin-password}}&grant_type=password
+
+
+### 2. Create the service-account client (run this FIRST)
+POST {{keycloak-host}}/admin/realms/{{realm}}/clients
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "clientId": "{{service-client-id}}",
+  "enabled": true,
+  "protocol": "openid-connect",
+  "publicClient": false,
+  "secret": "{{service-client-secret}}",
+  "serviceAccountsEnabled": true,
+  "directAccessGrantsEnabled": false,
+  "standardFlowEnabled": false,
+  "redirectUris": []
+}
+
+
+### 3. Find the realm-management client
+# @name findRealmMgmtClient
+GET {{keycloak-host}}/admin/realms/{{realm}}/clients?clientId=realm-management
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Accept: application/json
+
+
+### 4. Find the manage-organizations client role
+# @name findManageOrgsRole
+GET {{keycloak-host}}/admin/realms/{{realm}}/clients/{{findRealmMgmtClient.response.body.0.id}}/roles/manage-organizations
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Accept: application/json
+
+
+### 4b. Find the view-users client role (needed to list organization members)
+# @name findViewUsersRole
+GET {{keycloak-host}}/admin/realms/{{realm}}/clients/{{findRealmMgmtClient.response.body.0.id}}/roles/view-users
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Accept: application/json
+
+
+### 5. Find your service-account client
+# @name findServiceClient
+GET {{keycloak-host}}/admin/realms/{{realm}}/clients?clientId={{service-client-id}}
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Accept: application/json
+
+
+### 6. Get the service-account user for your client
+# @name findServiceAccountUser
+GET {{keycloak-host}}/admin/realms/{{realm}}/clients/{{findServiceClient.response.body.0.id}}/service-account-user
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Accept: application/json
+
+
+### 7. Assign manage-organizations role to the service account user
+POST {{keycloak-host}}/admin/realms/{{realm}}/users/{{findServiceAccountUser.response.body.id}}/role-mappings/clients/{{findRealmMgmtClient.response.body.0.id}}
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Content-Type: application/json
+
+[
+  {
+    "id": "{{findManageOrgsRole.response.body.id}}",
+    "name": "manage-organizations"
+  }
+]
+
+
+### 7b. Assign view-users role to the service account user
+POST {{keycloak-host}}/admin/realms/{{realm}}/users/{{findServiceAccountUser.response.body.id}}/role-mappings/clients/{{findRealmMgmtClient.response.body.0.id}}
+Authorization: Bearer {{getAdminToken.response.body.access_token}}
+Content-Type: application/json
+
+[
+  {
+    "id": "{{findViewUsersRole.response.body.id}}",
+    "name": "view-users"
+  }
+]
+
+
+### 8. Test — get a token with client_credentials
+# @name getServiceToken
+POST {{keycloak-host}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{service-client-id}}&client_secret={{service-client-secret}}&grant_type=client_credentials
+
+
+### 9. Test the token — list organizations
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations
+Authorization: Bearer {{getServiceToken.response.body.access_token}}
+Accept: application/json
