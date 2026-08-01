@@ -108,6 +108,10 @@ export MPA_Jwt__JwtSecret="..."
 EOF
 ```
 
+NOTE:
+- You will need to start vscode from zsh to make the env vars available inside the devcontainer
+- The env vars used in the containerEnv section are loaded when the devcontainer is built. So you must rebuild the devcontainer if you change any env vars.
+
 ## Trust root-ca on dev-container
 _Inside the dev-container_
 The dev-container will need to trust your certificate. You can do this by trusting your root-ca.
