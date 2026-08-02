@@ -16,7 +16,14 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 		public required string Issuer { get; set; }
 		public required string Subject { get; set; }
 		public required string Fullname { get; set; }
-		public required UserRoleSettings.Role[] Roles { get; set; }
+		public required Role[] Roles { get; set; }
+
+		public enum Role
+		{
+			Owner = 1,
+			Administrator,
+			User
+		}
 	}
 }
 
@@ -24,36 +31,30 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 public class UserRoleHandler :
 	IAsyncQueryHandler<ListUsers, IEnumerable<ListUsers.Response>>
 {
-	private readonly UserRoleService _userRoleService;
-	private readonly KeycloakOrgGroupClient _keycloakClient;
-	private readonly IAmbientDataResolver ambientDataResolver;
+	private readonly KeycloakOrganizationClient _keycloakClient;
 
-	public UserRoleHandler(UserRoleService userRoleService, KeycloakOrgGroupClient keycloakClient, IAmbientDataResolver ambientDataResolver)
+
+	public UserRoleHandler(KeycloakOrganizationClient keycloakClient)
 	{
-		_userRoleService = userRoleService;
 		_keycloakClient = keycloakClient;
-		this.ambientDataResolver = ambientDataResolver;
 	}
+
 
 	public async Task<IEnumerable<ListUsers.Response>> Handle(ListUsers query)
 	{
-		//TODO: returns 404 not found. Why???
-		var owners = await _keycloakClient.GetOwnerGroupMembersAsync(
-			realm: "my-personal-archive",
-			orgId: ambientDataResolver.GetCurrentTenantId()!,
-			groupName: "Owner");
+		var members = await _keycloakClient.ListOrganizationGroupMembersAsync();
+		var owners = await _keycloakClient.ListOrganizationGroupMembersAsync(groupName: "Owner");
 
-
-
-		var userRoleSettings = await _userRoleService.GetCurrentUserRolesAsync();
-
-		return userRoleSettings!.Users.Select(u => new ListUsers.Response
+		return members.Select(m => new ListUsers.Response
 		{
-			Issuer = u.Issuer,
-			Subject = u.Subject,
-			Fullname = u.Fullname,
-			Roles = u.Roles
+			Issuer = "//TODO: Get issuer from Keycloak config or ambient data",
+			Subject = m.Id,
+			Fullname = $"{m.FirstName} {m.LastName}",
+			Roles = owners.Any(o => o.Id == m.Id)
+				? [ListUsers.Response.Role.Owner, ListUsers.Response.Role.User]
+				: [ListUsers.Response.Role.User]
 		});
+
 	}
 
 }

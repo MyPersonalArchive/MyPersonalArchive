@@ -60,6 +60,7 @@ public static class Program
 		builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
 		builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
 		builder.Services.Configure<OidcConfig>(builder.Configuration.GetSection("Oidc"));
+		builder.Services.Configure<KeycloakConfig>(builder.Configuration.GetSection("Keycloak"));
 
 		builder.Services.AddScoped<IAuthorizationHandler, OrganizationRequirementAuthorizationHandler>();
 
@@ -238,39 +239,14 @@ public static class Program
 		var keycloakOptions = new KeycloakConfig();
 		builder.Configuration.GetSection("Keycloak").Bind(keycloakOptions);
 
-		builder.Services.AddHttpClient<KeycloakOrgGroupClient>(async (sp, client) =>
+		builder.Services.AddHttpClient<KeycloakOrganizationClient>(client =>
 		{
-			var config = sp.GetRequiredService<IConfiguration>();
-			var tokenEndpoint = $"realms/master/protocol/openid-connect/token";
-
-			// Fetch token (cache in production — use IHttpClientFactory + token caching)
-			using var tokenReq = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint)
-			{
-				Content = new FormUrlEncodedContent(new Dictionary<string, string>
-				{
-					["client_id"] = keycloakOptions.ClientId!,
-					["client_secret"] = keycloakOptions.ClientSecret!,
-					["grant_type"] = "client_credentials"
-
-				})
-			};
-
-			client.BaseAddress = new Uri(keycloakOptions.Authority!);
-			using var tokenRes = await client.SendAsync(tokenReq);
-			var token = await tokenRes.Content.ReadFromJsonAsync<TokenResponse>();
-			client.DefaultRequestHeaders.Authorization =
-				new("Bearer", token?.AccessToken);
-		});
+			client.BaseAddress = new Uri(keycloakOptions.BaseUrl!);
+		})
+		.AddHttpMessageHandler<KeycloakAuthHandler>();
 	}
-
-	public record TokenResponse
-	{
-		[JsonPropertyName("access_token")]
-		public string AccessToken { get; init; } = "";
-	}
-
-
 	
+
 	private static void PrepareDatabase(this WebApplication app)
 	{
 		var services = app.Services;

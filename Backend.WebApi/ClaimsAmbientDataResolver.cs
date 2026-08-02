@@ -20,7 +20,7 @@ public class ClaimsAmbientDataResolver : IAmbientDataResolver
 		var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("Unable to read http request headers");
 
 		var organizationClaim = httpContext.User.Claims.SingleOrDefault(claim => claim.Type == "organization")?.Value;
-		Debug.WriteLine($"ClaimsAmbientDataResolver: GetCurrentTenantId() - organizationClaim: {organizationClaim}");
+		// Debug.WriteLine($"ClaimsAmbientDataResolver: GetCurrentTenantId() - organizationClaim: {organizationClaim}");
 		return organizationClaim;
 	}
 
@@ -29,7 +29,7 @@ public class ClaimsAmbientDataResolver : IAmbientDataResolver
 	{
 		var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("Unable to read http request headers");
 		var username = httpContext.User.Claims.SingleOrDefault(claim => ClaimTypes.NameIdentifier == claim.Type)?.Value;
-		Debug.WriteLine($"ClaimsAmbientDataResolver: GetCurrentUsername() - username: {username}");
+		// Debug.WriteLine($"ClaimsAmbientDataResolver: GetCurrentUsername() - username: {username}");
 
 		return username;
 	}
