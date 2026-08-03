@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Backend.Core.Infrastructure;
+using Microsoft.Extensions.Options;
 
 namespace Backend.Mpa.Core;
 
@@ -10,10 +11,10 @@ public class KeycloakOrganizationClient
 	private readonly KeycloakConfig _keycloakOptions;
 	private readonly IAmbientDataResolver _ambientDataResolver;
 
-	public KeycloakOrganizationClient(HttpClient http, KeycloakConfig keycloakOptions, IAmbientDataResolver ambientDataResolver)
+	public KeycloakOrganizationClient(HttpClient http, IOptions<KeycloakConfig> keycloakOptions, IAmbientDataResolver ambientDataResolver)
 	{
 		_http = http;
-		_keycloakOptions = keycloakOptions;
+		_keycloakOptions = keycloakOptions.Value;
 		_ambientDataResolver = ambientDataResolver;
 	}
 
