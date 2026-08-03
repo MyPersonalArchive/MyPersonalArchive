@@ -8,6 +8,18 @@
 		<UserSecretsId>7c5f8e2c-d532-454a-a8b6-a76cb2e68879</UserSecretsId>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<ContainerRepository>aeinbu/mypersonalarchive</ContainerRepository>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ContainerPort Include="5054" Type="tcp" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ContainerEnvironmentVariable Include="CERTIFICATE_PASSWORD" Value="" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.10" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
