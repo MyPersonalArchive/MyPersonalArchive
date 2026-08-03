@@ -236,16 +236,16 @@ public static class Program
 
 	private static void RegisterKeycloakClient(this WebApplicationBuilder builder)
 	{
-		var keycloakOptions = new KeycloakConfig();
-		builder.Configuration.GetSection("Keycloak").Bind(keycloakOptions);
+		var keycloakConfig = new KeycloakConfig();
+		builder.Configuration.GetSection("Keycloak").Bind(keycloakConfig);
 
 		builder.Services.AddHttpClient<KeycloakOrganizationClient>(client =>
 		{
-			client.BaseAddress = new Uri(keycloakOptions.BaseUrl!);
+			client.BaseAddress = new Uri(keycloakConfig.BaseUrl!);
 		})
 		.AddHttpMessageHandler<KeycloakAuthHandler>();
 	}
-	
+
 
 	private static void PrepareDatabase(this WebApplication app)
 	{
@@ -256,6 +256,7 @@ public static class Program
 		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts
 		dbContext.Database.Migrate();
 	}
+
 
 	private static void Configure(this WebApplication app)
 	{

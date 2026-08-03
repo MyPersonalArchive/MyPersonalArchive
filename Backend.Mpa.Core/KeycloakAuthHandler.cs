@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Backend.Core.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 
 namespace Backend.Mpa.Core;
@@ -15,9 +16,9 @@ public class KeycloakAuthHandler : DelegatingHandler
 	private string? _cachedToken;
 	private DateTimeOffset _cachedTokenExpiresAt = DateTimeOffset.MinValue;
 
-	public KeycloakAuthHandler(KeycloakConfig keycloakOptions, IHttpClientFactory httpClientFactory)
+	public KeycloakAuthHandler(IOptions<KeycloakConfig> keycloakOptions, IHttpClientFactory httpClientFactory)
 	{
-		_keycloakOptions = keycloakOptions;
+		_keycloakOptions = keycloakOptions.Value;
 		_httpClientFactory = httpClientFactory;
 	}
 
