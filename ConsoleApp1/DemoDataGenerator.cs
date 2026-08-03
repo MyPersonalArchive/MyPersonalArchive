@@ -11,7 +11,7 @@ public class DemoDataGenerator
 
 	private class GeneratorData
 	{
-		public string TenantId;
+		public required string TenantId;
 		public required IEnumerable<string> Usernames;
 		public required IEnumerable<string> FirstPart;
 		public required IEnumerable<string> SecondPart;
