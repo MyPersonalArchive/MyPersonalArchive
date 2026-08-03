@@ -18,7 +18,7 @@ public class FileSystemFileStore : IFileStore
 
 	public FileSystemFileStore(IOptions<AppConfig> config)
 	{
-		_storeRoot = config.Value.RootFolder;
+		_storeRoot = config.Value.DataFolder;
 	}
 
 

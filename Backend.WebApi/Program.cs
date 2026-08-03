@@ -19,6 +19,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.WebApi.Configuration;
 using Backend.Mpa.Core;
+using Microsoft.Extensions.FileProviders;
 
 namespace Backend.WebApi;
 
@@ -275,15 +276,26 @@ public static class Program
 			"/api/RemoteAuthentication/callback"
 		});
 
+		var webAppFilesPath = app.Configuration.GetSection("AppConfig")["WebAppFilesPath"];
+		if (webAppFilesPath != null && Directory.Exists(webAppFilesPath))
+		{
+			_logger.LogWarning("Serving web app files from: {WebAppFilesPath}", webAppFilesPath);
+
+			app.UseFileServer(new FileServerOptions
+			{
+				FileProvider = new PhysicalFileProvider(webAppFilesPath),
+				RequestPath = "",
+				EnableDefaultFiles = true,
+				EnableDirectoryBrowsing = false
+			});
+
+		}
+
 		app.UseAuthentication();
 		app.UseAuthorization();
 
 		app.UseWebSockets();
 		app.MapHub<NotificationHub>("/notificationHub");
-
-		app.UseStaticFiles();
-
-		app.MapFallbackToFile("index.html");
 
 		app.MapControllers();
 	}
