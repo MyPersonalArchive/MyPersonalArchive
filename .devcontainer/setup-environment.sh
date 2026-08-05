@@ -4,6 +4,8 @@
 rm -f /workspaces/MyPersonalArchive/data
 ln -s /data /workspaces/MyPersonalArchive/data
 
-# Trust lab root CA inside the container. This is used for making external https requests to my lab services.
-cp /data/dev-secrets/rootCA.pem /usr/local/share/ca-certificates/lab-ca.crt
+# Trust lab root CA and Charles proxy CA inside the container. This is used for making external https requests to my lab services.
+for cert in /data/dev-secrets/*.pem; do
+	cp "$cert" "/usr/local/share/ca-certificates/$(basename "$cert" .pem).crt"
+done
 update-ca-certificates
