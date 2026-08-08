@@ -7,18 +7,6 @@
 		<RootNamespace>Backend.WebApi</RootNamespace>
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<ContainerRepository>aeinbu/mypersonalarchive</ContainerRepository>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<ContainerPort Include="5054" Type="tcp" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ContainerEnvironmentVariable Include="CERTIFICATE_PASSWORD" Value="" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.10" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
@@ -39,18 +27,5 @@
 		<ProjectReference Include="../Backend.Mpa.Core/Backend.Mpa.Core.csproj" />
 	</ItemGroup>
 
-	<Target Name="BuildFrontend" BeforeTargets="Publish">
-		<Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory)../frontend" />
-	</Target>
-
-	<Target Name="AddFrontendFilesToPublish" BeforeTargets="ComputeFilesToPublish" DependsOnTargets="BuildFrontend">
-		<ItemGroup>
-			<_FrontendDistFiles Include="$(MSBuildThisFileDirectory)../frontend/dist/**" />
-			<ResolvedFileToPublish Include="@(_FrontendDistFiles)">
-				<RelativePath>webapp/%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
-				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-			</ResolvedFileToPublish>
-		</ItemGroup>
-	</Target>
 
 </Project>

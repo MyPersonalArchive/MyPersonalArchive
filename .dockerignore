@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/node_modules/
+frontend/dist/
+frontend/temp/
+frontend-dist/
+publish/
+temp/
+data
+.git/
+.devcontainer/
+.vscode/
+.idea/
+*.user
+**/.DS_Store
