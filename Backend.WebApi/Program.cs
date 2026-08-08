@@ -95,24 +95,23 @@ public static class Program
 	{
 		builder.WebHost.UseKestrel(options =>
 		{
+			// Make cert optional, so that the app can run without HTTPS if the cert is not provided
+			// This is practical when running behind a reverse proxy that handles HTTPS termination, or in development environments
 			var cert_file = "/data/https/server.pfx";
-			var cert_password = builder.Configuration.GetValue<string>("CertificatePassword")?.TrimEnd('\n', '\r');
+			var cert_password = builder.Configuration.GetValue<string>("CERTIFICATE_PASSWORD")?.TrimEnd('\n', '\r');
 
 			// Read port from environment variable or default to 5054
-			var portString = Environment.GetEnvironmentVariable("BACKEND_PORT") ?? "5054";
+			var portString = Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS");
 			var port = int.TryParse(portString, out var parsedPort) ? parsedPort : 5054;
-
-			// Use IPAddress.Any (0.0.0.0) to allow access from outside the container
-			var bindAddress = IPAddress.Any;
 
 			if (!string.IsNullOrEmpty(cert_password) && File.Exists(cert_file))
 			{
-				options.Listen(bindAddress, port, listenOptions => { listenOptions.UseHttps(cert_file, cert_password); });
+				options.ListenAnyIP(port, listenOptions => { listenOptions.UseHttps(cert_file, cert_password); });
 			}
 			else
 			{
 				_logger.LogWarning("HTTPS certificate not found at {CertFile} or password missing. Starting Kestrel without HTTPS on port {Port}.", cert_file, port);
-				options.Listen(bindAddress, port);
+				options.ListenAnyIP(port);
 			}
 		});
 	}

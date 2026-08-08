@@ -23,7 +23,8 @@
 	},
 	"containerEnv": {
 		"ASPNETCORE_ENVIRONMENT": "Development",
-		"CERTIFICATEPASSWORD": "${localEnv:MPA_CertificatePassword:-}",
+		"ASPNETCORE_HTTP_PORTS": "5054",
+		"CERTIFICATE_PASSWORD": "${localEnv:MPA_CertificatePassword:-}",
 
 		"Keycloak__Admin__Username": "${localEnv:KEYCLOAK_ADMIN_USERNAME:-}",
 		"Keycloak__Admin__Password": "${localEnv:KEYCLOAK_ADMIN_PASSWORD:-}",

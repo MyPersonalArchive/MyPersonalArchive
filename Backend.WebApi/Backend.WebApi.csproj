@@ -5,7 +5,6 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<RootNamespace>Backend.WebApi</RootNamespace>
-		<UserSecretsId>7c5f8e2c-d532-454a-a8b6-a76cb2e68879</UserSecretsId>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -39,5 +38,19 @@
 		<ProjectReference Include="../Backend.Mpa.EmailIngestion/Backend.Mpa.EmailIngestion.csproj" />
 		<ProjectReference Include="../Backend.Mpa.Core/Backend.Mpa.Core.csproj" />
 	</ItemGroup>
+
+	<Target Name="BuildFrontend" BeforeTargets="Publish">
+		<Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory)../frontend" />
+	</Target>
+
+	<Target Name="AddFrontendFilesToPublish" BeforeTargets="ComputeFilesToPublish" DependsOnTargets="BuildFrontend">
+		<ItemGroup>
+			<_FrontendDistFiles Include="$(MSBuildThisFileDirectory)../frontend/dist/**" />
+			<ResolvedFileToPublish Include="@(_FrontendDistFiles)">
+				<RelativePath>webapp/%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
 
 </Project>
