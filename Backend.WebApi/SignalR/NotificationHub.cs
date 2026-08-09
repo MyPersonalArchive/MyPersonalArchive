@@ -10,35 +10,24 @@ namespace Backend.WebApi.SignalR;
 [Authorize]
 public class NotificationHub : Hub
 {
-    private readonly IAmbientDataResolver _resolver;
-    private readonly MpaDbContext _dbContext;
+	private readonly IAmbientDataResolver _resolver;
+	private readonly MpaDbContext _dbContext;
 
-    public NotificationHub(IAmbientDataResolver resolver, MpaDbContext dbContext)
-    {
-        _resolver = resolver;
-        _dbContext = dbContext;
-    }
+	public NotificationHub(IAmbientDataResolver resolver, MpaDbContext dbContext)
+	{
+		_resolver = resolver;
+		_dbContext = dbContext;
+	}
 
-    #region SignalR client methods
-    public override async Task OnConnectedAsync()
-    {
-        var username = _resolver.GetCurrentUsername();
-        if(!int.TryParse(Context.GetHttpContext()!.Request.Query["tenantId"], out var requestedTenantId))
-        {
-            throw new InvalidDataException("User does not have access to requested tenantId");
-        }
+	#region SignalR client methods
+	public override async Task OnConnectedAsync()
+	{
+		var username = _resolver.GetCurrentUsername();
+		var tenantId = _resolver.GetCurrentTenantId();
 
-        var userHasAccessToTenant = _dbContext.Users
-            .Include(u => u.Tenants)
-            .FirstOrDefault(u => u.Username == username)?
-            .Tenants!.Any() ?? false;
+		await Groups.AddToGroupAsync(Context.ConnectionId, $"tenantId={tenantId}");
 
-        if (userHasAccessToTenant)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"tenantId={requestedTenantId}");
-        }
-
-        await base.OnConnectedAsync();
-    }
-    #endregion
+		await base.OnConnectedAsync();
+	}
+	#endregion
 }
