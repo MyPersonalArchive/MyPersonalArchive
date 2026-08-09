@@ -123,8 +123,7 @@ public class OidcAuthenticationController : ControllerBase
 			target = _oidcConfig.DefaultRedirectPath;
 		}
 
-		return Redirect($"https://localhost:5173{target}");
-		// return LocalRedirect(target);
+		return LocalRedirect(target);
 	}
 
 
