@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Backend.Core;
@@ -264,6 +265,11 @@ public static class Program
 		{
 			app.UseDeveloperExceptionPage();
 		}
+
+		app.UseForwardedHeaders(new ForwardedHeadersOptions
+		{
+			ForwardedHeaders = ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto
+		});
 
 		app.UseHttpsRedirection();
 

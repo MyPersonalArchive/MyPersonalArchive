@@ -20,3 +20,4 @@ publish/
 TestClients/BackupClientTest/TestFiles/Encrypted/*
 TestClients/BackupClientTest/TestFiles/Decrypted/*
 .DS_Store
+.claude/

@@ -40,11 +40,9 @@ export default defineConfig({
 				}),
 				ws: true,
 				configure: (proxy) => {
-					proxy.on("proxyRes", (proxyRes) => {
-						if (proxyRes.headers.location) {
-							proxyRes.headers.location = proxyRes.headers.location
-								.replace("localhost:8080", "localhost:5173")
-						}
+					proxy.on("proxyReq", (proxyReq) => {
+						proxyReq.setHeader("X-Forwarded-Host", "localhost:5173")
+						proxyReq.setHeader("X-Forwarded-Proto", "https")
 					})
 				}
 				// configure: (proxy, _options) => {
