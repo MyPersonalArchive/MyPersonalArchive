@@ -10,7 +10,6 @@ import { useParams } from "react-router-dom"
 import { useAtom, useAtomValue } from "jotai"
 import { externalAccountsAtom } from "../Utils/Atoms/externalAccountsAtom"
 import { UUID } from "crypto"
-import { CurrentTenantIdContext } from "../Frames/CurrentTenantIdContext"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 import { Dialog } from "../Components/Dialog"
 import { clickIfNotSelectingText } from "../Utils/event-helpers"
@@ -291,8 +290,6 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 	const selectionOfAttachments = useSelection<string>(new Set(attachments.map(attachment => attachment.fileName)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
 
-	const { currentTenantId } = useContext(CurrentTenantIdContext)
-
 	useEffect(() => {
 		if (selectAllCheckboxRef.current !== null) {
 			selectAllCheckboxRef.current.indeterminate = selectionOfAttachments.allPossibleItems.size == 0 || selectionOfAttachments.areOnlySomeItemsSelected
@@ -303,7 +300,6 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 	const downloadAttachment = (attachment: EmailAttachment) => {
 		const params = new URLSearchParams()
 		params.set("externalAccountId", externalAccountId)
-		params.set("tenant-id", `${currentTenantId}`)
 		params.set("messageId", email.uniqueId.toString())
 		params.set("partSpecifier", attachment.partSpecifier)
 		params.set("folder", selectedFolder) // email folders may have spaces, so lets use query params

@@ -8,11 +8,9 @@ import { IndexPage } from "./Pages/IndexPage"
 import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
 import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
-import { RequireTenant } from "./Frames/RequireTenant"
 import { UserLayout } from "./Frames/UserLayout"
 import { BlobListPage } from "./Pages/BlobListPage"
 import { UserProfilePage } from "./Pages/UserProfilePage"
-import { CurrentTenantIdFrame } from "./Frames/CurrentTenantIdFrame"
 import { RootFrame } from "./Frames/RootFrame"
 import { EmailListPage } from "./Pages/EmailListPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
@@ -29,9 +27,7 @@ const router = createBrowserRouter([
 	{
 		element: (
 			<RootFrame>
-				<CurrentTenantIdFrame>
-					<Outlet />
-				</CurrentTenantIdFrame>
+				<Outlet />
 			</RootFrame>
 		),
 		children: [
@@ -81,11 +77,9 @@ const router = createBrowserRouter([
 					},
 					{
 						element: (
-							<RequireTenant>
-								<PrefetchDataFrame>
-									<Outlet />
-								</PrefetchDataFrame>
-							</RequireTenant>
+							<PrefetchDataFrame>
+								<Outlet />
+							</PrefetchDataFrame>
 						),
 						children: [
 							{

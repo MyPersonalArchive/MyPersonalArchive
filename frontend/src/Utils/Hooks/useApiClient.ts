@@ -2,17 +2,12 @@ import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../../RoutePaths"
 import { createQueryString } from "../createQueryString"
 import { useContext } from "react"
-import { CurrentTenantIdContext } from "../../Frames/CurrentTenantIdContext"
 
 
 export const useApiClient = () => {
-	const { currentTenantId } = useContext(CurrentTenantIdContext)
 	const navigate = useNavigate()
 
 	const commonHeaders: any = {}
-	if (currentTenantId !== null) {
-		commonHeaders["X-Tenant-Id"] = currentTenantId
-	}
 
 	const interceptedFetch = (url: string, options: RequestInit): Promise<Response> => {
 		options = {

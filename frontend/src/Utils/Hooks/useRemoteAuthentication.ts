@@ -1,13 +1,10 @@
 import { useContext } from "react"
-import { CurrentTenantIdContext } from "../../Frames/CurrentTenantIdContext"
 import { createQueryString } from "../createQueryString"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../../RoutePaths"
 
 
 export function useRemoteAuthentication() {
-	const { currentTenantId } = useContext(CurrentTenantIdContext)
-
 	const navigate = useNavigate()
 
 	const login = async (provider: string, authType: string, returnUrl: string) => {
@@ -17,7 +14,6 @@ export function useRemoteAuthentication() {
 					["provider-name"]: provider,
 					["auth-type"]: "oauth",
 					["return-url"]: returnUrl,
-					["tenant-id"]: currentTenantId
 				}
 				const queryString = createQueryString(payload)
 
