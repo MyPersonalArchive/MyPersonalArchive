@@ -5,6 +5,8 @@ import { User } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUser, faBars, faChevronDown, faRightFromBracket } from "@fortawesome/free-solid-svg-icons"
 import classNames from "classnames"
+import { useAtomValue } from "jotai"
+import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
 
 
 
@@ -17,6 +19,8 @@ type TopBarProps = {
 	profileDropdownIsOpen: boolean,
 }
 export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, currentUser, profileDropdownIsOpen }: TopBarProps) => {
+	const authSettings = useAtomValue(authSettingsAtom)
+
 	return <div id="topBar" className={className}>
 		<button className="menu-btn" id="menuBtn"
 			aria-label="Open navigation"
@@ -39,15 +43,22 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 		<div className="profile">
 
 			{!currentUser &&
-				<Link className="profile-btn"
-					id="profileBtn"
-					to={RoutePaths.SignIn}
-				>
-					<div className="profile-avatar">
-						<FontAwesomeIcon icon={faUser} />
-					</div>
-					Sign in
-				</Link>}
+				(authSettings.oidcAuthUrl !== undefined
+					? <a className="profile-btn" href={`${authSettings.oidcAuthUrl}?${new URLSearchParams(RoutePaths.Index)}`}>
+						<div className="profile-avatar">
+							<FontAwesomeIcon icon={faUser} />
+						</div>
+						Sign in
+					</a>
+					: <Link className="profile-btn"
+						id="profileBtn"
+						to={RoutePaths.SignIn}
+					>
+						<div className="profile-avatar">
+							<FontAwesomeIcon icon={faUser} />
+						</div>
+						Sign in
+					</Link>)}
 			{currentUser &&
 				<>
 					<button className="profile-btn"

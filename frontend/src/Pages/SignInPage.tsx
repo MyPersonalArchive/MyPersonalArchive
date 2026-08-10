@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import img from "../assets/receiptly_logo.png"
-import { useAtom, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { lastLoggedInUsernameAtom, lastRememberMeCheckedAtom } from "../Utils/Atoms"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
+import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
 
 
 type SignInResponse = {
@@ -17,6 +18,25 @@ type SignInResponse = {
 
 
 export const SignInPage = () => {
+	const authSettings = useAtomValue(authSettingsAtom)
+
+	useEffect(() => {
+		if (authSettings.oidcAuthUrl !== undefined) {
+			const redirect = new URLSearchParams(window.location.search).get("redirect")
+			const returnUrl = redirect ?? RoutePaths.Index
+			const query = new URLSearchParams({ returnUrl }).toString()
+			window.location.href = `${authSettings.oidcAuthUrl}?${query}`
+		}
+	}, [])
+
+	return (authSettings.oidcAuthUrl !== undefined
+		? <>Redirecting</>
+		: <SignInComponent />
+	)
+}
+
+
+const SignInComponent = () => {
 	const userNameInputRef = useRef<HTMLInputElement>(null)
 	const passwordInputRef = useRef<HTMLInputElement>(null)
 

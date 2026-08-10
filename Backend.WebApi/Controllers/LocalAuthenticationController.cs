@@ -57,12 +57,6 @@ public class LocalAuthenticationController : ControllerBase
 			return Unauthorized("Unable to login");
 		}
 
-		var response = new SignInResponse
-		{
-			Username = user.Username,
-			Fullname = user.Fullname
-		};
-
 		var authProperties = new AuthenticationProperties();
 		if (request.RememberMe)
 		{
@@ -70,11 +64,15 @@ public class LocalAuthenticationController : ControllerBase
 			authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7); //TODO: consider using 30 days
 		}
 
+		var roles = Array.Empty<string>();
+		var organization = "default-tenant";
+
 		var identity = new ClaimsIdentity(
 			[
 				new Claim(ClaimTypes.NameIdentifier, user.Username),
 				new Claim(ClaimTypes.GivenName, user.Fullname),
-				new Claim("organization", "-1"), // Placeholder for organization claim; adjust as needed
+				new Claim("organization", organization),
+				..roles.Select(role => new Claim(ClaimTypes.Role, role)),
 				new Claim(ClaimTypes.Email, "dummy.email@example.com"), // Placeholder for email claim; adjust as needed
 			], "Cookies");
 		await HttpContext.SignInAsync(
@@ -82,6 +80,14 @@ public class LocalAuthenticationController : ControllerBase
 				new ClaimsPrincipal(identity),
 				authProperties
 			);
+
+		var response = new SignInResponse
+		{
+			Username = user.Username,
+			Fullname = user.Fullname,
+			TenantId = organization,
+			Roles = roles
+		};
 		return Ok(response);
 	}
 
@@ -117,6 +123,8 @@ public class LocalAuthenticationController : ControllerBase
 	{
 		public required string Username { get; set; }
 		public required string Fullname { get; set; }
+		public required string TenantId { get; set; }
+		public required IEnumerable<string> Roles { get; set; }
 	}
 
 

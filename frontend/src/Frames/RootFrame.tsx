@@ -1,9 +1,14 @@
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { PropsWithChildren, useEffect } from "react"
+import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 
 
-type CurrentUserInfoResponse = {
+type GetAuthSettingsResponse = {
+	oidcAuthUrl: string
+}
+
+type GetCurrentUserInfoResponse = {
 	username: string
 	fullname: string
 	tenantId: string
@@ -13,7 +18,31 @@ type CurrentUserInfoResponse = {
 
 //Root frame checks authentication status and load current user info if authenticated on app load
 export const RootFrame = ({ children }: PropsWithChildren) => {
+	const setAuthSettings = useSetAtom(authSettingsAtom)
 	const [currentUser, setCurrentUser] = useAtom(currentUserAtom)
+
+	useEffect(() => {
+		(async () => {
+			const httpResponse = await fetch("/api/query/GetAuthSettings", {
+				credentials: "same-origin",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			})
+
+			if (!httpResponse.ok) {
+				setAuthSettings({ oidcAuthUrl: undefined })
+				return null
+			}
+
+			const response = await httpResponse.json() as GetAuthSettingsResponse
+			const settings = {
+				oidcAuthUrl: response.oidcAuthUrl
+			}
+			setAuthSettings(settings)
+		})()
+
+	}, [])
 
 	useEffect(() => {
 		if (currentUser === undefined) {
@@ -31,7 +60,7 @@ export const RootFrame = ({ children }: PropsWithChildren) => {
 						return null
 					}
 
-					const response = await httpResponse.json() as CurrentUserInfoResponse
+					const response = await httpResponse.json() as GetCurrentUserInfoResponse
 					const user = {
 						username: response.username,
 						fullname: response.fullname,

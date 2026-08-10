@@ -6,7 +6,7 @@ namespace Backend.WebApi.Cqrs;
 [RequireAuthentication(UserMustBeAuthorized = true)]
 public class GetCurrentUserInfo : IQuery<GetCurrentUserInfo, GetCurrentUserInfo.Response>
 {
-	public int MyProperty { get; set; }
+	// no properties needed for this query, as it retrieves information about the currently authenticated user
 
 	public class Response
 	{
