@@ -38,13 +38,18 @@ public class PasswordHasher
 	public bool VerifyPassword(string enteredPassword, byte[] storedHash, byte[] storedSalt)
 	{
 		var enteredHash = Rfc2898DeriveBytes.Pbkdf2(enteredPassword, storedSalt, Iterations, HashAlgorithmName.SHA256, HashSize);
-		
-		// return enteredHash.SequenceEqual(storedHash);
-		return CryptographicOperations.FixedTimeEquals(enteredHash, storedHash);	// FixedTimeEquals is used to prevent timing attacks
+		return CryptographicOperations.FixedTimeEquals(enteredHash, storedHash);    // FixedTimeEquals is used to prevent timing attacks
 	}
 
 	public string GenerateAccessToken(IEnumerable<Claim> claims)
 	{
+		if (_jwtConfig is null
+			|| string.IsNullOrWhiteSpace(_jwtConfig.JwtSecret)
+			|| string.IsNullOrWhiteSpace(_jwtConfig.JwtIssuer))
+		{
+			throw new InvalidOperationException("JWT configuration is not set.");
+		}
+
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.JwtSecret));
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 

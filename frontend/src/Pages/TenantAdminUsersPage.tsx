@@ -29,7 +29,6 @@ export const TenantAdminUsersPage = () => {
 					roles: user.roles
 				})))
 			})
-
 	}, [])
 
 	return (

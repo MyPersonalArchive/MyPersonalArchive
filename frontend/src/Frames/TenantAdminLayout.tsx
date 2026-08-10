@@ -70,13 +70,6 @@ export const TenantAdminLayout = ({ children }: PropsWithChildren) => {
 							</NavLink>
 
 							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
-								to={RoutePaths.TenantAdmin.Billing} onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
-							>
-								<FontAwesomeIcon icon={faCreditCard} fixedWidth />
-								Subscription and billing
-							</NavLink>
-
-							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
 								to={RoutePaths.TenantAdmin.Users} onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
 							>
 								<FontAwesomeIcon icon={faUserGroup} fixedWidth />
@@ -88,6 +81,13 @@ export const TenantAdminLayout = ({ children }: PropsWithChildren) => {
 							>
 								<FontAwesomeIcon icon={faCloud} fixedWidth />
 								Backup and external sync
+							</NavLink>
+
+							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
+								to={RoutePaths.TenantAdmin.Billing} onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
+							>
+								<FontAwesomeIcon icon={faCreditCard} fixedWidth />
+								Subscription and billing
 							</NavLink>
 
 							<NavLink className={({ isActive }) => isActive ? "active" : undefined}

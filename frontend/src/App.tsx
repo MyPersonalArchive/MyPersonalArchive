@@ -16,7 +16,7 @@ import { EmailListPage } from "./Pages/EmailListPage"
 import { BasicAuthenticationPage } from "./Pages/BasicAuthenticationPage"
 import { ComponentTestPage } from "./Pages/ComponentTestPage"
 import { TenantAdminLayout } from "./Frames/TenantAdminLayout"
-import { TenantAdminDashboardPage } from "./Pages/TenantAdminDashoardPage"
+import { TenantAdminDashboardPage } from "./Pages/TenantAdminDashboardPage"
 import { TenantAdminBillingPage } from "./Pages/TenantAdminBillingPage"
 import { TenantAdminUsersPage } from "./Pages/TenantAdminUsersPage"
 import { TenantAdminBackupPage } from "./Pages/TenantAdminBackupPage"
@@ -43,16 +43,16 @@ const router = createBrowserRouter([
 						element: <TenantAdminDashboardPage />
 					},
 					{
-						path: RoutePaths.TenantAdmin.Billing,
-						element: <TenantAdminBillingPage />
-					},
-					{
 						path: RoutePaths.TenantAdmin.Users,
 						element: <TenantAdminUsersPage />
 					},
 					{
 						path: RoutePaths.TenantAdmin.Backup,
 						element: <TenantAdminBackupPage />
+					},
+					{
+						path: RoutePaths.TenantAdmin.Billing,
+						element: <TenantAdminBillingPage />
 					},
 					{
 						path: RoutePaths.TenantAdmin.Logs,

@@ -1,6 +1,4 @@
 using Backend.Core.Cqrs.Infrastructure;
-using Backend.Core.Infrastructure;
-using Backend.Mpa.Core.Services;
 
 
 namespace Backend.Mpa.Core.Cqrs;
