@@ -7,10 +7,8 @@ using System.Text;
 using Backend.Core;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
-using Backend.WebApi.Middleware;
 using MailKit.Net.Imap;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
@@ -154,11 +152,10 @@ public static class Program
 					ValidateIssuerSigningKey = true,
 					ValidIssuer = jwtOptions.JwtIssuer,
 					ValidAudience = jwtOptions.Audience,
-					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.JwtSecret))
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.JwtSecret ?? throw new NullReferenceException("Missing 'JwtSecret' configuration setting.")))
 				};
 
 				options.Audience = jwtOptions.Audience;
-				// options.Authority = jwtOptions.???;
 
 			})
 			.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
@@ -272,14 +269,6 @@ public static class Program
 		});
 
 		app.UseHttpsRedirection();
-
-		app.UseMiddleware<TenantHeaderFromQueryStringMiddleware>((object)new string[] {
-			"/api/RemoteAuthentication/start-authentication",
-			"/api/email/download-attachment"
-		});
-		app.UseMiddleware<TenantHeaderFromStateJsonMiddleware>((object)new string[] {
-			"/api/RemoteAuthentication/callback"
-		});
 
 		var webAppFilesPath = app.Configuration.GetSection("AppConfig")["WebAppFilesPath"];
 		if (webAppFilesPath != null && Directory.Exists(webAppFilesPath))

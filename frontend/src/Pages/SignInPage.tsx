@@ -10,6 +10,8 @@ import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 type SignInResponse = {
 	username: string
 	fullname: string
+	tenantId: string
+	roles: string[]
 	accessToken: string
 }
 
@@ -83,7 +85,9 @@ export const SignInPage = () => {
 
 			const user = {
 				username: response.username,
-				fullname: response.fullname
+				fullname: response.fullname,
+				tenantId: response.tenantId,
+				roles: new Set<string>(response.roles)
 			}
 			setCurrentUser(user)
 
@@ -92,13 +96,6 @@ export const SignInPage = () => {
 			console.error("Sign-in failed due to exception", exception)
 			return false
 		}
-	}
-
-	const loginWithOidc = () => {
-		const redirect = new URLSearchParams(window.location.search).get("redirect")
-		const returnUrl = redirect ?? RoutePaths.Index
-		const query = new URLSearchParams({ returnUrl }).toString()
-		window.location.href = `/api/oidc/signin?${query}`
 	}
 
 
@@ -111,7 +108,7 @@ export const SignInPage = () => {
 				<header className="header">
 					<h2>Sign in to your account</h2>
 				</header>
-				
+
 				{isLoading
 					? <>Loading data...</>
 					: <>
@@ -152,9 +149,6 @@ export const SignInPage = () => {
 							</div>
 
 							<div className="stack-horizontal to-the-right my-4">
-								<button className="btn" type="button" onClick={loginWithOidc}>
-									Sign in with OIDC
-								</button>
 								<button className="btn btn-primary" type="submit">
 									Log in
 								</button>

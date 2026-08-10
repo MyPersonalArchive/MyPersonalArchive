@@ -1,15 +1,14 @@
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
 using Backend.Core;
 using Backend.Mpa.DbModel.Database;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Backend.WebApi.Configuration;
-using Backend.Mpa.DbModel.Database.EntityModels;
 
 namespace Backend.WebApi.Controllers;
 
@@ -47,7 +46,6 @@ public class OidcAuthenticationController : ControllerBase
 
 		var properties = new AuthenticationProperties
 		{
-			
 			RedirectUri = Url.Action(nameof(FinishOidcSignIn), new { returnUrl = target })
 		};
 
@@ -71,30 +69,30 @@ public class OidcAuthenticationController : ControllerBase
 		}
 		var oidcPrincipal = oidcResult.Principal;
 
-		var subject = ResolveOidcSubjectFromClaims(oidcPrincipal.Claims);
+		var subject = ResolveOidcSubjectFromClaims(oidcPrincipal);
 		if (string.IsNullOrWhiteSpace(subject))
 		{
 			return Unauthorized("Missing 'sub' claim from OIDC provider");
 		}
 
-		var issuer = ResolveOidcIssuerFromClaims(oidcPrincipal.Claims, oidcResult);
+		var issuer = ResolveOidcIssuerFromClaims(oidcPrincipal, oidcResult);
 		if (string.IsNullOrWhiteSpace(issuer))
 		{
 			return Unauthorized("Missing 'iss' claim from OIDC provider");
 		}
 
 
-		var username = ResolveUsernameFromClaims(oidcPrincipal.Claims, subject);
+		var username = ResolveUsernameFromClaims(oidcPrincipal, subject);
 		if (string.IsNullOrWhiteSpace(username))
 		{
 			return Unauthorized("Missing username/email claim from OIDC provider");
 		}
 
-		var organization = oidcPrincipal.Claims.FirstOrDefault(claim => claim.Type == "organization")?.Value;
+		var (organization, roles) = ResolveOrganizationAndRolesFromClaims(oidcPrincipal);
 
-		var fullname = ResolveFullnameFromClaims(oidcPrincipal.Claims, username);
+		var fullname = ResolveFullnameFromClaims(oidcPrincipal) ?? username;
 
-		var email = ResolveEmailFromClaims(oidcPrincipal.Claims);
+		var email = ResolveEmailFromClaims(oidcPrincipal);
 		if (string.IsNullOrWhiteSpace(email))
 		{
 			return Unauthorized("Missing email claim from OIDC provider");
@@ -105,6 +103,7 @@ public class OidcAuthenticationController : ControllerBase
 			new Claim(ClaimTypes.NameIdentifier, subject),
 			new Claim(ClaimTypes.GivenName, fullname),
 			new Claim("organization", organization ?? string.Empty),
+			.. roles.Select(role => new Claim(ClaimTypes.Role, role)),
 			new Claim(ClaimTypes.Email, email),
 		], CookieAuthenticationDefaults.AuthenticationScheme);
 
@@ -151,47 +150,25 @@ public class OidcAuthenticationController : ControllerBase
 	}
 
 
-	[Authorize]
-	[HttpGet("current-user-info")]
-	public async Task<ActionResult<CurrentUserInfoResponse>> CurrentUserInfo()
-	{
-		var username = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
-		var fullname = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.GivenName)?.Value;
-		var organization = User.Claims.FirstOrDefault(claim => claim.Type == "organization")?.Value;
-
-		var response = new CurrentUserInfoResponse
-		{
-			Username = username!,
-			Fullname = fullname!,
-			CurrentTenantId = organization
-		};
-		return Ok(response);
-	}
-
-
 	#region Helper methods to resolve claims
-	private static string? ResolveUsernameFromClaims(IEnumerable<Claim> claims, string subject)
+	private static string? ResolveUsernameFromClaims(ClaimsPrincipal user, string subject)
 	{
-		return claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value
-			?? claims.FirstOrDefault(claim => claim.Type == "sub")?.Value
-			?? $"kc-{subject}";
+		return user.FindFirstValue(ClaimTypes.NameIdentifier) ?? user.FindFirstValue("sub") ?? $"kc-{subject}";
 	}
 
-	private static string? ResolveEmailFromClaims(IEnumerable<Claim> claims)
+	private static string? ResolveEmailFromClaims(ClaimsPrincipal user)
 	{
-		return claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value
-			?? claims.FirstOrDefault(claim => claim.Type == "email")?.Value;
+		return user.FindFirstValue(ClaimTypes.Email) ?? user.FindFirstValue("email");
 	}
 
-	private static string? ResolveOidcSubjectFromClaims(IEnumerable<Claim> claims)
+	private static string? ResolveOidcSubjectFromClaims(ClaimsPrincipal user)
 	{
-		return claims.FirstOrDefault(claim => claim.Type == "sub")?.Value
-			?? claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
+		return user.FindFirstValue("sub") ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
 	}
 
-	private static string? ResolveOidcIssuerFromClaims(IEnumerable<Claim> claims, AuthenticateResult oidcResult)
+	private static string? ResolveOidcIssuerFromClaims(ClaimsPrincipal user, AuthenticateResult oidcResult)
 	{
-		var claimValue = claims.FirstOrDefault(claim => claim.Type == "iss")?.Value;
+		var claimValue = user.FindFirstValue("iss");
 		if (!string.IsNullOrWhiteSpace(claimValue))
 		{
 			return claimValue;
@@ -213,21 +190,36 @@ public class OidcAuthenticationController : ControllerBase
 		}
 	}
 
-	private static string ResolveFullnameFromClaims(IEnumerable<Claim> claims, string fallback)
+	private static string? ResolveFullnameFromClaims(ClaimsPrincipal user)
 	{
-		return claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value
-			?? claims.FirstOrDefault(claim => claim.Type == "name")?.Value
-			?? fallback;
+		return user.FindFirstValue(ClaimTypes.Name) ?? user.FindFirstValue("name");
 	}
-	#endregion
 
-
-	#region Request and response models
-	public class CurrentUserInfoResponse
+	private static (string? organization, IEnumerable<string> roles) ResolveOrganizationAndRolesFromClaims(ClaimsPrincipal user)
 	{
-		public required string Username { get; set; }
-		public required string Fullname { get; set; }
-		public string? CurrentTenantId { get; internal set; }
+		var organizationClaimValue = user.FindFirstValue("organization");
+		if (string.IsNullOrWhiteSpace(organizationClaimValue))
+		{
+			throw new Exception("Missing 'organization' claim.");
+			// return (null, []);
+		}
+
+		// e.g. {"org-name":{"groups":["/User"]}}
+		var organizations = JsonSerializer.Deserialize<Dictionary<string, OrganizationClaimEntry>>(organizationClaimValue, JsonSerializerOptions.Web);
+		var organizationEntry = organizations?.FirstOrDefault(entry => entry.Value is not null);
+		if (organizationEntry is not { Key: not null } || organizationEntry.Value.Value is null)
+		{
+			throw new Exception("Malformed 'organization' claim.");
+			// return (null, []);
+		}
+
+		var roles = organizationEntry.Value.Value.Groups.Select(group => group.TrimStart('/'));
+		return (organizationEntry.Value.Key, roles);
+	}
+
+	private class OrganizationClaimEntry
+	{
+		public List<string> Groups { get; set; } = [];
 	}
 	#endregion
 }

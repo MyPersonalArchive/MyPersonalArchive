@@ -27,11 +27,17 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 			<FontAwesomeIcon icon={faBars} />
 		</button>
 
-		<span className="logo">My Personal Archive { title && ` - ${title}`}</span>
+		<span className="logo hidden sm:inline">
+			My Personal Archive {title && ` - ${title}`}
+		</span>
+		<span className="logo sm:hidden">
+			{title ?? "MPA"}
+		</span>
 
 		<div className="flex-1"></div>
 
 		<div className="profile">
+
 			{!currentUser &&
 				<Link className="profile-btn"
 					id="profileBtn"
@@ -54,7 +60,8 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 						<div className="profile-avatar">
 							<FontAwesomeIcon icon={faUser} />
 						</div>
-						{currentUser?.fullname}
+						{currentUser?.fullname.split(" ", 1)}
+
 						<FontAwesomeIcon icon={faChevronDown} />
 					</button>
 
@@ -63,8 +70,8 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 						id="profileDropdown"
 					>
 						<div className="profile-dropdown-header">
-							<strong>{currentUser?.fullname}</strong>
-							<span>{currentUser?.username}</span>
+							<strong title={currentUser?.username}>{currentUser?.fullname}</strong>
+							<span>{currentUser?.tenantId}</span>
 						</div>
 						<Link role="menuitem"
 							to={RoutePaths.Profile}
@@ -73,14 +80,17 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 							<FontAwesomeIcon icon={faUser} />
 							My profile
 						</Link>
-						<Link role="menuitem"
-							to={RoutePaths.TenantAdmin.Dashboard}
-							onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
-						>
-							{/* <FontAwesomeIcon icon={faUser} /> */}
-							<span className="w-3"></span>
-							Manage tenant
-						</Link>
+
+						{(currentUser.roles.has("Owner") || currentUser.roles.has("Administrator")) &&
+							<Link role="menuitem"
+								to={RoutePaths.TenantAdmin.Dashboard}
+								onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
+							>
+								{/* <FontAwesomeIcon icon={faUser} /> */}
+								<span className="w-3"></span>
+								Manage tenant
+							</Link>
+						}
 
 						<div className="divider"></div>
 						<Link

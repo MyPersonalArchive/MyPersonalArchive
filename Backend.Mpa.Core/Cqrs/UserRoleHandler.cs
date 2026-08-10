@@ -16,14 +16,7 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 		public required string Issuer { get; set; }
 		public required string Subject { get; set; }
 		public required string Fullname { get; set; }
-		public required Role[] Roles { get; set; }
-
-		public enum Role
-		{
-			Owner = 1,
-			Administrator,
-			User
-		}
+		public required IEnumerable<string> Roles { get; set; }
 	}
 }
 
@@ -44,15 +37,26 @@ public class UserRoleHandler :
 	{
 		var members = await _keycloakClient.ListOrganizationGroupMembersAsync();
 		var owners = await _keycloakClient.ListOrganizationGroupMembersAsync(groupName: "Owner");
+		var administrators = await _keycloakClient.ListOrganizationGroupMembersAsync(groupName: "Administrator");
 
-		return members.Select(m => new ListUsers.Response
+		var ownerIds = owners.Select(o => o.Id).ToHashSet();
+		var administratorIds = administrators.Select(a => a.Id).ToHashSet();
+
+		return members.Select(m =>
 		{
-			Issuer = "//TODO: Get issuer from Keycloak config or ambient data",
-			Subject = m.Id,
-			Fullname = $"{m.FirstName} {m.LastName}",
-			Roles = owners.Any(o => o.Id == m.Id)
-				? [ListUsers.Response.Role.Owner, ListUsers.Response.Role.User]
-				: [ListUsers.Response.Role.User]
+			var roles = new List<string>();
+			if (ownerIds.Contains(m.Id))
+				roles.Add("Owner");
+			if (administratorIds.Contains(m.Id))
+				roles.Add("Administrator");
+
+			return new ListUsers.Response
+			{
+				Issuer = "//TODO: Get issuer from Keycloak config or ambient data",
+				Subject = m.Id,
+				Fullname = $"{m.FirstName} {m.LastName}",
+				Roles = roles
+			};
 		});
 
 	}
