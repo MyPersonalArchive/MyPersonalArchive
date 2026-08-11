@@ -146,23 +146,36 @@ public class FileSystemFileStore : IFileStore
 	}
 
 
-	public Task<Stream?> GetFile(IEnumerable<string> containerNames, string filename)
+	public async Task<Stream?> GetFile(IEnumerable<string> containerNames, string filename)
 	{
 		var filePath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames, filename]);
 		if(!File.Exists(filePath))
 		{
-			return Task.FromResult<Stream?>(null);
+			return null;
 		}
-		var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-		return Task.FromResult<Stream?>(fileStream);
+		var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, options: FileOptions.Asynchronous);
+		return fileStream;
 	}
 
 
-	public Task DeleteFile(IEnumerable<string> containerNames, string filename)
+	public async Task DeleteFile(IEnumerable<string> containerNames, string filename)
 	{
 		var filePath = Path.Combine([_storeRoot, .. _baseContainerNames, .. containerNames, filename]);
 		File.Delete(filePath);
+	}
 
-		return Task.CompletedTask;
+
+	public async Task<long> GetStorageUsed()
+	{
+		var folderPath = Path.Combine([_storeRoot, .. _baseContainerNames]);
+		if (!Directory.Exists(folderPath))
+		{
+			return 0L;
+		}
+
+		var filePaths = Directory.GetFiles(folderPath, "*", new EnumerationOptions { RecurseSubdirectories = true });
+		var totalUsedStorage = filePaths.Sum(filePath => new FileInfo(filePath).Length);
+
+		return totalUsedStorage;
 	}
 }

@@ -9,6 +9,7 @@ public abstract class ObjectStore
 		_fileStore = fileStore;
 	}
 
+
 	public async Task<bool> ObjectExists(Guid objectId)
 	{
 		var objectIdStringDashed = objectId.ToString("D"); // Get the Guid 'string with dashes
@@ -16,6 +17,7 @@ public abstract class ObjectStore
 		var files = await _fileStore.ListFiles([]);
 		return files.Any(pathParts => pathParts[^1].StartsWith(objectIdStringDashed));
 	}
+
 
 	public async Task<IEnumerable<Guid>> ListObjectIds()
 	{
@@ -45,6 +47,7 @@ public abstract class ObjectStore
 
 		return extensions;
 	}
+
 
 	/// <summary>
 	/// Stores a stream in the store with the given objectId and extension. 
@@ -126,5 +129,12 @@ public abstract class ObjectStore
 		{
 			await _fileStore.DeleteFile([], file);
 		}
+	}
+
+
+	public async Task<int> GetObjectCount()
+	{
+		var objectIds = await ListObjectIds();
+		return objectIds.Count();
 	}
 }

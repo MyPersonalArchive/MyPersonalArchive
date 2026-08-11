@@ -22,4 +22,6 @@ public interface IFileStore
 	Task<Stream?> GetFile(IEnumerable<string> containerNames, string filename);
 
 	Task DeleteFile(IEnumerable<string> containerNames, string filename);
+
+	Task<long> GetStorageUsed();
 }
