@@ -3,7 +3,7 @@ using Backend.Core.Cqrs.Infrastructure;
 
 namespace Backend.WebApi.Cqrs;
 
-[RequireAuthentication(UserMustBeAuthorized = true)]
+[RequireAuthentication]
 public class GetCurrentUserInfo : IQuery<GetCurrentUserInfo, GetCurrentUserInfo.Response>
 {
 	// no properties needed for this query, as it retrieves information about the currently authenticated user

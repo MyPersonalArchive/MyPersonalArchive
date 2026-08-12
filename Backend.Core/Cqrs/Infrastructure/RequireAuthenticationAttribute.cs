@@ -10,11 +10,10 @@ namespace Backend.Core.Cqrs.Infrastructure;
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 public class RequireAuthenticationAttribute : Attribute, IRequirement
 {
-	public bool UserMustBeAuthorized { get; set; } = true;
 
 	public virtual bool TryCheck(HttpContext httpContext, ILogger logger, out string? failureReason)
 	{
-		if (UserMustBeAuthorized && (!httpContext.User.Identity?.IsAuthenticated ?? true))
+		if (!(httpContext.User.Identity?.IsAuthenticated ?? false))
 		{
 			failureReason = "Authentication required";
 			logger.LogWarning("Authentication check failed");

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Cqrs;
 
-[RequireAuthentication(UserMustBeAuthorized = false)]
+[NoRequirement]
 public class GetAuthSettings : IQuery<GetAuthSettings, GetAuthSettings.Response>
 {
 	// no properties needed for this query, as it retrieves authentication settings

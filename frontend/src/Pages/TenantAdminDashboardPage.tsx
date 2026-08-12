@@ -12,19 +12,19 @@ type GetStatsResponse = {
 	blobCount: number
 	archiveItemStorage: number
 	archiveItemCount: number
+	numberOfUsers: number
 }
 
 export const TenantAdminDashboardPage = () => {
-	const numberOfUsers = 3
 	const apiClient = useApiClient()
 	const [stats, setStats] = useState<GetStatsResponse>()
 
 	useEffect(() => {
 		apiClient.query<GetStatsResponse>("GetStats")
 			.then(response => {
+				console.log("GetStats response:", response)
 				setStats(response)
 			})
-
 	}, [])
 
 	const radius = 42
@@ -58,13 +58,10 @@ export const TenantAdminDashboardPage = () => {
 		<div className="form">
 			<header className="header">
 				<h1>Admin Dashboard</h1>
-				<div className="todo mt-2">
-					//TODO: Implement this, since this is a placeholder/sample page
-				</div>
 			</header>
 
 			<div className="flex flex-wrap gap-6">
-				<div className="min-w-[220px] flex-1 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+				<div className="card min-w-[220px] flex-1 p-4">
 					<h2 className="mb-3 text-sm font-semibold text-gray-600">Storage</h2>
 					<div className="flex items-center justify-center">
 						<svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label={`Storage at ${usedPercentage} percent`}>
@@ -109,9 +106,9 @@ export const TenantAdminDashboardPage = () => {
 					)}
 				</div>
 
-				<div className="min-w-[220px] flex-1 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+				<div className="card min-w-[220px] flex-1 p-4">
 					<h2 className="mb-2 text-sm font-semibold text-gray-600">Number of Users (sample)</h2>
-					<p className="text-4xl font-bold text-gray-800">{numberOfUsers}</p>
+					<p className="text-6xl font-bold text-gray-800">{stats?.numberOfUsers}</p>
 					<p className="mt-1 text-xs text-gray-500">
 						Active tenant accounts
 						<Link to={RoutePaths.TenantAdmin.Users} className="ml-1 text-blue-600 hover:underline">(Manage)</Link>
@@ -119,7 +116,7 @@ export const TenantAdminDashboardPage = () => {
 					</p>
 				</div>
 
-				<div className="min-w-[320px] flex-[2_1_420px] rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+				<div className="card min-w-[320px] flex-[2_1_420px] p-4">
 					<h2 className="mb-3 text-sm font-semibold text-gray-600">Weekly Activity (sample)</h2>
 					<svg width="100%" height="150" viewBox="0 0 320 150" role="img" aria-label="Sample weekly activity graph">
 						<line x1="0" y1="130" x2="320" y2="130" stroke="#d1d5db" strokeWidth="1" />

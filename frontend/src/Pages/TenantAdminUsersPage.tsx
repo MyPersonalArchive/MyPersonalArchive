@@ -35,10 +35,6 @@ export const TenantAdminUsersPage = () => {
 		<div className="form">
 			<header className="header">
 				<h1>Users and permissions</h1>
-				<div className="todo mt-2">
-					//TODO: Implement this, since this is a placeholder/sample page
-				</div>
-
 			</header>
 
 			<div className="flex flex-row gap-0 my-2">

@@ -23,7 +23,7 @@ public class Demo1QueryHandler : IAsyncQueryHandler<Demo1Query, string>
 //-------------------------------------------------------------
 
 [RequireOrganizationId]
-[RequireAuthentication(UserMustBeAuthorized = true)]
+[RequireAuthentication]
 public class Demo2Query : IQuery<Demo2Query, string>
 {
 	public string? MyDescription { get; set; }
