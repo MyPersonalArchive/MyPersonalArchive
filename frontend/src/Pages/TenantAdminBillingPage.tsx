@@ -90,12 +90,10 @@ export const TenantAdminBillingPage = () => {
 
 			<div className="todo mt-2">
 				<div>Subscription and billing should at least allow:</div>
-				- See current subscription and billing details<br />
-				<div className="pl-4">- Change tier (Account owner only)</div>
-				<div className="pl-4">- Update payment method (Account owner only)</div>
-				<div className="pl-4">- View billing history</div>
-				<div className="pl-4">- Download invoices</div>
-				<div className="pl-4">- Information about billing periods and next billing date</div>
+				<div>- Update payment method (Account owner only)</div>
+				<div>- View billing history</div>
+				<div>- Download invoices</div>
+				<div>- Information about billing periods and next billing date</div>
 			</div>
 
 		</div>

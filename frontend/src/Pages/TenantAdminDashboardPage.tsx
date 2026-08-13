@@ -100,19 +100,20 @@ export const TenantAdminDashboardPage = () => {
 							))}
 							<li className="pt-1 text-gray-500">
 								{formatSize(stats.totalUsedStorage)} of {formatSize(stats.availableStorage)} used
-								<Link to={RoutePaths.TenantAdmin.Billing} className="ml-1 text-blue-600 hover:underline">(Upgrade)</Link>
+								<br />
+								<Link to={RoutePaths.TenantAdmin.Billing} className="text-blue-600 hover:underline">Upgrade subscription for more storage</Link>
 							</li>
 						</ul>
 					)}
 				</div>
 
 				<div className="card min-w-[220px] flex-1 p-4">
-					<h2 className="mb-2 text-sm font-semibold text-gray-600">Number of Users (sample)</h2>
-					<p className="text-6xl font-bold text-gray-800">{stats?.numberOfUsers}</p>
+					<h2 className="mb-2 text-sm font-semibold text-gray-600">Number of Users</h2>
+					<p className="text-center text-7xl font-bold text-gray-800">{stats?.numberOfUsers}</p>
 					<p className="mt-1 text-xs text-gray-500">
 						Active tenant accounts
-						<Link to={RoutePaths.TenantAdmin.Users} className="ml-1 text-blue-600 hover:underline">(Manage)</Link>
-
+						<br />
+						<Link to={RoutePaths.TenantAdmin.Users} className="text-blue-600 hover:underline">Manage users</Link>
 					</p>
 				</div>
 
@@ -133,7 +134,6 @@ export const TenantAdminDashboardPage = () => {
 
 			<div className="todo mt-2">
 				<div>Dashboard should at least show:</div>
-				- Current tier<br />
 				<div className="pl-4">- Tier limits and limitations</div>
 				- Current storage used<br />
 				<div className="pl-4">- Purge unused blobs? (All? All older than?)</div>

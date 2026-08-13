@@ -1,4 +1,4 @@
-import { faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
+import { faPlus, faUser, faUserTie } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect } from "react"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
@@ -37,11 +37,6 @@ export const TenantAdminUsersPage = () => {
 				<h1>Users and permissions</h1>
 			</header>
 
-			<div className="flex flex-row gap-0 my-2">
-				{/* <div className="flex-1"></div> */}
-				<button className="btn btn-primary">Invite user</button>
-			</div>
-
 			<div className="flex gap-3 flex-wrap">
 				{
 					users.map(user => (
@@ -59,8 +54,23 @@ export const TenantAdminUsersPage = () => {
 						</div>
 					))
 				}
+
+				<button className="card flex flex-row relative w-73">
+					<div className="flex flex-col items-center justify-center w-full h-full">
+						<div className="text-7xl">
+							<FontAwesomeIcon icon={faPlus}  />
+						</div>
+						<div className="text-sm">Invite user</div>
+					</div>
+				</button>
+
 			</div>
 
+			{/* <div className="flex flex-row gap-0 my-2">
+				<button className="btn btn-primary">Invite user</button>
+			</div> */}
+
+			
 			<div className="todo mt-2">
 				<div>Roles</div>
 				- <span className="underline">Account owner</span>
