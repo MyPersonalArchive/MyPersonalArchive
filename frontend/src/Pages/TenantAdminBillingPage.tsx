@@ -78,7 +78,7 @@ export const TenantAdminBillingPage = () => {
 								<button className="btn btn-primary mt-3"
 									type="button"
 									disabled={isCurrentTier}
-									onClick={() => apiClient.execute("ChangeTier", { tierId: tier.id })}
+									onClick={() => alert(`Change to tier ${tier.display.title} button clicked - Not implemented yet`)}
 								>
 									{isCurrentTier ? "Current plan" : "Change to this tier"}
 								</button>

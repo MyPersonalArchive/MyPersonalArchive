@@ -55,7 +55,7 @@ export const TenantAdminUsersPage = () => {
 					))
 				}
 
-				<button className="card flex flex-row relative w-73">
+				<button className="card flex flex-row relative w-73" onClick={() => alert("Invite user button clicked - Not implemented yet")}>
 					<div className="flex flex-col items-center justify-center w-full h-full">
 						<div className="text-7xl">
 							<FontAwesomeIcon icon={faPlus}  />

@@ -11,7 +11,6 @@ namespace Backend.Mpa.Core.Cqrs;
 public class GetStats : IQuery<GetStats, GetStats.Response>
 {
 	// No parameters to get stats for the current organization
-
 	public class Response
 	{
 		public required long AvailableStorage { get; set; }
@@ -31,6 +30,7 @@ public class DashboardHandler :
 	private readonly BlobObjectStoreFileStoreFactory _blobStoreFactory;
 	private readonly ArchiveObjectStoreFileStoreFactory _archiveStoreFactory;
 	private readonly TenantSettingsFileStoreFactory _tenantSettingsStoreFactory;
+	private readonly UserSettingsFileStoreFactory _userSettingsStoreFactory;
 	private readonly BlobObjectStore _blobObjectStore;
 	private readonly ArchiveObjectStore _archiveObjectStore;
 	private readonly KeycloakOrganizationClient _keycloakClient;
@@ -42,6 +42,7 @@ public class DashboardHandler :
 		BlobObjectStoreFileStoreFactory blobStoreFactory,
 		ArchiveObjectStoreFileStoreFactory archiveStoreFactory,
 		TenantSettingsFileStoreFactory tenantSettingsStoreFactory,
+		UserSettingsFileStoreFactory userSettingsStoreFactory,
 		BlobObjectStore blobObjectStore,
 		ArchiveObjectStore archiveObjectStore,
 		KeycloakOrganizationClient keycloakClient,
@@ -51,6 +52,7 @@ public class DashboardHandler :
 		_blobStoreFactory = blobStoreFactory;
 		_archiveStoreFactory = archiveStoreFactory;
 		_tenantSettingsStoreFactory = tenantSettingsStoreFactory;
+		_userSettingsStoreFactory = userSettingsStoreFactory;
 		_blobObjectStore = blobObjectStore;
 		_archiveObjectStore = archiveObjectStore;
 		_keycloakClient = keycloakClient;
@@ -63,23 +65,26 @@ public class DashboardHandler :
 	{
 		var blobStoreUsedTask = _blobStoreFactory.GetFileStore().GetStorageUsed();
 		var archiveStoreUsedTask = _archiveStoreFactory.GetFileStore().GetStorageUsed();
-		var tenantSettingsStoreUsedTask = _tenantSettingsStoreFactory.GetFileStore().GetStorageUsed();	// this includes user settings as well, since they are nested inside the tenantSetting store
+		var tenantSettingsStoreUsedTask = _tenantSettingsStoreFactory.GetFileStore().GetStorageUsed();
+		var tenantUsersStoreUsedTask = _userSettingsStoreFactory.GetFileStore().GetStorageUsed();
 		var blobCountTask = _blobObjectStore.GetObjectCount();
 		var archiveItemCountTask = _archiveObjectStore.GetObjectCount();
 		var usersInTenantTask = _keycloakClient.ListOrganizationGroupMembersAsync();
 		var tenantSettingsTask = _tenantService.GetCurrentTenantSettingsAsync();
 		var tierSettingsTask = _tierService.GetTierSettingsAsync();
 
-		await Task.WhenAll(blobStoreUsedTask, archiveStoreUsedTask, tenantSettingsStoreUsedTask, blobCountTask, archiveItemCountTask, usersInTenantTask, tenantSettingsTask, tierSettingsTask);
+		await Task.WhenAll(blobStoreUsedTask, archiveStoreUsedTask, tenantSettingsStoreUsedTask, tenantUsersStoreUsedTask, blobCountTask, archiveItemCountTask, usersInTenantTask, tenantSettingsTask, tierSettingsTask);
 
 		var blobStoreUsed = blobStoreUsedTask.Result;
 		var archiveStoreUsed = archiveStoreUsedTask.Result;
 		var tenantSettingsStoreUsed = tenantSettingsStoreUsedTask.Result;
+		var tenantUsersStoreUsed = tenantUsersStoreUsedTask.Result;
 
 		var totalUsedStorage =
 			blobStoreUsed +
 			archiveStoreUsed +
-			tenantSettingsStoreUsed;
+			tenantSettingsStoreUsed +
+			tenantUsersStoreUsed;
 
 		var tierSettings = tierSettingsTask.Result;
 		var currentTenantSettings = tenantSettingsTask.Result;
