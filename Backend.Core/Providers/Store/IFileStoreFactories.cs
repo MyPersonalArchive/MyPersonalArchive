@@ -94,7 +94,7 @@ public class UserSettingsFileStoreFactory
 		var username = resolver?.GetCurrentUsername() ?? throw new Exception("Missing username in ambient data");
 
 		_fileStore = fileStore;
-		_fileStore.Configure(["Tenants", tenantId.ToString(), "Settings", "Users", username]);
+		_fileStore.Configure(["Tenants", tenantId.ToString(), "UserSettings", username]);
 	}
 
 
