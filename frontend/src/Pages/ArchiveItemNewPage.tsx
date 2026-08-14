@@ -105,7 +105,7 @@ export const ArchiveItemNewPage = () => {
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="tags">Tags</label>
-					<TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={allTags} />
+					<TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={Array.from(allTags)} />
 				</div>
 
 				<MetadataTypeSelector

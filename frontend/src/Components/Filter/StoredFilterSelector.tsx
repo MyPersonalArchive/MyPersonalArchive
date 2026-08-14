@@ -188,7 +188,7 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 				placeholder="Search by tags"
 				tags={selectedFilter?.filterDefinition.tags ?? []}
 				setTags={tags => dispatch({ action: "EDIT_FILTER_DEFINITION_TAGS", id: selectedFilterId, tags })}
-				autocompleteList={allTags}
+				autocompleteList={Array.from(allTags)}
 			/>
 			<button type="submit" className="btn btn-primary" >
 				Search
