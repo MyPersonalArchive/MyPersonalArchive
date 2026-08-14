@@ -89,7 +89,7 @@ public class ArchiveItemCommandService
 			archiveItemToUpdate.LastUpdatedAt = DateTimeOffset.Now;
 			archiveItemToUpdate.LastUpdatedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");
 			archiveItemToUpdate.Blobs = await _archiveItemQueryService.GetBlobDisplayInfos(new HashSet<Guid>([.. existingBlobIds, .. uploadedBlobIds]));
-			// archiveItemToUpdate.Metadata = metadata ?? new JsonObject();
+			archiveItemToUpdate.Metadata = metadata ?? new JsonObject();
 
 			archiveItemStream.SetLength(0); // Clear the stream before writing
 			JsonSerializer.Serialize(archiveItemStream, archiveItemToUpdate, JsonSerializerDefaults.Options);
