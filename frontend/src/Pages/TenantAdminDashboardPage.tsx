@@ -22,7 +22,6 @@ export const TenantAdminDashboardPage = () => {
 	useEffect(() => {
 		apiClient.query<GetStatsResponse>("GetStats")
 			.then(response => {
-				console.log("GetStats response:", response)
 				setStats(response)
 			})
 	}, [])

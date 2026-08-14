@@ -127,7 +127,7 @@ const ComponentTester = () => {
 				<input type="text" className="input" />
 			</div>
 
-			<div className="input h-60 w-60 !flex flex-col items-center justify-center">
+			<div className="input h-60 w-60 flex! flex-col items-center justify-center">
 				<div>Make anything look</div>
 				<div>like an input element</div>
 				<div>with <span className="font-code">class="input"</span></div>
