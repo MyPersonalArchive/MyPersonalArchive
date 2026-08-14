@@ -1,5 +1,6 @@
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Providers.Store;
+using Backend.Core.Services;
 using Backend.Mpa.Core.Services;
 
 
@@ -37,12 +38,20 @@ public class GetTiers : IQuery<GetTiers, GetTiers.Response>
 }
 
 
+[RequireOrganizationId]
+public class SetTier : ICommand<SetTier>
+{
+	public required string TierId { get; set; }
+}
+
+
 public class SubscriptionHandler :
-	IAsyncQueryHandler<GetTiers, GetTiers.Response>
+	IAsyncQueryHandler<GetTiers, GetTiers.Response>,
+	IAsyncCommandHandler<SetTier>
 {
 	public readonly TierService _tierService;
 	public readonly TenantService _tenantService;
-
+	
 	public SubscriptionHandler(TierService tierService, TenantService tenantService)
 	{
 		_tierService = tierService;
@@ -80,5 +89,10 @@ public class SubscriptionHandler :
 				PricePerMonthEUR = tier.PricePerMonthEUR
 			}).ToList()
 		};
+	}
+
+	public async Task Handle(SetTier command)
+	{
+		await _tenantService.SetTierAsync(command.TierId);
 	}
 }

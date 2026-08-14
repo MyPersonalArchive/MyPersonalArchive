@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai"
 import classNames from "classnames"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
+import { useSignalR } from "../Utils/Hooks/useSignalR"
 
 
 type GetTiersResponse = {
@@ -38,13 +39,28 @@ export const TenantAdminBillingPage = () => {
 			})
 	}, [])
 
+	useSignalR(message => {
+		if (message.messageType === "TierUpdated") {
+			// Refresh the page to reflect the new tier
+			apiClient.query<GetTiersResponse>("GetTiers")
+				.then(response => {
+					setTiersResponse(response)
+				})
+		}
+	})
+
+	const changeToTier = (id: string): void => {
+		apiClient.execute("SetTier", { tierId: id })
+	}
+
+
 	return (
 		<div className="form">
 			<header className="header">
 				<h1>Subscription and billing</h1>
 			</header>
 
-			<div className="flex gap-3 flex-wrap">
+			<div className="flex gap-3 flex-wrap mb-8">
 				{tiersResponse?.availableTiers.map(tier => {
 					const isCurrentTier = tier.id === tiersResponse.currentTierId
 					const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
@@ -78,7 +94,7 @@ export const TenantAdminBillingPage = () => {
 								<button className="btn btn-primary mt-3"
 									type="button"
 									disabled={isCurrentTier}
-									onClick={() => alert(`Change to tier ${tier.display.title} button clicked - Not implemented yet`)}
+									onClick={() => changeToTier(tier.id)}
 								>
 									{isCurrentTier ? "Current plan" : "Change to this tier"}
 								</button>
@@ -88,13 +104,46 @@ export const TenantAdminBillingPage = () => {
 				})}
 			</div>
 
-			<div className="todo mt-2">
-				<div>Subscription and billing should at least allow:</div>
-				<div>- Update payment method (Account owner only)</div>
-				<div>- View billing history</div>
-				<div>- Download invoices</div>
-				<div>- Information about billing periods and next billing date</div>
+			<div className="my-4 flex flex-row gap-4 items-baseline">
+				<span>Your next billing date is: <strong>2024-09-01</strong></span>
+				<div className="flex-1"></div>
+				<button className="btn" type="button">Change payment method</button>
 			</div>
+
+
+			<table className="w-full">
+				<thead>
+					<tr>
+						<th className="text-left text-lg font-semibold" colSpan={4}>Billing history</th>
+					</tr>
+				</thead>
+				<tbody className=" text-sm">
+					<tr className="hover:bg-gray-200">
+						<td>2026-08-01</td>
+						<td>Monthly Medium subscription</td>
+						<td className="text-right">5.00 €</td>
+						<td className="text-right"><a className="link" href="#">View invoice</a></td>
+					</tr>
+					<tr className="hover:bg-gray-200">
+						<td>2026-07-01</td>
+						<td>Monthly Medium subscription</td>
+						<td className="text-right">5.00 €</td>
+						<td className="text-right"><a className="link" href="#">View invoice</a></td>
+					</tr>
+					<tr className="hover:bg-gray-200">
+						<td>2026-06-01</td>
+						<td>Monthly Large subscription</td>
+						<td className="text-right">10.00 €</td>
+						<td className="text-right"><a className="link" href="#">View invoice</a></td>
+					</tr>
+					<tr className="hover:bg-gray-200">
+						<td>2026-05-01</td>
+						<td>Monthly Medium subscription</td>
+						<td className="text-right">5.00 €</td>
+						<td className="text-right"><a className="link" href="#">View invoice</a></td>
+					</tr>
+				</tbody>
+			</table>
 
 		</div>
 	)

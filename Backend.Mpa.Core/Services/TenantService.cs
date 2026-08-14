@@ -11,12 +11,14 @@ public class TenantService : SettingsServiceBase<TenantSettings>
 {
 	protected override string FileName => "TenantSettings.json";
 
-protected readonly IAmbientDataResolver _ambientDataResolver;
+	protected readonly IAmbientDataResolver _ambientDataResolver;
+	protected readonly ISignalRService _signalRService;
 
-	public TenantService(IAmbientDataResolver ambientDataResolver, SystemSettingsFileStoreFactory fileStoreFactory)
+	public TenantService(IAmbientDataResolver ambientDataResolver, SystemSettingsFileStoreFactory fileStoreFactory, ISignalRService signalRService)
 		: base(fileStoreFactory.GetFileStore())
 	{
 		_ambientDataResolver = ambientDataResolver;
+		_signalRService = signalRService;
 	}
 
 
@@ -27,11 +29,17 @@ protected readonly IAmbientDataResolver _ambientDataResolver;
 		return currentTenant;
 	}
 
-	// public async Task StoreTenantSettingsAsync(TenantSettings settings)
-	// {
-	// 	await SaveSettingsAsync(settings);
-	// 	await _signalRService.PublishToTenantChannel(new ISignalRService.Message("TenantSettingsUpdated", null));
-	// }
+	public async Task SetTierAsync(string tierId)
+	{
+		await ChangeSettingsAsync(settings =>
+		{
+			var currentTenant = settings.Tenants.Single(tenant => tenant.Id == _ambientDataResolver.GetCurrentTenantId());
+			currentTenant.TierId = tierId;
+			return settings;
+		});
+
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("TierUpdated", null));
+	}
 }
 
 
