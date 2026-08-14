@@ -11,18 +11,15 @@ public class BackupService
 	private readonly BlobObjectStoreFileStoreFactory _blobStoreFactory;
 	private readonly ArchiveObjectStoreFileStoreFactory _archiveStoreFactory;
 	private readonly TenantSettingsFileStoreFactory _tenantSettingsStoreFactory;
-	private readonly UserSettingsFileStoreFactory _userSettingsStoreFactory;
 
 	public BackupService(
 		BlobObjectStoreFileStoreFactory blobStoreFactory,
 		ArchiveObjectStoreFileStoreFactory archiveStoreFactory,
-		TenantSettingsFileStoreFactory tenantSettingsStoreFactory,
-		UserSettingsFileStoreFactory userSettingsStoreFactory)
+		TenantSettingsFileStoreFactory tenantSettingsStoreFactory)
 	{
 		_blobStoreFactory = blobStoreFactory;
 		_archiveStoreFactory = archiveStoreFactory;
 		_tenantSettingsStoreFactory = tenantSettingsStoreFactory;
-		_userSettingsStoreFactory = userSettingsStoreFactory;
 	}
 
 
@@ -34,9 +31,8 @@ public class BackupService
 		await AddStoreFilesToZipEntries(entries, _archiveStoreFactory.GetFileStore(), "Archive");
 		await AddStoreFilesToZipEntries(entries, _tenantSettingsStoreFactory.GetFileStore(), "Settings");
 
-		// User settings can contain private data, is not included in download.
-		// Consider creating stripped userSettings data with only public data for download if needed.
-		// await AddStoreFilesToZipEntries(entries, _userSettingsStoreFactory.GetFileStore(), "UserSettings");
+		// - User settings can contain private data, so they are excluded from the backup.
+		// - Any files with ".cache-" in their name are also excluded from the backup.
 
 		try
 		{

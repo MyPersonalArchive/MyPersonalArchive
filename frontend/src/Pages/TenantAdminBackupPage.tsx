@@ -20,11 +20,40 @@ export const TenantAdminBackupPage = () => {
 				</a>
 			</div>
 
-			<div className="todo mt-2">
-				//TODO: Implement this, since this is a placeholder/sample page
-			</div>
-
-			<BackupActionButtons />
+			<table className="w-full">
+				<thead>
+					<tr>
+						<th className="text-left text-lg font-semibold" colSpan={4}>Backup history</th>
+					</tr>
+				</thead>
+				<tbody className=" text-sm">
+					<tr className="hover:bg-gray-200">
+						<td>2026-08-01</td>
+						<td>Backup completed</td>
+						<td className="text-right">Success</td>
+						<td className="text-right"><a className="link" href="#">View details</a></td>
+					</tr>
+					<tr className="hover:bg-gray-200">
+						<td>2026-07-01</td>
+						<td>Backup completed</td>
+						<td className="text-right">Success</td>
+						<td className="text-right"><a className="link" href="#">View details</a></td>
+					</tr>
+					<tr className="hover:bg-gray-200">
+						<td>2026-06-01</td>
+						<td>Backup completed</td>
+						<td className="text-right">Success</td>
+						<td className="text-right"><a className="link" href="#">View details</a></td>
+					</tr>
+					<tr className="hover:bg-gray-200">
+						<td>2026-05-01</td>
+						<td>Backup completed</td>
+						<td className="text-right">Interrupted</td>
+						<td className="text-right"><a className="link" href="#">View details</a></td>
+					</tr>
+				</tbody>
+			</table>
+			{/* <BackupActionButtons /> */}
 			{/* <BackupView /> */}
 
 			<div className="todo mt-2">
