@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 [Authorize(Policy = "TenantIdPolicy")]
 public class BackupController : ControllerBase
 {
-	private readonly BackupQueryService _backupQueryService;
+	private readonly BackupService _backupQueryService;
 
-	public BackupController(BackupQueryService backupQueryService)
+	public BackupController(BackupService backupQueryService)
 	{
 		_backupQueryService = backupQueryService;
 	}

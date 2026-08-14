@@ -6,14 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Backend.Mpa.Core.Services;
 
 [RegisterService(ServiceLifetime.Scoped)]
-public class BackupQueryService
+public class BackupService
 {
 	private readonly BlobObjectStoreFileStoreFactory _blobStoreFactory;
 	private readonly ArchiveObjectStoreFileStoreFactory _archiveStoreFactory;
 	private readonly TenantSettingsFileStoreFactory _tenantSettingsStoreFactory;
 	private readonly UserSettingsFileStoreFactory _userSettingsStoreFactory;
 
-	public BackupQueryService(
+	public BackupService(
 		BlobObjectStoreFileStoreFactory blobStoreFactory,
 		ArchiveObjectStoreFileStoreFactory archiveStoreFactory,
 		TenantSettingsFileStoreFactory tenantSettingsStoreFactory,
@@ -61,6 +61,12 @@ public class BackupQueryService
 		{
 			var containerNames = filePathParts[..^1];
 			var filename = filePathParts[^1];
+
+			if (IsCacheFile(filename))
+			{
+				continue;
+			}
+
 			var stream = await fileStore.GetFile(containerNames, filename);
 			if (stream == null)
 			{
@@ -69,5 +75,11 @@ public class BackupQueryService
 			var entryName = prefix + "/" + string.Join('/', filePathParts);
 			entries[entryName] = stream;
 		}
+	}
+
+
+	private static bool IsCacheFile(string filename)
+	{
+		return filename.Split('.').Skip(1).Any(extension => extension.StartsWith("cache-"));
 	}
 }
