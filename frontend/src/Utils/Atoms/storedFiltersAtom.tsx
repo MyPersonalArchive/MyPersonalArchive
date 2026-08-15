@@ -1,4 +1,5 @@
 import { UUID } from "crypto"
+import type { ReducerIdentifier } from "../../Utils/Metadata/types"
 import { atomWithReducer } from "jotai/utils"
 import { changeAtKey, moveInArray, removeAtKey } from "../array-helpers"
 import { MimeTypeConverterArray } from "../../Components/DragDropHelpers"
@@ -14,7 +15,7 @@ export type StoredFilter = {
 export type FilterDefinition = {
 	title?: string
 	tags: string[]
-	metadataTypes: Set<string>
+	metadataTypes: Set<ReducerIdentifier>
 }
 
 
@@ -45,7 +46,7 @@ type StoredFiltersCommand =
 	| { action: "EDIT_FILTER_NAME", id: UUID, name: string }
 	| { action: "EDIT_FILTER_DEFINITION_TITLE", id: UUID, title?: string }
 	| { action: "EDIT_FILTER_DEFINITION_TAGS", id: UUID, tags: string[] }
-	| { action: "EDIT_FILTER_DEFINITION_METADATATYPES", id: UUID, metadataTypes: Set<string> }
+	| { action: "EDIT_FILTER_DEFINITION_TOGGLE_METADATATYPE", id: UUID, metadataPath: ReducerIdentifier }
 
 const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFilter[] => {
 	switch (command.action) {
@@ -120,7 +121,7 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 				})
 			)
 
-		case "EDIT_FILTER_DEFINITION_METADATATYPES":
+		case "EDIT_FILTER_DEFINITION_TOGGLE_METADATATYPE":
 			return changeAtKey(
 				state,
 				filter => filter.id === command.id,
@@ -128,7 +129,9 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 					...filter,
 					filterDefinition: {
 						...filter.filterDefinition,
-						metadataTypes: command.metadataTypes
+						metadataTypes: filter.filterDefinition.metadataTypes.has(command.metadataPath)
+							? new Set([...filter.filterDefinition.metadataTypes].filter(path => path !== command.metadataPath))
+							: new Set([...filter.filterDefinition.metadataTypes, command.metadataPath])
 					}
 				})
 			)

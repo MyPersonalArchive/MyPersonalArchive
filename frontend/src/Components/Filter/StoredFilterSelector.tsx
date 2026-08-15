@@ -12,10 +12,11 @@ import { TagsInput } from "../TagsInput"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { UUID } from "crypto"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
+import { allMetadataTypes } from "../MetadataTypes"
 
 
 export const StoredFilterSelector = () => {
-	const {adjustmentsModeIsOpen} = useAtomValue(layoutStateAtom)
+	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
 	const storedFilters = useAtomValue(storedFiltersAtom)
 
 	const apiClient = useApiClient()
@@ -100,7 +101,7 @@ const EditableStoredFilters = () => {
 						ref={elmnt => { dnd.setElementRef(elmnt, index) }}
 					>
 						<span className="draghandle cursor-grab text-gray-400 hover:text-gray-600 font-normal absolute left-3 top-1/2 -translate-y-1/2">
-							<FontAwesomeIcon icon={faGripVertical} fixedWidth/>
+							<FontAwesomeIcon icon={faGripVertical} fixedWidth />
 						</span>
 						<input className="font-mono"
 							type="text"
@@ -190,12 +191,29 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 				setTags={tags => dispatch({ action: "EDIT_FILTER_DEFINITION_TAGS", id: selectedFilterId, tags })}
 				autocompleteList={Array.from(allTags)}
 			/>
+			<div className="flex flex-wrap gap-2">
+
+				{allMetadataTypes.map(metadataType => {
+					return (
+						<label key={metadataType.path.toString()}
+							className="inline-block"
+						>
+							<input className="input" type="checkbox"
+								checked={selectedFilter?.filterDefinition.metadataTypes.has(metadataType.path)}
+								onClick={event => event.stopPropagation()}
+								onChange={event => dispatch({ action: "EDIT_FILTER_DEFINITION_TOGGLE_METADATATYPE", id: selectedFilterId, metadataPath: metadataType.path })} />
+							{metadataType.displayName}
+						</label>
+					)
+				})}
+			</div>
+
 			<button type="submit" className="btn btn-primary" >
 				Search
 			</button>
 			<button type="reset" className="btn">
 				Reset
 			</button>
-		</form>
+		</form >
 	)
 }
