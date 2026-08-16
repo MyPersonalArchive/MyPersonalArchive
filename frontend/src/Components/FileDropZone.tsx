@@ -1,4 +1,4 @@
-import { faClose, faDownLeftAndUpRightToCenter, faFileImport, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faClose, faDownLeftAndUpRightToCenter, faFileImport, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
@@ -203,11 +203,17 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 
 					}
 					maximizedPreviewTemplate={
-						(blob, minimize) =>
+						(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 							<LightBox key={blob.id} onClose={() => minimize()}>
 								<div className="w-full h-full flex justify-center action-bar-host">
 									<Preview blob={blob} dimension={DimensionEnum.full} />
 									<div className="action-bar">
+										<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+											<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+										</button>
+										<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+											<FontAwesomeIcon icon={faArrowRight} size="1x" />
+										</button>
 										<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 										</button>

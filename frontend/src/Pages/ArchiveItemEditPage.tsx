@@ -19,7 +19,7 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
 import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
-import { faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
@@ -205,11 +205,17 @@ export const ArchiveItemEditPage = () => {
 								</div>
 						}
 						maximizedPreviewTemplate={
-							(blob, minimize) =>
+							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 								<LightBox key={blob.id} onClose={() => minimize()}>
 									<div className="w-full h-full flex justify-center action-bar-host">
 										<Preview blob={blob} dimension={DimensionEnum.full} />
 										<div className="action-bar">
+											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+												<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+											</button>
+											<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+												<FontAwesomeIcon icon={faArrowRight} size="1x" />
+											</button>
 											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 											</button>
@@ -248,7 +254,7 @@ export const ArchiveItemEditPage = () => {
 								</div>
 						}
 						maximizedPreviewTemplate={
-							(blob, minimize) =>
+							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 								<LightBox key={blob.fileName} onClose={() => minimize()}>
 									<div className="w-full h-full flex justify-center action-bar-host">
 										<LocalViewer
@@ -259,6 +265,12 @@ export const ArchiveItemEditPage = () => {
 											removeBlob={removeBlob}
 										/>
 										<div className="action-bar">
+											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+												<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+											</button>
+											<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+												<FontAwesomeIcon icon={faArrowRight} size="1x" />
+											</button>
 											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 											</button>

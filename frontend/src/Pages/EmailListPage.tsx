@@ -128,7 +128,7 @@ export const EmailListPage = () => {
 							maximize={maximize}
 						/>
 					}
-					maximizedPreviewTemplate={(email, minimize) =>
+					maximizedPreviewTemplate={(email, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 						<Dialog key={email.uniqueId} size="full"
 							onClose={() => minimize()}
 							closeOnEscape={true}
