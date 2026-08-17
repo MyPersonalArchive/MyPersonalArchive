@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 
 type PreviewListProps<T> = {
@@ -21,6 +21,31 @@ type PreviewListProps<T> = {
 export const PreviewList = <T,>({ items, containerStyle, containerClassName, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
 	const [maximizedIndex, setMaximizedIndex] = useState<number | undefined>(undefined)
 
+	const canMovePrevious = maximizedIndex !== undefined && maximizedIndex > 0
+	const canMoveNext = maximizedIndex !== undefined && maximizedIndex < items.length - 1
+
+	const movePrevious = () => {
+		if (maximizedIndex !== undefined && maximizedIndex > 0) {
+			setMaximizedIndex(maximizedIndex - 1)
+		}
+	}
+	const moveNext = () => {
+		if (maximizedIndex !== undefined && maximizedIndex < items.length - 1) {
+			setMaximizedIndex(maximizedIndex + 1)
+		}
+	}
+
+	useEffect(() => {
+		if (maximizedIndex === undefined) return
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "ArrowLeft") movePrevious()
+			else if (e.key === "ArrowRight") moveNext()
+		}
+		document.addEventListener("keydown", handleKeyDown)
+		return () => document.removeEventListener("keydown", handleKeyDown)
+	}, [maximizedIndex, items.length])
+
 	const maximizedItem = maximizedIndex !== undefined
 		? items[maximizedIndex]
 		: undefined
@@ -37,18 +62,10 @@ export const PreviewList = <T,>({ items, containerStyle, containerClassName, thu
 					{maximizedPreviewTemplate(
 						maximizedItem,
 						/*minimize*/ () => setMaximizedIndex(undefined),
-						/*canMovePrevious*/ (() => maximizedIndex !== undefined && maximizedIndex > 0)(),
-						/*canMoveNext*/ (() => maximizedIndex !== undefined && maximizedIndex < items.length - 1)(),
-						/*movePrevious*/ () => {
-							if (maximizedIndex !== undefined && maximizedIndex > 0) {
-								setMaximizedIndex(maximizedIndex - 1)
-							}
-						},
-						/*moveNext*/ () => {
-							if (maximizedIndex !== undefined && maximizedIndex < items.length - 1) {
-								setMaximizedIndex(maximizedIndex + 1)
-							}
-						}
+						canMovePrevious,
+						canMoveNext,
+						movePrevious,
+						moveNext
 					)}
 				</>
 			}
