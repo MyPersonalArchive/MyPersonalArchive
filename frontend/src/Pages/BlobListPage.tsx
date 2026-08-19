@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
 import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
+import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 
 
 export const BlobListPage = () => {
@@ -118,6 +119,7 @@ export const BlobListPage = () => {
 					(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 						<LightBox key={blob.id} onClose={() => minimize()}>
 							<div className="w-full h-full flex justify-center action-bar-host">
+								<ToolWindow />
 								<Preview blob={blob} dimension={DimensionEnum.full} />
 								<div className="action-bar">
 									<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
@@ -136,6 +138,25 @@ export const BlobListPage = () => {
 			/>
 
 		</>
+	)
+}
+
+
+const ToolWindow = () => {
+	return (
+		<FloatingToolWindow title="Tool window" className="flex flex-col gap-2 p-2" initialPosition={{ x: 100, y: 100 }} initialSize={{ width: 300, height: 200 }}>
+			<label>
+				<input type="checkbox" /> Receipt
+			</label>
+			<label>
+				<input type="checkbox" /> Travel document
+			</label>
+
+			<button className="btn">Register item</button>
+			<div className="todo">
+				//TODO: After registering, open the same blob in ArchiveItemEditPage, so that the user can fill in the rest of the details
+			</div>
+		</FloatingToolWindow>
 	)
 }
 

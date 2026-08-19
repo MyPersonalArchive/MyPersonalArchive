@@ -7,10 +7,11 @@ type PreviewListProps<T> = {
 	containerStyle?: React.CSSProperties
 	containerClassName?: string
 	thumbnailPreviewTemplate: (
-		blob: T,
+		item: T,
 		setMaximizeBlob: (blob?: T) => void
 	) => React.ReactNode
-	maximizedPreviewTemplate: (blob: T,
+	maximizedPreviewTemplate: (
+		item: T,
 		minimize: () => void,
 		canMovePrevious: boolean,
 		canMoveNext: boolean,
@@ -54,7 +55,7 @@ export const PreviewList = <T,>({ items, containerStyle, containerClassName, thu
 		<>
 			<div className={containerClassName} style={containerStyle}>
 				{
-					items.map((blob, index) => thumbnailPreviewTemplate(blob, (item) => setMaximizedIndex(item ? index : undefined)))
+					items.map((item, index) => thumbnailPreviewTemplate(item, (item) => setMaximizedIndex(item ? index : undefined)))
 				}
 			</div>
 			{
