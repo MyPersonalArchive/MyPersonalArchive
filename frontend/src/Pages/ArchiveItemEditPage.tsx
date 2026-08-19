@@ -22,6 +22,7 @@ import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faUpRi
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
+import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 
 type GetResponse = {
 	id: UUID
@@ -238,6 +239,7 @@ export const ArchiveItemEditPage = () => {
 							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 								<LightBox key={blob.id} onClose={() => minimize()}>
 									<div className="w-full h-full flex justify-center action-bar-host">
+										<ToolWindow />
 										<Preview blob={blob} dimension={DimensionEnum.full} />
 										<div className="action-bar">
 											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
@@ -343,5 +345,42 @@ export const ArchiveItemEditPage = () => {
 				}
 			</form>
 		</>
+	)
+}
+
+
+const ToolWindow = () => {
+	const [title, setTitle] = useState("")
+	const [tags, setTags] = useState<string[]>([])
+	const [documentDate, setDocumentDate] = useState("")
+	const allTags = useAtomValue(tagsAtom)
+
+	return (
+		<FloatingToolWindow title="Tool window" initialPosition={{ x: 100, y: 100 }} initialSize={{ width: 300, height: 200 }}>
+			<div className="aligned-labels-and-inputs">
+				<label htmlFor="title">Title</label>
+				<input type="text"
+					className="input"
+					id="title" placeholder="" autoFocus data-1p-ignore
+					value={title}
+					onChange={event => setTitle(event.target.value)}
+				/>
+			</div>
+
+			<div className="aligned-labels-and-inputs">
+				<label htmlFor="documentDate">Document date</label>
+
+				<DatePicker date={documentDate} setDate={setDocumentDate} />
+			</div>
+
+			<div className="aligned-labels-and-inputs">
+				<label htmlFor="tags">Tags</label>
+				<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} htmlId="tags" />
+			</div>
+
+			<div className="todo">
+				//TODO: After registering, open the same blob in ArchiveItemEditPage, so that the user can fill in the rest of the details
+			</div>
+		</FloatingToolWindow>
 	)
 }

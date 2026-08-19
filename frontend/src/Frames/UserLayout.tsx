@@ -67,6 +67,16 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 								<FontAwesomeIcon icon={faPhotoFilm} fixedWidth />
 								Documents and media
 							</NavLink>
+
+
+							<NavLink className={({ isActive }) => isActive ? "active" : undefined}
+								to={"new-all-items-at-once"} onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
+							>
+								<FontAwesomeIcon icon={faPhotoFilm} fixedWidth />
+								NEW: All items at once!
+							</NavLink>
+
+
 						</div>
 
 						<div className="nav-group">
