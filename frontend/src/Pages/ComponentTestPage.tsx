@@ -80,6 +80,23 @@ const ComponentTester = () => {
 				</div>
 			</LightBox>}
 
+			{isFloatingWindowOpen && <FloatingToolWindow title="Floating window" onClose={() => setIsFloatingWindowOpen(false)}>
+				<p>Drag this window around by its header, resize it from the bottom-right corner, and scroll this content if it overflows.</p>
+				<img src={logoImg} alt="" className="my-2 w-32" />
+				<p>Any component can go inside, e.g.:</p>
+				<button className="btn" type="button">A button</button>
+				<p>Here's some extra text to force the content to overflow so scrolling can be tested:</p>
+				<ul className="list-disc pl-6">
+					<li>List item one</li>
+					<li>List item two</li>
+					<li>List item three</li>
+					<li>List item four</li>
+					<li>List item five</li>
+					<li>List item six</li>
+					<li>List item seven</li>
+					<li>List item eight</li>
+				</ul>
+			</FloatingToolWindow>}
 			<div className="aligned-labels-and-inputs">
 				<label htmlFor="id1">Title</label>
 				<div className="grouped">

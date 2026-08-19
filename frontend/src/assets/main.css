@@ -270,6 +270,27 @@ main {
 }
 
 
+/* ── Floating window ── */
+.floating-window {
+	@apply fixed flex flex-col bg-main-color border border-gray-300 rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] overflow-hidden z-1;
+}
+
+.floating-window-header {
+	@apply flex items-center justify-between gap-2 text-xs font-bold p-1 px-2 bg-white border-b border-gray-300 cursor-move select-none touch-none;
+}
+
+.floating-window-close {
+	@apply bg-transparent border-none cursor-pointer text-gray-500 hover:text-gray-800;
+}
+
+.floating-window-content {
+	@apply p-2 overflow-auto grow;
+}
+
+.floating-window-resize-handle {
+	@apply absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none;
+	background: linear-gradient(135deg, transparent 0 55%, theme('colors.gray.400') 55% 65%, transparent 65% 75%, theme('colors.gray.400') 75% 85%, transparent 85%);
+}
 
 
 
@@ -289,8 +310,12 @@ main {
 		@apply bg-white/95 text-[#333] border-none rounded-md p-[0.4rem] cursor-pointer transition-all duration-200 flex min-w-7 min-h-7 shadow-[0_1px_3px_rgba(0,0,0,0.2)];
 	}
 
-	& .action-bar button:hover {
+	& .action-bar button:hover:not(:disabled) {
 		@apply bg-white scale-115 shadow-[0_2px_8px_rgba(0,0,0,0.3)];
+	}
+
+	& .action-bar button:disabled {
+		@apply text-gray-400 bg-gray-200 cursor-not-allowed shadow-none;
 	}
 
 	& .action-bar button:active {
