@@ -8,12 +8,34 @@ services:
     volumes:
       - ${HOME}/data/mpa:/data:cached
       - vsc-remote-containers:/workspaces/
-    ports:
-      - "40000-40050:40000-40050/udp" # Ports for WebRTC / P2P connections
+    # ports:
+    #   - "40000-40050:40000-40050/udp" # Ports for WebRTC / P2P connections
 
     # Keeps the container running so VS Code can attach
     command: sleep infinity
     network_mode: bridge
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak-server
+    restart: unless-stopped
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=p@ssw0rd
+      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.pem
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
+      - KC_HOSTNAME=localhost
+    command: start-dev
+    volumes:
+      - ~/data/mpa/https/:/opt/keycloak/conf/:ro
+      - keycloak-data:/opt/keycloak/data/
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+
+
 volumes:
   vsc-remote-containers:
+  keycloak-data:
+    name: keycloak-data
+
