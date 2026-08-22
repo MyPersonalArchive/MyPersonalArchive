@@ -7,13 +7,28 @@ type TagsProps = {
     autocompleteList?: string[]
     htmlId?: string
 }
+const isQuoteOpen = (value: string) =>
+	value.startsWith("\"") && !(value.length > 1 && value.endsWith("\""))
+
+const stripQuotes = (value: string) => {
+	const trimmed = value.trim()
+	if (trimmed.length > 1 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+		return trimmed.slice(1, -1)
+	}
+	return trimmed
+}
+
 export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId }: TagsProps) => {
 	const [tagsInput, setTagsInput] = useState<string>("")
 
 	const keyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === " " && isQuoteOpen(event.currentTarget.value)) {
+			return
+		}
+
 		if (event.key === "Enter" || event.key === " ") {
 			event.preventDefault()
-			const tag = event.currentTarget.value
+			const tag = stripQuotes(event.currentTarget.value)
 			if (tag !== "") {
 				setTags([...tags, tag])
 				setTagsInput("")
@@ -30,8 +45,8 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 	}
 
 	const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		if (event.target.value.length > 0 && event.target.value.endsWith(" ")) {
-			const tag = event.currentTarget.value.trim()
+		if (event.target.value.length > 0 && event.target.value.endsWith(" ") && !isQuoteOpen(event.target.value)) {
+			const tag = stripQuotes(event.currentTarget.value)
 			setTags([...tags, tag])
 
 			setTagsInput("")
