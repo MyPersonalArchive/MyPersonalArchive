@@ -11,6 +11,7 @@ public class ArchiveItemModel
 
 	public DateTimeOffset? DocumentDate { get; set; }
 	public required IEnumerable<string> Tags { get; set; }
+	public string? Notes { get; set; }
 	public required DateTimeOffset CreatedAt { get; set; }
 	public required string CreatedBy { get; set; }
 	public DateTimeOffset LastUpdatedAt { get; set; }

@@ -34,6 +34,7 @@ public class ArchiveItemCommandService
 
 	public async Task<ArchiveItemModel> CreateArchiveItem(string title,
 													 IEnumerable<string> tags,
+													 string? notes,
 													 JsonObject? metadata,
 													 IEnumerable<Guid> existingBlobIds,
 													 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
@@ -47,6 +48,7 @@ public class ArchiveItemCommandService
 			Id = newArchiveItemId,
 			Title = title,
 			Tags = tags,
+			Notes = notes,
 			DocumentDate = null,
 			CreatedAt = DateTimeOffset.Now,
 			CreatedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"),
@@ -71,6 +73,7 @@ public class ArchiveItemCommandService
 	public async Task<ArchiveItemModel?> UpdateArchiveItem(Guid archiveItemId,
 													  string title,
 													  IEnumerable<string> tags,
+													  string? notes,
 													  JsonObject? metadata,
 													  DateTimeOffset? documentDate,
 													  IEnumerable<Guid> existingBlobIds,
@@ -85,6 +88,7 @@ public class ArchiveItemCommandService
 
 			archiveItemToUpdate.Title = title;
 			archiveItemToUpdate.Tags = tags;
+			archiveItemToUpdate.Notes = notes;
 			archiveItemToUpdate.DocumentDate = documentDate;
 			archiveItemToUpdate.LastUpdatedAt = DateTimeOffset.Now;
 			archiveItemToUpdate.LastUpdatedBy = _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim");

@@ -31,7 +31,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var newArchiveItem = await _archiveItemCommandService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Metadata, createRequest.ExistingBlobIds, uploadedBlobs);
+		var newArchiveItem = await _archiveItemCommandService.CreateArchiveItem(createRequest.Title, createRequest.Tags, createRequest.Notes, createRequest.Metadata, createRequest.ExistingBlobIds, uploadedBlobs);
 
 		return new CreateResponse
 		{
@@ -43,7 +43,7 @@ public class ArchiveController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<Guid>> CreateAndAttachBlobs([FromQuery] IEnumerable<Guid> blobIds)
 	{
-		var newArchiveItem = await _archiveItemCommandService.CreateArchiveItem("New archive item", [], null, blobIds, []);
+		var newArchiveItem = await _archiveItemCommandService.CreateArchiveItem("New archive item", [], null, null, blobIds, []);
 		return newArchiveItem.Id;
 	}
 
@@ -58,7 +58,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		var updatedArchiveItem = await _archiveItemCommandService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.ExistingBlobIds, uploadedBlobs);
+		var updatedArchiveItem = await _archiveItemCommandService.UpdateArchiveItem(updateRequest.Id, updateRequest.Title, updateRequest.Tags, updateRequest.Notes, updateRequest.Metadata, updateRequest.DocumentDate, updateRequest.ExistingBlobIds, uploadedBlobs);
 		if (updatedArchiveItem == null)
 		{
 			return NotFound();
@@ -74,6 +74,7 @@ public class ArchiveController : ControllerBase
 	{
 		public required string Title { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
+		public required string? Notes { get; set; }
 		public required List<string> Tags { get; set; }
 		public required JsonObject Metadata { get; set; }
 		public required Guid[] ExistingBlobIds { get; set; }
@@ -90,6 +91,7 @@ public class ArchiveController : ControllerBase
 		public required string Title { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required List<string> Tags { get; set; }
+		public string? Notes { get; set; }
 		public required JsonObject Metadata { get; set; }
 		public required Guid[] ExistingBlobIds { get; set; }
 	}

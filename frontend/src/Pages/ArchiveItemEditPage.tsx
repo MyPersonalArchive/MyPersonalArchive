@@ -28,6 +28,7 @@ type GetResponse = {
 	id: UUID
 	title: string
 	tags: string[]
+	notes?: string
 	documentDate?: string
 	createdAt: string
 	metadata: any
@@ -49,6 +50,7 @@ export const ArchiveItemEditPage = () => {
 	const [id, setId] = useState<UUID | null>(null)
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
+	const [notes, setNotes] = useState<string | undefined>(undefined)
 	const [documentDate, setDocumentDate] = useState("")
 	const [blobs, setBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
@@ -68,6 +70,7 @@ export const ArchiveItemEditPage = () => {
 				setId(item!.id)
 				setTitle(item!.title)
 				setTags(item!.tags)
+				setNotes(item!.notes)
 				setBlobs(item!.blobDisplayInfos.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
 				setDocumentDate(item!.documentDate ? new Date(item!.documentDate).toISOString().split("T")[0] : "")
 
@@ -83,6 +86,7 @@ export const ArchiveItemEditPage = () => {
 			id: id!,
 			title: title!,
 			tags,
+			notes,
 			existingBlobIds: blobs.map(blob => blob.id),
 			metadata,
 			documentDate: documentDate ? new Date(documentDate) : undefined
@@ -153,6 +157,15 @@ export const ArchiveItemEditPage = () => {
 					<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} htmlId="tags" />
 				</div>
 
+				<div className="aligned-labels-and-inputs">
+					<label htmlFor="notes">Notes</label>
+					<textarea
+						className="input"
+						id="notes"
+						value={notes}
+						onChange={event => setNotes(event.target.value)}
+					/>
+				</div>
 
 				<MetadataTypeSelector
 					selectedMetadataTypes={selectedMetadataTypes}

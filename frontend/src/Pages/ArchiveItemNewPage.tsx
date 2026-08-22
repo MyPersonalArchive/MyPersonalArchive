@@ -30,6 +30,7 @@ type CreateResponse = {
 export const ArchiveItemNewPage = () => {
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
+	const [notes, setNotes] = useState<string | undefined>(undefined)
 	const [label] = useState<string>()
 	const [documentDate, setDocumentDate] = useState<string | undefined>(undefined)
 	const [localBlobs, setLocalBlobs] = useState<({ fileName: string, fileData: Blob }[])>([])
@@ -49,6 +50,7 @@ export const ArchiveItemNewPage = () => {
 		const createRequest = {
 			title,
 			tags,
+			notes,
 			existingBlobIds: existingBlobIds.map(b => b.id),
 			metadata,
 			label,
@@ -106,6 +108,16 @@ export const ArchiveItemNewPage = () => {
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="tags">Tags</label>
 					<TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={Array.from(allTags)} />
+				</div>
+
+				<div className="aligned-labels-and-inputs">
+					<label htmlFor="notes">Notes</label>
+					<textarea
+						className="input"
+						id="notes"
+						value={notes}
+						onChange={event => setNotes(event.target.value)}
+					/>
 				</div>
 
 				<MetadataTypeSelector

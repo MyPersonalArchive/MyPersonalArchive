@@ -109,22 +109,12 @@ public class DemoDataGenerator
 					{
 						var title = $"{first} {second} {third} {fourth}";
 						var tags = data.Tags.OrderBy(x => rng.Next()).Take(rng.Next(0, 7));
+						var notes = $"This is a note for {title}. It was generated for tenant {data.TenantId} by the demo data generator.";
 						var username = data.Usernames.OrderBy(x => rng.Next()).First();
 
 						var createdAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440));
-						var item = new
-						{
-							Id = Guid.NewGuid(),
-							Title = title,
-							Tags = tags,
-							BlobIds = new List<Guid> { },
-							CreatedByUsername = username,
-							CreatedAt = createdAt,
-							LastUpdated = createdAt,
-							Metadata = new JsonObject() { }
-						};
 
-						await archiveItemCommandService.CreateArchiveItem(item.Title, item.Tags, new(), item.BlobIds, []);
+						await archiveItemCommandService.CreateArchiveItem(title, tags, notes, new(), [], []);
 
 						count++;
 					}

@@ -16,6 +16,7 @@ public class GetArchiveItem : IQuery<GetArchiveItem, GetArchiveItem.Response>
 		public Guid Id { get; set; }
 		public required string Title { get; set; }
 		public required IEnumerable<string> Tags { get; set; }
+		public required string? Notes { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required DateTimeOffset CreatedAt { get; set; }
 		public required JsonObject Metadata { get; set; }
@@ -39,6 +40,7 @@ public class ListArchiveItems : IQuery<ListArchiveItems, IEnumerable<ListArchive
 		public Guid Id { get; set; }
 		public required string Title { get; set; }
 		public required IEnumerable<string> Tags { get; set; }
+		public required string? Notes { get; set; }
 		public DateTimeOffset? DocumentDate { get; set; }
 		public required DateTimeOffset CreatedAt { get; set; }
 		public required JsonObject Metadata { get; set; }
@@ -100,6 +102,7 @@ public class ArchiveItemsHandler :
 			Id = archiveItem.Id,
 			Title = archiveItem.Title,
 			Tags = [.. archiveItem.Tags],
+			Notes = archiveItem.Notes,
 			Metadata = archiveItem.Metadata,
 			CreatedAt = archiveItem.CreatedAt,
 			DocumentDate = archiveItem.DocumentDate,
@@ -122,6 +125,7 @@ public class ArchiveItemsHandler :
 				Id = archiveItem.Id,
 				Title = archiveItem.Title,
 				Tags = archiveItem.Tags,
+				Notes = archiveItem.Notes,
 				DocumentDate = archiveItem.DocumentDate,
 				CreatedAt = archiveItem.CreatedAt,
 				Metadata = archiveItem.Metadata,

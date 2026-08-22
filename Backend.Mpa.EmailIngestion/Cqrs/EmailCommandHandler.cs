@@ -91,7 +91,7 @@ public class EmailCommandHandler :
 				uploadedBlobs.Add((stream, mimePart.FileName ?? attachmentReference.FileName, mimePart.ContentType.MimeType));
 			}
 
-			await _archiveItemCommandService.CreateArchiveItem(title, [], metadata, [], uploadedBlobs);
+			await _archiveItemCommandService.CreateArchiveItem(title, [], null, metadata, [], uploadedBlobs);
 		}
 	}
 
