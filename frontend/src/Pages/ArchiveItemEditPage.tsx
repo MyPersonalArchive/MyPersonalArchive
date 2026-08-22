@@ -14,12 +14,11 @@ import { RoutePaths } from "../RoutePaths"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
-import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
 import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
-import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
@@ -167,27 +166,45 @@ export const ArchiveItemEditPage = () => {
 					/>
 				</div>
 
-				<MetadataTypeSelector
+				{/* <MetadataTypeSelector
 					selectedMetadataTypes={selectedMetadataTypes}
 					allMetadataTypes={allMetadataTypes}
 					dispatch={dispatch(MetadataControlPath)}
-				/>
+				/> */}
 
 				{
-					allMetadataTypes
-						.filter(({ path }) => selectedMetadataTypes.has(path as string))
-						.map((metadataType) => (
-							<div key={metadataType.path as string} className="aligned-labels-and-inputs">
-								<span>{metadataType.displayName}</span>
-								<div className="w-full">
-									<MetadataElement
-										metadataType={metadataType}
-										metadata={metadata}
-										dispatch={dispatch(metadataType.path)}
-									/>
-								</div>
-							</div>
-						))
+					allMetadataTypes.map((metadataType) => (
+						<div className="w-full my-4">
+							{
+								metadataType.path in metadata
+									? <div className="has-[.delete-metadata-type:hover]:bg-red-100!">
+										<div className="flex flex-row gap-2">
+											Data for {metadataType.displayName}
+											<button type="button"
+												className="text-gray-400 delete-metadata-type hover:text-red-500"
+												onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
+											>
+												<FontAwesomeIcon icon={faTrash} fixedWidth/>
+											</button>
+										</div>
+										<MetadataElement
+											metadataType={metadataType}
+											metadata={metadata}
+											dispatch={dispatch(metadataType.path)}
+										/>
+									</div>
+									: <div className="flex flex-row gap-2">
+										<button type="button"
+											className="flex flex-row gap-2"
+											onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
+										>
+											<div>Data for {metadataType.displayName}</div>
+											<FontAwesomeIcon icon={faPlus} fixedWidth/>
+										</button>
+									</div>
+							}
+						</div>
+					))
 				}
 
 				<FileDropZone showUnallocatedBlobs={true}

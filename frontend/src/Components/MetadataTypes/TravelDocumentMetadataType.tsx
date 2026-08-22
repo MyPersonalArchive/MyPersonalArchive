@@ -131,7 +131,7 @@ const Component = (props: MetadataComponentProps) => {
 		<div className="flex flex-row flex-wrap gap-4">
 			{dnd.rows.map(({ rowType, data: leg }, index) => rowType === "item-row"
 				? <div key={index}
-					className="card w-71 h-42 cursor-default group grid grid-cols-2 p-2 has-[.trash:hover]:bg-red-100!"
+					className="card w-71 h-42 cursor-default group grid grid-cols-2 p-2 has-[.delete-leg:hover]:bg-red-100!"
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}
@@ -145,27 +145,26 @@ const Component = (props: MetadataComponentProps) => {
 							{/* <FontAwesomeIcon icon={faGripVertical} fixedWidth /> */}
 						</span>
 						<div className="stack-horizontal to-the-right">
-							<button type="button" className="text-gray-400 group-hover:text-red-500 trash" onClick={() => { dispatch({ action: "REMOVE_LEG", index }) }}>
+							<button type="button" className="text-gray-400 group-hover:text-red-500 delete-leg" onClick={() => { dispatch({ action: "REMOVE_LEG", index }) }}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</div>
 					</div>
 
 					<div>
-						<span className="text-gray-400 text-xs">Booking ref</span>
-						<input type="text" className="input w-25" value={leg.bookingRef} onChange={e => dispatch({ action: "UPDATE_LEG_BOOKINGREF", index, bookingRef: e.target.value })} />
-					</div>
-					<div>
 						<span className="text-gray-400 text-xs">Route #</span>
 						<input type="text" className="input w-25" value={leg.routeNumber} onChange={e => dispatch({ action: "UPDATE_LEG_ROUTENUMBER", index, routeNumber: e.target.value })} />
 					</div>
-
 					<div>
-						<span className="text-gray-400 text-xs">Departure from</span>
-						<input type="text" className="input w-33" value={leg.departureFrom} onChange={e => dispatch({ action: "UPDATE_LEG_DEPARTUREFROM", index, departureFrom: e.target.value })} />
+						<span className="text-gray-400 text-xs">Booking ref</span>
+						<input type="text" className="input w-25" value={leg.bookingRef} onChange={e => dispatch({ action: "UPDATE_LEG_BOOKINGREF", index, bookingRef: e.target.value })} />
 					</div>
-					<div>
-						<span className="text-gray-400 text-xs">Arrival at</span>
+
+					<label className="text-gray-400 text-xs">Departure from</label>
+					<label className="text-gray-400 text-xs">Arrival at</label>
+
+					<div className="grouped col-span-2">
+						<input type="text" className="input w-33" value={leg.departureFrom} onChange={e => dispatch({ action: "UPDATE_LEG_DEPARTUREFROM", index, departureFrom: e.target.value })} />
 						<input type="text" className="input w-33" value={leg.arrivalAt} onChange={e => dispatch({ action: "UPDATE_LEG_ARRIVALAT", index, arrivalAt: e.target.value })} />
 					</div>
 				</div>
