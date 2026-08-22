@@ -27,8 +27,23 @@ export const storedFiltersMimeTypeConverters: MimeTypeConverterArray<StoredFilte
 	},
 	{
 		mimeType: "application/stored-filter-definition+json",
-		convertDragDataToPayload: (filter, _) => (filter),
-		convertDropPayloadToAction: (_1, _2, filter) => ({ action: "ADD_FILTER", name: `Copy of ${filter.name}`, filterDefinition: filter.filterDefinition })
+		convertDragDataToPayload: (filter, _) => ({
+			...filter,
+			filterDefinition: {
+				...filter.filterDefinition,
+				metadataTypes: Array.from(filter.filterDefinition.metadataTypes)
+			}
+		}),
+		convertDropPayloadToAction: (_1, _2, filter) => {
+			return {
+				action: "ADD_FILTER",
+				name: `Copy of ${filter.name}`,
+				filterDefinition: {
+					...filter.filterDefinition,
+					metadataTypes: new Set(filter.filterDefinition.metadataTypes)
+				}
+			}
+		}
 	},
 	{
 		mimeType: "text",
