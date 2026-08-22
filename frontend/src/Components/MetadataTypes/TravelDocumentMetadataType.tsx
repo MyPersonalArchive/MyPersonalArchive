@@ -128,80 +128,74 @@ const Component = (props: MetadataComponentProps) => {
 	const isLastLegEmpty = state.legs.length > 0 && !state.legs.at(-1)?.bookingRef && !state.legs.at(-1)?.routeNumber && !state.legs.at(-1)?.departureFrom && !state.legs.at(-1)?.arrivalAt
 
 	return (<>
-
-		<table className="table table-compact w-full my-2">
-			<thead>
-				<tr>
-					<th className=""></th>
-					<th className="">Route number</th>
-					<th className="">Departure from</th>
-					<th className="">Arrival at</th>
-					<th className="">Reference #</th>
-					<th className=""></th>
-				</tr>
-			</thead>
-			<tbody>
-				{dnd.rows.map(({ rowType, data: leg }, index) => rowType === "item-row"
-					? <tr key={index}
-						className="cursor-default group"
-						draggable={true}
-						onMouseDown={dnd.mouseDown}
-						onMouseUp={dnd.mouseUp}
-						onDragStart={dnd.dragStart(index, leg)}
-						onDragOver={dnd.dragOver(index)}
-						onDragEnd={dnd.dragEnd}
-						ref={elmnt => { dnd.setElementRef(elmnt, index) }}
-					>
-						<td className="whitespace-nowrap">
-							<span className="draghandle cursor-grab text-gray-400 hover:text-gray-600 font-normal">
-								<FontAwesomeIcon icon={faGripVertical} fixedWidth />
-							</span>
-						</td>
-						<td>
-							<input type="text" className="input" value={leg.routeNumber} onChange={e => dispatch({ action: "UPDATE_LEG_ROUTENUMBER", index, routeNumber: e.target.value })} />
-						</td>
-						<td>
-							<input type="text" className="input" value={leg.departureFrom} onChange={e => dispatch({ action: "UPDATE_LEG_DEPARTUREFROM", index, departureFrom: e.target.value })} />
-						</td>
-						<td>
-							<input type="text" className="input" value={leg.arrivalAt} onChange={e => dispatch({ action: "UPDATE_LEG_ARRIVALAT", index, arrivalAt: e.target.value })} />
-						</td>
-						<td>
-							<input type="text" className="input" value={leg.bookingRef} onChange={e => dispatch({ action: "UPDATE_LEG_BOOKINGREF", index, bookingRef: e.target.value })} />
-						</td>
-						<td>
-							<button type="button" className="text-gray-400 group-hover:text-red-500" onClick={() => { dispatch({ action: "REMOVE_LEG", index }) }}>
+		<div className="flex flex-row flex-wrap gap-4">
+			{dnd.rows.map(({ rowType, data: leg }, index) => rowType === "item-row"
+				? <div key={index}
+					className="card w-71 h-42 cursor-default group grid grid-cols-2 p-2 has-[.trash:hover]:bg-red-100!"
+					draggable={true}
+					onMouseDown={dnd.mouseDown}
+					onMouseUp={dnd.mouseUp}
+					onDragStart={dnd.dragStart(index, leg)}
+					onDragOver={dnd.dragOver(index)}
+					onDragEnd={dnd.dragEnd}
+					ref={elmnt => { dnd.setElementRef(elmnt, index) }}
+				>
+					<div className="col-span-2 flex flex-row gap-2">
+						<span className="draghandle cursor-grab grip-background flex-1 h-6">
+							{/* <FontAwesomeIcon icon={faGripVertical} fixedWidth /> */}
+						</span>
+						<div className="stack-horizontal to-the-right">
+							<button type="button" className="text-gray-400 group-hover:text-red-500 trash" onClick={() => { dispatch({ action: "REMOVE_LEG", index }) }}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
-						</td>
-					</tr>
-					: // row.rowType === "drop-row"
-					<tr key={index}
-						style={{ width: dnd.draggedRect?.width, height: dnd.draggedRect?.height }}
-						onDragEnd={dnd.dragEnd}
-						onDragOver={e => e.preventDefault()}
-						onDrop={dnd.handleDrop(index)}
-						ref={elmnt => { dnd.setElementRef(elmnt, index) }}
-					>
-						<td colSpan={6} className="btn striped-background h-12.75">&nbsp;</td>
-					</tr>
-				)}
-				{(!isLastLegEmpty || isDragging(dnd.dragStatus)) &&
-					<tr className="h-12.75">
-						<td colSpan={6}>
-							<button type="button" className="w-full"
-								onDragOver={dropToCopy.dragOver(undefined as unknown as number)}
-								onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
-								onClick={() => dispatch({ action: "ADD_LEG", leg: { bookingRef: "", routeNumber: "", departureFrom: "", arrivalAt: "" } })}
-							>
-								<FontAwesomeIcon icon={faPlus} />
-							</button>
-						</td>
-					</tr>
-				}
-			</tbody>
+						</div>
+					</div>
 
-		</table>
+					<div>
+						<span className="text-gray-400 text-xs">Booking ref</span>
+						<input type="text" className="input w-25" value={leg.bookingRef} onChange={e => dispatch({ action: "UPDATE_LEG_BOOKINGREF", index, bookingRef: e.target.value })} />
+					</div>
+					<div>
+						<span className="text-gray-400 text-xs">Route #</span>
+						<input type="text" className="input w-25" value={leg.routeNumber} onChange={e => dispatch({ action: "UPDATE_LEG_ROUTENUMBER", index, routeNumber: e.target.value })} />
+					</div>
+
+					<div>
+						<span className="text-gray-400 text-xs">Departure from</span>
+						<input type="text" className="input w-33" value={leg.departureFrom} onChange={e => dispatch({ action: "UPDATE_LEG_DEPARTUREFROM", index, departureFrom: e.target.value })} />
+					</div>
+					<div>
+						<span className="text-gray-400 text-xs">Arrival at</span>
+						<input type="text" className="input w-33" value={leg.arrivalAt} onChange={e => dispatch({ action: "UPDATE_LEG_ARRIVALAT", index, arrivalAt: e.target.value })} />
+					</div>
+				</div>
+				: // row.rowType === "drop-row"
+				<div key={index}
+					className="striped-background"
+					style={{ width: dnd.draggedRect?.width, height: dnd.draggedRect?.height }}
+					onDragEnd={dnd.dragEnd}
+					onDragOver={e => e.preventDefault()}
+					onDrop={dnd.handleDrop(index)}
+					ref={elmnt => { dnd.setElementRef(elmnt, index) }}
+				>
+				</div>
+			)}
+			{(!isLastLegEmpty || isDragging(dnd.dragStatus)) &&
+				<button type="button"
+					className="card w-71 h-42"
+					onDragOver={dropToCopy.dragOver(undefined as unknown as number)}
+					onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
+					onClick={() => dispatch({ action: "ADD_LEG", leg: { bookingRef: "", routeNumber: "", departureFrom: "", arrivalAt: "" } })}
+				>
+					<div className="flex flex-col items-center justify-center">
+						<div className="text-7xl">
+							<FontAwesomeIcon icon={faPlus} />
+						</div>
+						<div className="text-sm">Invite user</div>
+					</div>
+				</button>
+			}
+		</div>
 	</>)
 }
 
