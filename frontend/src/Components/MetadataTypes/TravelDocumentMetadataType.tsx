@@ -1,14 +1,16 @@
 import { useRef } from "react"
 import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
-import { changeAtIndex, removeAtIndex } from "../../Utils/array-helpers"
+import { changeAtIndex, moveInArray, removeAtIndex } from "../../Utils/array-helpers"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faGripVertical, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { isDragging, MimeTypeConverterArray, useDrop, useSortableDragDrop } from "../DragDropHelpers"
 
 type Command =
 	| { action: "INIT" }
 	| { action: "METADATA_LOADED", metadata: State }
 	| { action: "SET_NOTES", notes: string }
 	| { action: "ADD_LEG", leg: Leg }
+	| { action: "MOVE_LEG", fromIndex: number, toIndex: number }
 	| { action: "UPDATE_LEG_BOOKINGREF", index: number, bookingRef: string }
 	| { action: "UPDATE_LEG_ROUTENUMBER", index: number, routeNumber: string }
 	| { action: "UPDATE_LEG_DEPARTUREFROM", index: number, departureFrom: string }
@@ -43,6 +45,12 @@ const reducer = (state: State, command: Command): State => {
 			return {
 				...state,
 				legs: [...state.legs, command.leg]
+			}
+
+		case "MOVE_LEG":
+			return {
+				...state,
+				legs: moveInArray(state.legs, command.fromIndex, command.toIndex)
 			}
 
 		case "UPDATE_LEG_BOOKINGREF":
@@ -80,11 +88,43 @@ const reducer = (state: State, command: Command): State => {
 	}
 }
 
+
+export const travelDocumentLegMimeTypeConverters: MimeTypeConverterArray<Leg, number> = [
+	{
+		mimeType: "application/travel-document-leg-index+json",
+		convertDragDataToPayload: (_, index) => ({ index }),
+		convertDropPayloadToAction: (fromIndex, toIndex, _) => ({ action: "MOVE_LEG", fromIndex, toIndex })
+	},
+	{
+		mimeType: "application/travel-document-leg-definition+json",
+		convertDragDataToPayload: (leg, _) => (leg),
+		convertDropPayloadToAction: (_1, _2, leg) => ({ action: "ADD_LEG", leg })
+	},
+	{
+		mimeType: "text",
+		convertDragDataToPayload: (leg, _) => `${leg.bookingRef} (${leg.routeNumber} from ${leg.departureFrom} to ${leg.arrivalAt})`,
+	}
+]
+
+
 const Component = (props: MetadataComponentProps) => {
 	const state = props.state as State
 	const dispatch = props.dispatch as React.Dispatch<Command>
 
-	const areThereEmptyLegs = state.legs.some(leg => !leg.bookingRef && !leg.routeNumber && !leg.departureFrom && !leg.arrivalAt)
+	const dnd = useSortableDragDrop<Leg, HTMLDivElement>(
+		".draghandle",
+		travelDocumentLegMimeTypeConverters,
+		state.legs,
+		dispatch
+	)
+
+	const dropToCopy = useDrop<Leg, number>(
+		travelDocumentLegMimeTypeConverters.filter(converter => converter.mimeType === "application/travel-document-leg-definition+json"),
+		dispatch
+	)
+
+
+	// const areThereEmptyLegs = state.legs.some(leg => !leg.bookingRef && !leg.routeNumber && !leg.departureFrom && !leg.arrivalAt)
 	const isLastLegEmpty = state.legs.length > 0 && !state.legs.at(-1)?.bookingRef && !state.legs.at(-1)?.routeNumber && !state.legs.at(-1)?.departureFrom && !state.legs.at(-1)?.arrivalAt
 
 	return (<>
@@ -92,8 +132,8 @@ const Component = (props: MetadataComponentProps) => {
 		<table className="table table-compact w-full my-2">
 			<thead>
 				<tr>
-					<th className="">#</th>
-					<th className="">Flight</th>
+					<th className=""></th>
+					<th className="">Route number</th>
 					<th className="">Departure from</th>
 					<th className="">Arrival at</th>
 					<th className="">Reference #</th>
@@ -101,17 +141,59 @@ const Component = (props: MetadataComponentProps) => {
 				</tr>
 			</thead>
 			<tbody>
-				{state.legs.map((leg, index) => (
-					<Row key={index}
-						leg={leg}
-						index={index}
-						dispatch={dispatch}
-					/>
-				))}
-				{!isLastLegEmpty &&
+				{dnd.rows.map(({ rowType, data: leg }, index) => rowType === "item-row"
+					? <tr key={index}
+						className="cursor-default group"
+						draggable={true}
+						onMouseDown={dnd.mouseDown}
+						onMouseUp={dnd.mouseUp}
+						onDragStart={dnd.dragStart(index, leg)}
+						onDragOver={dnd.dragOver(index)}
+						onDragEnd={dnd.dragEnd}
+						ref={elmnt => { dnd.setElementRef(elmnt, index) }}
+					>
+						<td className="whitespace-nowrap">
+							<span className="draghandle cursor-grab text-gray-400 hover:text-gray-600 font-normal">
+								<FontAwesomeIcon icon={faGripVertical} fixedWidth />
+							</span>
+						</td>
+						<td>
+							<input type="text" className="input" value={leg.routeNumber} onChange={e => dispatch({ action: "UPDATE_LEG_ROUTENUMBER", index, routeNumber: e.target.value })} />
+						</td>
+						<td>
+							<input type="text" className="input" value={leg.departureFrom} onChange={e => dispatch({ action: "UPDATE_LEG_DEPARTUREFROM", index, departureFrom: e.target.value })} />
+						</td>
+						<td>
+							<input type="text" className="input" value={leg.arrivalAt} onChange={e => dispatch({ action: "UPDATE_LEG_ARRIVALAT", index, arrivalAt: e.target.value })} />
+						</td>
+						<td>
+							<input type="text" className="input" value={leg.bookingRef} onChange={e => dispatch({ action: "UPDATE_LEG_BOOKINGREF", index, bookingRef: e.target.value })} />
+						</td>
+						<td>
+							<button type="button" className="text-gray-400 group-hover:text-red-500" onClick={() => { dispatch({ action: "REMOVE_LEG", index }) }}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</td>
+					</tr>
+					: // row.rowType === "drop-row"
+					<tr key={index}
+						style={{ width: dnd.draggedRect?.width, height: dnd.draggedRect?.height }}
+						onDragEnd={dnd.dragEnd}
+						onDragOver={e => e.preventDefault()}
+						onDrop={dnd.handleDrop(index)}
+						ref={elmnt => { dnd.setElementRef(elmnt, index) }}
+					>
+						<td colSpan={6} className="btn striped-background h-12.75">&nbsp;</td>
+					</tr>
+				)}
+				{(!isLastLegEmpty || isDragging(dnd.dragStatus)) &&
 					<tr className="h-12.75">
 						<td colSpan={6}>
-							<button type="button" className="w-full" onClick={() => dispatch({ action: "ADD_LEG", leg: { bookingRef: "", routeNumber: "", departureFrom: "", arrivalAt: "" } })}>
+							<button type="button" className="w-full"
+								onDragOver={dropToCopy.dragOver(undefined as unknown as number)}
+								onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
+								onClick={() => dispatch({ action: "ADD_LEG", leg: { bookingRef: "", routeNumber: "", departureFrom: "", arrivalAt: "" } })}
+							>
 								<FontAwesomeIcon icon={faPlus} />
 							</button>
 						</td>
@@ -121,38 +203,6 @@ const Component = (props: MetadataComponentProps) => {
 
 		</table>
 	</>)
-}
-
-
-type RowProps = {
-	leg: Leg,
-	index: number,
-	dispatch: React.Dispatch<Command>,
-}
-const Row = ({ leg, index, dispatch }: RowProps) => {
-	const firstInputRef = useRef<HTMLInputElement>(null)
-
-	return (
-		<tr className="group">
-			<td>{index + 1}</td>
-			<td>
-				<input type="text" className="input" value={leg.routeNumber} onChange={e => dispatch({ action: "UPDATE_LEG_ROUTENUMBER", index, routeNumber: e.target.value })} />
-			</td>
-			<td>
-				<input type="text" className="input" value={leg.departureFrom} onChange={e => dispatch({ action: "UPDATE_LEG_DEPARTUREFROM", index, departureFrom: e.target.value })} />
-			</td>
-			<td>
-				<input type="text" className="input" value={leg.arrivalAt} onChange={e => dispatch({ action: "UPDATE_LEG_ARRIVALAT", index, arrivalAt: e.target.value })} />
-			</td>
-			<td>
-				<input type="text" className="input" value={leg.bookingRef} onChange={e => dispatch({ action: "UPDATE_LEG_BOOKINGREF", index, bookingRef: e.target.value })} ref={firstInputRef} />
-			</td>
-			<td>
-				<button type="button" className="text-gray-400 group-hover:text-red-500" onClick={() => { dispatch({ action: "REMOVE_LEG", index }) }}>
-					<FontAwesomeIcon icon={faTrash} />
-				</button>
-			</td>
-		</tr>)
 }
 
 

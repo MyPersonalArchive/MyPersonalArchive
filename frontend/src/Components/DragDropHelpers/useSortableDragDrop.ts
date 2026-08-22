@@ -12,6 +12,7 @@ type DragStatus = {
 
 const emptyDragOverStatus: DragStatus = { fromIndex: undefined, currentIndex: undefined, isDragHandle: false }
 
+export const isDragging = (dragStatus: DragStatus) => dragStatus.fromIndex !== undefined && dragStatus.currentIndex !== undefined
 
 export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 	dragHandleQuerySelector: string,

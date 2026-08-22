@@ -74,7 +74,6 @@ const reducer = (state: StoredFilter[], command: StoredFiltersCommand): StoredFi
 			return moveInArray(state, command.fromIndex, command.toIndex)
 
 		case "ADD_FILTER":
-
 			return [...state, {
 				id: crypto.randomUUID(),
 				name: command.name,
