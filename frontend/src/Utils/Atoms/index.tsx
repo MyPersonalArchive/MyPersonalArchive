@@ -4,44 +4,10 @@ import { atomWithStorage } from "jotai/utils"
 
 export const lastLoggedInUsernameAtom = atomWithStorage<string | null>("lastLoggedInUsername", null, undefined, { getOnInit: true })
 export const lastRememberMeCheckedAtom = atomWithStorage<boolean>("lastRememberMeChecked", false, undefined, { getOnInit: true })
-export const lastSelectedTenantIdAtom = atomWithStorage<number | null>("lastSelectedTenantId", null, undefined, { getOnInit: false })
 
 export const signalRConnectionAtom = atom<HubConnection | undefined>(undefined)
 
 
-export type EmailSummary = {
-	uniqueId: number
-	subject: string
-	previewText: string
-	receivedTime: string
-	from: EmailAddress[]
-	to: EmailAddress[]
-	attachments: EmailAttachment[]
-	body?: string
-	htmlBody?: string
-}
-
-
-export type EmailContents = {
-	body?: string
-	htmlBody?: string
-}
-
-export type FullEmail = EmailSummary & EmailContents
-
-export type EmailAddress = {
-	name?: string
-	emailAddress: string
-}
-
-export type EmailAttachment = {
-	fileName: string
-	contentType: string
-	partSpecifier: string
-}
-
-export const foldersByExternalAccountAtom = atom<Map<string, string[] | undefined>>(new Map())
-export const selectedFolderByExternalAccountAtom = atom<Map<string, string | undefined>>(new Map())
-export const emailsByExternalAccountAndFolderAtom = atom<Map<string, Map<string, FullEmail[]>>>(new Map())
-export const isStreamingEmailsAtom = atom<Map<string, boolean>>(new Map())
-
+export type QuickRegistrationMode = "createAndMove" | "createAndEdit"
+export const quickRegistrationModeAtom = atomWithStorage<QuickRegistrationMode | null>("quickRegistrationMode", "createAndEdit", undefined, { getOnInit: true })
+export const quickRegistrationToolWindowIsOpenAtom = atomWithStorage<boolean>("quickRegistrationToolWindowIsOpen", true, undefined, { getOnInit: true })

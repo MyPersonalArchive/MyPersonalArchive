@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { Dialog } from "../Components/Dialog"
 import { LightBox } from "../Components/LightBox"
+import { FloatingToolWindow } from "../Components/FloatingToolWindow"
+import logoImg from "../assets/receiptly_logo.png"
 
 
 export const ComponentTestPage = () => {
@@ -39,6 +41,7 @@ export const ComponentTestPage = () => {
 const ComponentTester = () => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const [isLightBoxOpen, setIsLightboxOpen] = useState(false)
+	const [isFloatingWindowOpen, setIsFloatingWindowOpen] = useState(false)
 
 	return (
 		<>
@@ -59,6 +62,7 @@ const ComponentTester = () => {
 			<div className="flex flex-row gap-2 my-4 items-baseline">
 				<button className="btn btn-primary" type="button" onClick={() => setIsDialogOpen(true)}>Open dialog</button>
 				<button className="btn btn-primary" type="button" onClick={() => setIsLightboxOpen(true)}>Open lightbox</button>
+				<button className="btn btn-primary" type="button" onClick={() => setIsFloatingWindowOpen(true)}>Open floating window</button>
 			</div>
 
 			{isDialogOpen && <Dialog onClose={() => setIsDialogOpen(false)} closeOnEscape={true}>
@@ -73,11 +77,30 @@ const ComponentTester = () => {
 			</Dialog>}
 
 			{isLightBoxOpen && <LightBox onClose={() => setIsLightboxOpen(false)}>
-				<div className="bg-white text-black p-4">
-					<p className="text-center">Use the <span className="code">&lt;LightBox&gt;</span> component to show content in a modal overlay.</p>
-					<hr />
-					<p className="text-center">Press <kbd>Esc</kbd> or click anywhere to close.</p>
-				</div>
+				<>
+					<FloatingToolWindow title="Floating window" onClose={() => setIsFloatingWindowOpen(false)}>
+						<p>Drag this window around by its header, resize it from the bottom-right corner, and scroll this content if it overflows.</p>
+						<img src={logoImg} alt="" className="my-2 w-32" />
+						<p>Any component can go inside, e.g.:</p>
+						<button className="btn" type="button">A button</button>
+						<p>Here's some extra text to force the content to overflow so scrolling can be tested:</p>
+						<ul className="list-disc pl-6">
+							<li>List item one</li>
+							<li>List item two</li>
+							<li>List item three</li>
+							<li>List item four</li>
+							<li>List item five</li>
+							<li>List item six</li>
+							<li>List item seven</li>
+							<li>List item eight</li>
+						</ul>
+					</FloatingToolWindow><div className="bg-white text-black p-4">
+						<p className="text-center">Use the <span className="code">&lt;LightBox&gt;</span> component to show content in a modal overlay.</p>
+						<hr />
+						<p className="text-center">Press <kbd>Esc</kbd> or click anywhere to close.</p>
+					</div>
+				</>
+
 			</LightBox>}
 
 			{isFloatingWindowOpen && <FloatingToolWindow title="Floating window" onClose={() => setIsFloatingWindowOpen(false)}>

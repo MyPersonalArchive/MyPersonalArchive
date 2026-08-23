@@ -124,7 +124,7 @@ export const FloatingToolWindow = ({
 		>
 			<div className="floating-window-header" id={titleId} onPointerDown={handleHeaderPointerDown}>
 				<span>{title}</span>
-				
+				<span className="grip-background flex-1" aria-hidden="true">&nbsp;</span>
 				{onClose && (
 					<button className="floating-window-close" type="button" aria-label="Close" title="Close" onClick={onClose}>
 						<FontAwesomeIcon icon={faClose} />
