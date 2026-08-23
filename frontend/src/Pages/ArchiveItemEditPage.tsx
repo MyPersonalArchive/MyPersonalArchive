@@ -22,6 +22,7 @@ import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faUpRi
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
+import { useSaveShortcut } from "../Utils/Hooks/useSaveShortcut"
 
 type GetResponse = {
 	id: UUID
@@ -57,7 +58,7 @@ export const ArchiveItemEditPage = () => {
 
 	const allTags = useAtomValue(tagsAtom)
 
-	const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
+	const { metadata, dispatch } = useMetadata(allMetadataTypes)
 
 	const params = useParams()
 	const navigate = useNavigate()
@@ -77,9 +78,7 @@ export const ArchiveItemEditPage = () => {
 			})
 	}, [])
 
-	const save = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault()
-
+	const save = () => {
 		const formData = new FormData()
 		const updateRequest = {
 			id: id!,
@@ -101,6 +100,8 @@ export const ArchiveItemEditPage = () => {
 
 		navigate(RoutePaths.Archive.List)
 	}
+
+	useSaveShortcut(() => {save() }, true)
 
 	const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		event.preventDefault()
@@ -129,7 +130,7 @@ export const ArchiveItemEditPage = () => {
 
 	return (
 		<>
-			<form onSubmit={save}>
+			<form onSubmit={e =>{ e.preventDefault(); save() }}>
 				<header className="header">
 					<h1>Edit item</h1>
 				</header>
