@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
-import { useAtomValue } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import { BlobMetadata, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "../Components/PreviewList"
 import { DimensionEnum } from "../Components/Preview"
@@ -10,12 +10,13 @@ import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { formatDate, formatSize } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
-import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
 import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
+import { QuickRegistrationMode, quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
 
 
 export const BlobListPage = () => {
@@ -117,23 +118,14 @@ export const BlobListPage = () => {
 				}
 				maximizedPreviewTemplate={
 					(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-						<LightBox key={blob.id} onClose={() => minimize()}>
-							<div className="w-full h-full flex justify-center action-bar-host">
-								<ToolWindow />
-								<Preview blob={blob} dimension={DimensionEnum.full} />
-								<div className="action-bar">
-									<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
-										<FontAwesomeIcon icon={faArrowLeft} size="1x" />
-									</button>
-									<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
-										<FontAwesomeIcon icon={faArrowRight} size="1x" />
-									</button>
-									<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
-										<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-									</button>
-								</div>
-							</div>
-						</LightBox>
+						<MaximizedBlobPreview
+							blob={blob}
+							minimize={minimize}
+							canMovePrevious={canMovePrevious}
+							canMoveNext={canMoveNext}
+							movePrevious={movePrevious}
+							moveNext={moveNext}
+						/>
 				}
 			/>
 
@@ -142,19 +134,105 @@ export const BlobListPage = () => {
 }
 
 
-const ToolWindow = () => {
+const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: {
+	blob: BlobMetadata
+	minimize: () => void
+	canMovePrevious: boolean
+	canMoveNext: boolean
+	movePrevious: () => void
+	moveNext: () => void
+}) => {
+	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickRegistrationToolWindowIsOpenAtom)
+
 	return (
-		<FloatingToolWindow title="Tool window" className="flex flex-col gap-2 p-2" initialPosition={{ x: 100, y: 100 }} initialSize={{ width: 300, height: 200 }}>
+		<LightBox key={blob.id} onClose={() => minimize()} closeOnEscape={!toolWindowIsOpen}>
+			<div className="w-full h-full flex justify-center action-bar-host">
+				{toolWindowIsOpen &&
+					<ToolWindow
+						canMoveNext={canMoveNext}
+						moveNext={moveNext}
+						setToolWindowIsOpen={setToolWindowIsOpen}
+					/>
+				}
+				<Preview blob={blob} dimension={DimensionEnum.full} />
+				<div className="action-bar">
+					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
+						<FontAwesomeIcon icon={faToolbox} size="1x" />
+					</button>
+					<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+						<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+					</button>
+					<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+						<FontAwesomeIcon icon={faArrowRight} size="1x" />
+					</button>
+					<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
+						<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+					</button>
+				</div>
+			</div>
+		</LightBox>)
+}
+
+
+type ToolWindowProps = {
+	canMoveNext: boolean
+	moveNext: () => void
+	setToolWindowIsOpen?: (isOpen: boolean) => void
+}
+const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen }: ToolWindowProps) => {
+	const [registrationMode, setRegistrationMode] = useAtom(quickRegistrationModeAtom)
+	const firstInputRef = useRef<HTMLInputElement>(null)
+	useEffect(() => {
+		firstInputRef.current?.focus()
+	}, [])
+
+	const register = (metadataType: string) => {
+		switch (registrationMode) {
+			case "createAndEdit":
+				// Navigate to edit mode
+				//TODO: 
+				alert(`Navigate to edit mode (not implemented yet): ${metadataType}`)
+				break
+
+			case "createAndMove":
+				if (canMoveNext) moveNext()
+				break
+		}
+	}
+
+	return (
+		<FloatingToolWindow title="Quick create archive item"
+			className="flex flex-col gap-2 p-2"
+			initialPosition={{ x: 100, y: 100 }}
+			initialSize={{ width: 360, height: 300 }}
+			minWidth={268} minHeight={171}
+			onClose={() => { setToolWindowIsOpen(false) }}
+			closeOnEscape={true}
+		>
+			<input ref={firstInputRef} type="text" className="input w-full" placeholder="Name of archived item" />
+			<div className="flex flex-row gap-2">
+				<button className="btn flex-1" onClick={() => register("receipt")}>receipt</button>
+				<button className="btn flex-1" onClick={() => register("travel-document")}>travel document</button>
+			</div>
+			<button className="btn" disabled={!canMoveNext} onClick={() => { moveNext() }} title="Move to next without registering">Move to next without registering</button>
+			<div className="flex-1"></div>
 			<label>
-				<input type="checkbox" /> Receipt
+				<input type="radio"
+					name="navigationMode"
+					value="createAndMove"
+					checked={registrationMode === "createAndMove"}
+					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")} /> Just create it and move to next
 			</label>
 			<label>
-				<input type="checkbox" /> Travel document
+				<input type="radio"
+					name="navigationMode"
+					value="createAndEdit"
+					checked={registrationMode === "createAndEdit"}
+					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")} /> Create and enter edit mode
 			</label>
 
-			<button className="btn">Register item</button>
 			<div className="todo">
-				//TODO: After registering, open the same blob in ArchiveItemEditPage, so that the user can fill in the rest of the details
+				//TODO: store the navigation mode in local storage and use it as default for next time
 			</div>
 		</FloatingToolWindow>
 	)

@@ -1,7 +1,7 @@
 import { useAtom } from "jotai"
 import { useApiClient } from "./useApiClient"
 import { UUID } from "crypto"
-import { EmailContents, EmailSummary, EmailAttachment, emailsByExternalAccountAndFolderAtom, foldersByExternalAccountAtom, selectedFolderByExternalAccountAtom, FullEmail, isStreamingEmailsAtom } from "../Atoms"
+import { EmailContents, EmailSummary, EmailAttachment, emailsByExternalAccountAndFolderAtom, foldersByExternalAccountAtom, selectedFolderByExternalAccountAtom, FullEmail, isStreamingEmailsAtom } from "../Atoms/EmailAtoms"
 
 
 // type FindAttachmentRequest = {
