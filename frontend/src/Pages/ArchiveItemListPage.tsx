@@ -66,7 +66,7 @@ export const ArchiveItemListPage = () => {
 			{/* <Search /> */}
 			<StoredFilterSelector />
 
-			<div className="overflow-x-auto my-4">
+			<div className="overflow-x-auto my-4  border-t border-b sm:border-l sm:border-r border-gray-300 sm:rounded-lg">
 
 				{archiveItems?.filter(filterFn)
 					.toSorted((a, b) => a.title.localeCompare(b.title))
@@ -98,7 +98,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 	return (
 		<Link key={archiveItem.id}
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
-			className="block border border-gray-300 border-b-0 last:border-b first:rounded-t-lg last:rounded-b-lg px-2 py-1 bg-gray-50 hover:bg-white"
+			className="block border-gray-300 border-b last:border-b-0 px-2 py-1 bg-gray-50 hover:bg-white"
 		>
 			<div className="flex justify-between items-center mb-2">
 				<span className="link">
@@ -106,7 +106,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 					{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 				</span>
 				<span className="flex-1"></span>
-				{archiveItem.documentDate ? new Date(archiveItem.documentDate).toLocaleDateString() : ""}
+				{archiveItem.documentDate ? new Date(archiveItem.documentDate).toISOString().substring(0, 10) : ""}
 			</div>
 
 			<div className="mb-2">
