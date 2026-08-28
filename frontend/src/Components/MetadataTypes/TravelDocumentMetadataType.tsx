@@ -141,6 +141,7 @@ const Component = (props: MetadataComponentProps) => {
 					ref={elmnt => { dnd.setElementRef(elmnt, index) }}
 				>
 					<div className="col-span-2 flex flex-row gap-2">
+						<span className="text-gray-400 text-xs">Leg #{index + 1}</span>
 						<span className="draghandle cursor-grab grip-background flex-1 h-6">
 							{/* <FontAwesomeIcon icon={faGripVertical} fixedWidth /> */}
 						</span>
