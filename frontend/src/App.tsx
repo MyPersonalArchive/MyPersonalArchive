@@ -21,7 +21,6 @@ import { TenantAdminBillingPage } from "./Pages/TenantAdminBillingPage"
 import { TenantAdminUsersPage } from "./Pages/TenantAdminUsersPage"
 import { TenantAdminBackupPage } from "./Pages/TenantAdminBackupPage"
 import { TenantAdminLogsPage } from "./Pages/TenantAdminLogsPage"
-import { ListPage } from "./Pages/ListPage"
 
 
 const router = createBrowserRouter([
@@ -90,10 +89,6 @@ const router = createBrowserRouter([
 							{
 								path: RoutePaths.Profile,
 								element: <UserProfilePage />
-							},
-							{
-								path: RoutePaths.List,
-								element: <ListPage />
 							},
 							{
 								path: RoutePaths.Archive.List,

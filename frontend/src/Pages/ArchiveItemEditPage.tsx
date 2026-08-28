@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { UUID } from "crypto"
 import { TagsInput } from "../Components/TagsInput"
@@ -8,7 +8,7 @@ import { BlobDisplayInfo } from "../Components/Preview"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { tagsAtom } from "../Utils/Atoms/tagsAtom"
-import { useAtomValue } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
 import { allMetadataTypes } from "../Components/MetadataTypes"
@@ -18,12 +18,13 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { DatePicker } from "../Components/DatePicker"
 import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
-import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
 import { useSaveShortcut } from "../Utils/Hooks/useSaveShortcut"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
+import { quickEditToolWindowIsOpenAtom } from "../Utils/Atoms"
 
 type GetResponse = {
 	id: UUID
@@ -102,7 +103,7 @@ export const ArchiveItemEditPage = () => {
 		navigate(RoutePaths.Archive.List)
 	}
 
-	useSaveShortcut(() => {save() }, true)
+	useSaveShortcut(() => { save() }, true)
 
 	const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		event.preventDefault()
@@ -131,7 +132,7 @@ export const ArchiveItemEditPage = () => {
 
 	return (
 		<>
-			<form onSubmit={e =>{ e.preventDefault(); save() }}>
+			<form onSubmit={e => { e.preventDefault(); save() }}>
 				<header className="header">
 					<h1>Edit item</h1>
 				</header>
@@ -186,7 +187,7 @@ export const ArchiveItemEditPage = () => {
 												className="text-gray-400 delete-metadata-type hover:text-red-500"
 												onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
 											>
-												<FontAwesomeIcon icon={faTrash} fixedWidth/>
+												<FontAwesomeIcon icon={faTrash} fixedWidth />
 											</button>
 										</div>
 										<MetadataElement
@@ -201,7 +202,7 @@ export const ArchiveItemEditPage = () => {
 											onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
 										>
 											<div>Data for {metadataType.displayName}</div>
-											<FontAwesomeIcon icon={faPlus} fixedWidth/>
+											<FontAwesomeIcon icon={faPlus} fixedWidth />
 										</button>
 									</div>
 							}
@@ -238,26 +239,15 @@ export const ArchiveItemEditPage = () => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-								<LightBox key={blob.id} onClose={() => minimize()}>
-									<div className="w-full h-full flex justify-center action-bar-host">
-										<ToolWindow />
-										<Preview blob={blob} dimension={DimensionEnum.full} />
-										<div className="action-bar">
-											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
-												<FontAwesomeIcon icon={faArrowLeft} size="1x" />
-											</button>
-											<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
-												<FontAwesomeIcon icon={faArrowRight} size="1x" />
-											</button>
-											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
-												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-											</button>
-											<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
-												<FontAwesomeIcon icon={faTrash} size="1x" />
-											</button>
-										</div>
-									</div>
-								</LightBox>
+								<MaximizedBlobPreview
+									blob={blob}
+									minimize={minimize}
+									canMovePrevious={canMovePrevious}
+									canMoveNext={canMoveNext}
+									movePrevious={movePrevious}
+									moveNext={moveNext}
+									removeUnallocatedBlob={removeUnallocatedBlob}
+								/>
 						}
 					/>
 
@@ -350,17 +340,85 @@ export const ArchiveItemEditPage = () => {
 }
 
 
-const ToolWindow = () => {
+type MaximizedBlobPreviewProps = {
+	blob: BlobDisplayInfo // | LocalBlob
+	minimize: () => void
+	canMovePrevious: boolean
+	canMoveNext: boolean
+	movePrevious: () => void
+	moveNext: () => void
+	removeUnallocatedBlob: (blob: BlobDisplayInfo) => void
+}
+const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, removeUnallocatedBlob }: MaximizedBlobPreviewProps) => {
+	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickEditToolWindowIsOpenAtom)
+
+
+	return (
+		<LightBox key={blob.id} onClose={() => minimize()}>
+			<div className="w-full h-full flex justify-center action-bar-host">
+				{toolWindowIsOpen &&
+					<ToolWindow
+						canMoveNext={canMoveNext}
+						moveNext={moveNext}
+						setToolWindowIsOpen={setToolWindowIsOpen}
+					/>
+				}
+				<Preview blob={blob} dimension={DimensionEnum.full} />
+				<div className="action-bar">
+					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
+						<FontAwesomeIcon icon={faToolbox} size="1x" />
+					</button>
+
+					<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+						<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+					</button>
+					<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+						<FontAwesomeIcon icon={faArrowRight} size="1x" />
+					</button>
+					<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
+						<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+					</button>
+					<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
+						<FontAwesomeIcon icon={faTrash} size="1x" />
+					</button>
+				</div>
+			</div>
+		</LightBox>
+
+	)
+}
+
+
+type ToolWindowProps = {
+	canMoveNext: boolean
+	moveNext: () => void
+	setToolWindowIsOpen?: (isOpen: boolean) => void
+}
+const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen }: ToolWindowProps) => {
 	const [title, setTitle] = useState("")
 	const [tags, setTags] = useState<string[]>([])
 	const [documentDate, setDocumentDate] = useState("")
 	const allTags = useAtomValue(tagsAtom)
 
+
+	const firstInputRef = useRef<HTMLInputElement>(null)
+	useEffect(() => {
+		firstInputRef.current?.focus()
+	}, [])
+
 	return (
-		<FloatingToolWindow title="Tool window" initialPosition={{ x: 100, y: 100 }} initialSize={{ width: 300, height: 200 }}>
-			<div className="aligned-labels-and-inputs">
+		<FloatingToolWindow title="Quick edit archive item"
+			className="flex flex-col gap-2 p-2"
+			initialPosition={{ x: 100, y: 100 }}
+			initialSize={{ width: 360, height: 300 }}
+			minWidth={268} minHeight={171}
+			onClose={() => { setToolWindowIsOpen?.(false) }}
+			closeOnEscape={true}
+		>
+			<div>
 				<label htmlFor="title">Title</label>
 				<input type="text"
+					ref={firstInputRef}
 					className="input"
 					id="title" placeholder="" autoFocus data-1p-ignore
 					value={title}
@@ -368,20 +426,21 @@ const ToolWindow = () => {
 				/>
 			</div>
 
-			<div className="aligned-labels-and-inputs">
+			<div>
 				<label htmlFor="documentDate">Document date</label>
-
 				<DatePicker date={documentDate} setDate={setDocumentDate} />
 			</div>
 
-			<div className="aligned-labels-and-inputs">
+			<div>
 				<label htmlFor="tags">Tags</label>
 				<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} htmlId="tags" />
 			</div>
 
 			<div className="todo">
-				//TODO: After registering, open the same blob in ArchiveItemEditPage, so that the user can fill in the rest of the details
+				//TODO:<br/>
+				Show page or tab to edit each metadata type<br/>
 			</div>
+
 		</FloatingToolWindow>
 	)
 }

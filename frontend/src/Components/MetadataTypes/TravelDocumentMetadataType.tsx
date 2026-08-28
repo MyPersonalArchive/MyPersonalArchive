@@ -125,7 +125,7 @@ const Component = (props: MetadataComponentProps) => {
 
 
 	// const areThereEmptyLegs = state.legs.some(leg => !leg.bookingRef && !leg.routeNumber && !leg.departureFrom && !leg.arrivalAt)
-	const isLastLegEmpty = state.legs.length > 0 && !state.legs.at(-1)?.bookingRef && !state.legs.at(-1)?.routeNumber && !state.legs.at(-1)?.departureFrom && !state.legs.at(-1)?.arrivalAt
+	const isLastLegEmpty = state.legs?.length > 0 && !state.legs.at(-1)?.bookingRef && !state.legs.at(-1)?.routeNumber && !state.legs.at(-1)?.departureFrom && !state.legs.at(-1)?.arrivalAt
 
 	return (<>
 		<div className="flex flex-row flex-wrap gap-4">
