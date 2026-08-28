@@ -148,20 +148,19 @@ const ReceiptPill = (archiveItem: any) => {
 
 const TravelDocPill = (archiveItem: any) => {
 	const ConcatLegs = (legs: Array<{ flightNumber: string, departureFrom: string, arrivalAt: string }>) => {
-		const stops = legs.map(leg => [leg.departureFrom, leg.arrivalAt])
+		const arrayOfArrays : string[][] = []
+		legs.forEach(leg => {
+			const currentStage = arrayOfArrays.at(-1) ?? []
+			const lastLegArrival = currentStage.at(-1)
 
-		// if arrivalAt is the same as the next departureFrom, we can skip it and just show the first departureFrom and the last arrivalAt
-		// if arrivalAt is the different from the next departureFrom, we need to show it as a stop with a comma in between
-		if (stops.length === 0) return ""
-		let result = stops[0][0]
-		for (let i = 0; i < stops.length; i++) {
-			if (i > 0 && stops[i][0] === stops[i - 1][1]) {
-				result += ` -> ${stops[i][1]}`
-			} else if (i > 0) {
-				result += `, ${stops[i][0]} -> ${stops[i][1]}`
+			if(lastLegArrival === leg.departureFrom) {
+				currentStage.push(leg.arrivalAt)
+			} else {
+				arrayOfArrays.push([leg.departureFrom, leg.arrivalAt])
 			}
-		}
-		return result
+		})
+
+		return arrayOfArrays.map(stage => stage.join(" -> ")).join(", ")
 	}
 
 	return (

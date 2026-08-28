@@ -190,7 +190,7 @@ const Component = (props: MetadataComponentProps) => {
 						<div className="text-7xl">
 							<FontAwesomeIcon icon={faPlus} />
 						</div>
-						<div className="text-sm">Invite user</div>
+						<div className="text-sm">Add leg</div>
 					</div>
 				</button>
 			}
