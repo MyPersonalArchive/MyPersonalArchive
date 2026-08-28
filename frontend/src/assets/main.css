@@ -204,7 +204,7 @@ nav#sideNav {
 }
 
 main {
-	@apply h-full overflow-y-auto px-8 py-6;
+	@apply h-full overflow-y-auto sm:px-8 py-6;
 
 	& h1 {
 		@apply mb-4 text-2xl text-[#2c3e50];
@@ -518,14 +518,50 @@ label>input[type="checkbox"] {
 .stack-vertical {
 	@apply flex flex-col gap-2;
 }
-
+/* 
 span.tag {
 	@apply bg-gray-200 rounded-xl px-2 py-0.5 mr-1;
 
 	&>span {
 		@apply pl-1 text-gray-400 border-l border-current cursor-pointer;
 	}
+} */
+
+
+.pill {
+	/* @apply inline-block rounded-[1em] text-sm mr-1.5 py-1 px-2; */
+	@apply inline-block rounded-[1em] px-2 py-1 my-1 mr-2 text-xs;
+
+	&.metadatatype {
+		@apply bg-blue-200;
+	}
+
+	&.tag {
+		@apply bg-gray-200;
+	}
+
+	&.highlight {
+		@apply bg-yellow-300;
+	}
 }
+
+
+.double-pill {
+	@apply inline-flex bg-blue-200 rounded-[1em] text-xs mr-2.5 my-1;
+	
+	&>span {
+		@apply px-2 py-1;
+	}
+	
+	&>span:last-child {
+		@apply rounded-[1em] translate-x-0.5;
+	}
+ 
+	&>.highlight {
+		@apply bg-yellow-300;
+	}
+}
+
 
 .card {
 	@apply border border-gray-300 bg-white my-0 rounded-lg overflow-hidden shadow-lg shadow-gray-200;

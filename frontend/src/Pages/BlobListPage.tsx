@@ -134,14 +134,15 @@ export const BlobListPage = () => {
 }
 
 
-const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: {
+type MaximizedBlobPreviewProps = {
 	blob: BlobMetadata
 	minimize: () => void
 	canMovePrevious: boolean
 	canMoveNext: boolean
 	movePrevious: () => void
 	moveNext: () => void
-}) => {
+}
+const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: MaximizedBlobPreviewProps) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickRegistrationToolWindowIsOpenAtom)
 
 	return (
@@ -170,7 +171,8 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 					</button>
 				</div>
 			</div>
-		</LightBox>)
+		</LightBox>
+	)
 }
 
 
@@ -206,7 +208,7 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen }: ToolWindowPr
 			initialPosition={{ x: 100, y: 100 }}
 			initialSize={{ width: 360, height: 300 }}
 			minWidth={268} minHeight={171}
-			onClose={() => { setToolWindowIsOpen(false) }}
+			onClose={() => { setToolWindowIsOpen?.(false) }}
 			closeOnEscape={true}
 		>
 			<input ref={firstInputRef} type="text" className="input w-full" placeholder="Name of archived item" />
@@ -232,7 +234,8 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen }: ToolWindowPr
 			</label>
 
 			<div className="todo">
-				//TODO: store the navigation mode in local storage and use it as default for next time
+				//TODO:<br/>
+				- Radiobuttons for select the date: uploaded date, document date (EXIF etc?), todays date or enter date manually?<br/>
 			</div>
 		</FloatingToolWindow>
 	)

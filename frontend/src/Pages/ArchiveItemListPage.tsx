@@ -6,6 +6,7 @@ import { RoutePaths } from "../RoutePaths"
 import { StoredFilterSelector } from "../Components/Filter/StoredFilterSelector"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPaperclip, faMagnifyingGlass, faXmark } from "@fortawesome/free-solid-svg-icons"
+import classNames from "classnames"
 
 
 export const ArchiveItemListPage = () => {
@@ -38,13 +39,19 @@ export const ArchiveItemListPage = () => {
 
 		const metadataTypesFilter = storedFilter ? storedFilter.filterDefinition.metadataTypes : searchParams.getAll("metadataTypes") ?? []
 		for (const metadataType of metadataTypesFilter) {
-			if (!Object.keys(item.metadata).includes(metadataType)) {
+			if (!Object.keys(item.metadata).includes(metadataType.toString())) {
 				return false
 			}
 		}
 
 		return true
 	}
+
+	const currentFilter = storedFilters.find(f => f.name === searchParams.get("filter"))
+
+	const selectedMetadataTypes = Array.from(currentFilter?.filterDefinition.metadataTypes ?? []).filter(type => typeof type === "string").map(type => type.toString())
+	const highlightTags = currentFilter?.filterDefinition.tags ?? []
+
 
 	return (
 		<>
@@ -59,35 +66,19 @@ export const ArchiveItemListPage = () => {
 			{/* <Search /> */}
 			<StoredFilterSelector />
 
-
 			<div className="overflow-x-auto my-4">
-				<table className="w-full table">
-					<thead>
-						<tr>
-							<th>Title</th>
-							<th>Document date</th>
-							<th>Created</th>
-						</tr>
-					</thead>
-					<tbody>
-						{
-							archiveItems?.filter(filterFn)
-								.toSorted((a, b) => a.title.localeCompare(b.title))
-								.map(item =>
-									<Row key={item.id} archiveItem={item} />
-								)
-						}
-						{
-							archiveItems && archiveItems.length === 0 && (
-								<tr>
-									<td colSpan={4} className="text-center italic text-gray-500 py-4">
-										No items found
-									</td>
-								</tr>
-							)
-						}
-					</tbody>
-				</table>
+
+				{archiveItems?.filter(filterFn)
+					.toSorted((a, b) => a.title.localeCompare(b.title))
+					.map(item =>
+						<Row key={item.id}
+							archiveItem={item}
+							selectedMetadataTypes={selectedMetadataTypes}
+							highlightTags={highlightTags}
+						/>
+					)
+				}
+
 			</div>
 			<div className="stack-horizontal to-the-right my-4">
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
@@ -97,35 +88,112 @@ export const ArchiveItemListPage = () => {
 }
 
 
+
 type RowProps = {
 	archiveItem: ArchiveItem
+	highlightTags: string[]
+	selectedMetadataTypes: string[]
 }
-const Row = ({ archiveItem }: RowProps) => {
+const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) => {
 	return (
-		<tr>
-			<td>
-				<Link to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`} className="link">{archiveItem.title}</Link>
-				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
-				<br />
-				{
-					archiveItem.tags.map((tag) => (
-						<span key={tag} className="inline-block bg-gray-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{tag}</span>
-					))
-				}
-				<br />
-				{Object.keys(archiveItem.metadata).map((type) => (
-					<span key={type} className="inline-block bg-blue-200 text-gray-700 rounded-full px-2 py-1 mr-1 text-xs">{type}</span>
-				))}
-			</td>
-			<td className="align-top">
+		<Link key={archiveItem.id}
+			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
+			className="block border border-gray-300 border-b-0 last:border-b first:rounded-t-lg last:rounded-b-lg px-2 py-1 bg-gray-50 hover:bg-white"
+		>
+			<div className="flex justify-between items-center mb-2">
+				<span className="link">
+					{archiveItem.title}
+					{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
+				</span>
+				<span className="flex-1"></span>
 				{archiveItem.documentDate ? new Date(archiveItem.documentDate).toLocaleDateString() : ""}
-			</td>
-			<td className="align-top">
-				{archiveItem.createdAt.toLocaleDateString()}
-			</td>
-		</tr>
+			</div>
+
+			<div className="mb-2">
+				{selectedMetadataTypes.includes("receipt") && ReceiptPill(archiveItem)}
+				{selectedMetadataTypes.includes("travel-document") && TravelDocPill(archiveItem)}
+				{selectedMetadataTypes.includes("email") && EmailPill(archiveItem)}
+
+				{Object.keys(archiveItem.metadata).filter(type => !selectedMetadataTypes.includes(type)).map((type) => (
+					<span key={type} className="pill metadatatype">{type}</span>
+				))}
+
+				{archiveItem.tags
+				// .sort((a, b) => (highlightTags?.includes(a) ? -1 : 0))	// sort highlighted tags to the front
+					.map((tag) => (
+						<span key={tag} className={classNames("pill tag", { "highlight": highlightTags?.includes(tag) })}>{tag}</span>
+					))}
+			</div>
+		</Link>
 	)
 }
+
+
+const ReceiptPill = (archiveItem: any) => {
+	return (
+		<span className="double-pill bg-blue-200">
+			<span>Receipt</span>
+			{archiveItem.metadata.receipt.amount && (
+				<>
+					&nbsp;
+					<span className="highlight">
+						{archiveItem.metadata.receipt.amount} {archiveItem.metadata.receipt.currency}
+					</span>
+				</>
+			)}
+		</span>
+	)
+}
+
+
+const TravelDocPill = (archiveItem: any) => {
+	const ConcatLegs = (legs: Array<{ flightNumber: string, departureFrom: string, arrivalAt: string }>) => {
+		const stops = legs.map(leg => [leg.departureFrom, leg.arrivalAt])
+
+		// if arrivalAt is the same as the next departureFrom, we can skip it and just show the first departureFrom and the last arrivalAt
+		// if arrivalAt is the different from the next departureFrom, we need to show it as a stop with a comma in between
+		if (stops.length === 0) return ""
+		let result = stops[0][0]
+		for (let i = 0; i < stops.length; i++) {
+			if (i > 0 && stops[i][0] === stops[i - 1][1]) {
+				result += ` -> ${stops[i][1]}`
+			} else if (i > 0) {
+				result += `, ${stops[i][0]} -> ${stops[i][1]}`
+			}
+		}
+		return result
+	}
+
+	return (
+		<span className="double-pill bg-blue-200">
+			<span>Travel document</span>
+			{archiveItem.metadata["travel-document"].legs?.length > 0 && (
+				<span className="highlight">
+					{ConcatLegs(archiveItem.metadata["travel-document"].legs)}
+				</span>
+			)}
+		</span>
+	)
+}
+
+
+const EmailPill = (archiveItem: any) => {
+	return (
+		<span className="double-pill bg-blue-200">
+			<span>Email</span>
+			{archiveItem.metadata.email?.from && (
+				<>
+					&nbsp;
+					<span className="highlight">
+						From: {archiveItem.metadata.email.from}
+					</span>
+				</>
+			)}
+		</span>
+	)
+}
+
+
 
 
 const Search = () => {
