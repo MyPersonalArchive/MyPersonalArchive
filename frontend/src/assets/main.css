@@ -518,14 +518,14 @@ label>input[type="checkbox"] {
 .stack-vertical {
 	@apply flex flex-col gap-2;
 }
-/* 
-span.tag {
+
+span.input>span.tag {
 	@apply bg-gray-200 rounded-xl px-2 py-0.5 mr-1;
 
 	&>span {
 		@apply pl-1 text-gray-400 border-l border-current cursor-pointer;
 	}
-} */
+}
 
 
 .pill {

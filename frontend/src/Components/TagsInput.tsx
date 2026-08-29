@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 type TagsProps = {
     placeholder?: string
@@ -7,46 +7,65 @@ type TagsProps = {
     autocompleteList?: string[]
     htmlId?: string
 }
-const isQuoteOpen = (value: string) =>
-	value.startsWith("\"") && !(value.length > 1 && value.endsWith("\""))
+const DELIMITER_PAIRS: [string, string][] = [
+	["\"", "\""],
+	["'", "'"],
+	["(", ")"],
+	["[", "]"],
+]
 
-const stripQuotes = (value: string) => {
+const isDelimiterOpen = (value: string) =>
+	DELIMITER_PAIRS.some(
+		([open, close]) => value.startsWith(open) && !(value.length > 1 && value.includes(close))
+	)
+
+const endsWithClosingDelimiter = (value: string) =>
+	DELIMITER_PAIRS.some(
+		([open, close]) => value.startsWith(open) && value.length > 1 && value.endsWith(close)
+	)
+
+const stripDelimiters = (value: string) => {
 	const trimmed = value.trim()
-	if (trimmed.length > 1 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
-		return trimmed.slice(1, -1)
-	}
-	return trimmed
+	const pair = DELIMITER_PAIRS.find(
+		([open, close]) => trimmed.length > 1 && trimmed.startsWith(open) && trimmed.endsWith(close)
+	)
+	return pair ? trimmed.slice(1, -1) : trimmed
 }
 
 export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId }: TagsProps) => {
 	const [tagsInput, setTagsInput] = useState<string>("")
+	const inputRef = useRef<HTMLInputElement>(null)
 
 	const keyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === " " && isQuoteOpen(event.currentTarget.value)) {
-			return
-		}
+		if (event.key === "Enter") {
+			event.preventDefault()	// prevent form submission on Enter key
 
-		if (event.key === "Enter" || event.key === " ") {
-			event.preventDefault()
-			const tag = stripQuotes(event.currentTarget.value)
-			if (tag !== "") {
-				setTags([...tags, tag])
-				setTagsInput("")
+			if (!isDelimiterOpen(event.currentTarget.value)) {
+				const tag = stripDelimiters(event.currentTarget.value).trim()
+				if (tag !== "") {
+					setTags([...tags, tag])
+					setTagsInput("")
+				}
 			}
 			return
 		}
 
 		if (event.key === "Backspace" && tagsInput === "") {
 			event.preventDefault()
-
-			setTagsInput(tags[tags.length - 1] ?? "")
+			const lastTag = tags.at(-1) ?? ""
+			const valueToEdit = lastTag.includes(" ") ? `(${lastTag})` : lastTag
+			setTagsInput(valueToEdit)
 			setTags(tags.slice(0, tags.length - 1))
 		}
 	}
 
 	const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		if (event.target.value.length > 0 && event.target.value.endsWith(" ") && !isQuoteOpen(event.target.value)) {
-			const tag = stripQuotes(event.currentTarget.value)
+		if (event.target.value.length > 0
+			&& inputRef.current?.selectionStart === event.target.value.length
+			&& (event.target.value.endsWith(" ") || endsWithClosingDelimiter(event.target.value))
+			&& !isDelimiterOpen(event.target.value)
+		) {
+			const tag = stripDelimiters(event.currentTarget.value)
 			setTags([...tags, tag])
 
 			setTagsInput("")
@@ -74,6 +93,7 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 					)
 				}
 				<input
+					ref={inputRef}
 					className="stripped"
 					type="text"
 					list={htmlId + "List"}
