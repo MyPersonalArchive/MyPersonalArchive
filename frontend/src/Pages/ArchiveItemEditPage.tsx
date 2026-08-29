@@ -164,7 +164,7 @@ export const ArchiveItemEditPage = () => {
 					<textarea
 						className="input"
 						id="notes"
-						value={notes}
+						value={notes ?? ""}
 						onChange={event => setNotes(event.target.value)}
 					/>
 				</div>
@@ -177,7 +177,7 @@ export const ArchiveItemEditPage = () => {
 
 				{
 					allMetadataTypes.map((metadataType) => (
-						<div className="w-full my-4">
+						<div key={metadataType.path.toString()} className="w-full my-4">
 							{
 								metadataType.path in metadata
 									? <div className="has-[.delete-metadata-type:hover]:bg-red-100!">
