@@ -1,0 +1,39 @@
+
+/**/
+.baseviewer {
+	position: relative;
+	cursor: pointer;
+
+	& .pdf-viewer-container {
+		border: thin dashed hsl(from black h s l / 50%);
+		border-radius: 4px;
+		height: 100%;
+	}
+
+	& .text-viewer-container {
+		border: thin dashed hsl(from black h s l / 50%);
+		border-radius: 4px;
+	}
+
+	& iframe {
+		object-fit: contain;
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	/* Firefox-specific PDF styling - simpler approach */
+	@-moz-document url-prefix() {
+		& iframe {
+			/* Accept Firefox toolbar but ensure proper centering */
+			display: block;
+			margin: 0 auto;
+			background-color: #f5f5f5;
+		}
+
+		& .pdf-viewer-container {
+			display: flex;
+			justify-content: center;
+			overflow: hidden;
+		}
+	}
+}
