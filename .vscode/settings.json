@@ -9,6 +9,15 @@
 	"editor.codeActionsOnSave": {
 		"source.fixAll.eslint": "explicit"
 	},
+	"css.validate": false,
+	"scss.validate": false,
+	"less.validate": false,
+	"tailwindCSS.includeLanguages": {
+		"css": "css"
+	},
+	"tailwindCSS.experimental.classRegex": [
+		["@apply\\s+([^;]*);", 1]
+	],
 	"workbench.colorCustomizations": {
 		"titleBar.inactiveBackground": "#bbb80099",
 		"titleBar.activeBackground": "#bbb800",
