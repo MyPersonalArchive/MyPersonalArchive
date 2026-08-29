@@ -41,10 +41,18 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(queryType);
+		var failureReasons = CheckRequirements(queryType, out var isAuthenticationFailure, out var isConfigurationError);
 		if (failureReasons.Count != 0)
 		{
-			return BadRequest(string.Join("; ", failureReasons));
+			if (isConfigurationError)
+			{
+				return StatusCode(500, string.Join("; ", failureReasons));
+			}
+			if (isAuthenticationFailure)
+			{
+				return Unauthorized(string.Join("; ", failureReasons));
+			}
+			return StatusCode(403, string.Join("; ", failureReasons));
 		}
 
 		var handler = _services.GetRequiredService(queryHandlerType);
@@ -102,10 +110,18 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(queryType);
+		var failureReasons = CheckRequirements(queryType, out var isAuthenticationFailure, out var isConfigurationError);
 		if (failureReasons.Count != 0)
 		{
-			return BadRequest(string.Join("; ", failureReasons));
+			if (isConfigurationError)
+			{
+				return StatusCode(500, string.Join("; ", failureReasons));
+			}
+			if (isAuthenticationFailure)
+			{
+				return Unauthorized(string.Join("; ", failureReasons));
+			}
+			return StatusCode(403, string.Join("; ", failureReasons));
 		}
 
 		var handler = _services.GetRequiredService(queryHandlerType);
@@ -162,10 +178,18 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(commandType);
+		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure, out var isConfigurationError);
 		if (failureReasons.Count != 0)
 		{
-			return BadRequest(string.Join("; ", failureReasons));
+			if (isConfigurationError)
+			{
+				return StatusCode(500, string.Join("; ", failureReasons));
+			}
+			if (isAuthenticationFailure)
+			{
+				return Unauthorized(string.Join("; ", failureReasons));
+			}
+			return StatusCode(403, string.Join("; ", failureReasons));
 		}
 
 		var handler = _services.GetRequiredService(commandHandlerType);
@@ -216,10 +240,18 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(commandType);
+		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure, out var isConfigurationError);
 		if (failureReasons.Count != 0)
 		{
-			return BadRequest(string.Join("; ", failureReasons));
+			if (isConfigurationError)
+			{
+				return StatusCode(500, string.Join("; ", failureReasons));
+			}
+			if (isAuthenticationFailure)
+			{
+				return Unauthorized(string.Join("; ", failureReasons));
+			}
+			return StatusCode(403, string.Join("; ", failureReasons));
 		}
 
 		var handler = _services.GetRequiredService(commandHandlerType);
@@ -270,10 +302,18 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(commandType);
+		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure, out var isConfigurationError);
 		if (failureReasons.Count != 0)
 		{
-			return BadRequest(string.Join("; ", failureReasons));
+			if (isConfigurationError)
+			{
+				return StatusCode(500, string.Join("; ", failureReasons));
+			}
+			if (isAuthenticationFailure)
+			{
+				return Unauthorized(string.Join("; ", failureReasons));
+			}
+			return StatusCode(403, string.Join("; ", failureReasons));
 		}
 
 		var handler = _services.GetRequiredService(commandHandlerType);
@@ -311,8 +351,11 @@ public class DispatchController : ControllerBase
 		}
 	}
 
-	private ICollection<string> CheckRequirements(Type queryOrCommandType)
+	private ICollection<string> CheckRequirements(Type queryOrCommandType, out bool isAuthenticationFailure, out bool isConfigurationError)
 	{
+		isAuthenticationFailure = false;
+		isConfigurationError = false;
+
 		var currentAttributes = queryOrCommandType.GetCustomAttributes(typeof(IRequirement), true).Cast<IRequirement>();
 		//Mandatory attribute "types": authentication requirement, permission requirement, etc.
 		//Optional attribute "types": tenant requirement, feature flag requirement, etc.
@@ -328,6 +371,10 @@ public class DispatchController : ControllerBase
 			.ToList();
 		if (missingRequiredAttributes.Count != 0)
 		{
+			// The developer forgot to annotate this query/command type with a security requirement
+			// attribute (e.g. [RequireAuthentication], [RequireOrganizationId], [NoRequirement]) - this
+			// is a server-side misconfiguration, not something the caller did wrong.
+			isConfigurationError = true;
 			return [$"Missing required requirement attributes: {string.Join(", ", missingRequiredAttributes.Select(t => t.Name))}"];
 		}
 
@@ -339,6 +386,14 @@ public class DispatchController : ControllerBase
 				failureReasons.Add(failureReason!);
 			}
 		}
+
+		// Every requirement attribute in this codebase checks authentication first, so a failure while
+		// the user isn't authenticated means "not logged in" (401).
+		if (failureReasons.Count != 0 && !(HttpContext.User.Identity?.IsAuthenticated ?? false))
+		{
+			isAuthenticationFailure = true;
+		}
+
 		return failureReasons;
 	}
 
