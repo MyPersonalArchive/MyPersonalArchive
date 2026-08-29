@@ -1,0 +1,41 @@
+@font-face {
+	font-family: "Monaspace Neon";
+	src: url("./MonaspaceNeonVar.woff2") format("woff2"),
+		url("./MonaspaceNeonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
+}
+
+/* 
+@font-face {
+	font-family: "Monaspace Argon";
+	src: url("./MonaspaceArgonVar.woff2") format("woff2"),
+		url("./MonaspaceArgonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Monaspace Xenon";
+	src: url("./MonaspaceXenonVar.woff2") format("woff2"),
+		url("./MonaspaceXenonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Monaspace Radon";
+	src: url("./MonaspaceRadonVar.woff2") format("woff2"),
+		url("./MonaspaceRadonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
+}
+*/
+
+@font-face {
+	font-family: "Monaspace Krypton";
+	src: url("./MonaspaceKryptonVar.woff2") format("woff2"),
+		url("./MonaspaceKryptonVar.woff") format("woff");
+	font-weight: 100 900;
+	font-style: normal;
+}

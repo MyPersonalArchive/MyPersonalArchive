@@ -1,207 +1,22 @@
-@import url("styling.css");
+@import "./fonts/fonts.css";
+@import "./baseviewer.css";
 
 /* New tailwind-based css imports */
 @import "tailwindcss";
+@import "./page-layout.css";
 @import "./table.css";
 
-@font-face {
-	font-family: "Monaspace Neon";
-	src: url("./MonaspaceNeonVar.woff2") format("woff2"),
-		url("./MonaspaceNeonVar.woff") format("woff");
-	font-weight: 100 900;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "Monaspace Argon";
-	src: url("./MonaspaceArgonVar.woff2") format("woff2"),
-		url("./MonaspaceArgonVar.woff") format("woff");
-	font-weight: 100 900;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "Monaspace Xenon";
-	src: url("./MonaspaceXenonVar.woff2") format("woff2"),
-		url("./MonaspaceXenonVar.woff") format("woff");
-	font-weight: 100 900;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "Monaspace Radon";
-	src: url("./MonaspaceRadonVar.woff2") format("woff2"),
-		url("./MonaspaceRadonVar.woff") format("woff");
-	font-weight: 100 900;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "Monaspace Krypton";
-	src: url("./MonaspaceKryptonVar.woff2") format("woff2"),
-		url("./MonaspaceKryptonVar.woff") format("woff");
-	font-weight: 100 900;
-	font-style: normal;
-}
 
 @theme {
 	--color-main-color: hsl(210, 45%, 96%);
 	--color-user-nav-color: hsl(210, 36%, 30%);
 	--color-tenant-admin-nav-color: hsl(255, 36%, 30%);
-	/* --color-nav-color: hsl(210, 36%, 30%); */
 	--color-user-top-color: hsl(210, 29%, 24%);
 	--color-tenant-admin-top-color: hsl(255, 29%, 24%);
-	/* --color-top-color: hsl(210, 29%, 24%); */
 	--font-mono: "Monaspace Neon", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	--font-code: "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-div#root {
-	@apply grid h-dvh font-sans;
-	@apply grid-rows-[56px_1fr] grid-cols-[280px_1fr];
-	@apply [grid-template-areas:'header_header'_'nav_main'];
-	@apply max-sm:grid-cols-1 max-sm:[grid-template-areas:'header'_'main'];
-}
-
-/* ── Header ── */
-div#topBar {
-	@apply [grid-area:header] flex items-center px-5 gap-4 relative z-3;
-
-	&.user-layout {
-		@apply bg-user-top-color text-white;
-	}
-
-	&.tenant-admin-layout {
-		@apply bg-tenant-admin-top-color text-white;
-	}
-
-	& .logo {
-		@apply text-[1.2rem] font-bold tracking-[.05em];
-	}
-}
-
-/* ── Profile dropdown ── */
-.profile {
-	@apply relative;
-}
-
-.profile-btn {
-	@apply flex items-center gap-2 bg-white/12 border-none rounded-full text-white cursor-pointer py-[.3rem] pr-3 pl-[.3rem] text-sm transition-[background] duration-150;
-
-	&:hover {
-		@apply bg-white/22;
-	}
-}
-
-
-.profile-avatar {
-	@apply w-8 h-8 rounded-full bg-[#7ef4b4] text-[#1a7a4a] font-bold text-[.85rem] flex items-center justify-center shrink-0 select-none;
-}
-
-.profile-dropdown {
-	@apply hidden absolute top-[calc(100%+.5rem)] right-0 min-w-[200px] bg-white text-[#222] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,.18)] overflow-hidden;
-
-	&.open {
-		@apply block;
-	}
-
-	& a {
-		@apply flex items-center gap-[.65rem] py-[.65rem] px-4 no-underline text-[#333] text-sm transition-[background] duration-[120ms];
-	}
-
-	& a:hover {
-		@apply bg-[#f3f6fa];
-	}
-
-	& .divider {
-		@apply h-px bg-[#e8ecf0] my-1;
-	}
-
-	& .danger {
-		@apply text-[#c0392b];
-	}
-}
-
-
-.profile-dropdown-header {
-	@apply py-[.85rem] px-4 border-b border-[#e8ecf0];
-
-	& strong {
-		@apply block text-[.9rem];
-	}
-
-	& span {
-		@apply text-[.78rem] text-neutral-500;
-	}
-}
-
-/* ── Hamburger button to open nav#sideNav on smaller screens ── */
-.menu-btn {
-	@apply hidden max-sm:flex bg-transparent border-none text-white cursor-pointer p-1 leading-[0];
-}
-
-/* ── Side nav ── */
-nav#sideNav {
-	@apply [grid-area:nav] flex flex-col items-stretch pt-4 overflow-y-auto;
-	@apply max-sm:fixed max-sm:top-14 max-sm:left-0 max-sm:w-[280] max-sm:h-[calc(100dvh-56px)] max-sm:z-100 max-sm:-translate-x-full max-sm:transition-transform max-sm:duration-[250ms] max-sm:ease-in-out max-sm:shadow-[4px_0_16px_rgba(0,0,0,.3)];
-
-	&.user-layout {
-		@apply bg-user-nav-color text-[#d4f5e4];
-	}
-
-	&.tenant-admin-layout {
-		@apply bg-tenant-admin-nav-color text-[#d4f5e4];
-	}
-
-	&.open {
-		@apply max-sm:translate-x-0;
-	}
-
-	& .nav-group {
-		@apply flex flex-col mb-3;
-	}
-
-	& .nav-group-heading {
-		@apply text-[.65rem] font-bold tracking-[.1em] uppercase text-white/45 pt-2 px-4 pb-1 select-none;
-	}
-
-	& a,
-	& .nav-link,
-	& .adjustments-mode-toggle {
-		@apply flex flex-row items-center gap-3 w-full py-[.6rem] px-4 text-inherit no-underline text-sm cursor-pointer border-l-[3px] border-l-transparent transition-colors duration-150;
-	}
-
-	& a:hover,
-	& a.active,
-	& .nav-link:hover,
-	& .nav-link.active {
-		@apply bg-white/12 border-l-[#7ef4b4] text-white;
-	}
-
-	& .adjustments-mode-toggle:hover {
-		@apply bg-white/12;
-	}
-
-	& .adjustments-mode-toggle.active {
-		@apply border-l-amber-500 text-white;
-	}
-
-}
-
-
-/* ── Overlay (hidden by default) ── */
-.nav-overlay {
-	@apply hidden fixed top-14 left-0 right-0 bottom-0 bg-black/45 z-1;
-
-	&.open {
-		@apply max-sm:block;
-	}
-}
-
-/* ── Main ── */
-#mainArea {
-	@apply [grid-area:main] bg-main-color overflow-hidden relative min-h-0;
-}
 
 main {
 	@apply h-full overflow-y-auto sm:px-8 py-6;
@@ -432,7 +247,7 @@ header.header {
 	@apply inline-flex;
 
 	&:has(:focus) {
-		@apply outline outline-2 outline-blue-200 rounded;
+		@apply outline-2 outline-blue-200 rounded;
 	}
 
 	&>.input,
