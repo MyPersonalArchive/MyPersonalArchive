@@ -9,7 +9,7 @@ import { BlobDisplayInfo } from "./Preview"
 import { DimensionEnum } from "./Preview"
 import { Preview } from "./Preview"
 import { SelectCheckbox, useSelection, Selection } from "../Utils/Selection"
-import { formatDate, formatSize } from "../Utils/formatUtils"
+import { dateToShortDateDisplay, formatSize } from "../Utils/formatUtils"
 import { Dialog } from "./Dialog"
 import { LightBox } from "./LightBox"
 import { UUID } from "crypto"
@@ -251,7 +251,7 @@ const BlobCard = ({ blob, attachBlob, maximize, selectionOfBlobs }: BlobCardProp
 			<div className="p-2 grow">
 				<div className="flex flex-col py-2 px-4">
 					<div className="font-bold">{blob.fileName}</div>
-					<div className=" text-sm">{formatDate(new Date(blob.uploadedAt))}</div>
+					<div className=" text-sm">{dateToShortDateDisplay(blob.uploadedAt)}</div>
 					<div className=" text-sm">{blob.uploadedByUser}</div>
 					<div className=" text-sm">{formatSize(blob.fileSize)}</div>
 				</div>
