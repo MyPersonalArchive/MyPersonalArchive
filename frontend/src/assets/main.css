@@ -30,6 +30,28 @@ main {
 	}
 }
 
+.full-width-box {
+	@apply border-t border-b sm:border-l sm:border-r border-gray-300 sm:rounded-lg overflow-hidden;
+}
+
+.div-row {
+	@apply block border-gray-300 border-b last:border-b-0 px-2 py-1 bg-gray-50 hover:bg-white;
+}
+
+.layout-title-date-and-more {
+	@apply after:block after:clear-both;
+
+	&>span.title {}
+
+	&>span.date {
+		@apply float-right ml-3 mb-2;
+	}
+
+	&>div.more {}
+}
+
+
+
 /* ── Preview with hover action bar ── */
 .lightbox-backdrop {
 	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto z-2;
@@ -344,7 +366,6 @@ span.input>span.tag {
 
 
 .pill {
-	/* @apply inline-block rounded-[1em] text-sm mr-1.5 py-1 px-2; */
 	@apply inline-block rounded-[1em] px-2 py-1 my-1 mr-2 text-xs;
 
 	&.metadatatype {

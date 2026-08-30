@@ -52,10 +52,10 @@ const ClickableStoredFilters = () => {
 		})
 	}
 
-	return <div className="stack-horizontal to-the-left">
+	return <div className="flex flex-wrap gap-2 my-4">
 		{storedFilters?.map((filter) => (
 			<button key={filter.id}
-				className={classNames("btn btn-wide block font-mono", { "selected": filter.name === searchParams.get("filter") })}
+				className={classNames("btn btn-wide block font-mono whitespace-nowrap", { "selected": filter.name === searchParams.get("filter") })}
 				onClick={() => selectFilter(filter)}
 			>
 				{filter.name}
