@@ -7,6 +7,7 @@ import { StoredFilterSelector } from "../Components/Filter/StoredFilterSelector"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPaperclip, faMagnifyingGlass, faXmark } from "@fortawesome/free-solid-svg-icons"
 import classNames from "classnames"
+import { dateToShortDateDisplay } from "../Utils/formatUtils"
 
 
 export const ArchiveItemListPage = () => {
@@ -106,7 +107,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 					{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 				</span>
 				<span className="flex-1"></span>
-				{archiveItem.documentDate ? new Date(archiveItem.documentDate).toISOString().substring(0, 10) : ""}
+				{dateToShortDateDisplay(archiveItem.documentDate)}
 			</div>
 
 			<div className="mb-2">

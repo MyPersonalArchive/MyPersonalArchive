@@ -1,4 +1,3 @@
-import { useState } from "react"
 
 type DatePickerProps = {
 	date: string,
@@ -6,24 +5,16 @@ type DatePickerProps = {
 }
 
 export const DatePicker = ({ date, setDate }: DatePickerProps) => {
-	const [clickedNoDate, setClickedNoDate] = useState(false)
-
 	return (
 		<>
 			<div className="grouped">
 				{
-					(date || clickedNoDate) ? (
-						<input type="date" className="input"
-							value={date ? new Date(date).toISOString().split("T")[0] : ""}
-							onChange={e => setDate(e.target.value)}
-						/>
-					) : (
-						<span className="input" onClick={() => setClickedNoDate(true)}>
-							Not date set
-						</span>
-					)
+					<input type="date" className="input"
+						value={date ?? ""}
+						onChange={e => setDate(e.target.value)}
+					/>
 				}
-				<button className="btn" type="button" onClick={() => setClickedNoDate(false)}>&times;</button>
+				<button className="btn" type="button" onClick={() => setDate("")}>&times;</button>
 			</div>
 		</>
 	)

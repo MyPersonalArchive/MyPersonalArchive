@@ -8,15 +8,14 @@ import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
-import { formatDate, formatSize } from "../Utils/formatUtils"
-import { RoutePaths } from "../RoutePaths"
+import { dateToShortDateDisplay, formatSize } from "../Utils/formatUtils"
 import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
 import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
-import { QuickRegistrationMode, quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
+import { quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
 
 
 export const BlobListPage = () => {
@@ -268,7 +267,7 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 			<div className="p-2 grow">
 				<div className="flex flex-col py-2 px-4">
 					<div className="font-bold">{blob.fileName}</div>
-					<div className=" text-sm">{formatDate(new Date(blob.uploadedAt))}</div>
+					<div className=" text-sm">{dateToShortDateDisplay(blob.uploadedAt)}</div>
 					<div className=" text-sm">{blob.uploadedByUser}</div>
 					<div className=" text-sm">{formatSize(blob.fileSize)}</div>
 				</div>
