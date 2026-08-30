@@ -58,6 +58,10 @@ const ComponentTester = () => {
 				<div>Subtitle</div>
 			</header>
 
+			<div className="info-box">
+				<h1>What is this?</h1>
+				<p>This is an info box</p>
+			</div>
 
 			<div className="flex flex-row gap-2 my-4 items-baseline">
 				<button className="btn btn-primary" type="button" onClick={() => setIsDialogOpen(true)}>Open dialog</button>

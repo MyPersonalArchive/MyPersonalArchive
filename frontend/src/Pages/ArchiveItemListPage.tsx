@@ -56,19 +56,20 @@ export const ArchiveItemListPage = () => {
 
 	return (
 		<>
-			<header className="header">
-				<h1>Archive</h1>
-			</header>
+			<div className="flex flex-row justify-between items-center">
+				<header className="header">
+					<h1>Archive</h1>
+				</header>
 
-			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" onClick={newArchiveItem}>Create new item</button>
+				<div className="">
+					<button className="btn" onClick={newArchiveItem}>Create new item</button>
+				</div>
 			</div>
 
 			{/* <Search /> */}
 			<StoredFilterSelector />
 
-			<div className="overflow-x-auto my-4  border-t border-b sm:border-l sm:border-r border-gray-300 sm:rounded-lg">
-
+			<div className="full-width-box my-4">
 				{archiveItems?.filter(filterFn)
 					.toSorted((a, b) => a.title.localeCompare(b.title))
 					.map(item =>
@@ -79,8 +80,8 @@ export const ArchiveItemListPage = () => {
 						/>
 					)
 				}
-
 			</div>
+
 			<div className="stack-horizontal to-the-right my-4">
 				<button className="btn" onClick={newArchiveItem}>Create new item</button>
 			</div>
@@ -99,18 +100,19 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 	return (
 		<Link key={archiveItem.id}
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
-			className="block border-gray-300 border-b last:border-b-0 px-2 py-1 bg-gray-50 hover:bg-white"
+			className="group/archive-item div-row layout-title-date-and-more"
 		>
-			<div className="flex justify-between items-center mb-2">
-				<span className="link">
-					{archiveItem.title}
-					{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
-				</span>
-				<span className="flex-1"></span>
-				{dateToShortDateDisplay(archiveItem.documentDate)}
-			</div>
+			<span className="title link group-hover/archive-item:underline">
+				{archiveItem.title}
+				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
+			</span>
 
-			<div className="mb-2">
+			<span className="date float-right ml-3 mb-2">
+				{dateToShortDateDisplay(archiveItem.documentDate)}
+			</span>
+
+			<div className="more">
+
 				{selectedMetadataTypes.includes("receipt") && ReceiptPill(archiveItem)}
 				{selectedMetadataTypes.includes("travel-document") && TravelDocPill(archiveItem)}
 				{selectedMetadataTypes.includes("email") && EmailPill(archiveItem)}
@@ -120,7 +122,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 				))}
 
 				{archiveItem.tags
-				// .sort((a, b) => (highlightTags?.includes(a) ? -1 : 0))	// sort highlighted tags to the front
+					// .sort((a, b) => (highlightTags?.includes(a) ? -1 : 0))	// sort highlighted tags to the front
 					.map((tag) => (
 						<span key={tag} className={classNames("pill tag", { "highlight": highlightTags?.includes(tag) })}>{tag}</span>
 					))}
@@ -149,12 +151,12 @@ const ReceiptPill = (archiveItem: any) => {
 
 const TravelDocPill = (archiveItem: any) => {
 	const ConcatLegs = (legs: Array<{ flightNumber: string, departureFrom: string, arrivalAt: string }>) => {
-		const arrayOfArrays : string[][] = []
+		const arrayOfArrays: string[][] = []
 		legs.forEach(leg => {
 			const currentStage = arrayOfArrays.at(-1) ?? []
 			const lastLegArrival = currentStage.at(-1)
 
-			if(lastLegArrival === leg.departureFrom) {
+			if (lastLegArrival === leg.departureFrom) {
 				currentStage.push(leg.arrivalAt)
 			} else {
 				arrayOfArrays.push([leg.departureFrom, leg.arrivalAt])
