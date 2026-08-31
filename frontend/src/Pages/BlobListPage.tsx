@@ -16,6 +16,7 @@ import { UUID } from "crypto"
 import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
+import { RoutePaths } from "../RoutePaths"
 
 
 export const BlobListPage = () => {
@@ -133,6 +134,9 @@ export const BlobListPage = () => {
 }
 
 
+type Position = { x: number; y: number }
+type Size = { width: number; height: number }
+
 type MaximizedBlobPreviewProps = {
 	blob: BlobMetadata
 	minimize: () => void
@@ -143,6 +147,8 @@ type MaximizedBlobPreviewProps = {
 }
 const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: MaximizedBlobPreviewProps) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickRegistrationToolWindowIsOpenAtom)
+	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
+	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 300 })
 
 	return (
 		<LightBox key={blob.id} onClose={() => minimize()} closeOnEscape={!toolWindowIsOpen}>
@@ -152,6 +158,10 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 						canMoveNext={canMoveNext}
 						moveNext={moveNext}
 						setToolWindowIsOpen={setToolWindowIsOpen}
+						toolWindowPosition={toolWindowPosition}
+						toolWindowSize={toolWindowSize}
+						setToolWindowPosition={setToolWindowPosition}
+						setToolWindowSize={setToolWindowSize}
 					/>
 				}
 				<Preview blob={blob} dimension={DimensionEnum.full} />
@@ -179,8 +189,12 @@ type ToolWindowProps = {
 	canMoveNext: boolean
 	moveNext: () => void
 	setToolWindowIsOpen?: (isOpen: boolean) => void
+	toolWindowPosition: Position
+	toolWindowSize: Size
+	setToolWindowPosition: (position: Position) => void
+	setToolWindowSize: (size: Size) => void
 }
-const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen }: ToolWindowProps) => {
+const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
 	const [registrationMode, setRegistrationMode] = useAtom(quickRegistrationModeAtom)
 	const firstInputRef = useRef<HTMLInputElement>(null)
 	useEffect(() => {
@@ -204,8 +218,10 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen }: ToolWindowPr
 	return (
 		<FloatingToolWindow title="Quick create archive item"
 			className="flex flex-col gap-2 p-2"
-			initialPosition={{ x: 100, y: 100 }}
-			initialSize={{ width: 360, height: 300 }}
+			initialPosition={toolWindowPosition}
+			initialSize={toolWindowSize}
+			onPositionChange={setToolWindowPosition}
+			onSizeChange={setToolWindowSize}
 			minWidth={268} minHeight={171}
 			onClose={() => { setToolWindowIsOpen?.(false) }}
 			closeOnEscape={true}
