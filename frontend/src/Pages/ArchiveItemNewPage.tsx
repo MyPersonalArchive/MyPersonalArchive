@@ -219,7 +219,6 @@ export const ArchiveItemNewPage = () => {
 								<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
 									<FontAwesomeIcon icon={faTrash} size="1x" />
 								</button>
-
 							</div>
 					}
 					maximizedPreviewTemplate={

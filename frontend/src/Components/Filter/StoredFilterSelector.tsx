@@ -87,11 +87,11 @@ const EditableStoredFilters = () => {
 
 	return (
 		<>
-			<div className="stack-horizontal to-the-left my-4">
+			<div className="flex flex-wrap gap-2 my-4">
 				{dnd.rows.map(({ rowType, data: filter }, index) => rowType === "item-row"
 					?
 					<div key={filter.id}
-						className={classNames("btn btn-wide relative flex items-center cursor-default group", { "selected": filter.id === selectedFilterId })}
+						className={classNames("btn btn-wide relative flex items-center cursor-default group/stored-filter", { "selected": filter.id === selectedFilterId })}
 						draggable={true}
 						onMouseDown={dnd.mouseDown}
 						onMouseUp={dnd.mouseUp}
@@ -111,7 +111,7 @@ const EditableStoredFilters = () => {
 							onFocus={(e) => { setSelectedFilterId(filter.id); e.target.select() }}
 						/>
 
-						<button className="cursor-pointer absolute text-gray-400 group-hover:text-red-500 right-3 top-1/2 -translate-y-1/2"
+						<button className="cursor-pointer absolute text-gray-400 group-hover/stored-filter:text-red-500 right-3 top-1/2 -translate-y-1/2"
 							onClick={() => dispatch({ action: "REMOVE_FILTER", id: filter.id })}
 							onFocus={() => setSelectedFilterId(filter.id)}
 						>

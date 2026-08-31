@@ -30,7 +30,12 @@ main {
 	}
 }
 
-.full-width-box {
+
+.full-width-non-bordered {
+	@apply px-2 sm:px-0;
+}
+
+.full-width-bordered {
 	@apply border-t border-b sm:border-l sm:border-r border-gray-300 sm:rounded-lg overflow-hidden;
 }
 
