@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useId, useRef } from "react"
+import { PropsWithChildren, useEffect, useId, useRef, useState } from "react"
 import { faClose } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import classNames from "classnames"
@@ -15,6 +15,8 @@ type FloatingToolWindowProps = {
 	closeOnEscape?: boolean
 	initialPosition?: Position
 	initialSize?: Size
+	onPositionChange?: (position: Position) => void
+	onSizeChange?: (size: Size) => void
 	minWidth?: number
 	minHeight?: number
 	className?: string
@@ -26,13 +28,17 @@ export const FloatingToolWindow = ({
 	closeOnEscape = false,
 	initialPosition = { x: 120, y: 100 },
 	initialSize = { width: 480, height: 320 },
+	onPositionChange,
+	onSizeChange,
 	minWidth = 240,
 	minHeight = 160,
 	className,
 }: PropsWithChildren<FloatingToolWindowProps>) => {
 	const windowRef = useRef<HTMLDivElement>(null)
-	const positionRef = useRef<Position>(initialPosition)
-	const sizeRef = useRef<Size>(initialSize)
+	const [position, setPosition] = useState<Position>(initialPosition)
+	const [size, setSize] = useState<Size>(initialSize)
+	const positionRef = useRef<Position>(position)
+	const sizeRef = useRef<Size>(size)
 	const titleId = useId()
 
 	useEffect(() => {
@@ -74,6 +80,8 @@ export const FloatingToolWindow = ({
 		const onPointerUp = () => {
 			header.removeEventListener("pointermove", onPointerMove)
 			header.removeEventListener("pointerup", onPointerUp)
+			setPosition(positionRef.current)
+			onPositionChange?.(positionRef.current)
 		}
 		header.addEventListener("pointermove", onPointerMove)
 		header.addEventListener("pointerup", onPointerUp)
@@ -104,6 +112,8 @@ export const FloatingToolWindow = ({
 		const onPointerUp = () => {
 			handle.removeEventListener("pointermove", onPointerMove)
 			handle.removeEventListener("pointerup", onPointerUp)
+			setSize(sizeRef.current)
+			onSizeChange?.(sizeRef.current)
 		}
 		handle.addEventListener("pointermove", onPointerMove)
 		handle.addEventListener("pointerup", onPointerUp)
@@ -115,10 +125,10 @@ export const FloatingToolWindow = ({
 			role="dialog"
 			aria-labelledby={titleId}
 			style={{
-				left: initialPosition.x,
-				top: initialPosition.y,
-				width: initialSize.width,
-				height: initialSize.height
+				left: position.x,
+				top: position.y,
+				width: size.width,
+				height: size.height
 			}}
 			onClick={e => e.stopPropagation()}
 		>
