@@ -164,7 +164,8 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 		navigate({
 			search: createQueryString({
 				title: selectedFilter?.filterDefinition.title,
-				tags: selectedFilter?.filterDefinition.tags.map(tag => tag.trim())
+				tags: selectedFilter?.filterDefinition.tags.map(tag => tag.trim()),
+				metadataTypes: Array.from(selectedFilter?.filterDefinition.metadataTypes ?? []).filter(type => typeof type === "string").map(type => type.toString())
 			}, { skipEmptyStrings: true })
 		})
 	}
