@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { ArchiveItem, archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
@@ -14,12 +14,6 @@ export const ArchiveItemListPage = () => {
 	const archiveItems = useAtomValue(archiveItemsAtom)
 	const storedFilters = useAtomValue(storedFiltersAtom)
 	const [searchParams] = useSearchParams()
-
-	const navigate = useNavigate()
-
-	const newArchiveItem = () => {
-		navigate(RoutePaths.Archive.New)
-	}
 
 	const filterFn = (item: ArchiveItem) => {
 		// Either get the filter parameters from the stored filter id, OR get them from the query string
@@ -56,20 +50,17 @@ export const ArchiveItemListPage = () => {
 
 	return (
 		<>
-			<div className="flex flex-row justify-between items-center">
-				<header className="header">
-					<h1>Archive</h1>
-				</header>
-
-				<div className="">
-					<button className="btn" onClick={newArchiveItem}>Create new item</button>
-				</div>
+			<div className="full-width-non-bordered flex flex-wrap items-baseline gap-2">
+				<Search />
+				<div className="flex-1"></div>
+				<Link to={RoutePaths.Archive.New} className="link whitespace-nowrap">Create new item</Link>
 			</div>
 
-			{/* <Search /> */}
-			<StoredFilterSelector />
+			<div className="full-width-non-bordered">
+				<StoredFilterSelector />
+			</div>
 
-			<div className="full-width-box my-4">
+			<div className="full-width-bordered my-4">
 				{archiveItems?.filter(filterFn)
 					.toSorted((a, b) => a.title.localeCompare(b.title))
 					.map(item =>
@@ -82,8 +73,8 @@ export const ArchiveItemListPage = () => {
 				}
 			</div>
 
-			<div className="stack-horizontal to-the-right my-4">
-				<button className="btn" onClick={newArchiveItem}>Create new item</button>
+			<div className="full-width-non-bordered stack-horizontal to-the-right">
+				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>
 			</div>
 		</>
 	)
@@ -196,8 +187,6 @@ const EmailPill = (archiveItem: any) => {
 }
 
 
-
-
 const Search = () => {
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -211,19 +200,17 @@ const Search = () => {
 	}
 
 	return (
-		<form onSubmit={search} onReset={reset} className="stack-horizontal to-the-left my-4">
-			<div className="grouped">
-				<input className="input"
-					type="text"
-					placeholder="Search for anything"
-				/>
-				<button type="reset" className="btn">
-					<FontAwesomeIcon icon={faXmark} className="mr-1" />
-				</button>
-				<button type="submit" className="btn btn-primary">
-					<FontAwesomeIcon icon={faMagnifyingGlass} className="mr-1" />
-				</button>
-			</div>
+		<form onSubmit={search} onReset={reset} className="inline grouped">
+			<input className="input"
+				type="text"
+				placeholder="Search for anything"
+			/>
+			<button type="reset" className="btn">
+				<FontAwesomeIcon icon={faXmark} className="mr-1" />
+			</button>
+			<button type="submit" className="btn btn-primary">
+				<FontAwesomeIcon icon={faMagnifyingGlass} className="mr-1" />
+			</button>
 		</form>
 	)
 }
