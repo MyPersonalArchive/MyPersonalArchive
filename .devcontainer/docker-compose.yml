@@ -13,7 +13,6 @@ services:
 
     # Keeps the container running so VS Code can attach
     command: sleep infinity
-    network_mode: bridge
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -24,7 +23,6 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=p@ssw0rd
       - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.pem
       - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
-      - KC_HOSTNAME=localhost
     command: start-dev
     volumes:
       - ~/data/mpa/https/:/opt/keycloak/conf/:ro

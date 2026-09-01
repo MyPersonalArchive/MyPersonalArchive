@@ -8,7 +8,7 @@ __Recommended:__ Secrets will never be stored in a plain text file on your devel
   - Create a vault for `MpaDevelopment`
   - Create a new item of type "Credentials" called `mpa-local-auth` containing fields and values for `Audience`, `JWT Issuer` and `JWT Secret`.
   - Create a new item of type "Credentials" called `org-admin-api` containing fields and values for `base-url`, `authority`, `realm`, `client-id` and `client-secret`
-  - Create a new item of type "Credentials" called `my-personal-archive` containing fields and values for `base-url`, `authority`, `realm`, `client-id`, `client-secret`, `callback-path`, `signed-out-callback-path` and `default-redirect-path`
+  - Create a new item of type "Credentials" called `my-personal-archive` containing fields and values for `base-url`, `backchannel-authority`, `browser-authority`, `realm`, `client-id`, `client-secret`, `callback-path`, `signed-out-callback-path` and `default-redirect-path`
 2. Copy this folder to host computer
 3. Set appropriate permissions on `start-dev.sh``
 	```

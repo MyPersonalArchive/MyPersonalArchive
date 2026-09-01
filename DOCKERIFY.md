@@ -108,7 +108,8 @@ docker compose up -d --build
 | `ASPNETCORE_HTTP_PORTS` | Port Kestrel listens on inside the container. Defaults to `5054` (set in the Dockerfile). Change this *and* the `-p` mapping together. |
 | `CERTIFICATE_PASSWORD` | Enables HTTPS. Requires a cert at `/data/https/server.pfx` (put it in the `/data` volume) and this password to unlock it. Without it, Kestrel serves plain HTTP. |
 | `Oidc__Enabled` | Set to `true` to enable OpenID Connect login (e.g. Keycloak, another IdP). |
-| `Oidc__Authority` | OIDC authority URL. |
+| `Oidc__BackchannelAuthority` | OIDC authority URL. |
+| `Oidc__BrowserAuthority` | OIDC authority URL. |
 | `Oidc__ClientId` | OIDC client id. |
 | `Oidc__ClientSecret` | OIDC client secret. |
 | `Oidc__CallbackPath` | OIDC sign-in callback path. |

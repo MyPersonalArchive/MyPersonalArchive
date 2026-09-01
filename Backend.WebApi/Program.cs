@@ -199,7 +199,7 @@ public static class Program
 			authenticationBuilder.AddOpenIdConnect(OidcConfig.Scheme, options =>
 			{
 				options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-				options.Authority = oidcOptions.Authority;
+				options.Authority = oidcOptions.BackchannelAuthority;
 				options.ClientId = oidcOptions.ClientId;
 				options.ClientSecret = string.IsNullOrWhiteSpace(oidcOptions.ClientSecret) ? null : oidcOptions.ClientSecret;
 				options.CallbackPath = oidcOptions.CallbackPath;
@@ -211,6 +211,31 @@ public static class Program
 				options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
 				options.Scope.Add("email");
 				options.Scope.Add("organization");
+
+				// Metadata discovery and token exchange happen server-to-server, so they keep using
+				// oidcOptions.Authority (e.g. the Docker service name "keycloak"). The browser can't
+				// resolve that host, so redirect it to BrowserAuthority (e.g. "https://localhost:8443")
+				// instead for the authorize and end-session requests.
+				if (!string.IsNullOrWhiteSpace(oidcOptions.BrowserAuthority))
+				{
+					var browserOrigin = new Uri(oidcOptions.BrowserAuthority, UriKind.Absolute);
+
+					options.Events.OnRedirectToIdentityProvider = context =>
+					{
+						RedirectViaBrowserOrigin(context.ProtocolMessage, browserOrigin);
+						return Task.CompletedTask;
+					};
+					options.Events.OnRedirectToIdentityProviderForSignOut = context =>
+					{
+						RedirectViaBrowserOrigin(context.ProtocolMessage, browserOrigin);
+						return Task.CompletedTask;
+					};
+
+					// Keycloak binds the "iss" claim to the hostname of the front-channel authorize
+					// request (BrowserAuthority), even though token exchange happens server-to-server
+					// against Authority. Accept both so issuer validation doesn't fail.
+					options.TokenValidationParameters.ValidIssuers = [oidcOptions.BackchannelAuthority, oidcOptions.BrowserAuthority];
+				}
 			});
 		}
 
@@ -229,6 +254,21 @@ public static class Program
 				.RequireAuthenticatedUser()
 				.Build();
 		});
+	}
+
+	private static void RedirectViaBrowserOrigin(Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage message, Uri browserOrigin)
+	{
+		if (string.IsNullOrWhiteSpace(message.IssuerAddress))
+		{
+			return;
+		}
+
+		message.IssuerAddress = new UriBuilder(new Uri(message.IssuerAddress, UriKind.Absolute))
+		{
+			Scheme = browserOrigin.Scheme,
+			Host = browserOrigin.Host,
+			Port = browserOrigin.Port
+		}.Uri.ToString();
 	}
 
 

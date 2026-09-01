@@ -36,8 +36,8 @@
 		"Keycloak__ClientId": "${localEnv:KEYCLOAK_ORG_ADMIN_API_CLIENT_ID:-}",
 		"Keycloak__ClientSecret": "${localEnv:KEYCLOAK_ORG_ADMIN_API_CLIENT_SECRET:-}",
 
-		"Oidc__Authority": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_AUTHORITY:-}",
-		"Oidc__BaseUrl": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_BASE_URL:-}",
+		"Oidc__BackchannelAuthority": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_BACKCHANNEL_AUTHORITY:-}",
+		"Oidc__BrowserAuthority": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_BROWSER_AUTHORITY:-}",
 		"Oidc__Realm": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_REALM:-}",
 		"Oidc__ClientId": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CLIENT_ID:-}",
 		"Oidc__ClientSecret": "${localEnv:KEYCLOAK_MY_PERSONAL_ARCHIVE_CLIENT_SECRET:-}",
@@ -79,7 +79,8 @@
 				"cweijan.vscode-database-client2",
 				"bradlc.vscode-tailwindcss",
 				"mermaidchart.vscode-mermaid-chart",
-				"dotjoshjohnson.xml"
+				"dotjoshjohnson.xml",
+				"anthropic.claude-code"
 			]
 		}
 	},
