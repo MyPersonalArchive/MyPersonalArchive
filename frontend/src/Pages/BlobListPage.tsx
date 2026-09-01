@@ -71,15 +71,14 @@ export const BlobListPage = () => {
 
 	return (
 		<>
-			<header className="header">
-				<h1>Documents and media</h1>
-			</header>
+			<div className="full-width-non-bordered flex flex-col gap-2">
+				<Filter />
+			</div>
 
-			<Filter />
-
-			<div className="stack-horizontal to-the-right my-4">
-				<label>
-					<input ref={selectAllCheckboxRef} type="checkbox"
+			<div className="full-width-non-bordered flex flex-row flex-wrap gap-2 items-center my-4">
+				<label className="whitespace-nowrap">
+					<input ref={selectAllCheckboxRef}
+						type="checkbox"
 						checked={selectionOfBlobs.areAllItemsSelected}
 						onChange={() => selectionOfBlobs.areAllItemsSelected
 							? selectionOfBlobs.clearSelection()
@@ -88,14 +87,14 @@ export const BlobListPage = () => {
 					Select all
 				</label>
 
-				<button className="btn"
+				<button className="btn whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={createArchiveItemFromVisibleSelectedBlobs}
 				>
 					Create from {selectedVisibleBlobs.length} selected
 				</button>
 
-				<button className="btn"
+				<button className="btn whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={deleteVisibleSelectedBlobs}
 				>
@@ -104,7 +103,7 @@ export const BlobListPage = () => {
 			</div>
 
 			<PreviewList<BlobMetadata> items={visibleBlobs}
-				containerClassName="flex flex-col gap-3"
+				containerClassName="full-width-bordered flex flex-col gap-3"
 				keySelector={blob => blob.id}
 				thumbnailPreviewTemplate={
 					(blob, maximize) => <BlobCard
@@ -201,15 +200,18 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosi
 		firstInputRef.current?.focus()
 	}, [])
 
-	const register = (metadataType: string) => {
+	const register = (selectedMetadataType: string) => {
+
 		switch (registrationMode) {
 			case "createAndEdit":
 				// Navigate to edit mode
 				//TODO: 
-				alert(`Navigate to edit mode (not implemented yet): ${metadataType}`)
+				alert(`TODO: Navigate to new or edit archiveItem mode (not implemented): ${selectedMetadataType}`)
 				break
 
 			case "createAndMove":
+				console.log(`TODO: Create archiveItem (not implemented): ${selectedMetadataType}`)
+				// createArchiveItem([selectedMetadataType])
 				if (canMoveNext) moveNext()
 				break
 		}
@@ -266,7 +268,7 @@ type BlobCardProps = {
 }
 const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
 	return (
-		<div className="card flex flex-row relative">
+		<div className="card my-0 overflow-hidden flex flex-row relative">
 
 			<div className="bg-black border border-black w-40 h-40 flex justify-center items-center action-bar-host"
 				onClick={() => maximize(blob)}
@@ -318,8 +320,8 @@ const Filter = () => {
 	}, [hideAllocatedBlobs])
 
 	return (
-		<div className="stack-horizontal to-the-left my-4">
-			<label>
+		<div>
+			<label className="whitespace-nowrap">
 				<input type="checkbox" checked={hideAllocatedBlobs} onChange={() => setHideAllocatedBlobs(b => !b)} />
 				Hide allocated blobs
 			</label>
