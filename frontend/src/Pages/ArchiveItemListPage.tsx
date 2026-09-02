@@ -1,13 +1,14 @@
+import React from "react"
 import { Link, useSearchParams } from "react-router-dom"
+import classNames from "classnames"
 import { useAtomValue } from "jotai"
-import { ArchiveItem, archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
-import { storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
-import { RoutePaths } from "../RoutePaths"
-import { StoredFilterSelector } from "../Components/Filter/StoredFilterSelector"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPaperclip, faMagnifyingGlass, faXmark } from "@fortawesome/free-solid-svg-icons"
-import classNames from "classnames"
+import { ArchiveItem, archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
+import { storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
 import { dateToShortDateDisplay } from "../Utils/formatUtils"
+import { RoutePaths } from "../RoutePaths"
+import { StoredFilterSelector } from "../Components/Filter/StoredFilterSelector"
 
 
 export const ArchiveItemListPage = () => {
@@ -35,6 +36,16 @@ export const ArchiveItemListPage = () => {
 		const metadataTypesFilter = storedFilter ? storedFilter.filterDefinition.metadataTypes : searchParams.getAll("metadataTypes") ?? []
 		for (const metadataType of metadataTypesFilter) {
 			if (!Object.keys(item.metadata).includes(metadataType.toString())) {
+				return false
+			}
+		}
+
+		const searchTerm = searchParams.get("find")?.toLowerCase()
+		if (searchTerm) {
+			if (!item.title.toLowerCase().includes(searchTerm) &&
+				!item.tags.some(tag => tag.toLowerCase().includes(searchTerm)) &&
+				!Object.values(item.metadata).some(value => value.toString().toLowerCase().includes(searchTerm))
+			) {
 				return false
 			}
 		}
@@ -188,14 +199,21 @@ const EmailPill = (archiveItem: any) => {
 
 
 const Search = () => {
+	const [searchTerm, setSearchTerm] = React.useState("")
 	const [searchParams, setSearchParams] = useSearchParams()
 
 	const search = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
+		if(searchTerm.trim() !== "") {
+			setSearchParams({find: searchTerm})
+		} else {
+			setSearchParams({})
+		}
 	}
 
 	const reset = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
+		setSearchTerm("")
 		setSearchParams({})
 	}
 
@@ -204,6 +222,8 @@ const Search = () => {
 			<input className="input"
 				type="text"
 				placeholder="Search for anything"
+				value={searchTerm}
+				onChange={e => setSearchTerm(e.target.value)}
 			/>
 			<button type="reset" className="btn">
 				<FontAwesomeIcon icon={faXmark} className="mr-1" />
