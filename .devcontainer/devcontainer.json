@@ -21,7 +21,7 @@
 		// 	"ghcr.io/devcontainers/features/sshd:1.1.0": {}
 		// }
 	},
-	"containerEnv": {
+	"remoteEnv":{
 		"ASPNETCORE_ENVIRONMENT": "Development",
 		"ASPNETCORE_HTTP_PORTS": "5054",
 		"ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
