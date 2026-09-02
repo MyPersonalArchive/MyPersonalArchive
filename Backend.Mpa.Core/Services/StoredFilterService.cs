@@ -30,6 +30,52 @@ public class StoredFilterService : SettingsServiceBase<StoredFilterSettings>
 		await SaveSettingsAsync(settings);
 		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("StoredFiltersUpdated", null));
 	}
+
+	override protected async Task<StoredFilterSettings> InitializeAsync()
+	{
+		var settings = await base.InitializeAsync();
+
+		settings.Filters = new List<StoredFilterSettings.Filter>{
+			new StoredFilterSettings.Filter{
+				Id = Guid.NewGuid(),
+				Name = "All items",
+				Definition = new StoredFilterSettings.FilterDefinition{
+					Title = "",
+					Tags = [],
+					MetadataTypes = []
+				}
+			},
+			new StoredFilterSettings.Filter{
+				Id = Guid.NewGuid(),
+				Name = "Receipts",
+				Definition = new StoredFilterSettings.FilterDefinition{
+					Title = "",
+					Tags = [],
+					MetadataTypes = ["receipt"]
+				}
+			},
+			new StoredFilterSettings.Filter{
+				Id = Guid.NewGuid(),
+				Name = "Travel docs",
+				Definition = new StoredFilterSettings.FilterDefinition{
+					Title = "",
+					Tags = [],
+					MetadataTypes = ["travel-document"]
+				}
+			},
+			new StoredFilterSettings.Filter{
+				Id = Guid.NewGuid(),
+				Name = "Emails",
+				Definition = new StoredFilterSettings.FilterDefinition{
+					Title = "",
+					Tags = [],
+					MetadataTypes = ["email"]
+				}
+			}
+		};
+
+		return settings;
+	}
 }
 
 

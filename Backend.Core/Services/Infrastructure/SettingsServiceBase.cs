@@ -21,7 +21,7 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 	{
 		if (!await _fileStore.FileExists([], FileName))
 		{
-			return new T { SchemaVersion = "1.0" };
+			return await InitializeAsync();
 		}
 
 		await using var stream = await _fileStore.GetFile([], FileName) ?? throw new InvalidOperationException($"Unable to obtain stream for {FileName}.");
@@ -47,4 +47,9 @@ public abstract class SettingsServiceBase<T> where T : SettingsBase, new()
 		// }
 	}
 
+
+	protected virtual async Task<T> InitializeAsync()
+	{
+		return new T { SchemaVersion = "1.0" };
+	}
 }
