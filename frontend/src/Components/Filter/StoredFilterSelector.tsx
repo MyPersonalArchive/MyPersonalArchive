@@ -47,8 +47,10 @@ const ClickableStoredFilters = () => {
 	const storedFilters = useAtomValue(storedFiltersAtom)
 
 	const selectFilter = (filter: StoredFilter) => {
-		setSearchParams({
-			filter: filter.name
+		setSearchParams(p => {
+			const newParams = new URLSearchParams(p)
+			newParams.set("filter", filter.name)
+			return newParams
 		})
 	}
 
@@ -155,18 +157,20 @@ type FilterFormProps = {
 const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 	const [storedFilters, dispatch] = useAtom(storedFiltersAtom)
 	const allTags = useAtomValue(tagsAtom)
-	const navigate = useNavigate()
+	const [searchParams, setSearchParams] = useSearchParams()
+	// const navigate = useNavigate()
 
 	const selectedFilter = storedFilters.find(filter => filter.id === selectedFilterId)
 
 	const search = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		navigate({
-			search: createQueryString({
-				title: selectedFilter?.filterDefinition.title,
-				tags: selectedFilter?.filterDefinition.tags.map(tag => tag.trim()),
-				metadataTypes: Array.from(selectedFilter?.filterDefinition.metadataTypes ?? []).filter(type => typeof type === "string").map(type => type.toString())
-			}, { skipEmptyStrings: true })
+		setSearchParams(p => {
+			const newParams = new URLSearchParams(p)
+			console.log(`searching for filter "${p}"`)
+			// newParams.set("title", selectedFilter?.filterDefinition.title ?? "")
+			selectedFilter?.filterDefinition.tags.map(tag => tag.trim()).forEach(tag => newParams.append("tags", tag))
+			Array.from(selectedFilter?.filterDefinition.metadataTypes ?? []).filter(type => typeof type === "string").map(type => type.toString()).forEach(type => newParams.append("metadataTypes", type))
+			return newParams
 		})
 	}
 
@@ -180,12 +184,12 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 			onSubmit={search}
 			onReset={reset}
 		>
-			<input className="input"
+			{/* <input className="input"
 				type="text"
 				placeholder="Search by title"
 				value={selectedFilter?.filterDefinition.title ?? ""}
 				onChange={event => dispatch({ action: "EDIT_FILTER_DEFINITION_TITLE", id: selectedFilterId, title: event.target.value })}
-			/>
+			/> */}
 			<TagsInput
 				placeholder="Search by tags"
 				tags={selectedFilter?.filterDefinition.tags ?? []}
@@ -202,7 +206,7 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 							<input className="input" type="checkbox"
 								checked={selectedFilter?.filterDefinition.metadataTypes.has(metadataType.path)}
 								onClick={event => event.stopPropagation()}
-								onChange={event => dispatch({ action: "EDIT_FILTER_DEFINITION_TOGGLE_METADATATYPE", id: selectedFilterId, metadataPath: metadataType.path })} />
+								onChange={() => dispatch({ action: "EDIT_FILTER_DEFINITION_TOGGLE_METADATATYPE", id: selectedFilterId, metadataPath: metadataType.path })} />
 							{metadataType.displayName}
 						</label>
 					)
@@ -212,9 +216,9 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 			<button type="submit" className="btn btn-primary" >
 				Search
 			</button>
-			<button type="reset" className="btn">
+			{/* <button type="reset" className="btn">
 				Reset
-			</button>
+			</button> */}
 		</form >
 	)
 }

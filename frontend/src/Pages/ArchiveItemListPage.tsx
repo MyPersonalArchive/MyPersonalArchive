@@ -44,7 +44,7 @@ export const ArchiveItemListPage = () => {
 		if (searchTerm) {
 			if (!item.title.toLowerCase().includes(searchTerm) &&
 				!item.tags.some(tag => tag.toLowerCase().includes(searchTerm)) &&
-				!Object.values(item.metadata).some(value => value.toString().toLowerCase().includes(searchTerm))
+				!Object.values(item.metadata).some(value => value?.toString().toLowerCase().includes(searchTerm))
 			) {
 				return false
 			}
@@ -205,7 +205,11 @@ const Search = () => {
 	const search = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		if(searchTerm.trim() !== "") {
-			setSearchParams({find: searchTerm})
+			setSearchParams(p => {
+				const newParams = new URLSearchParams(p)
+				newParams.set("find", searchTerm)
+				return newParams
+			})
 		} else {
 			setSearchParams({})
 		}
