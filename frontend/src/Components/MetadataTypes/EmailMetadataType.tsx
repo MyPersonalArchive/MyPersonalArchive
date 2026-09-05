@@ -18,6 +18,16 @@ type State = {
 	body: string
 }
 
+
+const summarize = (state: State) => {
+	if(!state || !state.from && !state.to && !state.date) return undefined
+	const from = ` from ${state.from}`
+	const to = ` to ${state.to}`
+	const date = ` on ${state.date}`
+	return `Email${from}${to}${date}`
+}
+
+
 const reducer = (state: State, command: Command): State => {
 	switch (command.action) {
 		case "INIT":
@@ -87,72 +97,74 @@ const Component = (props: MetadataComponentProps) => {
 	const formatLocalDateForInput = (datetimeOffsetString: string) => {
 		// We get the datetimeoffset from the server, and in order to adjust the time based on timezone we calculate the actual local time.
 		// This because the datetime-local input type does not take timezone into account.
-		const date = new Date(datetimeOffsetString);
-		const tzOffset = date.getTimezoneOffset() * 60000;
-		const localISOTime = new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
-		return localISOTime;
+		const date = new Date(datetimeOffsetString)
+		const tzOffset = date.getTimezoneOffset() * 60000
+		const localISOTime = new Date(date.getTime() - tzOffset).toISOString().slice(0, 16)
+		return localISOTime
 	}
 
 
 	return (
 		<>
-			<div className="aligned-labels-and-inputs">
-				<label htmlFor="email-subject">Subject</label>
-				<input
-					type="text"
-					id="email-subject"
-					className="input"
-					placeholder="Email subject..."
-					value={state.subject}
-					onChange={e => dispatch({ action: "SET_SUBJECT", subject: e.target.value })}
-				/>
-			</div>
+			<div className="flex flex-col gap-4">
+				<label className="input" htmlFor="email-subject">
+					<span className="label">Subject</span>
+					<input
+						type="text"
+						id="email-subject"
+						className="input"
+						placeholder="Email subject..."
+						value={state.subject}
+						onChange={e => dispatch({ action: "SET_SUBJECT", subject: e.target.value })}
+					/>
+				</label>
 
-			<div className="aligned-labels-and-inputs">
-				<label htmlFor="email-date">Date</label>
-				<input
-					type="datetime-local"
-					id="email-date"
-					className="input"
-					value={state.date ? formatLocalDateForInput(state.date) : ""}
-					onChange={e => dispatch({ action: "SET_DATE", date: e.target.value })}
-				/>
-			</div>
+				<label className="input" htmlFor="email-date">
+					<span className="label">Date</span>
+					<input
+						type="datetime-local"
+						id="email-date"
+						className="input"
+						value={state.date ? formatLocalDateForInput(state.date) : ""}
+						onChange={e => dispatch({ action: "SET_DATE", date: e.target.value })}
+					/>
+				</label>
 
-			<div className="aligned-labels-and-inputs">
-				<label htmlFor="email-from">From</label>
-				<input
-					type="email"
-					id="email-from"
-					className="input"
-					placeholder="sender@example.com"
-					value={state.from}
-					onChange={e => dispatch({ action: "SET_FROM", from: e.target.value })}
-				/>
-			</div>
+				<label className="input" htmlFor="email-from">
+					<span className="label">From</span>
+					<input
+						type="email"
+						id="email-from"
+						className="input"
+						placeholder="sender@example.com"
+						value={state.from}
+						onChange={e => dispatch({ action: "SET_FROM", from: e.target.value })}
+					/>
+				</label>
 
-			<div className="aligned-labels-and-inputs">
-				<label htmlFor="email-to">To</label>
-				<input
-					type="email"
-					id="email-to"
-					className="input"
-					placeholder="recipient@example.com"
-					value={state.to}
-					onChange={e => dispatch({ action: "SET_TO", to: e.target.value })}
-				/>
-			</div>
+				<label className="input" htmlFor="email-to">
+					<span className="label">To</span>
+					<input
+						type="email"
+						id="email-to"
+						className="input"
+						placeholder="recipient@example.com"
+						value={state.to}
+						onChange={e => dispatch({ action: "SET_TO", to: e.target.value })}
+					/>
+				</label>
 
-			<div className="aligned-labels-and-inputs">
-				<label htmlFor="email-body">Body</label>
-				<textarea
-					rows={6}
-					id="email-body"
-					className="input"
-					placeholder="Email content..."
-					value={state.body}
-					onChange={e => dispatch({ action: "SET_BODY", body: e.target.value })}
-				/>
+				<label className="textarea" htmlFor="email-body">
+					<span className="label">Body</span>
+					<textarea
+						rows={6}
+						id="email-body"
+						className="input"
+						placeholder="Email content..."
+						value={state.body}
+						onChange={e => dispatch({ action: "SET_BODY", body: e.target.value })}
+					/>
+				</label>
 			</div>
 		</>
 	)
@@ -160,6 +172,7 @@ const Component = (props: MetadataComponentProps) => {
 
 export default {
 	displayName: "Email",
+	summarize,
 	path: "email",
 	component: Component,
 	reducer

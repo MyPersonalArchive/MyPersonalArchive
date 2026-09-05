@@ -9,6 +9,8 @@ import { storedFiltersAtom } from "../Utils/Atoms/storedFiltersAtom"
 import { dateToShortDateDisplay } from "../Utils/formatUtils"
 import { RoutePaths } from "../RoutePaths"
 import { StoredFilterSelector } from "../Components/Filter/StoredFilterSelector"
+import { allMetadataTypes } from "../Components/MetadataTypes"
+import { MetadataType } from "../Utils/Metadata/types"
 
 
 export const ArchiveItemListPage = () => {
@@ -64,7 +66,7 @@ export const ArchiveItemListPage = () => {
 			<div className="full-width-non-bordered flex flex-wrap items-baseline gap-2">
 				<Search />
 				<div className="flex-1"></div>
-				<Link to={RoutePaths.Archive.New} className="link whitespace-nowrap">Create new item</Link>
+				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>
 			</div>
 
 			<div className="full-width-non-bordered">
@@ -104,7 +106,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
 			className="group/archive-item div-row layout-title-date-and-more"
 		>
-			<span className="title link group-hover/archive-item:underline">
+			<span className="title link link-hover group-hover/archive-item:underline">
 				{archiveItem.title}
 				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 			</span>
@@ -113,20 +115,24 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 				{dateToShortDateDisplay(archiveItem.documentDate)}
 			</span>
 
-			<div className="more">
-
-				{selectedMetadataTypes.includes("receipt") && ReceiptPill(archiveItem)}
-				{selectedMetadataTypes.includes("travel-document") && TravelDocPill(archiveItem)}
-				{selectedMetadataTypes.includes("email") && EmailPill(archiveItem)}
+			<div className="more text-xs my-1.5">
+				{
+					selectedMetadataTypes.map(type =>
+						<MetadataWithSummaryPill key={type}
+							className="my-1"
+							metadataType={allMetadataTypes.find(mt => mt.path === type)!}
+							metadata={archiveItem.metadata}
+						/>
+					)
+				}
 
 				{Object.keys(archiveItem.metadata).filter(type => !selectedMetadataTypes.includes(type)).map((type) => (
-					<span key={type} className="pill metadatatype">{type}</span>
+					<span key={type} className="pill metadatatype my-1">{allMetadataTypes.find(mt => mt.path === type)?.displayName ?? type}</span>
 				))}
 
 				{archiveItem.tags
-					// .sort((a, b) => (highlightTags?.includes(a) ? -1 : 0))	// sort highlighted tags to the front
 					.map((tag) => (
-						<span key={tag} className={classNames("pill tag", { "highlight": highlightTags?.includes(tag) })}>{tag}</span>
+						<span key={tag} className={classNames("pill tag my-1", { "highlight": highlightTags?.includes(tag) })}>{tag}</span>
 					))}
 			</div>
 		</Link>
@@ -134,65 +140,16 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 }
 
 
-const ReceiptPill = (archiveItem: any) => {
+const MetadataWithSummaryPill = ({ metadataType, metadata, className }: { metadataType: MetadataType, metadata: any, className?: string }) => {
+	const summary = metadataType?.summarize(metadata[metadataType.path])
 	return (
-		<span className="double-pill bg-blue-200">
-			<span>Receipt</span>
-			{archiveItem.metadata.receipt.amount && (
-				<>
-					&nbsp;
-					<span className="highlight">
-						{archiveItem.metadata.receipt.amount} {archiveItem.metadata.receipt.currency}
-					</span>
-				</>
-			)}
-		</span>
-	)
-}
-
-
-const TravelDocPill = (archiveItem: any) => {
-	const ConcatLegs = (legs: Array<{ flightNumber: string, departureFrom: string, arrivalAt: string }>) => {
-		const arrayOfArrays: string[][] = []
-		legs.forEach(leg => {
-			const currentStage = arrayOfArrays.at(-1) ?? []
-			const lastLegArrival = currentStage.at(-1)
-
-			if (lastLegArrival === leg.departureFrom) {
-				currentStage.push(leg.arrivalAt)
-			} else {
-				arrayOfArrays.push([leg.departureFrom, leg.arrivalAt])
-			}
-		})
-
-		return arrayOfArrays.map(stage => stage.join(" -> ")).join(", ")
-	}
-
-	return (
-		<span className="double-pill bg-blue-200">
-			<span>Travel document</span>
-			{archiveItem.metadata["travel-document"].legs?.length > 0 && (
-				<span className="highlight">
-					{ConcatLegs(archiveItem.metadata["travel-document"].legs)}
+		<span className={`pill metadatatype ${className ?? ""}`}>
+			{metadataType?.displayName ?? metadataType.path}
+			{summary &&
+				<span className="inner pill highlight">
+					{summary}
 				</span>
-			)}
-		</span>
-	)
-}
-
-
-const EmailPill = (archiveItem: any) => {
-	return (
-		<span className="double-pill bg-blue-200">
-			<span>Email</span>
-			{archiveItem.metadata.email?.from && (
-				<>
-					&nbsp;
-					<span className="highlight">
-						From: {archiveItem.metadata.email.from}
-					</span>
-				</>
-			)}
+			}
 		</span>
 	)
 }
@@ -204,7 +161,7 @@ const Search = () => {
 
 	const search = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
-		if(searchTerm.trim() !== "") {
+		if (searchTerm.trim() !== "") {
 			setSearchParams(p => {
 				const newParams = new URLSearchParams(p)
 				newParams.set("find", searchTerm)
@@ -222,7 +179,7 @@ const Search = () => {
 	}
 
 	return (
-		<form onSubmit={search} onReset={reset} className="inline grouped">
+		<form onSubmit={search} onReset={reset} className="join">
 			<input className="input"
 				type="text"
 				placeholder="Search for anything"

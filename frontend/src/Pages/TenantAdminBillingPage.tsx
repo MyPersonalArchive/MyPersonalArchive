@@ -66,40 +66,43 @@ export const TenantAdminBillingPage = () => {
 					const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
 
 					return (
-						<div key={tier.id} className={classNames("card w-64 p-4 flex flex-col", { "border-2! border-blue-500!": isCurrentTier })}>
-							<div className="min-h-5 text-xs font-semibold text-blue-600 mb-1">
-								{isCurrentTier && "Current plan"}
+						<div key={tier.id} className={classNames("card bg-base-100 card-xs shadow-sm w-64 p-4 flex flex-col border-2! border-gray-200", { "border-blue-500!": isCurrentTier })}>
+							<div className="card-body">
+								{isCurrentTier
+									? <span className="badge badge-xs badge-warning">
+										Current plan
+									</span>
+									: <span className="h-4"></span>
+								}
+								<div className="flex justify-between items-baseline">
+									<h2 className="text-3xl font-bold">{tier.display.title}</h2>
+									<span className="text-xl">€{tier.pricePerMonthEUR.toFixed(2)}/mo</span>
+								</div>
+								<div className="text-sm mt-2 min-h-14">{tier.display.description}</div>
+
+								<div className="text-sm text-gray-600">{tier.display.subtitle}</div>
+								<ul className="text-sm mt-2 list-disc pl-4">
+									{tier.display.features.map(feature => (
+										<li key={feature}>{feature}</li>
+									))}
+								</ul>
+
+								<div className="flex-1"></div>
+
+								{isOwner &&
+								<div className="mt-6">
+									<button className="btn btn-primary btn-block"
+										type="button"
+										disabled={isCurrentTier}
+										onClick={() => changeToTier(tier.id)}
+									>
+										{isCurrentTier ? "Current plan" : "Change to this tier"}
+									</button>
+								</div>
+								}
 							</div>
-							<div className="font-bold">
-								<FontAwesomeIcon icon={faMedal} fixedWidth />
-								{tier.display.title}
-							</div>
-							<div className="text-sm mt-2 min-h-14">{tier.display.description}</div>
-
-							<div className="mt-2 font-semibold">
-								€{tier.pricePerMonthEUR.toFixed(2)} / month
-							</div>
-							<div className="text-sm">{maxStorageGB} GB storage</div>
-
-							<div className="text-sm text-gray-600">{tier.display.subtitle}</div>
-							<ul className="text-sm mt-2 list-disc pl-4">
-								{tier.display.features.map(feature => (
-									<li key={feature}>{feature}</li>
-								))}
-							</ul>
-
-							<div className="flex-1"></div>
-
-							{isOwner &&
-								<button className="btn btn-primary mt-3"
-									type="button"
-									disabled={isCurrentTier}
-									onClick={() => changeToTier(tier.id)}
-								>
-									{isCurrentTier ? "Current plan" : "Change to this tier"}
-								</button>
-							}
 						</div>
+
 					)
 				})}
 			</div>

@@ -15,7 +15,6 @@ import { PreviewList } from "../Components/PreviewList"
 import { BlobDisplayInfo } from "../Components/Preview"
 import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
-import { DatePicker } from "../Components/DatePicker"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -100,15 +99,20 @@ export const ArchiveItemNewPage = () => {
 					/>
 				</div>
 
-				<div className="aligned-labels-and-inputs">
-					<label htmlFor="documentDate">Document date</label>
-					<DatePicker date={documentDate ?? ""} setDate={setDocumentDate} />
+				<div className="join">
+					<label className="input">
+						<span className="label">Document date</span>
+						<label className="date" htmlFor="documentDate">
+							<input type="date" className="input"
+								value={documentDate ?? ""}
+								onChange={e => setDocumentDate(e.target.value)}
+							/>
+						</label>
+					</label>
+					<button className="btn btn-outline btn-primary" type="button" onClick={() => setDocumentDate("")}>&times;</button>
 				</div>
 
-				<div className="aligned-labels-and-inputs">
-					<label htmlFor="tags">Tags</label>
-					<TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={Array.from(allTags)} />
-				</div>
+				<TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={Array.from(allTags)} />
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="notes">Notes</label>
@@ -120,13 +124,16 @@ export const ArchiveItemNewPage = () => {
 					/>
 				</div>
 
-				<MetadataTypeSelector
+				{/* <MetadataTypeSelector
 					selectedMetadataTypes={selectedMetadataTypes}
 					allMetadataTypes={allMetadataTypes}
 					dispatch={dispatch(MetadataControlPath)}
-				/>
+				/> */}
 
-				{
+				<div className="todo">
+					//TODO: Metadatatype selector
+				</div>
+				{/* {
 					allMetadataTypes
 						.filter(({ path }) => selectedMetadataTypes.has(path as string))
 						.map((metadataType) => (
@@ -141,7 +148,7 @@ export const ArchiveItemNewPage = () => {
 								</div>
 							</div>
 						))
-				}
+				} */}
 
 				<FileDropZone showUnallocatedBlobs={true}
 					onBlobAdded={addFileBlobs}

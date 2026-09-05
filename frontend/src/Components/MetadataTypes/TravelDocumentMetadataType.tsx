@@ -1,14 +1,12 @@
-import { useRef } from "react"
 import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
 import { changeAtIndex, moveInArray, removeAtIndex } from "../../Utils/array-helpers"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faGripVertical, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { isDragging, MimeTypeConverterArray, useDrop, useSortableDragDrop } from "../DragDropHelpers"
 
 type Command =
 	| { action: "INIT" }
 	| { action: "METADATA_LOADED", metadata: State }
-	| { action: "SET_NOTES", notes: string }
 	| { action: "ADD_LEG", leg: Leg }
 	| { action: "MOVE_LEG", fromIndex: number, toIndex: number }
 	| { action: "UPDATE_LEG_BOOKINGREF", index: number, bookingRef: string }
@@ -27,6 +25,28 @@ type Leg = {
 	departureFrom: string,
 	arrivalAt: string,
 }
+
+
+const summarize = (state: State) => {
+	const ConcatLegs = (legs: Leg[]) => {
+		const arrayOfArrays: string[][] = []
+		legs.forEach(leg => {
+			const currentStage = arrayOfArrays.at(-1) ?? []
+			const lastLegArrival = currentStage.at(-1)
+
+			if (lastLegArrival === leg.departureFrom) {
+				currentStage.push(leg.arrivalAt)
+			} else {
+				arrayOfArrays.push([leg.departureFrom, leg.arrivalAt])
+			}
+		})
+
+		return arrayOfArrays.map(stage => stage.join(" -> ")).join(", ")
+	}
+
+	return state?.legs?.length ? ConcatLegs(state.legs) : undefined
+}
+
 
 const reducer = (state: State, command: Command): State => {
 	switch (command.action) {
@@ -202,6 +222,7 @@ const Component = (props: MetadataComponentProps) => {
 
 export default {
 	displayName: "Travel Document",
+	summarize,
 	path: "travel-document",
 	component: Component,
 	reducer

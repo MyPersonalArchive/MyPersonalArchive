@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 import { faGripVertical, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import { storedFiltersMimeTypeConverters, StoredFilter, storedFiltersAtom } from "../../Utils/Atoms/storedFiltersAtom"
 import { useAtom, useAtomValue } from "jotai"
@@ -7,7 +7,6 @@ import classNames from "classnames"
 import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
 import { useDrop, useSortableDragDrop } from "../DragDropHelpers"
 import { FormEvent, useEffect, useRef, useState } from "react"
-import { createQueryString } from "../../Utils/createQueryString"
 import { TagsInput } from "../TagsInput"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { UUID } from "crypto"
@@ -57,7 +56,7 @@ const ClickableStoredFilters = () => {
 	return <div className="flex flex-wrap gap-2 my-4">
 		{storedFilters?.map((filter) => (
 			<button key={filter.id}
-				className={classNames("btn btn-wide block font-mono whitespace-nowrap", { "selected": filter.name === searchParams.get("filter") })}
+				className={classNames("btn btn-wider block font-mono whitespace-nowrap", { "selected": filter.name === searchParams.get("filter") })}
 				onClick={() => selectFilter(filter)}
 			>
 				{filter.name}
@@ -93,7 +92,7 @@ const EditableStoredFilters = () => {
 				{dnd.rows.map(({ rowType, data: filter }, index) => rowType === "item-row"
 					?
 					<div key={filter.id}
-						className={classNames("btn btn-wide relative flex items-center cursor-default group/stored-filter", { "selected": filter.id === selectedFilterId })}
+						className={classNames("btn btn-wider relative flex items-center cursor-default group/stored-filter", { "selected": filter.id === selectedFilterId })}
 						draggable={true}
 						onMouseDown={dnd.mouseDown}
 						onMouseUp={dnd.mouseUp}
