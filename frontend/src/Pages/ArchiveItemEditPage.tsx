@@ -15,7 +15,7 @@ import { allMetadataTypes } from "../Components/MetadataTypes"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
-import { DatePicker } from "../Components/DatePicker"
+import { ICommand, MetadataType, ReducerIdentifier } from "../Utils/Metadata/types"
 import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
 import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
@@ -132,88 +132,62 @@ export const ArchiveItemEditPage = () => {
 
 	return (
 		<>
-			<form onSubmit={e => { e.preventDefault(); save() }}>
-				<header className="header">
-					<h1>Edit item</h1>
-				</header>
+			<form onSubmit={e => { e.preventDefault(); save() }} className="flex flex-col gap-4">
 
-				<div className="aligned-labels-and-inputs">
-					<label htmlFor="title">Title</label>
+				<label className="input w-full" htmlFor="title">
+					<span className="label">Title</span>
 					<input type="text"
-						className="input"
-						id="title" placeholder="" autoFocus data-1p-ignore
+						className="input input-xl"
+						id="title"
+						placeholder="Title"
+						autoFocus data-1p-ignore
 						value={title}
 						onChange={event => setTitle(event.target.value)}
 					/>
+				</label>
+
+				<div className="join">
+					<label className="input">
+						<span className="label">Document date</span>
+						<label className="date" htmlFor="documentDate">
+							<input type="date" className="input"
+								value={documentDate ?? ""}
+								onChange={e => setDocumentDate(e.target.value)}
+							/>
+						</label>
+					</label>
+					<button className="btn btn-outline btn-primary" type="button" onClick={() => setDocumentDate("")}>&times;</button>
 				</div>
 
-				<div className="aligned-labels-and-inputs">
-					<label htmlFor="documentDate">Document date</label>
+				<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} />
 
-					<DatePicker date={documentDate} setDate={setDocumentDate} />
-
-				</div>
-
-				<div className="aligned-labels-and-inputs">
-					<label htmlFor="tags">Tags</label>
-					<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} htmlId="tags" />
-				</div>
-
-				<div className="aligned-labels-and-inputs">
-					<label htmlFor="notes">Notes</label>
+				<label className="textarea" htmlFor="notes">
+					<span className="label">Notes</span>
 					<textarea
-						className="input"
+						className="input h-auto"
 						id="notes"
+						placeholder="Notes"
 						value={notes ?? ""}
 						onChange={event => setNotes(event.target.value)}
 					/>
-				</div>
-
-				{/* <MetadataTypeSelector
-					selectedMetadataTypes={selectedMetadataTypes}
-					allMetadataTypes={allMetadataTypes}
-					dispatch={dispatch(MetadataControlPath)}
-				/> */}
+				</label>
 
 				{
-					allMetadataTypes.map((metadataType) => (
-						<div key={metadataType.path.toString()} className="w-full my-4">
-							{
-								metadataType.path in metadata
-									? <div className="has-[.delete-metadata-type:hover]:bg-red-100!">
-										<div className="flex flex-row gap-2">
-											Data for {metadataType.displayName}
-											<button type="button"
-												className="text-gray-400 delete-metadata-type hover:text-red-500"
-												onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
-											>
-												<FontAwesomeIcon icon={faTrash} fixedWidth />
-											</button>
-										</div>
-										<MetadataElement
-											metadataType={metadataType}
-											metadata={metadata}
-											dispatch={dispatch(metadataType.path)}
-										/>
-									</div>
-									: <div className="flex flex-row gap-2">
-										<button type="button"
-											className="flex flex-row gap-2"
-											onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
-										>
-											<div>Data for {metadataType.displayName}</div>
-											<FontAwesomeIcon icon={faPlus} fixedWidth />
-										</button>
-									</div>
-							}
-						</div>
+					allMetadataTypes.map(metadataType => (
+						<MetadataSection
+							key={metadataType.path.toString()}
+							metadataType={metadataType}
+							metadata={metadata}
+							dispatch={dispatch}
+						/>
 					))
 				}
 
-				<FileDropZone showUnallocatedBlobs={true}
+
+				{/* <FileDropZone showUnallocatedBlobs={true}
 					onBlobAdded={addFileBlobs}
 					onBlobAttached={attachUnallocatedBlobs}
-				/>
+				/> */}
 
 				<div>
 					{/* Previewlist of files from DB */}
@@ -308,13 +282,15 @@ export const ArchiveItemEditPage = () => {
 				</div>
 
 				<div className="stack-horizontal to-the-right my-4">
-					<button className="btn" onClick={() => navigate(RoutePaths.Archive.List)} type="button">
+					<button className="btn btn-secondary" onClick={() => navigate(RoutePaths.Archive.List)} type="button">
 						Back
 					</button>
 					<button className="btn btn-primary" type="submit">
 						Save
+						<kbd className="kbd kbd-sm">⌘</kbd>
+						<kbd className="kbd kbd-sm">S</kbd>
 					</button>
-					<button className="btn btn-danger" type="button" onClick={() => setOpenDeleteDialog(true)}>
+					<button className="btn btn-warning" type="button" onClick={() => setOpenDeleteDialog(true)}>
 						Delete
 					</button>
 				</div>
@@ -338,6 +314,64 @@ export const ArchiveItemEditPage = () => {
 		</>
 	)
 }
+
+
+type MetadataSectionProps = {
+	metadataType: MetadataType
+	metadata: Record<string, any>
+	dispatch: (path: ReducerIdentifier) => (command: ICommand) => void
+}
+const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionProps) => {
+	const summary = (metadataType.path in metadata) ? metadataType.summarize(metadata[metadataType.path as string]) : ""
+	return (
+		<div key={metadataType.path.toString()} className="collapse collapse-arrow bg-base-100 border border-base-300 has-[.delete-receipt:hover]:bg-red-100!">
+			<input type="checkbox" />
+			<div className="collapse-title font-semibold">
+				{(metadataType.path in metadata)
+					? <span className="pill metadatatype">
+						{metadataType.displayName}
+
+						{summary &&
+							<span className="inner pill highlight">
+								{summary}
+							</span>
+						}
+					</span>
+					: <span className="pl-2">{metadataType.displayName}</span>
+				}
+			</div>
+			<div className="collapse-content text-sm px-0 ">
+				{
+					!(metadataType.path in metadata)
+						? <button
+							type="button"
+							className="btn btn-outline btn-primary mx-4"
+							onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
+						>
+							Create {metadataType.displayName} data
+						</button>
+						: <>
+							<MetadataElement
+								metadataType={metadataType}
+								metadata={metadata}
+								dispatch={dispatch(metadataType.path)}
+							/>
+							<button
+								type="button"
+								className="btn btn-outline btn-error mx-4 delete-receipt"
+								onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
+							>
+								Remove {metadataType.displayName} data
+							</button>
+						</>
+				}
+			</div>
+		</div>
+	)
+}
+
+
+
 
 
 type Position = { x: number; y: number }
@@ -441,10 +475,16 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosi
 				/>
 			</div>
 
-			<div>
-				<label htmlFor="documentDate">Document date</label>
-				<DatePicker date={documentDate} setDate={setDocumentDate} />
-			</div>
+			<span className="join">
+				<label className="floating-label">
+					<input type="date" className="input"
+						value={documentDate ?? ""}
+						onChange={e => setDocumentDate(e.target.value)}
+					/>
+					<span className="label">Document date</span>
+				</label>
+				<button className="btn" type="button" onClick={() => setDocumentDate("")}>&times;</button>
+			</span>
 
 			<div>
 				<label htmlFor="tags">Tags</label>
@@ -452,8 +492,8 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosi
 			</div>
 
 			<div className="todo">
-				//TODO:<br/>
-				Show page or tab to edit each metadata type<br/>
+				//TODO:<br />
+				Show page or tab to edit each metadata type<br />
 			</div>
 
 		</FloatingToolWindow>

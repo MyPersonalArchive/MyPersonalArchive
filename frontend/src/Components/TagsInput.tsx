@@ -1,35 +1,11 @@
 import { useRef, useState } from "react"
 
 type TagsProps = {
-    placeholder?: string
-    tags: string[]
-    setTags: (tags: string[]) => void
-    autocompleteList?: string[]
-    htmlId?: string
-}
-const DELIMITER_PAIRS: [string, string][] = [
-	["\"", "\""],
-	["'", "'"],
-	["(", ")"],
-	["[", "]"],
-]
-
-const isDelimiterOpen = (value: string) =>
-	DELIMITER_PAIRS.some(
-		([open, close]) => value.startsWith(open) && !(value.length > 1 && value.includes(close))
-	)
-
-const endsWithClosingDelimiter = (value: string) =>
-	DELIMITER_PAIRS.some(
-		([open, close]) => value.startsWith(open) && value.length > 1 && value.endsWith(close)
-	)
-
-const stripDelimiters = (value: string) => {
-	const trimmed = value.trim()
-	const pair = DELIMITER_PAIRS.find(
-		([open, close]) => trimmed.length > 1 && trimmed.startsWith(open) && trimmed.endsWith(close)
-	)
-	return pair ? trimmed.slice(1, -1) : trimmed
+	placeholder?: string
+	tags: string[]
+	setTags: (tags: string[]) => void
+	autocompleteList?: string[]
+	htmlId?: string
 }
 
 export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId }: TagsProps) => {
@@ -37,15 +13,17 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	const keyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === "Enter") {
-			event.preventDefault()	// prevent form submission on Enter key
+		if (event.key === "Enter" || event.key === "Tab") {
+			if (event.key === "Tab" && event.currentTarget.value.trim() === "") {
+				// Allow navigation with Tab if it is pressed and the input is empty
+				return
+			}
+			event.preventDefault()	// Prevent form submission on Enter key, and prevent navigation to next inputon Tab key
 
-			if (!isDelimiterOpen(event.currentTarget.value)) {
-				const tag = stripDelimiters(event.currentTarget.value).trim()
-				if (tag !== "") {
-					setTags([...tags, tag])
-					setTagsInput("")
-				}
+			const tag = event.currentTarget.value.trim()
+			if (tag !== "") {
+				setTags([...tags, tag])
+				setTagsInput("")
 			}
 			return
 		}
@@ -53,25 +31,13 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 		if (event.key === "Backspace" && tagsInput === "") {
 			event.preventDefault()
 			const lastTag = tags.at(-1) ?? ""
-			const valueToEdit = lastTag.includes(" ") ? `(${lastTag})` : lastTag
+			const valueToEdit = lastTag
 			setTagsInput(valueToEdit)
 			setTags(tags.slice(0, tags.length - 1))
 		}
 	}
 
 	const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		if (event.target.value.length > 0
-			&& inputRef.current?.selectionStart === event.target.value.length
-			&& (event.target.value.endsWith(" ") || endsWithClosingDelimiter(event.target.value))
-			&& !isDelimiterOpen(event.target.value)
-		) {
-			const tag = stripDelimiters(event.currentTarget.value)
-			setTags([...tags, tag])
-
-			setTagsInput("")
-			return
-		}
-
 		setTagsInput(event.target.value)
 	}
 
@@ -81,34 +47,37 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 
 	return (
 		<>
-			<span className="input is-wrapper" >
-				{
-					tags?.map((tag, ix) => 
-						<span key={ix} className="tag whitespace-nowrap">
-							{tag}&nbsp;
-							<span onClick={() => removeTag(ix)}>
-							&times;
-							</span>
-						</span>
-					)
-				}
-				<input
-					ref={inputRef}
-					className="stripped"
-					type="text"
-					list={htmlId + "List"}
-					placeholder={tags.length == 0 ? placeholder : ""}
-					id={htmlId}
-					value={tagsInput}
-					onKeyDown={keyDown}
-					onChange={onChange}
-				/>
-				<datalist id={htmlId + "List"}>
+			<label className="textarea">
+				<span className="label">Tags</span>
+				<div className="h-auto min-h-4 px-3 py-2 flex flex-wrap gap-2 items-baseline" >
 					{
-						autocompleteList?.map((s, ix) => <option key={ix} value={s + " "} />)
+						tags?.map((tag, ix) =>
+							<span key={ix} className="pill tag whitespace-nowrap">
+								{tag}&nbsp;
+								<span onClick={() => removeTag(ix)}>
+									&times;
+								</span>
+							</span>
+						)
 					}
-				</datalist>
-			</span>
+					<input
+						ref={inputRef}
+						className="outline-none flex-1 min-w-10"
+						type="text"
+						list="tagsList"
+						placeholder={tags.length == 0 ? placeholder : ""}
+						id="tags"
+						value={tagsInput}
+						onKeyDown={keyDown}
+						onChange={onChange}
+					/>
+					<datalist id="tagsList">
+						{
+							autocompleteList?.map((s) => <option key={s} value={s} />)
+						}
+					</datalist>
+				</div>
+			</label>
 		</>
 	)
 }

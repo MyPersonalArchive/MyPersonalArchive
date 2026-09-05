@@ -6,8 +6,8 @@ import TravelDocumentMetadataType from "./TravelDocumentMetadataType"
 
 export const allMetadataTypes: Array<MetadataType> = [
 	ReceiptMetadataComponent,
-	EmailMetadataType,
-	TravelDocumentMetadataType
+	TravelDocumentMetadataType,
+	EmailMetadataType
 ]
 
 

@@ -19,6 +19,7 @@ export type MetadataComponentProps = {
 
 export type MetadataType = {
     displayName: string
+	summarize: (state: any) => string
     path: ReducerIdentifier
     reducer: MetadataReducer
     component: React.FC<MetadataComponentProps>

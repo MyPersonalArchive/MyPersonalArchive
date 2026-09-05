@@ -3,9 +3,17 @@
 
 /* New tailwind-based css imports */
 @import "tailwindcss";
+/* @import "tailwindcss/typography"; */
+@plugin "daisyui";
 @import "./page-layout.css";
-@import "./table.css";
+/* @import "./table.css"; */
 
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  --color-secondary: teal;
+  --color-secondary-content: #fff;
+}
 
 @theme {
 	--color-main-color: hsl(210, 45%, 96%);
@@ -64,50 +72,6 @@ main {
 	>* {
 		@apply my-auto;
 	}
-}
-
-/* ── Dialog ── */
-.dialog-backdrop {
-	@apply flex absolute inset-0 bg-black/45 items-center justify-center z-2;
-}
-
-.dialog {
-	@apply bg-white rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] max-h-[80%] flex flex-col overflow-auto;
-
-	&.small {
-		@apply w-[min(320px,80%)];
-	}
-
-	&.medium {
-		@apply w-[min(480px,80%)];
-	}
-
-	&.large {
-		@apply w-[min(640px,80%)];
-	}
-
-	&.full {
-		@apply w-[calc(100%-4rem)];
-	}
-
-}
-
-
-.dialog-header {
-	@apply
-	/*border-b border-gray-300*/
-	font-bold p-4;
-}
-
-.dialog-content {
-	@apply p-4
-	/*overflow-auto*/
-	;
-}
-
-.dialog-footer {
-	@apply p-4;
-	/* @apply border-t border-gray-300 p-4 flex justify-end gap-2; */
 }
 
 
@@ -187,34 +151,6 @@ main {
 
 
 
-header.header {
-	@apply mb-4;
-
-	&>h1 {
-		@apply text-3xl font-bold mb-0;
-	}
-
-	&>h2 {
-		@apply text-2xl font-bold mb-0;
-	}
-
-	&>h3 {
-		@apply text-lg font-bold mb-0;
-	}
-
-	&>h4 {
-		@apply text-base font-bold mb-0;
-	}
-
-	&>h5 {
-		@apply text-sm font-bold mb-0;
-	}
-
-	&>h6 {
-		@apply text-xs font-bold mb-0;
-	}
-}
-
 
 
 .info-box {
@@ -230,112 +166,14 @@ header.header {
 }
 
 
-
-
-.link {
-	@apply text-blue-600 hover:underline cursor-pointer;
-}
-
 .align-with-btn {
 	@apply py-1;
 }
 
-.btn {
-	@apply bg-gray-200 text-gray-800 font-semibold px-4 py-1 rounded hover:bg-gray-300 focus:bg-gray-300 transition;
-	/* @apply bg-gray-200 text-gray-800 border border-gray-200 font-semibold px-4 py-1 rounded hover:bg-gray-300 hover:border-gray-300 transition; */
 
-	&.btn-wide {
-		@apply px-8;
-	}
-
-	&.btn-primary {
-		@apply bg-blue-600 text-white hover:bg-blue-700;
-	}
-
-	&.btn-warning {
-		@apply bg-amber-400 text-black hover:bg-amber-500;
-	}
-
-	&.btn-danger {
-		@apply bg-red-600 text-white hover:bg-red-700;
-	}
-
-	&.selected {
-		@apply bg-gray-300;
-	}
-
-	&:disabled {
-		@apply bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed hover:bg-gray-100;
-	}
+.btn.btn-wider {
+	@apply px-8;
 }
-
-
-.grouped {
-	@apply inline-flex;
-
-	&:has(:focus) {
-		@apply outline-2 outline-blue-200 rounded;
-	}
-
-	&>.input,
-	&>.btn {
-		@apply rounded-none;
-	}
-
-	&>.input:first-child,
-	&>.btn:first-child {
-		@apply rounded-l-sm;
-	}
-
-	&>.input:last-child,
-	&>.btn:last-child {
-		@apply rounded-r-sm;
-	}
-
-	&>.input+.input {
-		@apply border-l-0;
-	}
-
-	&>.btn+.btn {
-		@apply border-l border-gray-300;
-	}
-}
-
-div.input {
-	@apply py-4;
-}
-
-form,
-.form {
-
-	& input,
-	& select,
-	& .input,
-	& .is-wrapper {
-		@apply bg-white;
-	}
-}
-
-.input {
-	@apply inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200;
-
-	/* 'is-wrapper' is used when this element is a complex wrapper for other input elements*/
-	&.is-wrapper {
-		@apply has-focus-within:outline-none has-focus-within:ring has-focus-within:ring-blue-200;
-	}
-
-	/* 'stripped' is used for inner input elements inside a complex wrapper with 'is-wrapper' */
-	&>input.stripped {
-		@apply p-0 m-0 my-0 focus:outline-none;
-	}
-}
-
-
-input[type="checkbox"]+label,
-label>input[type="checkbox"] {
-	@apply mr-1;
-}
-
 
 .aligned-labels-and-inputs {
 	@apply flex flex-row my-4 items-baseline;
@@ -361,17 +199,17 @@ label>input[type="checkbox"] {
 	@apply flex flex-col gap-2;
 }
 
-span.input>span.tag {
-	@apply bg-gray-200 rounded-xl px-2 py-0.5 mr-1;
-
-	&>span {
-		@apply pl-1 text-gray-400 border-l border-current cursor-pointer;
-	}
-}
-
 
 .pill {
-	@apply inline-block rounded-[1em] px-2 py-1 my-1 mr-2 text-xs;
+	@apply inline-flex rounded-[1em] px-2 mr-2;
+
+	&.inner {
+		@apply translate-x-0.5 ml-1 mr-0!;
+	}
+
+	&:has(.inner.pill) {
+		@apply mr-2.5 pr-0!;
+	}
 
 	&.metadatatype {
 		@apply bg-blue-200;
@@ -383,33 +221,6 @@ span.input>span.tag {
 
 	&.highlight {
 		@apply bg-yellow-300;
-	}
-}
-
-
-.double-pill {
-	@apply inline-flex bg-blue-200 rounded-[1em] text-xs mr-2.5 my-1;
-	
-	&>span {
-		@apply px-2 py-1;
-	}
-	
-	&>span:last-child {
-		@apply rounded-[1em] translate-x-0.5;
-	}
- 
-	&>.highlight {
-		@apply bg-yellow-300;
-	}
-}
-
-
-.card {
-	@apply border border-gray-300 bg-white my-0 rounded-lg overflow-hidden shadow-lg shadow-gray-200;
-	transition: transform 0.2s ease;
-
-	&:hover {
-		transform: scale(1.01);
 	}
 }
 
@@ -428,10 +239,6 @@ span.input>span.tag {
 	}
 }
 
-
-kbd {
-	@apply font-mono px-1 bg-gray-200 text-gray-800 border rounded;
-}
 
 .striped-background {
 	background: repeating-linear-gradient(-30deg,

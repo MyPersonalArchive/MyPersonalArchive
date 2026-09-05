@@ -40,8 +40,8 @@ export const TenantAdminUsersPage = () => {
 			<div className="flex gap-3 flex-wrap">
 				{
 					users.map(user => (
-						<div key={user.subject} className="card flex flex-row relative w-73">
-							<div className="p-2 grow">
+						<div key={user.subject} className="card bg-base-100 card-xs shadow-sm w-73">
+							<div className="card-bodyp-2 grow">
 								<div className="flex flex-col py-2 px-4">
 									<div className="font-bold">
 										<FontAwesomeIcon icon={user.roles.includes("Owner") || user.roles.includes("Administrator") ? faUserTie : faUser} fixedWidth />
@@ -55,7 +55,7 @@ export const TenantAdminUsersPage = () => {
 					))
 				}
 
-				<button className="card flex flex-row relative w-73 p-2" onClick={() => alert("Invite user button clicked - Not implemented yet")}>
+				<button className="card bg-base-100 card-xs shadow-sm flex flex-row relative w-73 p-2" onClick={() => alert("Invite user button clicked - Not implemented yet")}>
 					<div className="flex flex-col items-center justify-center w-full h-full">
 						<div className="text-7xl">
 							<FontAwesomeIcon icon={faPlus}  />
