@@ -188,11 +188,10 @@ export const ArchiveItemEditPage = () => {
 					onBlobAttached={attachUnallocatedBlobs}
 				/> */}
 
-				<div>
+				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of files from DB */}
 					<PreviewList items={blobs}
 						keySelector={blob => blob.id}
-						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.id}
@@ -223,11 +222,12 @@ export const ArchiveItemEditPage = () => {
 								/>
 						}
 					/>
-
+				</div>
+				
+				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of local files (just added, not saved yet) */}
 					<PreviewList items={localBlobs}
 						keySelector={blob => blob.fileName}
-						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.fileName}

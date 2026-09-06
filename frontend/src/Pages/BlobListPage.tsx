@@ -104,31 +104,33 @@ export const BlobListPage = () => {
 				</button>
 			</div>
 
-			<PreviewList<BlobMetadata> items={visibleBlobs}
-				containerClassName="full-width-bordered flex flex-col gap-3"
-				keySelector={blob => blob.id}
-				thumbnailPreviewTemplate={
-					(blob, maximize) => <BlobCard
-						key={blob.id}
-						blob={blob}
-						attachBlob={attachBlob}
-						deleteBlob={deleteBlob}
-						maximize={maximize}
-						selectionOfBlobs={selectionOfBlobs}
-					/>
-				}
-				maximizedPreviewTemplate={
-					(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-						<MaximizedBlobPreview
+			<div className="full-width-bordered flex flex-col gap-3">
+
+				<PreviewList<BlobMetadata> items={visibleBlobs}
+					keySelector={blob => blob.id}
+					thumbnailPreviewTemplate={
+						(blob, maximize) => <BlobCard
+							key={blob.id}
 							blob={blob}
-							minimize={minimize}
-							canMovePrevious={canMovePrevious}
-							canMoveNext={canMoveNext}
-							movePrevious={movePrevious}
-							moveNext={moveNext}
+							attachBlob={attachBlob}
+							deleteBlob={deleteBlob}
+							maximize={maximize}
+							selectionOfBlobs={selectionOfBlobs}
 						/>
-				}
-			/>
+					}
+					maximizedPreviewTemplate={
+						(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
+							<MaximizedBlobPreview
+								blob={blob}
+								minimize={minimize}
+								canMovePrevious={canMovePrevious}
+								canMoveNext={canMoveNext}
+								movePrevious={movePrevious}
+								moveNext={moveNext}
+							/>
+					}
+				/>
+			</div>
 
 		</>
 	)
