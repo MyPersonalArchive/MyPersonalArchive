@@ -158,7 +158,9 @@ const SignInComponent = () => {
 							<div className="my-4">
 								<div>
 									<label htmlFor="rememberMe">
-										<input className="input" type="checkbox"
+										<input
+											type="checkbox"
+											className="input"
 											id="rememberMe"
 											checked={rememberMe}
 											onChange={event => setRememberMe(event.target.checked)}

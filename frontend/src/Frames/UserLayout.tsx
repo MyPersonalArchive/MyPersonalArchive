@@ -219,7 +219,7 @@ export const ConnectNewAccount = () => {
 	return (
 		<div className="nav-link">
 			<select
-				className="input w-44 text-inherit border-gray-400!"
+				className="w-44 text-inherit border-gray-400!"
 				value={selectedEmailProvider?.lookup}
 				onChange={e => setSelectedEmailProvider(availableEmailProviders.find(p => p.lookup === e.target.value))}
 			>
@@ -236,7 +236,6 @@ export const ConnectNewAccount = () => {
 				<FontAwesomeIcon icon={faPlus} fixedWidth />
 			</button>
 		</div>
-
 	)
 }
 

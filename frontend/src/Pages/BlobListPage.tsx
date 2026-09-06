@@ -77,8 +77,10 @@ export const BlobListPage = () => {
 
 			<div className="full-width-non-bordered flex flex-row flex-wrap gap-2 items-center my-4">
 				<label className="whitespace-nowrap">
-					<input ref={selectAllCheckboxRef}
+					<input
+						ref={selectAllCheckboxRef}
 						type="checkbox"
+						className="checkbox"
 						checked={selectionOfBlobs.areAllItemsSelected}
 						onChange={() => selectionOfBlobs.areAllItemsSelected
 							? selectionOfBlobs.clearSelection()
@@ -251,8 +253,8 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosi
 			</label>
 
 			<div className="todo">
-				//TODO:<br/>
-				- Radiobuttons for select the date: uploaded date, document date (EXIF etc?), todays date or enter date manually?<br/>
+				//TODO:<br />
+				- Radiobuttons for select the date: uploaded date, document date (EXIF etc?), todays date or enter date manually?<br />
 			</div>
 		</FloatingToolWindow>
 	)
@@ -322,7 +324,12 @@ const Filter = () => {
 	return (
 		<div>
 			<label className="whitespace-nowrap">
-				<input type="checkbox" checked={hideAllocatedBlobs} onChange={() => setHideAllocatedBlobs(b => !b)} />
+				<input
+					type="checkbox"
+					className="checkbox"
+					checked={hideAllocatedBlobs}
+					onChange={() => setHideAllocatedBlobs(b => !b)}
+				/>
 				Hide allocated blobs
 			</label>
 		</div>

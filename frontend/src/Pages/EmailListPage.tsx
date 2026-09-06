@@ -94,7 +94,10 @@ export const EmailListPage = () => {
 
 				<div className="stack-horizontal to-the-right my-4">
 					<label>
-						<input ref={selectAllCheckboxRef} type="checkbox"
+						<input
+							ref={selectAllCheckboxRef}
+							type="checkbox"
+							className="checkbox"
 							checked={selectionOfEmails.areAllItemsSelected}
 							onChange={() => selectionOfEmails.areAllItemsSelected
 								? selectionOfEmails.clearSelection()
@@ -315,7 +318,10 @@ const AttachmentList = ({ attachments, email, externalAccountId, selectedFolder,
 			<div className="stack-vertical">
 				<div className="stack-horizontal to-the-left">
 					<label>
-						<input ref={selectAllCheckboxRef} type="checkbox"
+						<input
+							ref={selectAllCheckboxRef}
+							type="checkbox"
+							className="checkbox"
 							checked={selectionOfAttachments.areAllItemsSelected}
 							onChange={() => selectionOfAttachments.areAllItemsSelected
 								? selectionOfAttachments.clearSelection()

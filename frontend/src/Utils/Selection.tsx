@@ -111,10 +111,14 @@ type SelectCheckboxProps<T> = {
 }
 export const SelectCheckbox = <T,>({ selection, item, className }: SelectCheckboxProps<T>) => {
 	return (
-		<input className={`input ${className}`} type="checkbox"
-			style={{ alignSelf: "end" }}
-			checked={selection.selectedItems.has(item)}
-			onClick={event => event.stopPropagation()}
-			onChange={() => selection.toggleSelection(item)} />
+		<>
+			<input
+				type="checkbox"
+				className={`checkbox ${className}`}
+				style={{ alignSelf: "end" }}
+				checked={selection.selectedItems.has(item)}
+				onClick={event => event.stopPropagation()}
+				onChange={() => selection.toggleSelection(item)} />
+		</>
 	)
 }
