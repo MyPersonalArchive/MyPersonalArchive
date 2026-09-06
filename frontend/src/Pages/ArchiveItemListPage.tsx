@@ -157,7 +157,7 @@ const MetadataWithSummaryPill = ({ metadataType, metadata, className }: { metada
 
 const Search = () => {
 	const [searchTerm, setSearchTerm] = React.useState("")
-	const [searchParams, setSearchParams] = useSearchParams()
+	const [_, setSearchParams] = useSearchParams()
 
 	const search = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault()

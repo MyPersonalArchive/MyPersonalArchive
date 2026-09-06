@@ -12,11 +12,6 @@ export const SignOutPage = () => {
 	const navigate = useNavigate()
 	const apiClient = useApiClient()
 
-	useEffect(() => {
-		logoutAction().then(() => navigate(RoutePaths.Index))
-	}, [])
-
-
 	async function logoutAction() {
 		try {
 			if (currentUser !== null) {
@@ -27,8 +22,11 @@ export const SignOutPage = () => {
 			navigate(RoutePaths.Index)
 		}
 	}
-
-
+	
+	useEffect(() => {
+		logoutAction().then(() => navigate(RoutePaths.Index))
+	}, [])
+	
 	return (
 		<header className="header">
 			<h2>Signing out...</h2>

@@ -8,7 +8,7 @@ export const useDrop = <TData, TIndex>(
 ) => {
 	const droppableTypeConverters = mimeTypeConverters.filter(mimeTypeConverter => typeof mimeTypeConverter.convertDropPayloadToAction === "function")
 
-	const dragOver = (index: TIndex) => (event: React.DragEvent) => {
+	const dragOver = () => (event: React.DragEvent) => {
 		event.preventDefault()
 		event.stopPropagation()
 

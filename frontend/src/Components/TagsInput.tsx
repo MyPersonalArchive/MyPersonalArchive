@@ -8,7 +8,7 @@ type TagsProps = {
 	htmlId?: string
 }
 
-export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId }: TagsProps) => {
+export const TagsInput = ({ placeholder, tags, setTags, autocompleteList }: TagsProps) => {
 	const [tagsInput, setTagsInput] = useState<string>("")
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -66,7 +66,6 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, htmlId
 						type="text"
 						list="tagsList"
 						placeholder={tags.length == 0 ? placeholder : ""}
-						id="tags"
 						value={tagsInput}
 						onKeyDown={keyDown}
 						onChange={onChange}

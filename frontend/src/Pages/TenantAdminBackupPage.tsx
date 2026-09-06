@@ -1,6 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faClock, faFileExport, faPlay, faPlus, faRotate, faStop } from "@fortawesome/free-solid-svg-icons"
-import { useState } from "react"
+import { faFileExport } from "@fortawesome/free-solid-svg-icons"
 
 
 export const TenantAdminBackupPage = () => {
@@ -71,60 +70,3 @@ export const TenantAdminBackupPage = () => {
 		</div>
 	)
 }
-
-
-const BackupActionButtons = () => {
-	const [backupIsRunning, setBackupIsRunning] = useState<boolean>(false)
-
-	return (
-		<div className="stack-horizontal my-4">
-
-			{
-				!backupIsRunning ?
-					<button
-						className="btn btn-primary flex items-center gap-2"
-						type="button"
-						onClick={() => setBackupIsRunning(true)}
-					>
-						<FontAwesomeIcon icon={faPlay} />
-						<span>Start backup</span>
-					</button>
-					:
-					<button
-						className="btn btn-warning flex items-center gap-2"
-						type="button"
-						disabled={!backupIsRunning}
-						onClick={() => setBackupIsRunning(false)}
-					>
-						<FontAwesomeIcon icon={faStop} />
-						<span>Stop backup</span>
-					</button>
-			}
-
-			<div className="flex-1"></div>
-			<button
-				className="btn btn-secondary flex items-center gap-2"
-				title="Disaster recovery"
-			>
-				<FontAwesomeIcon icon={faRotate} />
-				<span>Recovery</span>
-			</button>
-
-			<button
-				className="btn flex items-center gap-2"
-			>
-				<FontAwesomeIcon icon={faClock} />
-				<span>Schedule</span>
-			</button>
-
-			<button
-				className="btn btn-primary flex items-center gap-2"
-			>
-				<FontAwesomeIcon icon={faPlus} />
-				<span>Add new pair</span>
-			</button>
-
-		</div>
-	)
-}
-

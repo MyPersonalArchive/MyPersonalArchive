@@ -8,9 +8,6 @@ import { tagsAtom } from "../Utils/Atoms/tagsAtom"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
-import { MetadataElement } from "../Utils/Metadata/MetadataElement"
-import { MetadataTypeSelector } from "../Utils/Metadata/MetadataTypeSelector"
-import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { PreviewList } from "../Components/PreviewList"
 import { BlobDisplayInfo } from "../Components/Preview"
 import { DimensionEnum } from "../Components/Preview"
@@ -37,7 +34,7 @@ export const ArchiveItemNewPage = () => {
 
 	const allTags = useAtomValue(tagsAtom)
 
-	const { selectedMetadataTypes, metadata, dispatch } = useMetadata(allMetadataTypes)
+	const { metadata } = useMetadata(allMetadataTypes)
 
 	const navigate = useNavigate()
 	const apiClient = useApiClient()

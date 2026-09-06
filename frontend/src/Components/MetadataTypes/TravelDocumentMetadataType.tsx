@@ -203,7 +203,7 @@ const Component = (props: MetadataComponentProps) => {
 			{(!isLastLegEmpty || isDragging(dnd.dragStatus)) &&
 				<button type="button"
 					className="card w-71 h-42"
-					onDragOver={dropToCopy.dragOver(undefined as unknown as number)}
+					onDragOver={dropToCopy.dragOver()}
 					onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
 					onClick={() => dispatch({ action: "ADD_LEG", leg: { bookingRef: "", routeNumber: "", departureFrom: "", arrivalAt: "" } })}
 				>

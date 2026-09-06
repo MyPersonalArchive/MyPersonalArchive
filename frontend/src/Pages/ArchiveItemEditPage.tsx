@@ -9,7 +9,6 @@ import { DimensionEnum } from "../Components/Preview"
 import { Preview } from "../Components/Preview"
 import { tagsAtom } from "../Utils/Atoms/tagsAtom"
 import { useAtom, useAtomValue } from "jotai"
-import { FileDropZone } from "../Components/FileDropZone"
 import { RoutePaths } from "../RoutePaths"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
@@ -18,7 +17,7 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { ICommand, MetadataType, ReducerIdentifier } from "../Utils/Metadata/types"
 import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
-import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
@@ -112,19 +111,19 @@ export const ArchiveItemEditPage = () => {
 		navigate(RoutePaths.Archive.List)
 	}
 
-	const addFileBlobs = (blobs: { fileName: string, fileData: Blob, mimeType: string }[]) => {
-		setLocalBlobs([...localBlobs, ...blobs])
-	}
+	// const addFileBlobs = (blobs: { fileName: string, fileData: Blob, mimeType: string }[]) => {
+	// 	setLocalBlobs([...localBlobs, ...blobs])
+	// }
 
 	const removeBlob = (fileName: string) => {
 		setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
 	}
 
-	const attachUnallocatedBlobs = (newBlobs: BlobDisplayInfo[]) => {
-		newBlobs.forEach(blob => {
-			setBlobs(blobs => [...blobs, blob])
-		})
-	}
+	// const attachUnallocatedBlobs = (newBlobs: BlobDisplayInfo[]) => {
+	// 	newBlobs.forEach(blob => {
+	// 		setBlobs(blobs => [...blobs, blob])
+	// 	})
+	// }
 
 	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
 		setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
@@ -441,7 +440,7 @@ type ToolWindowProps = {
 	setToolWindowPosition: (position: Position) => void
 	setToolWindowSize: (size: Size) => void
 }
-const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
+const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
 	const [title, setTitle] = useState("")
 	const [tags, setTags] = useState<string[]>([])
 	const [documentDate, setDocumentDate] = useState("")

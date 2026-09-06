@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { useMailProvider } from "../Utils/Hooks/useMailProvider"
 import { FullEmail, EmailAddress, EmailAttachment } from "../Utils/Atoms/EmailAtoms"
 import { SelectCheckbox, useSelection } from "../Utils/Selection"

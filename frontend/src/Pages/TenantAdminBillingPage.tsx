@@ -1,5 +1,3 @@
-import { faMedal } from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState } from "react"
 import { useAtomValue } from "jotai"
 import classNames from "classnames"
@@ -63,7 +61,7 @@ export const TenantAdminBillingPage = () => {
 			<div className="flex gap-3 flex-wrap mb-8">
 				{tiersResponse?.availableTiers.map(tier => {
 					const isCurrentTier = tier.id === tiersResponse.currentTierId
-					const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
+					// const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
 
 					return (
 						<div key={tier.id} className={classNames("card bg-base-100 card-xs shadow-sm w-64 p-4 flex flex-col border-2! border-gray-200", { "border-blue-500!": isCurrentTier })}>

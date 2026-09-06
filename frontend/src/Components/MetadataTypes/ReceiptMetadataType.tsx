@@ -1,7 +1,7 @@
 import React from "react"
 import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
 import { changeAtIndex, moveInArray, removeAtIndex } from "../../Utils/array-helpers"
-import { isDragging, MimeTypeConverterArray, useDrop, useSortableDragDrop } from "../DragDropHelpers"
+import { MimeTypeConverterArray, useDrop, useSortableDragDrop } from "../DragDropHelpers"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash, faPlus, faGripVertical } from "@fortawesome/free-solid-svg-icons"
 
@@ -190,13 +190,13 @@ const Component = (props: MetadataComponentProps) => {
 						</td>
 						<td>
 							<label className="input w-full">
-							<input
-								type="text"
-								className="input w-full"
-								value={receiptLine.amount}
-								onChange={e => dispatch({ action: "UPDATE_RECEIPTLINE_AMOUNT", index, amount: e.target.value })}
-							/>
-							<span className="label">{state.currency}</span>
+								<input
+									type="text"
+									className="input w-full"
+									value={receiptLine.amount}
+									onChange={e => dispatch({ action: "UPDATE_RECEIPTLINE_AMOUNT", index, amount: e.target.value })}
+								/>
+								<span className="label">{state.currency}</span>
 							</label>
 						</td>
 						<td>
