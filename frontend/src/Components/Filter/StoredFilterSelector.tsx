@@ -202,7 +202,9 @@ const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 						<label key={metadataType.path.toString()}
 							className="inline-block"
 						>
-							<input className="input" type="checkbox"
+							<input
+								type="checkbox"
+								className="checkbox"
 								checked={selectedFilter?.filterDefinition.metadataTypes.has(metadataType.path)}
 								onClick={event => event.stopPropagation()}
 								onChange={() => dispatch({ action: "EDIT_FILTER_DEFINITION_TOGGLE_METADATATYPE", id: selectedFilterId, metadataPath: metadataType.path })} />

@@ -171,7 +171,9 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 
 				<div className="stack-horizontal to-the-right my-4">
 					<label>
-						<input ref={selectAllCheckboxRef} type="checkbox"
+						<input ref={selectAllCheckboxRef}
+							type="checkbox"
+							className="checkbox"
 							checked={selectionOfBlobs.areAllItemsSelected}
 							onChange={() => selectionOfBlobs.areAllItemsSelected
 								? selectionOfBlobs.clearSelection()
