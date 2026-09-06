@@ -1,5 +1,5 @@
 import { UUID } from "crypto"
-import { changeAtIndex, changeAtKey, moveInArray, removeAtIndex, removeAtKey } from "../array-helpers"
+import { changeAtKey, moveInArray, removeAtKey } from "../array-helpers"
 import { atomWithReducer } from "jotai/utils"
 import { MimeTypeConverterArray } from "../../Components/DragDropHelpers"
 

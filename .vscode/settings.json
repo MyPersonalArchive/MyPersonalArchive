@@ -4,6 +4,9 @@
 		"typescript",
 		"typescriptreact"
 	],
+	"eslint.workingDirectories": [
+		"./frontend"
+	],
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false,
 	"editor.codeActionsOnSave": {

@@ -1,5 +1,5 @@
 import { HttpTransportType, HubConnectionBuilder, LogLevel } from "@microsoft/signalr"
-import { useContext, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { signalRConnectionAtom } from "../Atoms"
 import { useAtom } from "jotai"
 

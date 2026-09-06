@@ -156,7 +156,7 @@ type FilterFormProps = {
 const FilterForm = ({ selectedFilterId }: FilterFormProps) => {
 	const [storedFilters, dispatch] = useAtom(storedFiltersAtom)
 	const allTags = useAtomValue(tagsAtom)
-	const [searchParams, setSearchParams] = useSearchParams()
+	const [_, setSearchParams] = useSearchParams()
 	// const navigate = useNavigate()
 
 	const selectedFilter = storedFilters.find(filter => filter.id === selectedFilterId)

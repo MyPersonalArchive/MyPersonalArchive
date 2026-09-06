@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import { RoutePaths } from "../../RoutePaths"
 import { createQueryString } from "../createQueryString"
-import { useContext } from "react"
 
 
 export const useApiClient = () => {

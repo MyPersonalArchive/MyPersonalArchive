@@ -56,7 +56,7 @@ export const useSortableDragDrop = <TData, THtmlElement extends HTMLElement>(
 		})
 	}
 
-	const mouseUp = (event: React.MouseEvent) => {
+	const mouseUp = () => {
 		setDragStatus(emptyDragOverStatus)
 	}
 
