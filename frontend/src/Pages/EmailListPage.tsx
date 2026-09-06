@@ -118,34 +118,36 @@ export const EmailListPage = () => {
 					</button>
 				</div>
 
-				<PreviewList
-					containerClassName="flex flex-col gap-3"
-					items={emails}
-					keySelector={email => email.uniqueId}
-					thumbnailPreviewTemplate={(email, maximize) =>
-						<EmailThumbnail
-							key={email.uniqueId}
-							email={email}
-							createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
-							selectionOfEmails={selectionOfEmails}
-							maximize={maximize}
-						/>
-					}
-					maximizedPreviewTemplate={(email, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-						<Dialog key={email.uniqueId} size="full"
-							onClose={() => minimize()}
-							closeOnEscape={true}
-						>
-							<EmailPreview
+				<div className="flex flex-col gap-3">
+					<PreviewList
+						items={emails}
+						keySelector={email => email.uniqueId}
+						thumbnailPreviewTemplate={(email, maximize) =>
+							<EmailThumbnail
+								key={email.uniqueId}
 								email={email}
 								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
-								createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
-								externalAccountId={externalAccountId}
-								selectedFolder={selectedFolder!}
-								maximize={minimize}
+								selectionOfEmails={selectionOfEmails}
+								maximize={maximize}
 							/>
-						</Dialog>
-					} />
+						}
+						maximizedPreviewTemplate={(email, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
+							<Dialog key={email.uniqueId} size="full"
+								onClose={() => minimize()}
+								closeOnEscape={true}
+							>
+								<EmailPreview
+									email={email}
+									createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
+									createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
+									externalAccountId={externalAccountId}
+									selectedFolder={selectedFolder!}
+									maximize={minimize}
+								/>
+							</Dialog>
+						}
+					/>
+				</div>
 
 				{isStreamingEmails && (
 					<div className="flex justify-center items-center gap-2 py-4 text-gray-400 text-sm">

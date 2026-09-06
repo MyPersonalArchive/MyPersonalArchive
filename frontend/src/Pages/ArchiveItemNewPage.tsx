@@ -152,11 +152,10 @@ export const ArchiveItemNewPage = () => {
 					onBlobAttached={attachUnallocatedBlobs}
 				/>
 
-				<div>
+				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of files from DB */}
 					<PreviewList items={existingBlobIds}
 						keySelector={blob => blob.id}
-						containerClassName="flex gap-4 flex-wrap my-4"
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.id}
@@ -200,61 +199,62 @@ export const ArchiveItemNewPage = () => {
 
 				</div>
 
-				{/* Previewlist of local files (just added, not saved yet) */}
-				<PreviewList<{ fileName: string, fileData: Blob }> items={localBlobs}
-					keySelector={blob => blob.fileName}
-					containerClassName="flex gap-4 flex-wrap my-4"
-					thumbnailPreviewTemplate={
-						(blob, maximize) =>
-							<div key={blob.fileName}
-								className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
-								onClick={() => maximize(blob)}
-							>
-								<LocalViewer
-									blob={blob.fileData}
-									fileName={blob.fileName}
-									dimension={DimensionEnum.small}
-									removeBlob={removeBlob}
-									onMaximize={() => maximize(blob)}
-								/>
-								<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
-									<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-								</button>
-								<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
-									<FontAwesomeIcon icon={faTrash} size="1x" />
-								</button>
-							</div>
-					}
-					maximizedPreviewTemplate={
-						(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-							<LightBox key={blob.fileName} onClose={() => minimize()}>
-								<div className="w-full h-full flex justify-center action-bar-host">
+				<div className="flex gap-4 flex-wrap my-4">
+					{/* Previewlist of local files (just added, not saved yet) */}
+					<PreviewList<{ fileName: string, fileData: Blob }> items={localBlobs}
+						keySelector={blob => blob.fileName}
+						thumbnailPreviewTemplate={
+							(blob, maximize) =>
+								<div key={blob.fileName}
+									className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+									onClick={() => maximize(blob)}
+								>
 									<LocalViewer
 										blob={blob.fileData}
 										fileName={blob.fileName}
-										dimension={DimensionEnum.full}
-										onMinimize={minimize}
+										dimension={DimensionEnum.small}
 										removeBlob={removeBlob}
+										onMaximize={() => maximize(blob)}
 									/>
-									<div className="action-bar">
-										<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
-											<FontAwesomeIcon icon={faArrowLeft} size="1x" />
-										</button>
-										<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
-											<FontAwesomeIcon icon={faArrowRight} size="1x" />
-										</button>
-										<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
-											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-										</button>
-										<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
-											<FontAwesomeIcon icon={faTrash} size="1x" />
-										</button>
-									</div>
+									<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
+										<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+									</button>
+									<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
+										<FontAwesomeIcon icon={faTrash} size="1x" />
+									</button>
 								</div>
-							</LightBox>
+						}
+						maximizedPreviewTemplate={
+							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
+								<LightBox key={blob.fileName} onClose={() => minimize()}>
+									<div className="w-full h-full flex justify-center action-bar-host">
+										<LocalViewer
+											blob={blob.fileData}
+											fileName={blob.fileName}
+											dimension={DimensionEnum.full}
+											onMinimize={minimize}
+											removeBlob={removeBlob}
+										/>
+										<div className="action-bar">
+											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+												<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+											</button>
+											<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+												<FontAwesomeIcon icon={faArrowRight} size="1x" />
+											</button>
+											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
+												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+											</button>
+											<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
+												<FontAwesomeIcon icon={faTrash} size="1x" />
+											</button>
+										</div>
+									</div>
+								</LightBox>
 
-					}
-				/>
+						}
+					/>
+				</div>
 
 				<div className="stack-horizontal to-the-right my-4">
 					<button className="btn" onClick={() => navigate(RoutePaths.Archive.List)}>

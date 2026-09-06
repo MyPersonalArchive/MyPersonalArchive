@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react"
 type PreviewListProps<T> = {
 	items: T[]
 	keySelector: (item: T) => string | number
-	containerStyle?: React.CSSProperties
-	containerClassName?: string
 	thumbnailPreviewTemplate: (
 		item: T,
 		setMaximizeBlob: (blob?: T) => void
@@ -19,7 +17,7 @@ type PreviewListProps<T> = {
 		moveNext: () => void
 	) => React.ReactNode
 }
-export const PreviewList = <T,>({ items, containerStyle, containerClassName, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
+export const PreviewList = <T,>({ items, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
 	const [maximizedIndex, setMaximizedIndex] = useState<number | undefined>(undefined)
 
 	const canMovePrevious = maximizedIndex !== undefined && maximizedIndex > 0
@@ -53,11 +51,9 @@ export const PreviewList = <T,>({ items, containerStyle, containerClassName, thu
 
 	return (
 		<>
-			<div className={containerClassName} style={containerStyle}>
-				{
-					items.map((item, index) => thumbnailPreviewTemplate(item, (item) => setMaximizedIndex(item ? index : undefined)))
-				}
-			</div>
+			{
+				items.map((item, index) => thumbnailPreviewTemplate(item, (item) => setMaximizedIndex(item ? index : undefined)))
+			}
 			{
 				maximizedItem !== undefined && <>
 					{maximizedPreviewTemplate(

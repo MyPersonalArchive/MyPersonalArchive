@@ -189,41 +189,42 @@ const UnallocatedBlobsDialog = ({ onCloseDialog, onBlobAttached }: UnallocatedBl
 					</button>
 				</div>
 
-				<PreviewList items={blobs.filter(blob => !allocatedBlobs.has(blob.id))}
-					containerClassName="flex flex-col gap-3"
-					keySelector={blob => blob.id}
-					thumbnailPreviewTemplate={
-						(blob, maximize) =>
-							<BlobCard
-								key={blob.id}
-								blob={blob}
-								attachBlob={() => addBlob([blob.id!])}
-								maximize={maximize}
-								selectionOfBlobs={selectionOfBlobs}
-							/>
+				<div className="flex flex-col gap-3">
+					<PreviewList items={blobs.filter(blob => !allocatedBlobs.has(blob.id))}
+						keySelector={blob => blob.id}
+						thumbnailPreviewTemplate={
+							(blob, maximize) =>
+								<BlobCard
+									key={blob.id}
+									blob={blob}
+									attachBlob={() => addBlob([blob.id!])}
+									maximize={maximize}
+									selectionOfBlobs={selectionOfBlobs}
+								/>
 
 
-					}
-					maximizedPreviewTemplate={
-						(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-							<LightBox key={blob.id} onClose={() => minimize()}>
-								<div className="w-full h-full flex justify-center action-bar-host">
-									<Preview blob={blob} dimension={DimensionEnum.full} />
-									<div className="action-bar">
-										<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
-											<FontAwesomeIcon icon={faArrowLeft} size="1x" />
-										</button>
-										<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
-											<FontAwesomeIcon icon={faArrowRight} size="1x" />
-										</button>
-										<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
-											<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-										</button>
+						}
+						maximizedPreviewTemplate={
+							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
+								<LightBox key={blob.id} onClose={() => minimize()}>
+									<div className="w-full h-full flex justify-center action-bar-host">
+										<Preview blob={blob} dimension={DimensionEnum.full} />
+										<div className="action-bar">
+											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
+												<FontAwesomeIcon icon={faArrowLeft} size="1x" />
+											</button>
+											<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
+												<FontAwesomeIcon icon={faArrowRight} size="1x" />
+											</button>
+											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
+												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
+											</button>
+										</div>
 									</div>
-								</div>
-							</LightBox>
-					}
-				/>
+								</LightBox>
+						}
+					/>
+				</div>
 			</div>
 		</Dialog>
 	)
