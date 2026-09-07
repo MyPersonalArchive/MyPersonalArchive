@@ -105,16 +105,12 @@ export const ArchiveItemEditPage = () => {
 
 	useSaveShortcut(() => { save() }, true)
 
-	const deleteItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+	const deleteArchiveItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		event.preventDefault()
 
 		apiClient.execute("DeleteArchiveItem", { id: id! })
 		navigate(RoutePaths.Archive.List)
 	}
-
-	// const addFileBlobs = (blobs: { fileName: string, fileData: Blob, mimeType: string }[]) => {
-	// 	setLocalBlobs([...localBlobs, ...blobs])
-	// }
 
 	const removeBlob = (fileName: string) => {
 		setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
@@ -128,6 +124,15 @@ export const ArchiveItemEditPage = () => {
 
 	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
 		setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
+	}
+
+	function onFilesUploaded(files: FileList): void {
+		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file, mimeType: file.type }))
+		setLocalBlobs([...localBlobs, ...newLocalBlobs])
+	}
+
+	function SelectUploadedFiles(): void {
+		alert("Select uploaded files - feature not implemented yet.")
 	}
 
 	return (
@@ -223,7 +228,7 @@ export const ArchiveItemEditPage = () => {
 								/>
 						}
 					/>
-				
+
 					{/* Previewlist of local files (just added, not saved yet) */}
 					<PreviewList items={localBlobs}
 						keySelector={blob => blob.fileName}
@@ -282,11 +287,14 @@ export const ArchiveItemEditPage = () => {
 						className="btn btn-dash rounded-lg aspect-square w-full h-full"
 						// className="bg-white rounded-lg border border-black w-73 h-73 flex flex-col justify-center items-center relative action-bar-host"
 					>
-						<FileDrop onClickOverride={() => console.log("FileDrop clicked")}>
+						<FileDrop
+							onFilesUploaded={onFilesUploaded}
+							onClickOverride={() => SelectUploadedFiles()}
+						>
 							<div className="flex flex-col justify-center items-center">
 								<div className="text-sm">Drop file here or</div>
 								<FontAwesomeIcon icon={faPlus} size="10x" />
-								<div className="text-sm">click to select uploaded files</div>
+								<div className="text-sm">click to select from uploaded files</div>
 							</div>
 						</FileDrop>
 					</div>
@@ -317,7 +325,7 @@ export const ArchiveItemEditPage = () => {
 						</div>
 						<div className="stack-horizontal to-the-right p-4">
 							<button className="btn" type="button" onClick={() => setOpenDeleteDialog(false)}>Cancel</button>
-							<button className="btn btn-danger" type="button" onClick={deleteItem}>Delete</button>
+							<button className="btn btn-danger" type="button" onClick={deleteArchiveItem}>Delete</button>
 						</div>
 					</Dialog>
 				}

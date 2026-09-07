@@ -56,12 +56,12 @@ export const TenantAdminUsersPage = () => {
 				}
 
 				<button
-					className="card bg-base-100 card-xs shadow-sm flex flex-row relative p-2"
+					className="btn btn-dash rounded-lg w-full h-full"
 					onClick={() => alert("Invite user button clicked - Not implemented yet")}
 				>
 					<div className="flex flex-col items-center justify-center w-full h-full">
 						<div className="text-7xl">
-							<FontAwesomeIcon icon={faPlus}  />
+							<FontAwesomeIcon icon={faPlus} />
 						</div>
 						<div className="text-sm">Invite user</div>
 					</div>
@@ -73,7 +73,6 @@ export const TenantAdminUsersPage = () => {
 				<button className="btn btn-primary">Invite user</button>
 			</div> */}
 
-			
 			<div className="todo mt-2">
 				<div>Roles</div>
 				- <span className="underline">Account owner</span>
