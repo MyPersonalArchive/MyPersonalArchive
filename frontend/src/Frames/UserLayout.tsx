@@ -36,6 +36,15 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 		previousAdjustmentsModeIsOpen.current = adjustmentsModeIsOpen
 	}, [adjustmentsModeIsOpen])
 
+	const onFilesUploaded = (files: FileList): void => {
+		const formData = new FormData()
+		Array.from(files).forEach(file => {
+			formData.append("files", file, file.name)
+		})
+
+		apiClient.postFormData("/api/blob/upload", formData)
+	}
+
 	return (
 		<>
 			<TopBar className="user-layout"
@@ -74,10 +83,13 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 							<AccountList />
 						</div>
 
-						<FileDrop className="flex-1 border border-gray-400 rounded-lg m-4 p-4 flex flex-col items-center justify-center hover:bg-white/12">
+						<FileDrop
+							className="flex-1 border border-gray-400 rounded-lg m-4 p-4 flex flex-col items-center justify-center hover:bg-white/12"
+							onFilesUploaded={onFilesUploaded}
+						>
 							<span>Drop files here</span>
 							<span>or</span>
-							<span>click to select files</span>
+							<span>click to upload files</span>
 						</FileDrop>
 
 						<div className="nav-group">

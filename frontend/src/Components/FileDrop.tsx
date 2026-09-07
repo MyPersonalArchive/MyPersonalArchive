@@ -1,14 +1,13 @@
 import { DragEventHandler, PropsWithChildren, useRef } from "react"
-import { useApiClient } from "../Utils/Hooks/useApiClient"
 
 
 export type FileDropProps =  {
 	className?: string
 	onClickOverride?: () => void
+	onFilesUploaded: (files: FileList) => void
 }
-export const FileDrop = ({ className, children, onClickOverride = undefined }: PropsWithChildren<FileDropProps>) => {
+export const FileDrop = ({ className, children, onClickOverride = undefined, onFilesUploaded }: PropsWithChildren<FileDropProps>) => {
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
-	const apiClient = useApiClient()
 
 	const onDragOver: DragEventHandler<HTMLDivElement> = (event) => {
 		event.preventDefault()
@@ -25,20 +24,16 @@ export const FileDrop = ({ className, children, onClickOverride = undefined }: P
 		}
 	}
 
+	// The onChange handler is triggered when files are selected via the file input or dropped into the drop zone
 	const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
 		event.stopPropagation()
 		event.preventDefault()
 
-		const files = event.target.files ?? []
-		if (files.length > 0) {
+		const files = event.target.files
+		if (files !== null && files.length > 0) {
 			console.log("Files dropped: ", files)
-			
-			const formData = new FormData()
-			Array.from(files).forEach(file => {
-				formData.append("files", file, file.name)
-			})
 
-			apiClient.postFormData("/api/blob/upload", formData)
+			onFilesUploaded(files)
 		}
 	}
 
