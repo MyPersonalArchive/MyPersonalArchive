@@ -58,13 +58,13 @@ export const TenantAdminBillingPage = () => {
 				<h1>Subscription and billing</h1>
 			</header>
 
-			<div className="flex gap-3 flex-wrap mb-8">
+			<div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4 my-4">
 				{tiersResponse?.availableTiers.map(tier => {
 					const isCurrentTier = tier.id === tiersResponse.currentTierId
 					// const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
 
 					return (
-						<div key={tier.id} className={classNames("card bg-base-100 card-xs shadow-sm w-64 p-4 flex flex-col border-2! border-gray-200", { "border-blue-500!": isCurrentTier })}>
+						<div key={tier.id} className={classNames("card bg-base-100 card-xs shadow-sm p-4 flex flex-col border-2! border-gray-200", { "border-blue-500!": isCurrentTier })}>
 							<div className="card-body">
 								{isCurrentTier
 									? <span className="badge badge-xs badge-warning">
@@ -88,15 +88,15 @@ export const TenantAdminBillingPage = () => {
 								<div className="flex-1"></div>
 
 								{isOwner &&
-								<div className="mt-6">
-									<button className="btn btn-primary btn-block"
-										type="button"
-										disabled={isCurrentTier}
-										onClick={() => changeToTier(tier.id)}
-									>
-										{isCurrentTier ? "Current plan" : "Change to this tier"}
-									</button>
-								</div>
+									<div className="mt-6">
+										<button className="btn btn-primary btn-block"
+											type="button"
+											disabled={isCurrentTier}
+											onClick={() => changeToTier(tier.id)}
+										>
+											{isCurrentTier ? "Current plan" : "Change to this tier"}
+										</button>
+									</div>
 								}
 							</div>
 						</div>
