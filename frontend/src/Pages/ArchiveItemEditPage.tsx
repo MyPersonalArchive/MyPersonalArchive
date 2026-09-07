@@ -17,13 +17,14 @@ import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { ICommand, MetadataType, ReducerIdentifier } from "../Utils/Metadata/types"
 import { Dialog } from "../Components/Dialog"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
-import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
 import { useSaveShortcut } from "../Utils/Hooks/useSaveShortcut"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickEditToolWindowIsOpenAtom } from "../Utils/Atoms"
+import { FileDrop } from "../Components/FileDrop"
 
 type GetResponse = {
 	id: UUID
@@ -188,14 +189,14 @@ export const ArchiveItemEditPage = () => {
 					onBlobAttached={attachUnallocatedBlobs}
 				/> */}
 
-				<div className="flex gap-4 flex-wrap my-4">
+				<div className="grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
 					{/* Previewlist of files from DB */}
 					<PreviewList items={blobs}
 						keySelector={blob => blob.id}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.id}
-									className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host"
 									onClick={() => maximize(blob)}
 								>
 									<Preview blob={blob} dimension={DimensionEnum.small} />
@@ -222,16 +223,14 @@ export const ArchiveItemEditPage = () => {
 								/>
 						}
 					/>
-				</div>
 				
-				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of local files (just added, not saved yet) */}
 					<PreviewList items={localBlobs}
 						keySelector={blob => blob.fileName}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.fileName}
-									className="bg-black rounded-lg border border-black w-73 h-73 flex justify-center items-center relative action-bar-host"
+									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host"
 									onClick={() => maximize(blob)}
 								>
 									<LocalViewer
@@ -278,6 +277,19 @@ export const ArchiveItemEditPage = () => {
 								</LightBox>
 						}
 					/>
+
+					<div
+						className="btn btn-dash rounded-lg aspect-square w-full h-full"
+						// className="bg-white rounded-lg border border-black w-73 h-73 flex flex-col justify-center items-center relative action-bar-host"
+					>
+						<FileDrop onClickOverride={() => console.log("FileDrop clicked")}>
+							<div className="flex flex-col justify-center items-center">
+								<div className="text-sm">Drop file here or</div>
+								<FontAwesomeIcon icon={faPlus} size="10x" />
+								<div className="text-sm">click to select uploaded files</div>
+							</div>
+						</FileDrop>
+					</div>
 				</div>
 
 				<div className="stack-horizontal to-the-right my-4">

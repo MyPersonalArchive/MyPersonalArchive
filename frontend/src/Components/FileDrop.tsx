@@ -4,8 +4,9 @@ import { useApiClient } from "../Utils/Hooks/useApiClient"
 
 export type FileDropProps =  {
 	className?: string
+	onClickOverride?: () => void
 }
-export const FileDrop = ({ className, children }: PropsWithChildren<FileDropProps>) => {
+export const FileDrop = ({ className, children, onClickOverride = undefined }: PropsWithChildren<FileDropProps>) => {
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const apiClient = useApiClient()
 
@@ -45,7 +46,7 @@ export const FileDrop = ({ className, children }: PropsWithChildren<FileDropProp
 		<div className={className}
 			onDragOver={onDragOver}
 			onDrop={onDrop}
-			onClick={() => fileInputRef?.current?.click()}
+			onClick={() => onClickOverride ? onClickOverride() : fileInputRef?.current?.click()}
 		>
 			<input className="hidden"
 				type='file' multiple
