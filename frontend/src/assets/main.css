@@ -25,18 +25,159 @@
 	--font-code: "Monaspace Krypton", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-
-main {
-	@apply h-full overflow-y-auto sm:px-8 py-6;
-
-	& h1 {
-		@apply mb-4 text-2xl text-[#2c3e50];
+@layer theme {
+	.striped-background {
+		background: repeating-linear-gradient(-30deg,
+			whitesmoke 0,
+			whitesmoke 10px,
+			white 10px,
+			white 20px
+		)
 	}
 
-	& p {
-		@apply text-[#555] leading-[1.6] max-w-[65ch];
+	.grip-background {
+		background-image: radial-gradient(circle at 3px 3px, currentColor 1.5px, transparent 0);
+		background-size: 6px 6px;
+		color: #9ca3af;
 	}
 }
+
+@layer components {
+	main {
+		@apply h-full overflow-y-auto sm:px-8 py-6;
+
+		& h1 {
+			@apply mb-4 text-2xl text-[#2c3e50];
+		}
+
+		& p {
+			@apply text-[#555] leading-[1.6] max-w-[65ch];
+		}
+	}
+
+
+	/* ── Preview with hover action bar ── */
+	.lightbox-backdrop {
+		@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto z-2;
+
+		>* {
+			@apply my-auto;
+		}
+	}
+
+
+	/* ── Floating window ── */
+	.floating-window {
+		@apply fixed flex flex-col bg-main-color border border-gray-300 rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] overflow-hidden z-1;
+	}
+
+	.floating-window-header {
+		@apply flex items-center justify-between gap-2 text-xs font-bold p-1 px-2 bg-white border-b border-gray-300 cursor-move select-none touch-none;
+	}
+
+	.floating-window-close {
+		@apply bg-transparent border-none cursor-pointer text-gray-500 hover:text-gray-800;
+	}
+
+	.floating-window-content {
+		@apply p-2 overflow-auto grow;
+	}
+
+	.floating-window-resize-handle {
+		@apply absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none;
+		background: linear-gradient(135deg, transparent 0 55%, theme('colors.gray.400') 55% 65%, transparent 65% 75%, theme('colors.gray.400') 75% 85%, transparent 85%);
+	}
+
+
+
+	.action-bar-host {
+		@apply relative;
+
+		/* Hover Action Bar */
+		& .action-bar {
+			@apply absolute top-0 right-0 bg-black/40 flex p-2 gap-2 opacity-0 transition-opacity duration-300 ease-in-out pointer-events-none rounded-bl-xl backdrop-blur-[0.5px];
+		}
+
+		&:hover .action-bar {
+			@apply opacity-100 pointer-events-auto;
+		}
+
+		& .action-bar button {
+			@apply bg-white/95 text-[#333] border-none rounded-md p-[0.4rem] cursor-pointer transition-all duration-200 flex min-w-7 min-h-7 shadow-[0_1px_3px_rgba(0,0,0,0.2)];
+		}
+
+		& .action-bar button:hover:not(:disabled) {
+			@apply bg-white scale-115 shadow-[0_2px_8px_rgba(0,0,0,0.3)];
+		}
+
+		& .action-bar button:disabled {
+			@apply text-gray-400 bg-gray-200 cursor-not-allowed shadow-none;
+		}
+
+		& .action-bar button:active {
+			@apply scale-105;
+		}
+
+		/* Hide the old button styles when using action bar */
+		/* &:has(.action-bar)>button {
+			@apply hidden;
+		} */
+	}
+
+
+	.info-box {
+		@apply bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6;
+
+		&>:is(h1, h2, h3, h4, h5, h6) {
+			@apply m-0 mb-2 text-base text-blue-900;
+		}
+
+		&>p {
+			@apply m-0 text-blue-900 text-sm leading-relaxed;
+		}
+	}
+
+
+	.pill {
+		@apply inline-flex rounded-[1em] px-2 mr-2;
+
+		&.inner {
+			@apply translate-x-0.5 ml-1 mr-0!;
+		}
+
+		&:has(.inner.pill) {
+			@apply mr-2.5 pr-0!;
+		}
+
+		&.metadatatype {
+			@apply bg-blue-200;
+		}
+
+		&.tag {
+			@apply bg-gray-200;
+		}
+
+		&.highlight {
+			@apply bg-yellow-300;
+		}
+	}
+
+
+	.code {
+		@apply font-code;
+	}
+
+	.todo {
+		@apply text-green-600 bg-gray-900 font-mono text-xs w-full p-2;
+	}
+
+	.log {
+		&>div {
+			@apply text-black bg-gray-200 font-mono text-xs p-1;
+		}
+	}
+}
+
 
 
 .full-width-non-bordered {
@@ -65,86 +206,6 @@ main {
 
 
 
-/* ── Preview with hover action bar ── */
-.lightbox-backdrop {
-	@apply absolute flex inset-0 bg-black items-start justify-center overflow-auto z-2;
-
-	>* {
-		@apply my-auto;
-	}
-}
-
-
-/* ── Floating window ── */
-.floating-window {
-	@apply fixed flex flex-col bg-main-color border border-gray-300 rounded-[10px] shadow-[0_12px_40px_rgba(0,0,0,.25)] overflow-hidden z-1;
-}
-
-.floating-window-header {
-	@apply flex items-center justify-between gap-2 text-xs font-bold p-1 px-2 bg-white border-b border-gray-300 cursor-move select-none touch-none;
-}
-
-.floating-window-close {
-	@apply bg-transparent border-none cursor-pointer text-gray-500 hover:text-gray-800;
-}
-
-.floating-window-content {
-	@apply p-2 overflow-auto grow;
-}
-
-.floating-window-resize-handle {
-	@apply absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none;
-	background: linear-gradient(135deg, transparent 0 55%, theme('colors.gray.400') 55% 65%, transparent 65% 75%, theme('colors.gray.400') 75% 85%, transparent 85%);
-}
-
-
-
-.action-bar-host {
-	@apply relative;
-
-	/* Hover Action Bar */
-	& .action-bar {
-		@apply absolute top-0 right-0 bg-black/40 flex p-2 gap-2 opacity-0 transition-opacity duration-300 ease-in-out pointer-events-none rounded-bl-xl backdrop-blur-[0.5px];
-	}
-
-	&:hover .action-bar {
-		@apply opacity-100 pointer-events-auto;
-	}
-
-	& .action-bar button {
-		@apply bg-white/95 text-[#333] border-none rounded-md p-[0.4rem] cursor-pointer transition-all duration-200 flex min-w-7 min-h-7 shadow-[0_1px_3px_rgba(0,0,0,0.2)];
-	}
-
-	& .action-bar button:hover:not(:disabled) {
-		@apply bg-white scale-115 shadow-[0_2px_8px_rgba(0,0,0,0.3)];
-	}
-
-	& .action-bar button:disabled {
-		@apply text-gray-400 bg-gray-200 cursor-not-allowed shadow-none;
-	}
-
-	& .action-bar button:active {
-		@apply scale-105;
-	}
-
-	/* Hide the old button styles when using action bar */
-	/* &:has(.action-bar)>button {
-		@apply hidden;
-	} */
-}
-
-
-
-
-
-
-
-.horizontal-line {
-	height: 0;
-	border-bottom: thin solid hsl(0deg, 0%, 80%);
-}
-
-
 .jumbotron {
 	@apply bg-gray-100 max-w-md mt-6 mx-auto rounded-xl px-4 py-2;
 }
@@ -152,27 +213,8 @@ main {
 
 
 
-
-.info-box {
-	@apply bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6;
-
-	&>:is(h1, h2, h3, h4, h5, h6) {
-		@apply m-0 mb-2 text-base text-blue-900;
-	}
-
-	&>p {
-		@apply m-0 text-blue-900 text-sm leading-relaxed;
-	}
-}
-
-
-.align-with-btn {
-	@apply py-1;
-}
-
-
 .btn.btn-wider {
-	@apply px-8;
+	@apply px-7.5;
 }
 
 .aligned-labels-and-inputs {
@@ -199,57 +241,3 @@ main {
 	@apply flex flex-col gap-2;
 }
 
-
-.pill {
-	@apply inline-flex rounded-[1em] px-2 mr-2;
-
-	&.inner {
-		@apply translate-x-0.5 ml-1 mr-0!;
-	}
-
-	&:has(.inner.pill) {
-		@apply mr-2.5 pr-0!;
-	}
-
-	&.metadatatype {
-		@apply bg-blue-200;
-	}
-
-	&.tag {
-		@apply bg-gray-200;
-	}
-
-	&.highlight {
-		@apply bg-yellow-300;
-	}
-}
-
-
-.code {
-	@apply font-code;
-}
-
-.todo {
-	@apply text-green-600 bg-gray-900 font-mono text-xs w-full p-2;
-}
-
-.log {
-	&>div {
-		@apply text-black bg-gray-200 font-mono text-xs p-1;
-	}
-}
-
-
-.striped-background {
-	background: repeating-linear-gradient(-30deg,
-			whitesmoke 0,
-			whitesmoke 10px,
-			white 10px,
-			white 20px)
-}
-
-.grip-background {
-	background-image: radial-gradient(circle at 3px 3px, currentColor 1.5px, transparent 0);
-	background-size: 6px 6px;
-	color: #9ca3af;
-}
