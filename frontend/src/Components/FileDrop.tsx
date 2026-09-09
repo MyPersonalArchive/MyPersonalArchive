@@ -37,11 +37,21 @@ export const FileDrop = ({ className, children, onClickOverride = undefined, onF
 		}
 	}
 
+	const onClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+		e.stopPropagation()
+		if (onClickOverride) {
+			onClickOverride()
+		} else {
+			fileInputRef?.current?.click()
+		}
+	}
+
+
 	return (
 		<div className={className}
 			onDragOver={onDragOver}
 			onDrop={onDrop}
-			onClick={() => onClickOverride ? onClickOverride() : fileInputRef?.current?.click()}
+			onClick={onClick}
 		>
 			<input className="hidden"
 				type='file' multiple
