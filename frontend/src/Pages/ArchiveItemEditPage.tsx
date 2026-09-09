@@ -284,18 +284,16 @@ export const ArchiveItemEditPage = () => {
 					/>
 
 					<div
-						className="btn btn-dash rounded-lg aspect-square w-full h-full"
-						// className="bg-white rounded-lg border border-black w-73 h-73 flex flex-col justify-center items-center relative action-bar-host"
+						className="btn btn-dash rounded-lg aspect-square w-full h-full p-0"
 					>
 						<FileDrop
+							className="w-full h-full flex flex-col justify-center items-center"
 							onFilesUploaded={onFilesUploaded}
 							onClickOverride={() => SelectUploadedFiles()}
 						>
-							<div className="flex flex-col justify-center items-center">
-								<div className="text-sm">Drop file here or</div>
-								<FontAwesomeIcon icon={faPlus} size="10x" />
-								<div className="text-sm">click to select from uploaded files</div>
-							</div>
+							<div className="text-sm">Drop file here or</div>
+							<FontAwesomeIcon icon={faPlus} size="10x" />
+							<div className="text-sm">click to select from uploaded files</div>
 						</FileDrop>
 					</div>
 				</div>
