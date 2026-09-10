@@ -63,17 +63,17 @@ export const ArchiveItemListPage = () => {
 
 	return (
 		<>
-			<div className="full-width-non-bordered flex flex-wrap items-baseline gap-2">
+			<div className="mx-2 sm:mx-0 flex flex-wrap items-baseline gap-2">
 				<Search />
 				<div className="flex-1"></div>
 				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>
 			</div>
 
-			<div className="full-width-non-bordered">
+			<div className="mx-2 sm:mx-0">
 				<StoredFilterSelector />
 			</div>
 
-			<div className="full-width-bordered my-4">
+			<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
 				{archiveItems?.filter(filterFn)
 					.toSorted((a, b) => a.title.localeCompare(b.title))
 					.map(item =>
@@ -106,7 +106,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
 			className="group/archive-item div-row layout-title-date-and-more"
 		>
-			<span className="title link link-hover group-hover/archive-item:underline">
+			<span className="title link link-primary link-hover group-hover/archive-item:underline">
 				{archiveItem.title}
 				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 			</span>

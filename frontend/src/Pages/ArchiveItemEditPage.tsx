@@ -126,7 +126,7 @@ export const ArchiveItemEditPage = () => {
 		setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
 	}
 
-	function onFilesUploaded(files: FileList): void {
+	const onFilesUploaded = (files: FileList): void => {
 		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file, mimeType: file.type }))
 		setLocalBlobs([...localBlobs, ...newLocalBlobs])
 	}
@@ -137,9 +137,15 @@ export const ArchiveItemEditPage = () => {
 
 	return (
 		<>
-			<form onSubmit={e => { e.preventDefault(); save() }} className="flex flex-col gap-4">
+			<form
+				onSubmit={e => { e.preventDefault(); save() }}
+				className="flex flex-col gap-4"
+			>
 
-				<label className="input w-full" htmlFor="title">
+				<label
+					className="dont-touch-walls input w-full"
+					htmlFor="title"
+				>
 					<span className="label">Title</span>
 					<input type="text"
 						className="input input-xl"
@@ -151,7 +157,8 @@ export const ArchiveItemEditPage = () => {
 					/>
 				</label>
 
-				<div className="join">
+
+				<div className="dont-touch-walls join">
 					<label className="input">
 						<span className="label">Document date</span>
 						<label className="date" htmlFor="documentDate">
@@ -164,9 +171,17 @@ export const ArchiveItemEditPage = () => {
 					<button className="btn btn-outline btn-primary" type="button" onClick={() => setDocumentDate("")}>&times;</button>
 				</div>
 
-				<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} />
+				<TagsInput
+					className="dont-touch-walls"
+					tags={tags}
+					setTags={setTags}
+					autocompleteList={Array.from(allTags)}
+				/>
 
-				<label className="textarea" htmlFor="notes">
+				<label
+					className="dont-touch-walls textarea"
+					htmlFor="notes"
+				>
 					<span className="label">Notes</span>
 					<textarea
 						className="input h-auto"
@@ -177,31 +192,27 @@ export const ArchiveItemEditPage = () => {
 					/>
 				</label>
 
-				{
-					allMetadataTypes.map(metadataType => (
-						<MetadataSection
-							key={metadataType.path.toString()}
-							metadataType={metadataType}
-							metadata={metadata}
-							dispatch={dispatch}
-						/>
-					))
-				}
+				<div className="flex flex-col sm:gap-4">
+					{
+						allMetadataTypes.map(metadataType => (
+							<MetadataSection
+								key={metadataType.path.toString()}
+								metadataType={metadataType}
+								metadata={metadata}
+								dispatch={dispatch}
+							/>
+						))
+					}
+				</div>
 
-
-				{/* <FileDropZone showUnallocatedBlobs={true}
-					onBlobAdded={addFileBlobs}
-					onBlobAttached={attachUnallocatedBlobs}
-				/> */}
-
-				<div className="grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
+				<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
 					{/* Previewlist of files from DB */}
 					<PreviewList items={blobs}
 						keySelector={blob => blob.id}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.id}
-									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host"
+									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host overflow-hidden"
 									onClick={() => maximize(blob)}
 								>
 									<Preview blob={blob} dimension={DimensionEnum.small} />
@@ -298,10 +309,10 @@ export const ArchiveItemEditPage = () => {
 					</div>
 				</div>
 
-				<div className="stack-horizontal to-the-right my-4">
-					<button className="btn btn-secondary" onClick={() => navigate(RoutePaths.Archive.List)} type="button">
+				<div className="dont-touch-walls stack-horizontal to-the-right my-4 sticky bottom-0">
+					{/* <button className="btn btn-secondary" onClick={() => navigate(RoutePaths.Archive.List)} type="button">
 						Back
-					</button>
+					</button> */}
 					<button className="btn btn-primary" type="submit">
 						Save
 						<kbd className="kbd kbd-sm">⌘</kbd>
@@ -316,7 +327,7 @@ export const ArchiveItemEditPage = () => {
 				{openDeleteDialog &&
 					<Dialog size="medium"
 						onClose={() => setOpenDeleteDialog(false)}
-						closeOnEscape={false}
+						closeOnEscape={true}
 					>
 						<div className="dialog-header">
 							Are you sure you want to delete this item?
@@ -341,7 +352,10 @@ type MetadataSectionProps = {
 const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionProps) => {
 	const summary = (metadataType.path in metadata) ? metadataType.summarize(metadata[metadataType.path as string]) : ""
 	return (
-		<div key={metadataType.path.toString()} className="collapse collapse-arrow bg-base-100 border border-base-300 has-[.delete-receipt:hover]:bg-red-100!">
+		<div
+			key={metadataType.path.toString()}
+			className="collapse collapse-arrow bg-base-100 border border-base-300 has-[.delete-receipt:hover]:bg-red-100 max-sm:rounded-none max-sm:border-x-0 max-sm:border-b-0 last:border-b"
+		>
 			<input type="checkbox" />
 			<div className="collapse-title font-semibold">
 				{(metadataType.path in metadata)
@@ -357,7 +371,7 @@ const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionPr
 					: <span className="pl-2">{metadataType.displayName}</span>
 				}
 			</div>
-			<div className="collapse-content text-sm px-0 ">
+			<div className="collapse-content text-sm px-0">
 				{
 					!(metadataType.path in metadata)
 						? <button

@@ -5,10 +5,10 @@ type TagsProps = {
 	tags: string[]
 	setTags: (tags: string[]) => void
 	autocompleteList?: string[]
-	htmlId?: string
+	className?: string
 }
 
-export const TagsInput = ({ placeholder, tags, setTags, autocompleteList }: TagsProps) => {
+export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, className }: TagsProps) => {
 	const [tagsInput, setTagsInput] = useState<string>("")
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -47,7 +47,7 @@ export const TagsInput = ({ placeholder, tags, setTags, autocompleteList }: Tags
 
 	return (
 		<>
-			<label className="textarea">
+			<label className={`textarea ${className}`}>
 				<span className="label">Tags</span>
 				<div className="h-auto min-h-4 px-3 py-2 flex flex-wrap gap-2 items-baseline" >
 					{
