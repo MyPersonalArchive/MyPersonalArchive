@@ -178,19 +178,17 @@
 	}
 }
 
-
-
-.full-width-non-bordered {
-	@apply px-2 sm:px-0;
+.dont-touch-walls {
+	@apply mx-2 sm:mx-0 max-sm:w-[calc(100%-16px)];
 }
 
-.full-width-bordered {
-	@apply border-t border-b sm:border-l sm:border-r border-gray-300 sm:rounded-lg overflow-hidden;
-}
+
 
 .div-row {
-	@apply block border-gray-300 border-b last:border-b-0 px-2 py-1 bg-gray-50 hover:bg-white;
+	@apply block border-base-300 border-b last:border-b-0 px-2 py-1 bg-gray-50 hover:bg-white;
 }
+
+
 
 .layout-title-date-and-more {
 	@apply after:block after:clear-both;
