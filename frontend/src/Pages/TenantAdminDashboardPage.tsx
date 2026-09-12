@@ -60,7 +60,7 @@ export const TenantAdminDashboardPage = () => {
 			</header>
 
 			<div className="flex flex-wrap gap-6">
-				<div className="card bg-base-100 card-xs shadow-sm min-w-[220px] flex-1 p-4">
+				<div className="card bg-base-100 card-xs shadow-sm min-w-55 flex-1 p-4">
 					<h2 className="mb-3 text-sm font-semibold text-gray-600">Storage</h2>
 					<div className="flex items-center justify-center">
 						<svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label={`Storage at ${usedPercentage} percent`}>
@@ -106,7 +106,7 @@ export const TenantAdminDashboardPage = () => {
 					)}
 				</div>
 
-				<div className="card bg-base-100 card-xs shadow-sm min-w-[220px] flex-1 p-4">
+				<div className="card bg-base-100 card-xs shadow-sm min-w-55 flex-1 p-4">
 					<h2 className="mb-2 text-sm font-semibold text-gray-600">Number of Users</h2>
 					<p className="text-center text-7xl font-bold text-gray-800">{stats?.numberOfUsers}</p>
 					<p className="mt-1 text-xs text-gray-500">
