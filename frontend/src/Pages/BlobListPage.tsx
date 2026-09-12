@@ -4,8 +4,7 @@ import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtom, useAtomValue } from "jotai"
 import { BlobMetadata, blobsAtom } from "../Utils/Atoms/blobsAtom"
 import { PreviewList } from "../Components/PreviewList"
-import { DimensionEnum } from "../Components/Preview"
-import { Preview } from "../Components/Preview"
+import { DimensionEnum } from "../types/DimensionEnum"
 import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { dateToShortDateDisplay, formatSize } from "../Utils/formatUtils"
@@ -17,6 +16,7 @@ import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { RoutePaths } from "../RoutePaths"
+import { ServerViewer } from "../Components/Viewers/ServerViewer"
 
 
 export const BlobListPage = () => {
@@ -167,7 +167,11 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 						setToolWindowSize={setToolWindowSize}
 					/>
 				}
-				<Preview blob={blob} dimension={DimensionEnum.full} />
+				<ServerViewer
+					blobId={blob.id}
+					mimeType={blob.mimeType}
+					dimension={DimensionEnum.full}
+				/>
 				<div className="action-bar">
 					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
 						<FontAwesomeIcon icon={faToolbox} size="1x" />
@@ -277,7 +281,11 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 			<div className="bg-black border border-black w-40 h-40 flex justify-center items-center action-bar-host"
 				onClick={() => maximize(blob)}
 			>
-				<Preview blob={blob} dimension={DimensionEnum.thumbnail} />
+				<ServerViewer
+					blobId={blob.id}
+					mimeType={blob.mimeType}
+					dimension={DimensionEnum.thumbnail}
+				/>
 
 				<div className="action-bar">
 					<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">

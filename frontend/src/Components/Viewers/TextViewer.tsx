@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface Props {
   src: string;
-  style?: React.CSSProperties;
 }
 
-export const TextViewer = ({ src, style }: Props) => {
+export const TextViewer = ({ src }: Props) => {
 	const [text, setText] = useState<string>("")
 	const [fontSize, setFontSize] = useState<number>(16)
 	const containerRef = useRef<HTMLDivElement>(null)
@@ -50,15 +49,8 @@ export const TextViewer = ({ src, style }: Props) => {
 
 	return (
 		<div
-	  className="text-viewer-container"
+	  		className="text-viewer-container w-full h-full relative overflow-hidden"
 			ref={containerRef}
-			style={{
-				overflow: "hidden",
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				...style,
-			}}
 		>
 			<pre
 				ref={textRef}

@@ -2,22 +2,21 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { TagsInput } from "../Components/TagsInput"
-import { FileDropZone } from "../Components/FileDropZone"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { tagsAtom } from "../Utils/Atoms/tagsAtom"
 import { RoutePaths } from "../RoutePaths"
 import { useMetadata } from "../Utils/Metadata/useMetadata"
 import { allMetadataTypes } from "../Components/MetadataTypes"
 import { PreviewList } from "../Components/PreviewList"
-import { BlobDisplayInfo } from "../Components/Preview"
-import { DimensionEnum } from "../Components/Preview"
-import { Preview } from "../Components/Preview"
+import { BlobDisplayInfo } from "../types/BlobDisplayInfo"
+import { DimensionEnum } from "../types/DimensionEnum"
 import { LocalViewer } from "../Components/Viewers/LocalViewer"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
+import { ServerViewer } from "../Components/Viewers/ServerViewer"
 
 type CreateResponse = {
 	id: UUID
@@ -63,17 +62,17 @@ export const ArchiveItemNewPage = () => {
 		navigate(RoutePaths.Archive.List)
 	}
 
-	const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
-		setLocalBlobs([...localBlobs, ...blobs])
-	}
+	// const addFileBlobs = (blobs: { fileName: string, fileData: Blob }[]) => {
+	// 	setLocalBlobs([...localBlobs, ...blobs])
+	// }
 
-	const removeBlob = (fileName: string) => {
-		setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
-	}
+	// const removeBlob = (fileName: string) => {
+	// 	setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
+	// }
 
-	const attachUnallocatedBlobs = (blobs: BlobDisplayInfo[]) => {
-		setExistingBlobIds(existingBlobIds => [...existingBlobIds, ...blobs])
-	}
+	// const attachUnallocatedBlobs = (blobs: BlobDisplayInfo[]) => {
+	// 	setExistingBlobIds(existingBlobIds => [...existingBlobIds, ...blobs])
+	// }
 
 	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
 		setExistingBlobIds(existingBlobIds => existingBlobIds.filter(x => x.id !== blob.id))
@@ -109,7 +108,7 @@ export const ArchiveItemNewPage = () => {
 					<button className="btn btn-outline btn-primary" type="button" onClick={() => setDocumentDate("")}>&times;</button>
 				</div>
 
-				<TagsInput tags={tags} setTags={setTags} htmlId="tags" autocompleteList={Array.from(allTags)} />
+				<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} />
 
 				<div className="aligned-labels-and-inputs">
 					<label htmlFor="notes">Notes</label>
@@ -120,12 +119,6 @@ export const ArchiveItemNewPage = () => {
 						onChange={event => setNotes(event.target.value)}
 					/>
 				</div>
-
-				{/* <MetadataTypeSelector
-					selectedMetadataTypes={selectedMetadataTypes}
-					allMetadataTypes={allMetadataTypes}
-					dispatch={dispatch(MetadataControlPath)}
-				/> */}
 
 				<div className="todo">
 					//TODO: Metadatatype selector
@@ -147,11 +140,6 @@ export const ArchiveItemNewPage = () => {
 						))
 				} */}
 
-				<FileDropZone showUnallocatedBlobs={true}
-					onBlobAdded={addFileBlobs}
-					onBlobAttached={attachUnallocatedBlobs}
-				/>
-
 				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of files from DB */}
 					<PreviewList items={existingBlobIds}
@@ -163,7 +151,11 @@ export const ArchiveItemNewPage = () => {
 									onClick={() => maximize(blob)}
 								// className="action-bar-host"
 								>
-									<Preview blob={blob} dimension={DimensionEnum.small} />
+									<ServerViewer
+										blobId={blob.id}
+										mimeType={blob.mimeType}
+										dimension={DimensionEnum.small}
+									/>
 									<div className="action-bar">
 										<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
 											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
@@ -177,7 +169,11 @@ export const ArchiveItemNewPage = () => {
 						maximizedPreviewTemplate={(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
 							<LightBox key={blob.id} onClose={() => minimize()}>
 								<div className="w-full h-full flex justify-center action-bar-host">
-									<Preview blob={blob} dimension={DimensionEnum.full} />
+									<ServerViewer
+										blobId={blob.id}
+										mimeType={blob.mimeType}
+										dimension={DimensionEnum.full}
+									/>
 									<div className="action-bar">
 										<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
 											<FontAwesomeIcon icon={faArrowLeft} size="1x" />
@@ -211,10 +207,6 @@ export const ArchiveItemNewPage = () => {
 								>
 									<LocalViewer
 										blob={blob.fileData}
-										fileName={blob.fileName}
-										dimension={DimensionEnum.small}
-										removeBlob={removeBlob}
-										onMaximize={() => maximize(blob)}
 									/>
 									<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
 										<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
@@ -230,10 +222,6 @@ export const ArchiveItemNewPage = () => {
 									<div className="w-full h-full flex justify-center action-bar-host">
 										<LocalViewer
 											blob={blob.fileData}
-											fileName={blob.fileName}
-											dimension={DimensionEnum.full}
-											onMinimize={minimize}
-											removeBlob={removeBlob}
 										/>
 										<div className="action-bar">
 											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
