@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
-import { BaseViewer, BaseViewerProps } from "./BaseViewer"
-import { DimensionEnum } from "../Preview"
+import { BaseViewer } from "./BaseViewer"
+import { DimensionEnum } from "../../types/DimensionEnum"
 import { UUID } from "crypto"
 
-interface Props extends BaseViewerProps {
+type Props = {
 	blobId: UUID
+	mimeType: string
+	dimension: DimensionEnum
 }
-
 export const ServerViewer = ({ blobId, mimeType, dimension }: Props) => {
 	const apiClient = useApiClient()
 	const [srcData, setSrcData] = useState<string>("")
@@ -45,9 +46,8 @@ export const ServerViewer = ({ blobId, mimeType, dimension }: Props) => {
 	if (loading) return <div>Loading file...</div>
 
 	return <BaseViewer
-		src={srcData}
+		srcData={srcData}
 		mimeType={mimeType}
-		dimension={dimension}
 		forceImageViewer={shouldForceImageViewer}
 	/>
 }

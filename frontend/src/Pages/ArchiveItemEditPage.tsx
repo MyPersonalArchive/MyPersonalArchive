@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { UUID } from "crypto"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { PreviewList } from "../Components/PreviewList"
-import { BlobDisplayInfo } from "../Components/Preview"
-import { DimensionEnum } from "../Components/Preview"
-import { Preview } from "../Components/Preview"
+import { BlobDisplayInfo } from "../types/BlobDisplayInfo"
+import { DimensionEnum } from "../types/DimensionEnum"
 import { tagsAtom } from "../Utils/Atoms/tagsAtom"
 import { useAtom, useAtomValue } from "jotai"
 import { RoutePaths } from "../RoutePaths"
@@ -25,6 +24,7 @@ import { useSaveShortcut } from "../Utils/Hooks/useSaveShortcut"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickEditToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { FileDrop } from "../Components/FileDrop"
+import { ServerViewer } from "../Components/Viewers/ServerViewer"
 
 type GetResponse = {
 	id: UUID
@@ -44,7 +44,6 @@ type GetResponse = {
 type LocalBlob = {
 	fileName: string
 	fileData: Blob
-	mimeType: string
 }
 
 
@@ -54,7 +53,7 @@ export const ArchiveItemEditPage = () => {
 	const [tags, setTags] = useState<string[]>([])
 	const [notes, setNotes] = useState<string | undefined>(undefined)
 	const [documentDate, setDocumentDate] = useState("")
-	const [blobs, setBlobs] = useState<BlobDisplayInfo[]>([])
+	const [serverBlobs, setServerBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
@@ -73,7 +72,7 @@ export const ArchiveItemEditPage = () => {
 				setTitle(item!.title)
 				setTags(item!.tags)
 				setNotes(item!.notes)
-				setBlobs(item!.blobDisplayInfos.map(blob => ({ id: blob.id, numberOfPages: blob.numberOfPages, mimeType: blob.mimeType })))
+				setServerBlobs(item!.blobDisplayInfos.map(blob => ({ id: blob.id, mimeType: blob.mimeType })))
 				setDocumentDate(item!.documentDate ? new Date(item!.documentDate).toISOString().split("T")[0] : "")
 
 				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item!.metadata, dispatch: dispatch })
@@ -87,7 +86,7 @@ export const ArchiveItemEditPage = () => {
 			title: title!,
 			tags,
 			notes,
-			existingBlobIds: blobs.map(blob => blob.id),
+			existingBlobIds: serverBlobs.map(blob => blob.id),
 			metadata,
 			documentDate: documentDate ? new Date(documentDate) : undefined
 		}
@@ -105,16 +104,14 @@ export const ArchiveItemEditPage = () => {
 
 	useSaveShortcut(() => { save() }, true)
 
-	const deleteArchiveItem = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-		event.preventDefault()
-
+	const onDeleteArchiveItem = () => {
 		apiClient.execute("DeleteArchiveItem", { id: id! })
 		navigate(RoutePaths.Archive.List)
 	}
 
-	const removeBlob = (fileName: string) => {
-		setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
-	}
+	// const removeBlob = (fileName: string) => {
+	// 	setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
+	// }
 
 	// const attachUnallocatedBlobs = (newBlobs: BlobDisplayInfo[]) => {
 	// 	newBlobs.forEach(blob => {
@@ -123,11 +120,11 @@ export const ArchiveItemEditPage = () => {
 	// }
 
 	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
-		setBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
+		setServerBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
 	}
 
 	const onFilesUploaded = (files: FileList): void => {
-		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file, mimeType: file.type }))
+		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file }))
 		setLocalBlobs([...localBlobs, ...newLocalBlobs])
 	}
 
@@ -207,7 +204,7 @@ export const ArchiveItemEditPage = () => {
 
 				<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
 					{/* Previewlist of files from DB */}
-					<PreviewList items={blobs}
+					<PreviewList items={serverBlobs}
 						keySelector={blob => blob.id}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
@@ -215,7 +212,11 @@ export const ArchiveItemEditPage = () => {
 									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host overflow-hidden"
 									onClick={() => maximize(blob)}
 								>
-									<Preview blob={blob} dimension={DimensionEnum.small} />
+									<ServerViewer
+										blobId={blob.id}
+										mimeType={blob.mimeType}
+										dimension={DimensionEnum.small}
+									/>
 									<div className="action-bar">
 										<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
 											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
@@ -246,22 +247,20 @@ export const ArchiveItemEditPage = () => {
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.fileName}
-									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host"
+									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host overflow-hidden"
 									onClick={() => maximize(blob)}
 								>
 									<LocalViewer
 										blob={blob.fileData}
-										fileName={blob.fileName}
-										dimension={DimensionEnum.small}
-										removeBlob={removeBlob}
-										onMaximize={() => maximize(blob)}
 									/>
-									<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
-										<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-									</button>
-									<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
-										<FontAwesomeIcon icon={faTrash} size="1x" />
-									</button>
+									<div className="action-bar">
+										<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
+											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+										</button>
+										<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
+											<FontAwesomeIcon icon={faTrash} size="1x" />
+										</button>
+									</div>
 								</div>
 						}
 						maximizedPreviewTemplate={
@@ -270,10 +269,6 @@ export const ArchiveItemEditPage = () => {
 									<div className="w-full h-full flex justify-center action-bar-host">
 										<LocalViewer
 											blob={blob.fileData}
-											fileName={blob.fileName}
-											dimension={DimensionEnum.full}
-											onMinimize={minimize}
-											removeBlob={removeBlob}
 										/>
 										<div className="action-bar">
 											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
@@ -324,21 +319,39 @@ export const ArchiveItemEditPage = () => {
 				</div>
 
 
-				{openDeleteDialog &&
-					<Dialog size="medium"
-						onClose={() => setOpenDeleteDialog(false)}
-						closeOnEscape={true}
-					>
-						<div className="dialog-header">
-							Are you sure you want to delete this item?
-						</div>
-						<div className="stack-horizontal to-the-right p-4">
-							<button className="btn" type="button" onClick={() => setOpenDeleteDialog(false)}>Cancel</button>
-							<button className="btn btn-danger" type="button" onClick={deleteArchiveItem}>Delete</button>
-						</div>
-					</Dialog>
-				}
+				<DeleteDialog
+					open={openDeleteDialog}
+					onClose={() => setOpenDeleteDialog(false)}
+					onDelete={onDeleteArchiveItem}
+				/>
 			</form>
+		</>
+	)
+}
+
+
+type DeleteDialogProps = {
+	open: boolean
+	onClose: () => void
+	onDelete: () => void
+}
+const DeleteDialog = ({ open, onClose, onDelete }: DeleteDialogProps) => {
+	return (
+		<>
+			{open &&
+				<Dialog size="medium"
+					onClose={onClose}
+					closeOnEscape={true}
+				>
+					<div className="dialog-header">
+						Are you sure you want to delete this item?
+					</div>
+					<div className="stack-horizontal to-the-right p-4">
+						<button className="btn" type="button" onClick={onClose}>Cancel</button>
+						<button className="btn btn-danger" type="button" onClick={e => { e.preventDefault(); onDelete()}}>Delete</button>
+					</div>
+				</Dialog>
+			}
 		</>
 	)
 }
@@ -437,7 +450,11 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 						setToolWindowSize={setToolWindowSize}
 					/>
 				}
-				<Preview blob={blob} dimension={DimensionEnum.full} />
+				<ServerViewer
+					blobId={blob.id}
+					mimeType={blob.mimeType}
+					dimension={DimensionEnum.full}
+				/>
 				<div className="action-bar">
 					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
 						<FontAwesomeIcon icon={faToolbox} size="1x" />
@@ -517,10 +534,7 @@ const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindowSize, s
 				<button className="btn" type="button" onClick={() => setDocumentDate("")}>&times;</button>
 			</span>
 
-			<div>
-				<label htmlFor="tags">Tags</label>
-				<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} htmlId="tags" />
-			</div>
+			<TagsInput tags={tags} setTags={setTags} autocompleteList={Array.from(allTags)} />
 
 			<div className="todo">
 				//TODO:<br />

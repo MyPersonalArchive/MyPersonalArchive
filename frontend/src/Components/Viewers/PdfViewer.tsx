@@ -1,11 +1,10 @@
-import { CSSProperties, useMemo } from "react"
+import { useMemo } from "react"
 
 interface Props {
   src: string
-  style?: CSSProperties
 }
 
-export const PdfViewer = ({ src, style }: Props) => {
+export const PdfViewer = ({ src }: Props) => {
 	const isFirefox = useMemo(() => {
 		return navigator.userAgent.toLowerCase().indexOf("firefox") > -1
 	}, [])
@@ -20,7 +19,7 @@ export const PdfViewer = ({ src, style }: Props) => {
 			<embed
 				src={pdfSrc}
 				type="application/pdf"
-				style={{ width: "100%", height: "100%", ...style }}
+				className="w-full h-full"
 			/>
 	  </div>
 	)

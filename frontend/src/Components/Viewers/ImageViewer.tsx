@@ -1,19 +1,12 @@
-import { CSSProperties } from "react"
-
-interface Props {
+type Props = {
   src: string;
-  style?: CSSProperties;
 }
-
-export const ImageViewer = ({ src, style }: Props) => {
+export const ImageViewer = ({ src }: Props) => {
 	return (
 		<img
 			src={src}
 			alt="Preview"
-			style={{
-				objectFit: "contain",
-				...style
-			}}
+			className="object-contain w-full h-full"
 		/>
 	)
 }
