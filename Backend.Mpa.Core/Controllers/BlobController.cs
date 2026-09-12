@@ -21,7 +21,7 @@ public class BlobController : ControllerBase
 	}
 
 
-	public async Task<ActionResult> GetFile([FromQuery] Guid blobId, [FromQuery] DimensionEnum dimension)
+	public async Task<ActionResult> GetFile([FromQuery] Guid blobId, [FromQuery] DimensionEnum dimension, [FromQuery] bool inline = false)
 	{
 		int maxX, maxY;
 		maxX = maxY = dimension switch
@@ -42,7 +42,9 @@ public class BlobController : ControllerBase
 
 		var (contentStream, mimeType, suggestedFilename) = tuple.Value;
 
-		return File(contentStream, mimeType, suggestedFilename);
+		return inline
+			? File(contentStream, mimeType)							// Content-disposition: inline -> handles inline display in the browser
+			: File(contentStream, mimeType, suggestedFilename);		// Content-disposition: attachment -> forces a download
 	}
 
 

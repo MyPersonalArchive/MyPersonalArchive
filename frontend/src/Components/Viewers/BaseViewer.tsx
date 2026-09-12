@@ -14,9 +14,7 @@ export const BaseViewer = ({ srcData, mimeType, forceImageViewer }: BaseViewerPr
 	}
 
 	if (!mimeType) return <div>Unknown file type</div>
-	if (!srcData) return <div>File not available</div>
-
-	// Force ImageViewer if requested (e.g., for PDF previews that are actually images)
+	if (!srcData) return <div>No file specified</div>
 
 	return (
 		<div className="baseviewer w-full h-full max-w-full max-h-full">
