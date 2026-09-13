@@ -107,7 +107,6 @@ export const BlobListPage = () => {
 			<div className="full-width-bordered flex flex-col gap-3">
 
 				<PreviewList<BlobMetadata> items={visibleBlobs}
-					keySelector={blob => blob.id}
 					thumbnailPreviewTemplate={
 						(blob, maximize) => <BlobCard
 							key={blob.id}

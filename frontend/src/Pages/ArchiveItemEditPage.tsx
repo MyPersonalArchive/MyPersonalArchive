@@ -15,7 +15,6 @@ import { MetadataControlPath } from "../Utils/Metadata/metadataControlReducer"
 import { MetadataElement } from "../Utils/Metadata/MetadataElement"
 import { ICommand, MetadataType, ReducerIdentifier } from "../Utils/Metadata/types"
 import { Dialog } from "../Components/Dialog"
-import { LocalViewer } from "../Components/Viewers/LocalViewer"
 import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faPlus, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
@@ -24,7 +23,7 @@ import { useSaveShortcut } from "../Utils/Hooks/useSaveShortcut"
 import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickEditToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { FileDrop } from "../Components/FileDrop"
-import { ServerViewer } from "../Components/Viewers/ServerViewer"
+import { BaseViewer } from "../Components/Viewers/BaseViewer"
 
 type GetResponse = {
 	id: UUID
@@ -47,15 +46,27 @@ type LocalBlob = {
 }
 
 
+type CommonBlob = {
+	url: string
+	mimeType: string
+	identifier: { id: UUID } | { fileName: string }
+}
+
+
 export const ArchiveItemEditPage = () => {
 	const [id, setId] = useState<UUID | null>(null)
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
 	const [notes, setNotes] = useState<string | undefined>(undefined)
 	const [documentDate, setDocumentDate] = useState("")
+	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
+
 	const [serverBlobs, setServerBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
-	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
+	const allBlobs: CommonBlob[] = [
+		...serverBlobs.map(blob => ({ url: `/api/blob/GetFile?blobId=${blob.id}`, mimeType: blob.mimeType, identifier: { id: blob.id } })),
+		...localBlobs.map(blob => ({ url: URL.createObjectURL(blob.fileData), mimeType: blob.fileData.type, identifier: { fileName: blob.fileName } }))
+	]
 
 	const allTags = useAtomValue(tagsAtom)
 
@@ -109,19 +120,22 @@ export const ArchiveItemEditPage = () => {
 		navigate(RoutePaths.Archive.List)
 	}
 
-	// const removeBlob = (fileName: string) => {
-	// 	setLocalBlobs(localBlobs.filter(blob => blob.fileName !== fileName))
-	// }
-
 	// const attachUnallocatedBlobs = (newBlobs: BlobDisplayInfo[]) => {
 	// 	newBlobs.forEach(blob => {
 	// 		setBlobs(blobs => [...blobs, blob])
 	// 	})
 	// }
 
-	const removeUnallocatedBlob = (blob: BlobDisplayInfo) => {
-		setServerBlobs(existingBlobs => existingBlobs.filter(x => x.id !== blob.id))
+	const removeUnallocatedBlob = (blob: CommonBlob) => {
+		if ("id" in blob.identifier) {
+			const id = blob.identifier.id
+			setServerBlobs(existingBlobs => existingBlobs.filter(x => x.id !== id))
+		} else {
+			const filename = blob.identifier.fileName
+			setLocalBlobs(localBlobs.filter(localBlob => localBlob.fileName !== filename))
+		}
 	}
+
 
 	const onFilesUploaded = (files: FileList): void => {
 		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file }))
@@ -131,22 +145,6 @@ export const ArchiveItemEditPage = () => {
 	function SelectUploadedFiles(): void {
 		alert("Select uploaded files - feature not implemented yet.")
 	}
-
-	// const allBlobs = [...serverBlobs, ...localBlobs]
-
-	// const aBlob = { identifiers: "either blob.id or blob.fileName", url: "either server blob URL or local blob URL" }
-
-	console.log("*** serverBlobs", serverBlobs)		// ServerViewer -> BaseViewer -> ImageViewver/TextViever/PdfViewer
-	//{
-	// "id": "dc1b47d4-5e74-486c-8194-f9504a6201ae",
-	// "mimeType": "application/pdf"
-	//}
-
-	console.log("*** localBlobs", localBlobs)		// LocalViewer -> BaseViever -> ImageViewver/TextViever/PdfViewer
-	//{
-	// "fileName": "20170504_fotografi_webstep_oslo_5dmkIII_MG_1554 (1).jpg",		// not used in LocalViewer
-	// "fileData": File,							// blob -> src ->
-	//}
 
 	return (
 		<>
@@ -220,29 +218,15 @@ export const ArchiveItemEditPage = () => {
 
 
 				<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
-					{/* Previewlist of files from DB */}
-					<PreviewList items={serverBlobs}
-						keySelector={blob => blob.id}
+					<PreviewList items={allBlobs}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<div key={blob.id}
-									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host overflow-hidden"
-									onClick={() => maximize(blob)}
-								>
-									<ServerViewer
-										blobId={blob.id}
-										mimeType={blob.mimeType}
-										dimension={DimensionEnum.small}
-									/>
-									<div className="action-bar">
-										<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
-											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-										</button>
-										<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
-											<FontAwesomeIcon icon={faTrash} size="1x" />
-										</button>
-									</div>
-								</div>
+								<ThumbnailPreview
+									key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
+									blob={blob}
+									maximize={maximize}
+									removeUnallocatedBlob={removeUnallocatedBlob}
+								/>
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
@@ -255,54 +239,6 @@ export const ArchiveItemEditPage = () => {
 									moveNext={moveNext}
 									removeUnallocatedBlob={removeUnallocatedBlob}
 								/>
-						}
-					/>
-
-					{/* Previewlist of local files (just added, not saved yet) */}
-					<PreviewList items={localBlobs}
-						keySelector={blob => blob.fileName}
-						thumbnailPreviewTemplate={
-							(blob, maximize) =>
-								<div key={blob.fileName}
-									className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host overflow-hidden"
-									onClick={() => maximize(blob)}
-								>
-									<LocalViewer
-										blob={blob.fileData}
-									/>
-									<div className="action-bar">
-										<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
-											<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
-										</button>
-										<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
-											<FontAwesomeIcon icon={faTrash} size="1x" />
-										</button>
-									</div>
-								</div>
-						}
-						maximizedPreviewTemplate={
-							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-								<LightBox key={blob.fileName} onClose={() => minimize()}>
-									<div className="w-full h-full flex justify-center action-bar-host">
-										<LocalViewer
-											blob={blob.fileData}
-										/>
-										<div className="action-bar">
-											<button type="button" disabled={!canMovePrevious} onClick={e => { movePrevious(); e.stopPropagation() }} title="Prev">
-												<FontAwesomeIcon icon={faArrowLeft} size="1x" />
-											</button>
-											<button type="button" disabled={!canMoveNext} onClick={e => { moveNext(); e.stopPropagation() }} title="Next">
-												<FontAwesomeIcon icon={faArrowRight} size="1x" />
-											</button>
-											<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
-												<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
-											</button>
-											<button type="button" disabled /*onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }}*/ title="Delete">
-												<FontAwesomeIcon icon={faTrash} size="1x" />
-											</button>
-										</div>
-									</div>
-								</LightBox>
 						}
 					/>
 
@@ -322,9 +258,6 @@ export const ArchiveItemEditPage = () => {
 				</div>
 
 				<div className="dont-touch-walls stack-horizontal to-the-right my-4 sticky bottom-0">
-					{/* <button className="btn btn-secondary" onClick={() => navigate(RoutePaths.Archive.List)} type="button">
-						Back
-					</button> */}
 					<button className="btn btn-primary" type="submit">
 						Save
 						<kbd className="kbd kbd-sm">⌘</kbd>
@@ -365,7 +298,7 @@ const DeleteDialog = ({ open, onClose, onDelete }: DeleteDialogProps) => {
 					</div>
 					<div className="stack-horizontal to-the-right p-4">
 						<button className="btn" type="button" onClick={onClose}>Cancel</button>
-						<button className="btn btn-danger" type="button" onClick={e => { e.preventDefault(); onDelete()}}>Delete</button>
+						<button className="btn btn-danger" type="button" onClick={e => { e.preventDefault(); onDelete() }}>Delete</button>
 					</div>
 				</Dialog>
 			}
@@ -402,29 +335,28 @@ const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionPr
 				}
 			</div>
 			<div className="collapse-content text-sm px-0">
-				{
-					!(metadataType.path in metadata)
-						? <button
+				{!(metadataType.path in metadata)
+					? <button
+						type="button"
+						className="btn btn-outline btn-primary mx-4"
+						onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
+					>
+						Create {metadataType.displayName} data
+					</button>
+					: <>
+						<MetadataElement
+							metadataType={metadataType}
+							metadata={metadata}
+							dispatch={dispatch(metadataType.path)}
+						/>
+						<button
 							type="button"
-							className="btn btn-outline btn-primary mx-4"
+							className="btn btn-outline btn-error mx-4 delete-receipt"
 							onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
 						>
-							Create {metadataType.displayName} data
+							Remove {metadataType.displayName} data
 						</button>
-						: <>
-							<MetadataElement
-								metadataType={metadataType}
-								metadata={metadata}
-								dispatch={dispatch(metadataType.path)}
-							/>
-							<button
-								type="button"
-								className="btn btn-outline btn-error mx-4 delete-receipt"
-								onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
-							>
-								Remove {metadataType.displayName} data
-							</button>
-						</>
+					</>
 				}
 			</div>
 		</div>
@@ -432,6 +364,39 @@ const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionPr
 }
 
 
+type ThumbnailPreviewProps = {
+	blob: CommonBlob
+	maximize: (blob: CommonBlob) => void
+	removeUnallocatedBlob: (blob: CommonBlob) => void
+}
+const ThumbnailPreview = ({ blob, maximize, removeUnallocatedBlob }: ThumbnailPreviewProps) => {
+	return (
+		<div
+			key={"id" in blob.identifier
+				? blob.identifier.id
+				: blob.identifier.fileName
+			}
+			className="aspect-square bg-black rounded-lg border border-black w-full flex justify-center items-center relative action-bar-host overflow-hidden"
+			onClick={() => maximize(blob)}
+		>
+			<BaseViewer
+				url={"id" in blob.identifier
+					? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.thumbnail}&inline=true`
+					: blob.url
+				}
+				mimeType={blob.mimeType}
+				forceImageViewer={true}
+			/>
+			<div className="action-bar">
+				<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
+					<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
+				</button>
+				<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
+					<FontAwesomeIcon icon={faTrash} size="1x" />
+				</button>
+			</div>
+		</div>)
+}
 
 
 
@@ -439,13 +404,13 @@ type Position = { x: number; y: number }
 type Size = { width: number; height: number }
 
 type MaximizedBlobPreviewProps = {
-	blob: BlobDisplayInfo // | LocalBlob
+	blob: CommonBlob
 	minimize: () => void
 	canMovePrevious: boolean
 	canMoveNext: boolean
 	movePrevious: () => void
 	moveNext: () => void
-	removeUnallocatedBlob: (blob: BlobDisplayInfo) => void
+	removeUnallocatedBlob: (blob: CommonBlob) => void
 }
 const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, removeUnallocatedBlob }: MaximizedBlobPreviewProps) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickEditToolWindowIsOpenAtom)
@@ -454,8 +419,15 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 
 
 	return (
-		<LightBox key={blob.id} onClose={() => minimize()}>
+		<LightBox key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName} onClose={() => minimize()}>
 			<div className="w-full h-full flex justify-center action-bar-host">
+				<BaseViewer
+					url={"id" in blob.identifier
+						? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.full}&inline=true`
+						: blob.url
+					}
+					mimeType={blob.mimeType}
+				/>
 				{toolWindowIsOpen &&
 					<ToolWindow
 						canMoveNext={canMoveNext}
@@ -467,11 +439,6 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 						setToolWindowSize={setToolWindowSize}
 					/>
 				}
-				<ServerViewer
-					blobId={blob.id}
-					mimeType={blob.mimeType}
-					dimension={DimensionEnum.full}
-				/>
 				<div className="action-bar">
 					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
 						<FontAwesomeIcon icon={faToolbox} size="1x" />

@@ -121,7 +121,6 @@ export const EmailListPage = () => {
 				<div className="flex flex-col gap-3">
 					<PreviewList
 						items={emails}
-						keySelector={email => email.uniqueId}
 						thumbnailPreviewTemplate={(email, maximize) =>
 							<EmailThumbnail
 								key={email.uniqueId}
