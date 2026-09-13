@@ -143,7 +143,6 @@ export const ArchiveItemNewPage = () => {
 				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of files from DB */}
 					<PreviewList items={existingBlobIds}
-						keySelector={blob => blob.id}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.id}
@@ -198,7 +197,6 @@ export const ArchiveItemNewPage = () => {
 				<div className="flex gap-4 flex-wrap my-4">
 					{/* Previewlist of local files (just added, not saved yet) */}
 					<PreviewList<{ fileName: string, fileData: Blob }> items={localBlobs}
-						keySelector={blob => blob.fileName}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
 								<div key={blob.fileName}

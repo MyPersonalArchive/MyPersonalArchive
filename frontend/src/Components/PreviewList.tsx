@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react"
 
 type PreviewListProps<T> = {
 	items: T[]
-	keySelector: (item: T) => string | number
 	thumbnailPreviewTemplate: (
 		item: T,
 		setMaximizeBlob: (blob?: T) => void
