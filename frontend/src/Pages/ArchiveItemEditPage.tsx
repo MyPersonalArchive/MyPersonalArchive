@@ -242,9 +242,7 @@ export const ArchiveItemEditPage = () => {
 						}
 					/>
 
-					<div
-						className="btn btn-dash rounded-lg aspect-square w-full h-full p-0"
-					>
+					<div className="btn btn-dash rounded-lg aspect-square w-full h-full p-0">
 						<FileDrop
 							className="w-full h-full flex flex-col justify-center items-center"
 							onFilesUploaded={onFilesUploaded}
@@ -351,7 +349,7 @@ const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionPr
 						/>
 						<button
 							type="button"
-							className="btn btn-outline btn-error mx-4 delete-receipt"
+							className="btn btn-outline btn-error mx-4 delete-receipt mt-4"
 							onClick={() => { dispatch(MetadataControlPath)({ action: "TOGGLE_METADATA_TYPE", type: metadataType.path }) }}
 						>
 							Remove {metadataType.displayName} data

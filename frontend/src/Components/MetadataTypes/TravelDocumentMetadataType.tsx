@@ -148,10 +148,12 @@ const Component = (props: MetadataComponentProps) => {
 	const isLastLegEmpty = state.legs?.length > 0 && !state.legs.at(-1)?.bookingRef && !state.legs.at(-1)?.routeNumber && !state.legs.at(-1)?.departureFrom && !state.legs.at(-1)?.arrivalAt
 
 	return (<>
-		<div className="flex flex-row flex-wrap gap-4">
+		<div
+			className="grid grid-cols-[repeat(auto-fill,17.75rem)] auto-rows-42 gap-4 mx-4"
+		>
 			{dnd.rows.map(({ rowType, data: leg }, index) => rowType === "item-row"
 				? <div key={index}
-					className="card w-71 h-42 cursor-default group grid grid-cols-2 p-2 has-[.delete-leg:hover]:bg-red-100!"
+					className="border border-base-300 rounded-xl cursor-default group grid grid-cols-2 p-2 has-[.delete-leg:hover]:bg-red-100!"
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}
@@ -191,7 +193,7 @@ const Component = (props: MetadataComponentProps) => {
 				</div>
 				: // row.rowType === "drop-row"
 				<div key={index}
-					className="striped-background"
+					className="striped-background rounded-xl"
 					style={{ width: dnd.draggedRect?.width, height: dnd.draggedRect?.height }}
 					onDragEnd={dnd.dragEnd}
 					onDragOver={e => e.preventDefault()}
@@ -202,7 +204,7 @@ const Component = (props: MetadataComponentProps) => {
 			)}
 			{(!isLastLegEmpty || isDragging(dnd.dragStatus)) &&
 				<button type="button"
-					className="card w-71 h-42"
+					className="btn btn-dash rounded-lg aspect-square w-71 h-42 p-0"
 					onDragOver={dropToCopy.dragOver()}
 					onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
 					onClick={() => dispatch({ action: "ADD_LEG", leg: { bookingRef: "", routeNumber: "", departureFrom: "", arrivalAt: "" } })}

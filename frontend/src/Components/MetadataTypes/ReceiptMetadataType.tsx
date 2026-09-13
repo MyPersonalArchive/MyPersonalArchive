@@ -251,7 +251,7 @@ const Component = (props: MetadataComponentProps) => {
 						<button type="button"
 							disabled={isLastReceiptLineEmpty}
 							className=""
-							onDragOver={dropToCopy.dragOver(undefined as unknown as number)}
+							onDragOver={dropToCopy.dragOver()}
 							onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
 							onClick={() => dispatch({ action: "ADD_RECEIPTLINE", receiptLine: { description: "", amount: "", warranty: "", dispositionStatus: "" } })}
 						>
@@ -264,13 +264,12 @@ const Component = (props: MetadataComponentProps) => {
 						</button>
 					</td>
 				</tr>
-				<tr>
+				<tr className="hidden">
 					<td colSpan={6} className="h-0">
 					</td>
 				</tr>
 			</tbody>
 		</table>
-
 	</>)
 }
 
