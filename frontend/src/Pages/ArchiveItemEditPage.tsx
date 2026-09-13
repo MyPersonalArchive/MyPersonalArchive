@@ -132,6 +132,22 @@ export const ArchiveItemEditPage = () => {
 		alert("Select uploaded files - feature not implemented yet.")
 	}
 
+	// const allBlobs = [...serverBlobs, ...localBlobs]
+
+	// const aBlob = { identifiers: "either blob.id or blob.fileName", url: "either server blob URL or local blob URL" }
+
+	console.log("*** serverBlobs", serverBlobs)		// ServerViewer -> BaseViewer -> ImageViewver/TextViever/PdfViewer
+	//{
+	// "id": "dc1b47d4-5e74-486c-8194-f9504a6201ae",
+	// "mimeType": "application/pdf"
+	//}
+
+	console.log("*** localBlobs", localBlobs)		// LocalViewer -> BaseViever -> ImageViewver/TextViever/PdfViewer
+	//{
+	// "fileName": "20170504_fotografi_webstep_oslo_5dmkIII_MG_1554 (1).jpg",		// not used in LocalViewer
+	// "fileData": File,							// blob -> src ->
+	//}
+
 	return (
 		<>
 			<form
@@ -201,6 +217,7 @@ export const ArchiveItemEditPage = () => {
 						))
 					}
 				</div>
+
 
 				<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
 					{/* Previewlist of files from DB */}

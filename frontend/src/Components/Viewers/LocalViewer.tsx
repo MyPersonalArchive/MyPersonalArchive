@@ -1,23 +1,23 @@
 // LocalViewer.tsx
-import { PropsWithChildren, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { BaseViewer } from "./BaseViewer"
 
 type LocalViewerProps = {
 	blob: Blob
 }
-export const LocalViewer = ({ blob }: PropsWithChildren<LocalViewerProps>) => {
-	const srcData = useMemo(
+export const LocalViewer = ({ blob }: LocalViewerProps) => {
+	const url = useMemo(
 		() => URL.createObjectURL(blob)
 		, [blob]
 	)
 
 	useEffect(
 		() => {
-			return () => URL.revokeObjectURL(srcData)	// dispose function to release the object URL
-		}, [srcData])
+			return () => URL.revokeObjectURL(url)	// dispose function to release the object URL
+		}, [url])
 
 	return <BaseViewer
-		srcData={srcData}
+		url={url}
 		mimeType={blob.type}
 	/>
 }
