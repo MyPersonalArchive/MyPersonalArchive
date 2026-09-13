@@ -107,7 +107,7 @@ const Component = (props: MetadataComponentProps) => {
 	return (
 		<>
 			<div className="flex flex-col gap-4">
-				<label className="input" htmlFor="email-subject">
+				<label className="input mx-4" htmlFor="email-subject">
 					<span className="label">Subject</span>
 					<input
 						type="text"
@@ -119,7 +119,7 @@ const Component = (props: MetadataComponentProps) => {
 					/>
 				</label>
 
-				<label className="input" htmlFor="email-date">
+				<label className="input mx-4" htmlFor="email-date">
 					<span className="label">Date</span>
 					<input
 						type="datetime-local"
@@ -130,7 +130,7 @@ const Component = (props: MetadataComponentProps) => {
 					/>
 				</label>
 
-				<label className="input" htmlFor="email-from">
+				<label className="input mx-4" htmlFor="email-from">
 					<span className="label">From</span>
 					<input
 						type="email"
@@ -142,7 +142,7 @@ const Component = (props: MetadataComponentProps) => {
 					/>
 				</label>
 
-				<label className="input" htmlFor="email-to">
+				<label className="input mx-4" htmlFor="email-to">
 					<span className="label">To</span>
 					<input
 						type="email"
@@ -154,7 +154,7 @@ const Component = (props: MetadataComponentProps) => {
 					/>
 				</label>
 
-				<label className="textarea" htmlFor="email-body">
+				<label className="textarea mx-4" htmlFor="email-body">
 					<span className="label">Body</span>
 					<textarea
 						rows={6}
