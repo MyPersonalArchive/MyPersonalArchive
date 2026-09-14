@@ -5,8 +5,7 @@ import { RoutePaths } from "./RoutePaths"
 import { SignOutPage } from "./Pages/SignOutPage"
 import { ArchiveItemListPage } from "./Pages/ArchiveItemListPage"
 import { IndexPage } from "./Pages/IndexPage"
-import { ArchiveItemEditPage } from "./Pages/ArchiveItemEditPage"
-import { ArchiveItemNewPage } from "./Pages/ArchiveItemNewPage"
+import { ArchiveItemPage } from "./Pages/ArchiveItemPage"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 import { UserLayout } from "./Frames/UserLayout"
 import { BlobListPage } from "./Pages/BlobListPage"
@@ -96,11 +95,11 @@ const router = createBrowserRouter([
 							},
 							{
 								path: `${RoutePaths.Archive.Edit}/:id`,
-								element: <ArchiveItemEditPage />
+								element: <ArchiveItemPage isNewArchiveItem={false} />
 							},
 							{
 								path: RoutePaths.Archive.New,
-								element: <ArchiveItemNewPage />
+								element: <ArchiveItemPage isNewArchiveItem={true} />
 							},
 							{
 								path: RoutePaths.Blob.List,

@@ -54,19 +54,18 @@ export const BlobListPage = () => {
 		apiClient.execute("DeleteBlobs", { blobIds: [blobId] })
 	}
 
-	const createArchiveItemFromVisibleSelectedBlobs = async () => {
+	const createArchiveItemFromVisibleSelectedBlobs = async () => {		
 		if (selectionOfBlobs.areNoItemsSelected) return
 
-		const visibleBlobIds = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id)).map(b => b.id)
-		const newArchiveItemId = await apiClient.get<UUID>("/api/archive/CreateAndAttachBlobs", { blobIds: visibleBlobIds })
+		const blobIdsToAttach = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
+			.map(blob => blob.id)
 
 		selectionOfBlobs.clearSelection()
-		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
+		navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: blobIdsToAttach }})
 	}
 
-	const attachBlob = async (id: UUID) => {
-		const newArchiveItemId = await apiClient.get<UUID>("/api/archive/CreateAndAttachBlobs", { blobIds: [id] })
-		navigate(`${RoutePaths.Archive.Edit}/${newArchiveItemId}`)
+	const createArchiveItem = async (blobId: UUID) => {
+		navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: [blobId] }})
 	}
 
 	return (
@@ -104,14 +103,14 @@ export const BlobListPage = () => {
 				</button>
 			</div>
 
-			<div className="full-width-bordered flex flex-col gap-3">
 
+			<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
 				<PreviewList<BlobMetadata> items={visibleBlobs}
 					thumbnailPreviewTemplate={
-						(blob, maximize) => <BlobCard
+						(blob, maximize) => <Row
 							key={blob.id}
 							blob={blob}
-							attachBlob={attachBlob}
+							createArchiveItem={createArchiveItem}
 							deleteBlob={deleteBlob}
 							maximize={maximize}
 							selectionOfBlobs={selectionOfBlobs}
@@ -266,16 +265,16 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosi
 }
 
 
-type BlobCardProps = {
+type RowProps = {
 	blob: BlobMetadata
-	attachBlob: (id: UUID) => void
+	createArchiveItem: (id: UUID) => void
 	deleteBlob: (blobId: UUID) => void
 	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<UUID>
 }
-const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: BlobCardProps) => {
+const Row = ({ blob, createArchiveItem, deleteBlob, maximize, selectionOfBlobs }: RowProps) => {
 	return (
-		<div className="card my-0 overflow-hidden flex flex-row relative">
+		<div className="div-row flex flex-row relative">
 
 			<div className="bg-black border border-black w-40 h-40 flex justify-center items-center action-bar-host"
 				onClick={() => maximize(blob)}
@@ -304,8 +303,8 @@ const BlobCard = ({ blob, attachBlob, deleteBlob, maximize, selectionOfBlobs }: 
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
 
 				<div className="absolute bottom-2 right-2 space-x-2">
-					<button className="btn" onClick={() => attachBlob(blob.id)}>Add</button>
-					<button className="btn" onClick={() => deleteBlob(blob.id)}>Delete</button>
+					<button className="btn" onClick={() => createArchiveItem(blob.id)}>Create archive item</button>
+					<button className="btn" onClick={() => deleteBlob(blob.id)}>Delete blob</button>
 				</div>
 
 			</div>

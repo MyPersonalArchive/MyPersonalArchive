@@ -185,7 +185,7 @@
 
 
 .div-row {
-	@apply block border-base-300 border-b last:border-b-0 px-2 py-1 bg-gray-50 hover:bg-white;
+	@apply border-base-300 border-b last:border-b-0 bg-gray-50 hover:bg-white;
 }
 
 
