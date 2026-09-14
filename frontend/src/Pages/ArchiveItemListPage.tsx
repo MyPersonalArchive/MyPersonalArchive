@@ -104,7 +104,7 @@ const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) =>
 	return (
 		<Link key={archiveItem.id}
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
-			className="group/archive-item div-row layout-title-date-and-more"
+			className="group/archive-item div-row block px-2 py-1 layout-title-date-and-more"
 		>
 			<span className="title link link-primary link-hover group-hover/archive-item:underline">
 				{archiveItem.title}

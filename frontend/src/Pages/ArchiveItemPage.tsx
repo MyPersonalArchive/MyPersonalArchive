@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { UUID } from "crypto"
 import { TagsInput } from "../Components/TagsInput"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
@@ -24,6 +24,8 @@ import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickEditToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { FileDrop } from "../Components/FileDrop"
 import { BaseViewer } from "../Components/Viewers/BaseViewer"
+import { useBlobsPrefetching } from "../Utils/Hooks/useBlobsPrefetching"
+import { blobsAtom } from "../Utils/Atoms/blobsAtom"
 
 type GetResponse = {
 	id: UUID
@@ -53,7 +55,10 @@ type CommonBlob = {
 }
 
 
-export const ArchiveItemEditPage = () => {
+type ArchiveItemPageProps = {
+	isNewArchiveItem: boolean
+}
+export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 	const [id, setId] = useState<UUID | null>(null)
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
@@ -73,22 +78,45 @@ export const ArchiveItemEditPage = () => {
 	const { metadata, dispatch } = useMetadata(allMetadataTypes)
 
 	const params = useParams()
+	const location = useLocation()
 	const navigate = useNavigate()
+	
 	const apiClient = useApiClient()
 
-	useEffect(() => {
-		apiClient.query<GetResponse>("GetArchiveItem", { id: params.id! as UUID })
-			.then(item => {
-				setId(item!.id)
-				setTitle(item!.title)
-				setTags(item!.tags)
-				setNotes(item!.notes)
-				setServerBlobs(item!.blobDisplayInfos.map(blob => ({ id: blob.id, mimeType: blob.mimeType })))
-				setDocumentDate(item!.documentDate ? new Date(item!.documentDate).toISOString().split("T")[0] : "")
+	useBlobsPrefetching()
+	const prefetchedBlobs = useAtomValue(blobsAtom)
+	
 
-				dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item!.metadata, dispatch: dispatch })
-			})
+	useEffect(() => {
+		if(isNewArchiveItem === false) {
+			apiClient.query<GetResponse>("GetArchiveItem", { id: params.id! as UUID })
+				.then(item => {
+					setId(item!.id)
+					setTitle(item!.title)
+					setTags(item!.tags)
+					setNotes(item!.notes)
+					setServerBlobs(item!.blobDisplayInfos.map(blob => ({ id: blob.id, mimeType: blob.mimeType })))
+					setDocumentDate(item!.documentDate ? new Date(item!.documentDate).toISOString().split("T")[0] : "")
+
+					dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: item!.metadata, dispatch: dispatch })
+				})
+		}
 	}, [])
+
+	if(isNewArchiveItem === true && id === null) {
+		setId(id => id ?? crypto.randomUUID())
+
+		const blobIds = location.state?.blobIds ?? []
+		const blobs = prefetchedBlobs.filter(blob => blobIds.includes(blob.id))
+		const firstUploadDate = blobs[0]?.uploadedAt.toISOString().split("T")[0]
+		const commonDocumentDate = blobs.every(blob => blob.uploadedAt.toISOString().split("T")[0] === firstUploadDate) && blobs.length > 0 ? firstUploadDate : null
+
+		setTitle("untitled")
+		setDocumentDate(commonDocumentDate ?? "")
+		setServerBlobs(blobs.map(blob => ({ id: blob.id, mimeType: blob.mimeType })))
+
+		dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: {}, dispatch: dispatch })
+	}
 
 	const save = () => {
 		const formData = new FormData()
@@ -108,9 +136,9 @@ export const ArchiveItemEditPage = () => {
 			formData.append("files", blob.fileData, blob.fileName)
 		})
 
-		apiClient.putFormData("/api/archive/Update", formData)
+		apiClient.putFormData("/api/archive/Store", formData)
 
-		navigate(RoutePaths.Archive.List)
+		navigate(`${RoutePaths.Archive.Edit}/${id}`, {replace: true})
 	}
 
 	useSaveShortcut(() => { save() }, true)
@@ -379,7 +407,7 @@ const ThumbnailPreview = ({ blob, maximize, removeUnallocatedBlob }: ThumbnailPr
 		>
 			<BaseViewer
 				url={"id" in blob.identifier
-					? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.thumbnail}&inline=true`
+					? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.small}&inline=true`
 					: blob.url
 				}
 				mimeType={blob.mimeType}
