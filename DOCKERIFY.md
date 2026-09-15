@@ -21,7 +21,10 @@ image that works on both typical cloud VMs and Apple Silicon / Raspberry Pi), us
 `docker buildx` instead:
 
 ```sh
-docker buildx build --platform linux/amd64,linux/arm64 -t aeinbu/mypersonalarchive:latest --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t aeinbu/mypersonalarchive:latest \
+  --cache-from type=registry,ref=aeinbu/mypersonalarchive:buildcache \
+  --cache-to type=registry,ref=aeinbu/mypersonalarchive:buildcache,mode=max \
+  --push .
 ```
 
 - `--push` is required for a multi-platform build — Docker can't load more than one
@@ -39,6 +42,30 @@ docker buildx build --platform linux/amd64,linux/arm64 -t aeinbu/mypersonalarchi
   are needed to support both — buildx handles the cross-compilation (via QEMU
   emulation unless you have native builders for both architectures, which is slower
   but requires no extra setup).
+
+#### Registry build cache (`--cache-from` / `--cache-to`)
+
+`libvips-build` compiling from source under QEMU emulation is the slowest part of
+this build by far, and by default Docker's layer cache doesn't survive between
+machines or CI runs — so every `--push` build recompiles it from scratch for both
+architectures. The `--cache-from`/`--cache-to` flags above push a separate build
+cache image (`aeinbu/mypersonalarchive:buildcache`) to the registry alongside the
+real tag, and pull from it on the next build:
+
+- `type=registry,ref=...` stores the cache as an image manifest in the same
+  registry/repo as the real image — no extra infrastructure needed beyond being
+  logged in.
+- `mode=max` (on `--cache-to` only) caches every intermediate layer, including
+  `libvips-build`, not just the final stage — this is what lets subsequent builds
+  skip recompiling libvips entirely when `docker/build-libvips.sh` hasn't changed.
+- The cache is content-addressed by stage inputs, so it's automatically invalidated
+  (and that stage rebuilt) whenever `docker/build-libvips.sh` or the libvips version
+  pin changes — no manual cache-busting needed.
+- The first build after adding this (or after any libvips-affecting change) still
+  pays the full compile cost, since there's nothing to reuse yet; every build after
+  that reuses the cached layer for both platforms.
+- The `buildcache` tag is a build-cache artifact, not a runnable image — don't `docker
+  run` it. It costs some registry storage but no extra services to maintain.
 
 ## Run (minimum)
 
