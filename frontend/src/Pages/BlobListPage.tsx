@@ -149,13 +149,14 @@ type MaximizedBlobPreviewProps = {
 const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: MaximizedBlobPreviewProps) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickRegistrationToolWindowIsOpenAtom)
 	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
-	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 300 })
+	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 250 })
 
 	return (
 		<LightBox key={blob.id} onClose={() => minimize()} closeOnEscape={!toolWindowIsOpen}>
 			<div className="w-full h-full flex justify-center action-bar-host">
 				{toolWindowIsOpen &&
 					<ToolWindow
+						blob={blob}
 						canMoveNext={canMoveNext}
 						moveNext={moveNext}
 						setToolWindowIsOpen={setToolWindowIsOpen}
@@ -191,6 +192,7 @@ const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 
 
 type ToolWindowProps = {
+	blob: BlobMetadata
 	canMoveNext: boolean
 	moveNext: () => void
 	setToolWindowIsOpen?: (isOpen: boolean) => void
@@ -199,25 +201,25 @@ type ToolWindowProps = {
 	setToolWindowPosition: (position: Position) => void
 	setToolWindowSize: (size: Size) => void
 }
-const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
+const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
 	const [registrationMode, setRegistrationMode] = useAtom(quickRegistrationModeAtom)
 	const firstInputRef = useRef<HTMLInputElement>(null)
+	
+	const navigate = useNavigate()
+
 	useEffect(() => {
 		firstInputRef.current?.focus()
 	}, [])
 
 	const register = (selectedMetadataType: string) => {
-
 		switch (registrationMode) {
 			case "createAndEdit":
-				// Navigate to edit mode
-				//TODO: 
-				alert(`TODO: Navigate to new or edit archiveItem mode (not implemented): ${selectedMetadataType}`)
+				navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: [blob.id], metadataTypes: [selectedMetadataType] }})
 				break
 
 			case "createAndMove":
 				console.log(`TODO: Create archiveItem (not implemented): ${selectedMetadataType}`)
-				// createArchiveItem([selectedMetadataType])
+				// TODO: createArchiveItem([selectedMetadataType])
 				if (canMoveNext) moveNext()
 				break
 		}
@@ -255,11 +257,6 @@ const ToolWindow = ({ canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosi
 					checked={registrationMode === "createAndEdit"}
 					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")} /> Create and enter edit mode
 			</label>
-
-			<div className="todo">
-				//TODO:<br />
-				- Radiobuttons for select the date: uploaded date, document date (EXIF etc?), todays date or enter date manually?<br />
-			</div>
 		</FloatingToolWindow>
 	)
 }
