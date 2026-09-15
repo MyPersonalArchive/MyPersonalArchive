@@ -80,6 +80,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 	const params = useParams()
 	const location = useLocation()
 	const navigate = useNavigate()
+	const initialMetadataTypes: string[] = location.state?.metadataTypes ?? []	// This is set when creating a new archive item to indicate which metadata types should be initially selected and open
 	
 	const apiClient = useApiClient()
 
@@ -115,7 +116,9 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 		setDocumentDate(commonDocumentDate ?? "")
 		setServerBlobs(blobs.map(blob => ({ id: blob.id, mimeType: blob.mimeType })))
 
-		dispatch(MetadataControlPath)({ action: "METADATA_LOADED", metadata: {}, dispatch: dispatch })
+		initialMetadataTypes.forEach((metadataType: string) => {
+			dispatch(MetadataControlPath)({ action: "SELECT_METADATA_TYPE", type: metadataType })
+		})
 	}
 
 	const save = () => {
@@ -239,6 +242,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 								metadataType={metadataType}
 								metadata={metadata}
 								dispatch={dispatch}
+								initiallyOpen={initialMetadataTypes.includes(metadataType.path as string)}
 							/>
 						))
 					}
@@ -337,15 +341,16 @@ type MetadataSectionProps = {
 	metadataType: MetadataType
 	metadata: Record<string, any>
 	dispatch: (path: ReducerIdentifier) => (command: ICommand) => void
+	initiallyOpen?: boolean
 }
-const MetadataSection = ({ metadataType, metadata, dispatch }: MetadataSectionProps) => {
+const MetadataSection = ({ metadataType, metadata, dispatch, initiallyOpen }: MetadataSectionProps) => {
 	const summary = (metadataType.path in metadata) ? metadataType.summarize(metadata[metadataType.path as string]) : ""
 	return (
 		<div
 			key={metadataType.path.toString()}
 			className="collapse collapse-arrow bg-base-100 border border-base-300 has-[.delete-receipt:hover]:bg-red-100 max-sm:rounded-none max-sm:border-x-0 max-sm:border-b-0 last:border-b"
 		>
-			<input type="checkbox" />
+			<input type="checkbox" defaultChecked={initiallyOpen} />
 			<div className="collapse-title font-semibold">
 				{(metadataType.path in metadata)
 					? <span className="pill metadatatype">

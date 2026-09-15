@@ -33,6 +33,26 @@ export const metadataControlReducer = (state: MetadataControlState, command: ICo
 			return state // Ignore selection of items not in the set of all possible items
 		}
 
+		case "SELECT_METADATA_TYPE": {
+			if (state.availableMetadataTypes.has(command.type)) {
+				return {
+					...state,
+					selectedMetadataTypes: state.selectedMetadataTypes.union(new Set([command.type]))
+				}
+			}
+			return state
+		}
+
+		// case "DESELECT_METADATA_TYPE": {
+		// 	if (state.availableMetadataTypes.has(command.type)) {
+		// 		return {
+		// 			...state,
+		// 			selectedMetadataTypes: state.selectedMetadataTypes.difference(new Set([command.type]))
+		// 		}
+		// 	}
+		// 	return state
+		// }
+
 		default:
 			console.warn(`Unknown command action: ${command.action}`)
 			return state
