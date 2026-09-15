@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tagsAtom } from "../Atoms/tagsAtom"
 import { archiveItemsAtom } from "../Atoms/archiveItemsAtom"
@@ -10,5 +11,8 @@ export const useTagsPrefetching = () => {
 	const setTags = useSetAtom(tagsAtom)
 
 	const archiveItems = useAtomValue(archiveItemsAtom)
-	setTags(new Set<string>(archiveItems.flatMap(item => item.tags)))
+
+	useEffect(() => {
+		setTags(new Set<string>(archiveItems.flatMap(item => item.tags)))
+	}, [archiveItems, setTags])
 }
