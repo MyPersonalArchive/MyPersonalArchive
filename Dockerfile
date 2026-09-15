@@ -8,10 +8,11 @@ RUN chmod +x /tmp/build-libvips.sh && /tmp/build-libvips.sh
 # ---- frontend ----
 FROM node:24-slim AS frontend-build
 WORKDIR /src/frontend
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
+RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
-RUN npm run build
+RUN pnpm run build
 
 # ---- backend ----
 FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS backend-build

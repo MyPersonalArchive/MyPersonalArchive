@@ -160,7 +160,7 @@ const SignInComponent = () => {
 									<label htmlFor="rememberMe">
 										<input
 											type="checkbox"
-											className="input"
+											className="checkbox"
 											id="rememberMe"
 											checked={rememberMe}
 											onChange={event => setRememberMe(event.target.checked)}
