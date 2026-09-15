@@ -165,6 +165,7 @@ const Component = (props: MetadataComponentProps) => {
 			<thead>
 				<tr>
 					<th className="w-12"></th>
+					<th className="w-1/2">Description</th>
 					<th className="w-53">Amount</th>
 					<th className="w-1/2">Warranty</th>
 					<th className="w-1/2">Status</th>
@@ -187,6 +188,14 @@ const Component = (props: MetadataComponentProps) => {
 							<span className="draghandle cursor-grab">							
 								<FontAwesomeIcon icon={faGripVertical} fixedWidth />
 							</span>
+						</td>
+						<td>
+							<input
+								type="text"
+								className="input w-full"
+								value={receiptLine.description}
+								onChange={e => dispatch({ action: "UPDATE_RECEIPTLINE_DESCRIPTION", index, description: e.target.value })}
+							/>
 						</td>
 						<td>
 							<label className="input w-full">
