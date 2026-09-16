@@ -56,7 +56,7 @@ const ClickableStoredFilters = () => {
 	return <div className="flex flex-wrap gap-2 my-4">
 		{storedFilters?.map((filter) => (
 			<button key={filter.id}
-				className={classNames("btn btn-wider block font-mono whitespace-nowrap", { "selected": filter.name === searchParams.get("filter") })}
+				className={classNames("btn btn-primary btn-soft btn-wider block font-mono whitespace-nowrap", { "selected": filter.name === searchParams.get("filter") })}
 				onClick={() => selectFilter(filter)}
 			>
 				{filter.name}
@@ -133,7 +133,7 @@ const EditableStoredFilters = () => {
 					</div>
 				)}
 				<button className="btn"
-					onDragOver={dropToCopy.dragOver(undefined as unknown as number)}
+					onDragOver={dropToCopy.dragOver()}
 					onDrop={dropToCopy.handleDrop(undefined as unknown as number)}
 					onClick={() => dispatch({ action: "ADD_FILTER", name: "New filter", filterDefinition: { title: "", tags: [], metadataTypes: new Set<string>() } })}
 				>

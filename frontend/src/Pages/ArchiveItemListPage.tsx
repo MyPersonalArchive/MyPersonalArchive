@@ -186,7 +186,7 @@ const Search = () => {
 				value={searchTerm}
 				onChange={e => setSearchTerm(e.target.value)}
 			/>
-			<button type="reset" className="btn">
+			<button type="reset" className="btn btn-primary">
 				<FontAwesomeIcon icon={faXmark} className="mr-1" />
 			</button>
 			<button type="submit" className="btn btn-primary">

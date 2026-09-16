@@ -52,15 +52,15 @@ div#root {
 		}
 
 		& a {
-			@apply flex items-center gap-[.65rem] py-[.65rem] px-4 no-underline text-[#333] text-sm transition-[background] duration-120;
+			@apply flex items-center gap-2.5 py-2.5 px-4 no-underline text-gray-700 text-sm transition-[background] duration-120;
 		}
 
 		& a:hover {
 			@apply bg-[#f3f6fa];
 		}
 
-		& .divider {
-			@apply h-px bg-[#e8ecf0] my-1;
+		& .hr {
+			@apply h-px bg-base-300 my-0;
 		}
 
 		& .danger {
@@ -70,7 +70,7 @@ div#root {
 
 
 	.profile-dropdown-header {
-		@apply py-[.85rem] px-4 border-b border-[#e8ecf0];
+		@apply py-[.85rem] px-4;
 
 		& strong {
 			@apply block text-[.9rem];
@@ -191,6 +191,6 @@ div#root {
 
 	/* ── Main ── */
 	#mainArea {
-		@apply [grid-area:main] bg-main-color overflow-hidden relative min-h-0;
+		@apply [grid-area:main] bg-base-200 overflow-hidden relative min-h-0;
 	}
 }

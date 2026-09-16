@@ -153,7 +153,7 @@ const Component = (props: MetadataComponentProps) => {
 		>
 			{dnd.rows.map(({ rowType, data: leg }, index) => rowType === "item-row"
 				? <div key={index}
-					className="border border-base-300 rounded-xl cursor-default group grid grid-cols-2 p-2 has-[.delete-leg:hover]:bg-red-100!"
+					className="border border-base-300 rounded-xl cursor-default group grid grid-cols-2 p-2 has-[.delete-leg:hover]:bg-red-100 hover:bg-base-200"
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}

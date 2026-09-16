@@ -84,6 +84,7 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 							<strong title={currentUser?.username}>{currentUser?.fullname}</strong>
 							<span>{currentUser?.tenantId}</span>
 						</div>
+						<div className="hr"></div>
 						<Link role="menuitem"
 							to={RoutePaths.Profile}
 							onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
@@ -103,7 +104,7 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 							</Link>
 						}
 
-						<div className="divider"></div>
+						<div className="hr"></div>
 						<Link
 							to={RoutePaths.SignOut} role="menuitem"
 							onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}

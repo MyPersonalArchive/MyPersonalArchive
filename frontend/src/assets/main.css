@@ -3,17 +3,19 @@
 
 /* New tailwind-based css imports */
 @import "tailwindcss";
-/* @import "tailwindcss/typography"; */
-@plugin "daisyui";
+@plugin "daisyui" {
+	themes: light --default, light --prefersdark;
+};
+
 @import "./page-layout.css";
 /* @import "./table.css"; */
 
-@plugin "daisyui/theme" {
+/* @plugin "daisyui/theme" {
   name: "light";
   default: true;
   --color-secondary: teal;
   --color-secondary-content: #fff;
-}
+} */
 
 @theme {
 	--color-main-color: hsl(210, 45%, 96%);
@@ -185,7 +187,7 @@
 
 
 .div-row {
-	@apply border-base-300 border-b last:border-b-0 bg-gray-50 hover:bg-white;
+	@apply border-base-300 border-b last:border-b-0 bg-base-100 hover:bg-base-200;
 }
 
 

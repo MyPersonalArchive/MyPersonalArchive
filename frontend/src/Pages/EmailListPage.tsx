@@ -48,8 +48,8 @@ export const EmailListPage = () => {
 			</header>
 			<div className="stack-horizontal to-the-left my-4">
 
-				<div className="grouped">
-					<select className="input bg-white" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
+				<div className="join">
+					<select className="select w-50 bg-base-100" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
 						{
 							folders === undefined
 								? <option value="">-- Hit refresh --</option>
