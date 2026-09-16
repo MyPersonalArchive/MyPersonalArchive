@@ -946,6 +946,56 @@
         "decisionStrategy": "UNANIMOUS",
         "authorizationSchema": {
           "resourceTypes": {
+            "Groups": {
+              "type": "Groups",
+              "scopes": [
+                "view",
+                "view-members",
+                "manage-membership",
+                "manage",
+                "manage-membership-of-members",
+                "manage-members",
+                "impersonate-members"
+              ],
+              "scopeAliases": {}
+            },
+            "Users": {
+              "type": "Users",
+              "scopes": [
+                "map-roles",
+                "manage",
+                "manage-group-membership",
+                "reset-password",
+                "view",
+                "impersonate"
+              ],
+              "scopeAliases": {
+                "impersonate": [
+                  "impersonate-members"
+                ],
+                "manage-group-membership": [
+                  "manage-membership-of-members"
+                ],
+                "view": [
+                  "view-members"
+                ],
+                "manage": [
+                  "manage-members"
+                ]
+              },
+              "groupType": "Groups"
+            },
+            "Clients": {
+              "type": "Clients",
+              "scopes": [
+                "map-roles-composite",
+                "manage",
+                "map-roles",
+                "map-roles-client-scope",
+                "view"
+              ],
+              "scopeAliases": {}
+            },
             "Organizations": {
               "type": "Organizations",
               "scopes": [
@@ -957,59 +1007,9 @@
             "Roles": {
               "type": "Roles",
               "scopes": [
-                "map-role",
                 "map-role-client-scope",
-                "map-role-composite"
-              ],
-              "scopeAliases": {}
-            },
-            "Groups": {
-              "type": "Groups",
-              "scopes": [
-                "view-members",
-                "manage-membership",
-                "manage",
-                "manage-membership-of-members",
-                "manage-members",
-                "impersonate-members",
-                "view"
-              ],
-              "scopeAliases": {}
-            },
-            "Users": {
-              "type": "Users",
-              "scopes": [
-                "reset-password",
-                "view",
-                "impersonate",
-                "map-roles",
-                "manage",
-                "manage-group-membership"
-              ],
-              "scopeAliases": {
-                "manage-group-membership": [
-                  "manage-membership-of-members"
-                ],
-                "view": [
-                  "view-members"
-                ],
-                "manage": [
-                  "manage-members"
-                ],
-                "impersonate": [
-                  "impersonate-members"
-                ]
-              },
-              "groupType": "Groups"
-            },
-            "Clients": {
-              "type": "Clients",
-              "scopes": [
-                "map-roles-client-scope",
-                "view",
-                "map-roles-composite",
-                "manage",
-                "map-roles"
+                "map-role-composite",
+                "map-role"
               ],
               "scopeAliases": {}
             }

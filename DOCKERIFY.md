@@ -15,6 +15,10 @@ A few things worth knowing about this build:
 
 ### Building for both amd64 and arm64
 
+__TL;DR__  
+__Open the command palette in VSCode, and select "Tasks: Run Task", and select `docker build and push to registry`__
+
+
 The plain `docker build` above only produces an image for your local machine's
 architecture. To build for both `linux/amd64` and `linux/arm64` (e.g. to publish an
 image that works on both typical cloud VMs and Apple Silicon / Raspberry Pi), use
