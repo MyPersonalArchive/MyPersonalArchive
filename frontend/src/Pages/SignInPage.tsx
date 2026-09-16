@@ -27,7 +27,7 @@ export const SignInPage = () => {
 			const query = new URLSearchParams({ returnUrl }).toString()
 			window.location.href = `${authSettings.oidcAuthUrl}?${query}`
 		}
-	}, [])
+	}, [authSettings])
 
 	return (authSettings.oidcAuthUrl !== undefined
 		? <>Redirecting</>
