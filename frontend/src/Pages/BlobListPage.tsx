@@ -220,11 +220,13 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 		firstInputRef.current?.focus()
 	}, [])
 
-	const register = (selectedMetadataType: string) => {
+	const register = (selectedMetadataType?: string) => {
 		switch (registrationMode) {
-			case "createAndEdit":
-				navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: [blob.id], metadataTypes: [selectedMetadataType] }})
+			case "createAndEdit":{
+				const metadataTypes = selectedMetadataType === undefined ? [] : [selectedMetadataType]
+				navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: [blob.id], metadataTypes }})
 				break
+			}
 
 			case "createAndMove":
 				console.log(`TODO: Create archiveItem (not implemented): ${selectedMetadataType}`)
@@ -250,21 +252,44 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 				<button className="btn flex-1" onClick={() => register("receipt")}>receipt</button>
 				<button className="btn flex-1" onClick={() => register("travel-document")}>travel document</button>
 			</div>
-			<button className="btn" disabled={!canMoveNext} onClick={() => { moveNext() }} title="Move to next without registering">Move to next without registering</button>
+		
+			{
+				registrationMode === "createAndEdit"
+					? <button
+						className="btn"
+						disabled={!canMoveNext}
+						onClick={() => { register("") }}
+					>
+						Register
+					</button>
+					: <button
+						className="btn"
+						onClick={() => { moveNext() }}
+					>
+						Move to next without registering
+					</button>
+			}
+		
 			<div className="flex-1"></div>
 			<label>
 				<input type="radio"
+					className="mr-2"
 					name="navigationMode"
 					value="createAndMove"
 					checked={registrationMode === "createAndMove"}
-					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")} /> Just create it and move to next
+					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")}
+				/>
+					Just create it and move to next
 			</label>
 			<label>
 				<input type="radio"
+					className="mr-2"
 					name="navigationMode"
 					value="createAndEdit"
 					checked={registrationMode === "createAndEdit"}
-					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")} /> Create and enter edit mode
+					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")}
+				/>
+					Create and enter edit mode
 			</label>
 		</FloatingToolWindow>
 	)
