@@ -63,12 +63,12 @@ export const EmailListPage = () => {
 							))
 						}
 					</select>
-					<button className="btn" onClick={() => fetchFolders()}>
+					<button className="btn btn-primary" onClick={() => fetchFolders()}>
 						<FontAwesomeIcon icon={faRefresh} />
 					</button>
 				</div>
 
-				<button className="btn"
+				<button className="btn btn-primary"
 					onClick={() => fetchEmailSummaries()}
 					disabled={(selectedFolder ?? "") === ""}
 				>
@@ -77,21 +77,18 @@ export const EmailListPage = () => {
 			</div>
 			<div>
 
-				<div className="stack-horizontal to-the-left my-4">
-					<div className="todo">//TODO: show/hide filters, stored filters and display options</div>
-					{/*
-					Auto load folders on login. Should we store folders and currentFolder per account?
-					Filters
-						- Only show emails since last fetched timestamp [checkbox]
-						- Only show emails with attachments [checkbox]
-						- Filter by sender/subject/body etc [input box]
-						- Download from specific folder(s) [select multiple]
-					Stored filters?
-					Display options
-						- Group by conversation	[checkbox]
-					*/}
-				</div>
-
+				{/*
+				Auto load folders on login. Should we store folders and currentFolder per account?
+				Filters
+					- Only show emails since last fetched timestamp [checkbox]
+					- Only show emails with attachments [checkbox]
+					- Filter by sender/subject/body etc [input box]
+					- Download from specific folder(s) [select multiple]
+				Stored filters?
+				Display options
+					- Group by conversation	[checkbox]
+				*/}
+			
 				<div className="stack-horizontal to-the-right my-4">
 					<label>
 						<input
@@ -106,7 +103,7 @@ export const EmailListPage = () => {
 						Select all
 					</label>
 
-					<button className="btn"
+					<button className="btn btn-primary"
 						disabled={selectionOfEmails.areNoItemsSelected}
 						onClick={() => createArchiveItemFromEmails(emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
 					>
@@ -118,7 +115,9 @@ export const EmailListPage = () => {
 					</button>
 				</div>
 
-				<div className="flex flex-col gap-3">
+				<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
+
+					{/* <div className="flex flex-col gap-3"> */}
 					<PreviewList
 						items={emails}
 						thumbnailPreviewTemplate={(email, maximize) =>
@@ -156,7 +155,7 @@ export const EmailListPage = () => {
 				)}
 
 			</div>
-		</ >
+		</>
 	)
 }
 
