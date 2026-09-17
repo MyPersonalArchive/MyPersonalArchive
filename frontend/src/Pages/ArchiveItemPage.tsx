@@ -297,14 +297,13 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 						Delete
 					</button>
 				</div>
-
-
-				<DeleteDialog
-					open={openDeleteDialog}
-					onClose={() => setOpenDeleteDialog(false)}
-					onDelete={onDeleteArchiveItem}
-				/>
 			</form>
+			
+			<DeleteDialog
+				open={openDeleteDialog}
+				onClose={() => setOpenDeleteDialog(false)}
+				onDelete={onDeleteArchiveItem}
+			/>
 		</>
 	)
 }

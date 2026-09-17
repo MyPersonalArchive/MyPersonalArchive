@@ -17,9 +17,12 @@ import { FloatingToolWindow } from "../Components/FloatingToolWindow"
 import { quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { RoutePaths } from "../RoutePaths"
 import { ServerViewer } from "../Components/Viewers/ServerViewer"
+import { Dialog } from "../Components/Dialog"
 
 
 export const BlobListPage = () => {
+	const [openDeleteAllSelectedDialog, setOpenDeleteAllSelectedDialog] = useState(false)
+
 	const navigate = useNavigate()
 	const apiClient = useApiClient()
 	const [searchParams] = useSearchParams()
@@ -41,7 +44,7 @@ export const BlobListPage = () => {
 
 	const selectedVisibleBlobs = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
 
-	const deleteVisibleSelectedBlobs = async () => {
+	const onDeleteVisibleSelectedBlobs = async () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
 
 		const visibleBlobIds = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id)).map(b => b.id)
@@ -88,16 +91,16 @@ export const BlobListPage = () => {
 					Select all
 				</label>
 
-				<button className="btn whitespace-nowrap"
+				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={createArchiveItemFromVisibleSelectedBlobs}
 				>
 					Create from {selectedVisibleBlobs.length} selected
 				</button>
 
-				<button className="btn whitespace-nowrap"
+				<button className="btn btn-warning whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
-					onClick={deleteVisibleSelectedBlobs}
+					onClick={() => setOpenDeleteAllSelectedDialog(true)}
 				>
 					Delete {selectedVisibleBlobs.length} selected
 				</button>
@@ -130,6 +133,12 @@ export const BlobListPage = () => {
 				/>
 			</div>
 
+			<DeleteDialog
+				open={openDeleteAllSelectedDialog}
+				prompt="Are you sure you want to delete all selected uploads?"
+				onClose={() => setOpenDeleteAllSelectedDialog(false)}
+				onDelete={onDeleteVisibleSelectedBlobs}
+			/>
 		</>
 	)
 }
@@ -265,11 +274,13 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 type RowProps = {
 	blob: BlobMetadata
 	createArchiveItem: (id: UUID) => void
-	deleteBlob: (blobId: UUID) => void
+	onDeleteBlob: (blobId: UUID) => void
 	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<UUID>
 }
-const Row = ({ blob, createArchiveItem, deleteBlob, maximize, selectionOfBlobs }: RowProps) => {
+const Row = ({ blob, createArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: RowProps) => {
+	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
+
 	return (
 		<div className="div-row flex flex-row relative">
 
@@ -300,11 +311,21 @@ const Row = ({ blob, createArchiveItem, deleteBlob, maximize, selectionOfBlobs }
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
 
 				<div className="absolute bottom-2 right-2 space-x-2">
-					<button className="btn" onClick={() => createArchiveItem(blob.id)}>Create archive item</button>
-					<button className="btn" onClick={() => deleteBlob(blob.id)}>Delete blob</button>
+					<button className="btn btn-primary" onClick={() => createArchiveItem(blob.id)}>Create archive item</button>
+					<button className="btn btn-warning" onClick={() => setOpenDeleteThisDialog(true)}>Delete blob</button>
 				</div>
 
 			</div>
+
+			<DeleteDialog
+				open={openDeleteThisDialog}
+				prompt="Are you sure you want to delete this upload?"
+				onClose={() => setOpenDeleteThisDialog(false)}
+				onDelete={() => {
+					onDeleteBlob(blob.id)
+				}}
+			/>
+
 		</div>
 	)
 }
@@ -338,5 +359,33 @@ const Filter = () => {
 				Hide allocated blobs
 			</label>
 		</div>
+	)
+}
+
+
+type DeleteDialogProps = {
+	open: boolean
+	prompt: string
+	onClose: () => void
+	onDelete: () => void
+}
+const DeleteDialog = ({ open, prompt, onClose, onDelete }: DeleteDialogProps) => {
+	return (
+		<>
+			{open &&
+				<Dialog size="medium"
+					onClose={onClose}
+					closeOnEscape={true}
+				>
+					<div className="dialog-header">
+						{prompt}
+					</div>
+					<div className="stack-horizontal to-the-right p-4">
+						<button className="btn" type="button" onClick={onClose}>Cancel</button>
+						<button className="btn btn-danger" type="button" onClick={e => { e.preventDefault(); onDelete() }}>Delete</button>
+					</div>
+				</Dialog>
+			}
+		</>
 	)
 }
