@@ -175,7 +175,7 @@ const Component = (props: MetadataComponentProps) => {
 			<tbody>
 				{dnd.rows.map(({ rowType, data: receiptLine }, index) => rowType === "item-row"
 					? <tr key={index}
-						className="group/receiptline group has-[.delete-receiptline:hover]:bg-red-100 my-0 hover:bg-base-200"
+						className="group/receiptline has-[.delete-receiptline:hover]:bg-red-100 my-0 hover:bg-base-200"
 						draggable={true}
 						onMouseDown={dnd.mouseDown}
 						onMouseUp={dnd.mouseUp}
@@ -234,7 +234,7 @@ const Component = (props: MetadataComponentProps) => {
 						<td>
 							<button
 								type="button"
-								className="text-gray-400 group-hover:text-red-500 delete-receiptline"
+								className="text-gray-400 group-hover/receiptline:text-red-500 delete-receiptline"
 								tabIndex={-1}
 								onClick={() => { dispatch({ action: "REMOVE_RECEIPTLINE", index }) }}
 							>
