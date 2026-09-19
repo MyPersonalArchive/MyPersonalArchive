@@ -109,8 +109,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 
 		const blobIds = location.state?.blobIds ?? []
 		const blobs = prefetchedBlobs.filter(blob => blobIds.includes(blob.id))
-		const firstUploadDate = blobs[0]?.uploadedAt.toISOString().split("T")[0]
-		const commonDocumentDate = blobs.every(blob => blob.uploadedAt.toISOString().split("T")[0] === firstUploadDate) && blobs.length > 0 ? firstUploadDate : null
+		const commonDocumentDate = location.state?.documentDate ?? null
 
 		setTitle("untitled")
 		setDocumentDate(commonDocumentDate ?? "")
@@ -123,17 +122,17 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 
 	const save = () => {
 		const formData = new FormData()
-		const updateRequest = {
+		const storeRequest = {
 			id: id!,
 			title: title!,
+			documentDate: documentDate ? new Date(documentDate) : undefined,
 			tags,
 			notes,
-			existingBlobIds: serverBlobs.map(blob => blob.id),
 			metadata,
-			documentDate: documentDate ? new Date(documentDate) : undefined
+			existingBlobIds: serverBlobs.map(blob => blob.id)
 		}
 
-		formData.append("rawRequest", JSON.stringify(updateRequest))
+		formData.append("rawRequest", JSON.stringify(storeRequest))
 
 		localBlobs.forEach(blob => {
 			formData.append("files", blob.fileData, blob.fileName)

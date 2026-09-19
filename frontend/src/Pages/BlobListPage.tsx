@@ -8,7 +8,7 @@ import { DimensionEnum } from "../types/DimensionEnum"
 import { useSelection, Selection, SelectCheckbox } from "../Utils/Selection"
 import { createQueryString } from "../Utils/createQueryString"
 import { dateToShortDateDisplay, formatSize } from "../Utils/formatUtils"
-import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faTrash, faUpRightAndDownLeftFromCenter } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
@@ -53,22 +53,37 @@ export const BlobListPage = () => {
 		selectionOfBlobs.clearSelection()
 	}
 
-	const deleteBlob = (blobId: UUID) => {
+	const onDeleteBlob = (blobId: UUID) => {
 		apiClient.execute("DeleteBlobs", { blobIds: [blobId] })
 	}
 
-	const createArchiveItemFromVisibleSelectedBlobs = async () => {		
+	const createArchiveItemFromVisibleSelectedBlobs = async () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
 
-		const blobIdsToAttach = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
-			.map(blob => blob.id)
+		const blobsToAttach = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
+
+		const firstUploadDate = blobsToAttach[0]?.uploadedAt.toISOString().split("T")[0]
+		const commonDocumentDate = blobsToAttach.length > 0 && blobsToAttach.every(blob => blob.uploadedAt.toISOString().split("T")[0] === firstUploadDate)
+			? firstUploadDate
+			: null
+		const state = {
+			blobIds: blobsToAttach.map(blob => blob.id),
+			metadataTypes: [],
+			documentDate: commonDocumentDate,	
+		}
+		navigate(`${RoutePaths.Archive.New}`, { state })
 
 		selectionOfBlobs.clearSelection()
-		navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: blobIdsToAttach }})
 	}
 
-	const createArchiveItem = async (blobId: UUID) => {
-		navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: [blobId] }})
+	const onCreateArchiveItem = async (blob: BlobMetadata) => {
+		const state = {
+			blobIds: [blob.id],
+			metadataTypes: [],
+			documentDate: blob.uploadedAt.toISOString().split("T")[0],
+
+		}
+		navigate(`${RoutePaths.Archive.New}`, { state })
 	}
 
 	return (
@@ -78,18 +93,6 @@ export const BlobListPage = () => {
 			</div>
 
 			<div className="full-width-non-bordered flex flex-row flex-wrap gap-2 items-center my-4">
-				<label className="whitespace-nowrap">
-					<input
-						ref={selectAllCheckboxRef}
-						type="checkbox"
-						className="checkbox"
-						checked={selectionOfBlobs.areAllItemsSelected}
-						onChange={() => selectionOfBlobs.areAllItemsSelected
-							? selectionOfBlobs.clearSelection()
-							: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
-						} />
-					Select all
-				</label>
 
 				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
@@ -98,12 +101,27 @@ export const BlobListPage = () => {
 					Create from {selectedVisibleBlobs.length} selected
 				</button>
 
-				<button className="btn btn-warning whitespace-nowrap"
+				<button className="btn btn-warning whitespace-nowrap "
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={() => setOpenDeleteAllSelectedDialog(true)}
 				>
 					Delete {selectedVisibleBlobs.length} selected
 				</button>
+
+				<div className="flex-1"></div>
+
+				<label className="whitespace-nowrap">
+					Select all
+					<input
+						ref={selectAllCheckboxRef}
+						type="checkbox"
+						className="checkbox mx-2"
+						checked={selectionOfBlobs.areAllItemsSelected}
+						onChange={() => selectionOfBlobs.areAllItemsSelected
+							? selectionOfBlobs.clearSelection()
+							: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
+						} />
+				</label>
 			</div>
 
 
@@ -113,8 +131,8 @@ export const BlobListPage = () => {
 						(blob, maximize) => <Row
 							key={blob.id}
 							blob={blob}
-							createArchiveItem={createArchiveItem}
-							deleteBlob={deleteBlob}
+							onCreateArchiveItem={onCreateArchiveItem}
+							onDeleteBlob={onDeleteBlob}
 							maximize={maximize}
 							selectionOfBlobs={selectionOfBlobs}
 						/>
@@ -213,7 +231,9 @@ type ToolWindowProps = {
 const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
 	const [registrationMode, setRegistrationMode] = useAtom(quickRegistrationModeAtom)
 	const firstInputRef = useRef<HTMLInputElement>(null)
-	
+	const [title, setTitle] = useState<string>()
+
+	const apiClient = useApiClient()
 	const navigate = useNavigate()
 
 	useEffect(() => {
@@ -222,17 +242,38 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 
 	const register = (selectedMetadataType?: string) => {
 		switch (registrationMode) {
-			case "createAndEdit":{
-				const metadataTypes = selectedMetadataType === undefined ? [] : [selectedMetadataType]
-				navigate(`${RoutePaths.Archive.New}`, {state: { blobIds: [blob.id], metadataTypes }})
+			case "createAndEdit": {
+				const state = {
+					blobIds: [blob.id],
+					metadataTypes: selectedMetadataType === undefined ? [] : [selectedMetadataType],
+					documentDate: blob.uploadedAt.toISOString().split("T")[0]
+				}
+				navigate(`${RoutePaths.Archive.New}`, { state })
 				break
 			}
 
-			case "createAndMove":
-				console.log(`TODO: Create archiveItem (not implemented): ${selectedMetadataType}`)
-				// TODO: createArchiveItem([selectedMetadataType])
+			case "createAndMove": {
+				const formData = new FormData()
+				const metadata = selectedMetadataType === undefined
+					? {}
+					: { [selectedMetadataType ?? ""]: {} }
+				const storeRequest = {
+					id: crypto.randomUUID(),
+					title: title,
+					documentDate: blob.uploadedAt.toISOString().split("T")[0],
+					tags: [],
+					notes: "",
+					metadata,
+					existingBlobIds: [blob.id]
+				}
+
+				formData.append("rawRequest", JSON.stringify(storeRequest))
+
+				apiClient.putFormData("/api/archive/Store", formData)
+
 				if (canMoveNext) moveNext()
 				break
+			}
 		}
 	}
 
@@ -247,12 +288,12 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 			onClose={() => { setToolWindowIsOpen?.(false) }}
 			closeOnEscape={true}
 		>
-			<input ref={firstInputRef} type="text" className="input w-full" placeholder="Name of archived item" />
+			<input ref={firstInputRef} type="text" className="input w-full" placeholder="Name of archived item" value={title} onChange={(e) => setTitle(e.target.value)} />
 			<div className="flex flex-row gap-2">
 				<button className="btn flex-1" onClick={() => register("receipt")}>receipt</button>
 				<button className="btn flex-1" onClick={() => register("travel-document")}>travel document</button>
 			</div>
-		
+
 			{
 				registrationMode === "createAndEdit"
 					? <button
@@ -269,7 +310,7 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 						Move to next without registering
 					</button>
 			}
-		
+
 			<div className="flex-1"></div>
 			<label>
 				<input type="radio"
@@ -279,7 +320,7 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 					checked={registrationMode === "createAndMove"}
 					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")}
 				/>
-					Just create it and move to next
+				Just create it and move to next
 			</label>
 			<label>
 				<input type="radio"
@@ -289,7 +330,7 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 					checked={registrationMode === "createAndEdit"}
 					onChange={(e) => setRegistrationMode(e.target.value as "createAndMove" | "createAndEdit")}
 				/>
-					Create and enter edit mode
+				Create and enter edit mode
 			</label>
 		</FloatingToolWindow>
 	)
@@ -298,18 +339,18 @@ const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWind
 
 type RowProps = {
 	blob: BlobMetadata
-	createArchiveItem: (id: UUID) => void
+	onCreateArchiveItem: (blob: BlobMetadata) => void
 	onDeleteBlob: (blobId: UUID) => void
 	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<UUID>
 }
-const Row = ({ blob, createArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: RowProps) => {
+const Row = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: RowProps) => {
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
 	return (
-		<div className="div-row flex flex-row relative">
+		<div className="div-row group/blob-row grid grid-cols-[10rem_1fr] relative has-[.delete-blob:hover]:bg-red-100">
 
-			<div className="bg-black border border-black w-40 h-40 flex justify-center items-center action-bar-host"
+			<div className="bg-black border border-black h-40 flex justify-center items-center action-bar-host"
 				onClick={() => maximize(blob)}
 			>
 				<ServerViewer
@@ -325,7 +366,7 @@ const Row = ({ blob, createArchiveItem, onDeleteBlob, maximize, selectionOfBlobs
 				</div>
 			</div>
 
-			<div className="p-2 grow">
+			<div className="p-2">
 				<div className="flex flex-col py-2 px-4">
 					<div className="font-bold">{blob.fileName}</div>
 					<div className=" text-sm">{dateToShortDateDisplay(blob.uploadedAt)}</div>
@@ -336,10 +377,20 @@ const Row = ({ blob, createArchiveItem, onDeleteBlob, maximize, selectionOfBlobs
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
 
 				<div className="absolute bottom-2 right-2 space-x-2">
-					<button className="btn btn-primary" onClick={() => createArchiveItem(blob.id)}>Create archive item</button>
-					<button className="btn btn-warning" onClick={() => setOpenDeleteThisDialog(true)}>Delete blob</button>
+					<button
+						className="btn btn-primary"
+						disabled={selectionOfBlobs.selectedItems.size > 1}
+						onClick={() => onCreateArchiveItem(blob)}
+					>
+						Create archive item
+					</button>
+					<button
+						className="btn btn-danger btn-square delete-blob group-hover/blob-row:text-red-500 hover:bg-red-100"
+						onClick={() => setOpenDeleteThisDialog(true)}
+					>
+						<FontAwesomeIcon icon={faTrash} size="1x" />
+					</button>
 				</div>
-
 			</div>
 
 			<DeleteDialog
@@ -377,7 +428,7 @@ const Filter = () => {
 			<label className="whitespace-nowrap">
 				<input
 					type="checkbox"
-					className="checkbox"
+					className="checkbox mr-2"
 					checked={hideAllocatedBlobs}
 					onChange={() => setHideAllocatedBlobs(b => !b)}
 				/>
