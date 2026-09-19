@@ -13,7 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { LightBox } from "../Components/LightBox"
 import { UUID } from "crypto"
 import { archiveItemsAtom } from "../Utils/Atoms/archiveItemsAtom"
-import { FloatingToolWindow } from "../Components/FloatingToolWindow"
+import { FloatingToolWindow, Position, Size } from "../Components/FloatingToolWindow"
 import { quickRegistrationModeAtom, quickRegistrationToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { RoutePaths } from "../RoutePaths"
 import { ServerViewer } from "../Components/Viewers/ServerViewer"
@@ -161,9 +161,6 @@ export const BlobListPage = () => {
 	)
 }
 
-
-type Position = { x: number; y: number }
-type Size = { width: number; height: number }
 
 type MaximizedBlobPreviewProps = {
 	blob: BlobMetadata

@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import classNames from "classnames"
 
 
-type Position = { x: number; y: number }
-type Size = { width: number; height: number }
+export type Position = { x: number; y: number }
+export type Size = { width: number; height: number }
 
 const HEADER_VISIBLE_MARGIN = 40
 

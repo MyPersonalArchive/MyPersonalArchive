@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import { LightBox } from "../Components/LightBox"
 import { useSaveShortcut } from "../Utils/Hooks/useSaveShortcut"
-import { FloatingToolWindow } from "../Components/FloatingToolWindow"
+import { FloatingToolWindow, Position, Size } from "../Components/FloatingToolWindow"
 import { quickEditToolWindowIsOpenAtom } from "../Utils/Atoms"
 import { FileDrop } from "../Components/FileDrop"
 import { BaseViewer } from "../Components/Viewers/BaseViewer"
@@ -427,10 +427,6 @@ const ThumbnailPreview = ({ blob, maximize, removeUnallocatedBlob }: ThumbnailPr
 		</div>)
 }
 
-
-
-type Position = { x: number; y: number }
-type Size = { width: number; height: number }
 
 type MaximizedBlobPreviewProps = {
 	blob: CommonBlob
