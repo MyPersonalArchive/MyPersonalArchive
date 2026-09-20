@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { PreviewList } from "../../Components/PreviewList"
 import { BlobMetadata, blobsAtom } from "../../Utils/Atoms/blobsAtom"
-import { DeleteDialog } from "./DeleteDialog"
+import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 import { MaximizedBlobPreview } from "./MaximizedBlobPreview"
 import { Row } from "./Row"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
@@ -145,11 +145,11 @@ export const BlobListPage = () => {
 				/>
 			</div>
 
-			<DeleteDialog
+			<ConfirmationDialog
 				open={openDeleteAllSelectedDialog}
 				prompt="Are you sure you want to delete all selected uploads?"
 				onClose={() => setOpenDeleteAllSelectedDialog(false)}
-				onDelete={onDeleteVisibleSelectedBlobs}
+				onConfirm={onDeleteVisibleSelectedBlobs}
 			/>
 		</>
 	)

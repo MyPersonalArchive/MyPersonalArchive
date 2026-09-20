@@ -12,7 +12,6 @@ import { PreviewList } from "../../Components/PreviewList"
 import { FileDrop } from "../../Components/FileDrop"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
-import { DeleteDialog } from "./DeleteDialog"
 import { MaximizedBlobPreview } from "./MaximizedBlobPreview"
 import { TagsInput } from "../../Components/TagsInput"
 import { ThumbnailPreview } from "./ThumbnailPreview"
@@ -22,12 +21,13 @@ import { MetadataControlPath } from "../../Utils/Metadata/metadataControlReducer
 import { useMetadata } from "../../Utils/Metadata/useMetadata"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { allMetadataTypes } from "../../Components/MetadataTypes"
+import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 
 
-type ArchiveItemPageProps = {
+type Props = {
 	isNewArchiveItem: boolean
 }
-export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
+export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	const [id, setId] = useState<UUID | null>(null)
 	const [title, setTitle] = useState<string>("")
 	const [tags, setTags] = useState<string[]>([])
@@ -267,10 +267,11 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: ArchiveItemPageProps) => {
 				</div>
 			</form>
 			
-			<DeleteDialog
+			<ConfirmationDialog
 				open={openDeleteDialog}
+				prompt="Are you sure you want to delete this item?"
 				onClose={() => setOpenDeleteDialog(false)}
-				onDelete={onDeleteArchiveItem}
+				onConfirm={onDeleteArchiveItem}
 			/>
 		</>
 	)

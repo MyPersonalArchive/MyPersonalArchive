@@ -10,7 +10,7 @@ import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
 
 
 
-type TopBarProps = {
+type Props = {
 	className?: string,
 	title?: string
 	navIsOpen: boolean,
@@ -18,7 +18,7 @@ type TopBarProps = {
 	currentUser: User | undefined,
 	profileDropdownIsOpen: boolean,
 }
-export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, currentUser, profileDropdownIsOpen }: TopBarProps) => {
+export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, currentUser, profileDropdownIsOpen }: Props) => {
 	const authSettings = useAtomValue(authSettingsAtom)
 
 	return <div id="topBar" className={className}>

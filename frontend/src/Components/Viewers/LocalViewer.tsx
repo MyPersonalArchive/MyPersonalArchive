@@ -2,10 +2,10 @@
 import { useEffect, useMemo } from "react"
 import { BaseViewer } from "./BaseViewer"
 
-type LocalViewerProps = {
+type Props = {
 	blob: Blob
 }
-export const LocalViewer = ({ blob }: LocalViewerProps) => {
+export const LocalViewer = ({ blob }: Props) => {
 	const url = useMemo(
 		() => URL.createObjectURL(blob)
 		, [blob]

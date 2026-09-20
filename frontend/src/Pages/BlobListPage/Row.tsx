@@ -7,7 +7,7 @@ import { SelectCheckbox, type Selection } from "../../Utils/Selection"
 import { ServerViewer } from "../../Components/Viewers/ServerViewer"
 import { DimensionEnum } from "../../types/DimensionEnum"
 import { dateToShortDateDisplay, formatSize } from "../../Utils/formatUtils"
-import { DeleteDialog } from "./DeleteDialog"
+import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 
 
 type RowProps = {
@@ -66,11 +66,11 @@ export const Row = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selecti
 				</div>
 			</div>
 
-			<DeleteDialog
+			<ConfirmationDialog
 				open={openDeleteThisDialog}
 				prompt="Are you sure you want to delete this upload?"
 				onClose={() => setOpenDeleteThisDialog(false)}
-				onDelete={() => {
+				onConfirm={() => {
 					onDeleteBlob(blob.id)
 				}}
 			/>
