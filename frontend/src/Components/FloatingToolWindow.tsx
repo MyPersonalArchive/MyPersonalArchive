@@ -2,10 +2,10 @@ import { PropsWithChildren, useEffect, useId, useRef, useState } from "react"
 import { faClose } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import classNames from "classnames"
+import { Position } from "../types/Position"
+import { Size } from "../types/Size"
 
 
-export type Position = { x: number; y: number }
-export type Size = { width: number; height: number }
 
 const HEADER_VISIBLE_MARGIN = 40
 
