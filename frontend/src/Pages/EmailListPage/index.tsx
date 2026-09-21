@@ -15,8 +15,8 @@ import { useMailProvider } from "../../Utils/Hooks/useMailProvider"
 
 export const EmailListPage = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
-	const {adjustmentsModeIsOpen} = useAtomValue(layoutStateAtom)
-	
+	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
+
 	const params = useParams()
 	const externalAccountId = params.id as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
@@ -34,17 +34,19 @@ export const EmailListPage = () => {
 
 	return (
 		<>
-			<header className="header">
-				<h1>
-					{adjustmentsModeIsOpen
-						? <input className=""
-							value={externalAccount?.displayName ?? "<unknown account>"}
-							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
-						/>
-						: externalAccount?.displayName ?? "<unknown account>"}
-				</h1>
-			</header>
-			<div className="stack-horizontal to-the-left my-4">
+
+			<div className="dont-touch-walls flex flex-row gap-2">
+				<header className="header">
+					<h1>
+						{adjustmentsModeIsOpen
+							? <input className=""
+								value={externalAccount?.displayName ?? "<unknown account>"}
+								onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
+							/>
+							: externalAccount?.displayName ?? "<unknown account>"}
+					</h1>
+				</header>
+
 
 				<div className="join">
 					<select className="select w-50 bg-base-100" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
@@ -65,7 +67,6 @@ export const EmailListPage = () => {
 						<FontAwesomeIcon icon={faRefresh} />
 					</button>
 				</div>
-
 				<button className="btn btn-primary"
 					onClick={() => fetchEmailSummaries()}
 					disabled={(selectedFolder ?? "") === ""}
@@ -73,9 +74,8 @@ export const EmailListPage = () => {
 					Fetch emails
 				</button>
 			</div>
-			<div>
 
-				{/*
+			{/*
 				Auto load folders on login. Should we store folders and currentFolder per account?
 				Filters
 					- Only show emails since last fetched timestamp [checkbox]
@@ -86,28 +86,34 @@ export const EmailListPage = () => {
 				Display options
 					- Group by conversation	[checkbox]
 				*/}
-			
-				<div className="stack-horizontal to-the-right my-4">
-					<label>
-						Select all
-						<input
-							ref={selectAllCheckboxRef}
-							type="checkbox"
-							className="checkbox ml-2"
-							checked={selectionOfEmails.areAllItemsSelected}
-							onChange={() => selectionOfEmails.areAllItemsSelected
-								? selectionOfEmails.clearSelection()
-								: selectionOfEmails.selectAllItems()
-							} />
-					</label>
 
+			<div className="dont-touch-walls flex flex-col flex-wrap gap-2 ">
+				<div className="stack-horizontal to-the-right my-4">
 					<button className="btn btn-primary"
 						disabled={selectionOfEmails.areNoItemsSelected}
 						onClick={() => createArchiveItemFromEmails(emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
 					>
 						{`Create from ${selectionOfEmails.selectedItems.size} email${selectionOfEmails.selectedItems.size != 1 ? "s" : ""}`}
 					</button>
+
+					<div className="flex-1"></div>
+
+					<label>
+						Select all
+						<input
+							ref={selectAllCheckboxRef}
+							type="checkbox"
+							className="checkbox ml-2 sm:mr-2"
+							checked={selectionOfEmails.areAllItemsSelected}
+							onChange={() => selectionOfEmails.areAllItemsSelected
+								? selectionOfEmails.clearSelection()
+								: selectionOfEmails.selectAllItems()
+							} />
+					</label>
 				</div>
+			</div>
+
+			<div>
 
 				{emails.length > 0 &&
 					<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">

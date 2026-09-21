@@ -82,11 +82,11 @@ export const BlobListPage = () => {
 
 	return (
 		<>
-			<div className="full-width-non-bordered flex flex-col gap-2">
+			<div className="dont-touch-walls flex flex-col gap-2">
 				<Filter />
 			</div>
 
-			<div className="full-width-non-bordered flex flex-row flex-wrap gap-2 items-center my-4">
+			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center my-4">
 
 				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
@@ -109,7 +109,8 @@ export const BlobListPage = () => {
 					<input
 						ref={selectAllCheckboxRef}
 						type="checkbox"
-						className="checkbox mx-2"
+						// className="checkbox mx-2"
+						className="checkbox ml-2 sm:mr-2"
 						checked={selectionOfBlobs.areAllItemsSelected}
 						onChange={() => selectionOfBlobs.areAllItemsSelected
 							? selectionOfBlobs.clearSelection()

@@ -82,7 +82,7 @@ export const ArchiveItemListPage = () => {
 				}
 			</div>
 
-			<div className="full-width-non-bordered stack-horizontal to-the-right">
+			<div className="dont-touch-walls stack-horizontal to-the-right">
 				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>
 			</div>
 		</>

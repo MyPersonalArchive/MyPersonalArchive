@@ -24,7 +24,7 @@ export const Filter = () => {
 			<label className="whitespace-nowrap">
 				<input
 					type="checkbox"
-					className="checkbox mr-2"
+					className="checkbox mx-2 sm:ml-0"
 					checked={hideAllocatedBlobs}
 					onChange={() => setHideAllocatedBlobs(b => !b)}
 				/>
