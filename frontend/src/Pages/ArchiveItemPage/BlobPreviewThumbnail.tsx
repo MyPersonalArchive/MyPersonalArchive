@@ -5,12 +5,12 @@ import { BaseViewer } from "../../Components/Viewers/BaseViewer"
 import { CommonBlob } from "./types"
 
 
-type ThumbnailPreviewProps = {
+type Props = {
 	blob: CommonBlob
 	maximize: (blob: CommonBlob) => void
 	removeUnallocatedBlob: (blob: CommonBlob) => void
 }
-export const ThumbnailPreview = ({ blob, maximize, removeUnallocatedBlob }: ThumbnailPreviewProps) => {
+export const BlobPreviewThumbnail = ({ blob, maximize, removeUnallocatedBlob }: Props) => {
 	return (
 		<div
 			key={"id" in blob.identifier

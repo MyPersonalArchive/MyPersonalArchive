@@ -1,6 +1,6 @@
 import { useRef, useState } from "react"
 
-type TagsProps = {
+type Props = {
 	placeholder?: string
 	tags: string[]
 	setTags: (tags: string[]) => void
@@ -8,7 +8,7 @@ type TagsProps = {
 	className?: string
 }
 
-export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, className }: TagsProps) => {
+export const TagsInput = ({ placeholder, tags, setTags, autocompleteList, className }: Props) => {
 	const [tagsInput, setTagsInput] = useState<string>("")
 	const inputRef = useRef<HTMLInputElement>(null)
 

@@ -10,7 +10,7 @@ import { Position } from "../../types/Position"
 import { Size } from "../../types/Size"
 
 
-type ToolWindowProps = {
+type Props = {
 	blob: BlobMetadata
 	canMoveNext: boolean
 	moveNext: () => void
@@ -20,7 +20,7 @@ type ToolWindowProps = {
 	setToolWindowPosition: (position: Position) => void
 	setToolWindowSize: (size: Size) => void
 }
-export const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
+export const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: Props) => {
 	const [registrationMode, setRegistrationMode] = useAtom(quickRegistrationModeAtom)
 	const firstInputRef = useRef<HTMLInputElement>(null)
 	const [title, setTitle] = useState<string>()

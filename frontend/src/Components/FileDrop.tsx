@@ -1,12 +1,12 @@
 import { DragEventHandler, PropsWithChildren, useRef } from "react"
 
 
-export type FileDropProps =  {
+export type Props =  {
 	className?: string
 	onClickOverride?: () => void
 	onFilesUploaded: (files: FileList) => void
 }
-export const FileDrop = ({ className, children, onClickOverride = undefined, onFilesUploaded }: PropsWithChildren<FileDropProps>) => {
+export const FileDrop = ({ className, children, onClickOverride = undefined, onFilesUploaded }: PropsWithChildren<Props>) => {
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 
 	const onDragOver: DragEventHandler<HTMLDivElement> = (event) => {

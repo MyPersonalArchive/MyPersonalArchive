@@ -1,12 +1,12 @@
 import { MetadataType } from "../../Utils/Metadata/types"
 
 
-type MetadataWithSummaryPillProps = {
+type Props = {
 	metadataType: MetadataType
 	metadata: any
 	className?: string
 }
-export const MetadataWithSummaryPill = ({ metadataType, metadata, className }: MetadataWithSummaryPillProps) => {
+export const MetadataWithSummaryPill = ({ metadataType, metadata, className }: Props) => {
 	const summary = metadataType?.summarize(metadata[metadataType.path])
 	return (
 		<span className={`pill metadatatype ${className ?? ""}`}>

@@ -1,12 +1,13 @@
 import { FloatingToolWindow } from "../../Components/FloatingToolWindow"
 import { TagsInput } from "../../Components/TagsInput"
-import { Position, Size } from "../../Components/FloatingToolWindow"
 import { useEffect, useRef, useState } from "react"
 import { useAtomValue } from "jotai"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
+import { Position } from "../../types/Position"
+import { Size } from "../../types/Size"
 
 
-type ToolWindowProps = {
+type Props = {
 	canMoveNext: boolean
 	moveNext: () => void
 	setToolWindowIsOpen?: (isOpen: boolean) => void
@@ -15,7 +16,7 @@ type ToolWindowProps = {
 	setToolWindowPosition: (position: Position) => void
 	setToolWindowSize: (size: Size) => void
 }
-export const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: ToolWindowProps) => {
+export const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindowSize, setToolWindowPosition, setToolWindowSize }: Props) => {
 	const [title, setTitle] = useState("")
 	const [tags, setTags] = useState<string[]>([])
 	const [documentDate, setDocumentDate] = useState("")

@@ -9,7 +9,7 @@ import { Size } from "../types/Size"
 
 const HEADER_VISIBLE_MARGIN = 40
 
-type FloatingToolWindowProps = {
+type Props = {
 	title: React.ReactNode
 	onClose?: () => void
 	closeOnEscape?: boolean
@@ -33,7 +33,7 @@ export const FloatingToolWindow = ({
 	minWidth = 240,
 	minHeight = 160,
 	className,
-}: PropsWithChildren<FloatingToolWindowProps>) => {
+}: PropsWithChildren<Props>) => {
 	const windowRef = useRef<HTMLDivElement>(null)
 	const [position, setPosition] = useState<Position>(initialPosition)
 	const [size, setSize] = useState<Size>(initialSize)

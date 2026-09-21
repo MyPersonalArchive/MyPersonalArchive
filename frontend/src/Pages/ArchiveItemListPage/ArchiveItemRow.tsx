@@ -9,12 +9,12 @@ import { MetadataWithSummaryPill } from "./MetadataWithSummaryPill"
 import { allMetadataTypes } from "../../Components/MetadataTypes"
 
 
-type RowProps = {
+type Props = {
 	archiveItem: ArchiveItem
 	highlightTags: string[]
 	selectedMetadataTypes: string[]
 }
-export const Row = ({ archiveItem, highlightTags, selectedMetadataTypes }: RowProps) => {
+export const ArchiveItemRow = ({ archiveItem, highlightTags, selectedMetadataTypes }: Props) => {
 	return (
 		<Link key={archiveItem.id}
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}

@@ -1,13 +1,13 @@
 import { Dialog } from "./Dialog"
 
 
-type ConfirmationDialogProps = {
+type Props = {
 	open: boolean
 	prompt: string
 	onClose: () => void
 	onConfirm: () => void
 }
-export const ConfirmationDialog = ({ open, prompt, onClose, onConfirm }: ConfirmationDialogProps) => {
+export const ConfirmationDialog = ({ open, prompt, onClose, onConfirm }: Props) => {
 	return (
 		<>
 			{open &&

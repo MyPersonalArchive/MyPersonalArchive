@@ -6,7 +6,7 @@ import { ArchiveItem } from "../../Utils/Atoms/archiveItemsAtom"
 import { RoutePaths } from "../../RoutePaths"
 import { StoredFilterSelector } from "../../Components/Filter/StoredFilterSelector"
 import { Search } from "./Search"
-import { Row } from "./Row"
+import { ArchiveItemRow } from "./ArchiveItemRow"
 
 
 export const ArchiveItemListPage = () => {
@@ -73,7 +73,7 @@ export const ArchiveItemListPage = () => {
 				{archiveItems?.filter(filterFn)
 					.toSorted((a, b) => a.title.localeCompare(b.title))
 					.map(item =>
-						<Row key={item.id}
+						<ArchiveItemRow key={item.id}
 							archiveItem={item}
 							selectedMetadataTypes={selectedMetadataTypes}
 							highlightTags={highlightTags}

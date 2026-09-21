@@ -2,8 +2,8 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { PreviewList } from "../../Components/PreviewList"
 import { BlobMetadata, blobsAtom } from "../../Utils/Atoms/blobsAtom"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
-import { MaximizedBlobPreview } from "./MaximizedBlobPreview"
-import { Row } from "./Row"
+import { BlobPreviewMaximized } from "./BlobPreviewMaximized"
+import { BlobPreviewRow } from "./BlobPreviewRow"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { useAtomValue } from "jotai"
 import { useEffect, useState, useRef } from "react"
@@ -122,7 +122,7 @@ export const BlobListPage = () => {
 			<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
 				<PreviewList<BlobMetadata> items={visibleBlobs}
 					thumbnailPreviewTemplate={
-						(blob, maximize) => <Row
+						(blob, maximize) => <BlobPreviewRow
 							key={blob.id}
 							blob={blob}
 							onCreateArchiveItem={onCreateArchiveItem}
@@ -133,7 +133,7 @@ export const BlobListPage = () => {
 					}
 					maximizedPreviewTemplate={
 						(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-							<MaximizedBlobPreview
+							<BlobPreviewMaximized
 								blob={blob}
 								minimize={minimize}
 								canMovePrevious={canMovePrevious}

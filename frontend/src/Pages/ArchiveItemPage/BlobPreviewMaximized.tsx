@@ -12,7 +12,7 @@ import { Position } from "../../types/Position"
 import { Size } from "../../types/Size"
 
 
-export type MaximizedBlobPreviewProps = {
+export type Props = {
 	blob: CommonBlob
 	minimize: () => void
 	canMovePrevious: boolean
@@ -21,7 +21,7 @@ export type MaximizedBlobPreviewProps = {
 	moveNext: () => void
 	removeUnallocatedBlob: (blob: CommonBlob) => void
 }
-export const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, removeUnallocatedBlob }: MaximizedBlobPreviewProps) => {
+export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, removeUnallocatedBlob }: Props) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickEditToolWindowIsOpenAtom)
 	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
 	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 300 })

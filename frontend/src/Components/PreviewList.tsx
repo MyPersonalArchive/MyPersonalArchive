@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 
 
-type PreviewListProps<T> = {
+type Props<T> = {
 	items: T[]
 	thumbnailPreviewTemplate: (
 		item: T,
@@ -16,7 +16,7 @@ type PreviewListProps<T> = {
 		moveNext: () => void
 	) => React.ReactNode
 }
-export const PreviewList = <T,>({ items, thumbnailPreviewTemplate, maximizedPreviewTemplate }: PreviewListProps<T>) => {
+export const PreviewList = <T,>({ items, thumbnailPreviewTemplate, maximizedPreviewTemplate }: Props<T>) => {
 	const [maximizedIndex, setMaximizedIndex] = useState<number | undefined>(undefined)
 
 	const canMovePrevious = maximizedIndex !== undefined && maximizedIndex > 0

@@ -12,7 +12,7 @@ import { Position } from "../../types/Position"
 import { Size } from "../../types/Size"
 
 
-type MaximizedBlobPreviewProps = {
+type Props = {
 	blob: BlobMetadata
 	minimize: () => void
 	canMovePrevious: boolean
@@ -20,7 +20,7 @@ type MaximizedBlobPreviewProps = {
 	movePrevious: () => void
 	moveNext: () => void
 }
-export const MaximizedBlobPreview = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: MaximizedBlobPreviewProps) => {
+export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext }: Props) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickRegistrationToolWindowIsOpenAtom)
 	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
 	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 250 })

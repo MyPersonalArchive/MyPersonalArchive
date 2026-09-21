@@ -4,13 +4,13 @@ import { MetadataElement } from "../../Utils/Metadata/MetadataElement"
 import { ICommand, ReducerIdentifier } from "../../Utils/Metadata/types"
 
 
-type MetadataSectionProps = {
+type Props = {
 	metadataType: MetadataType
 	metadata: Record<string, any>
 	dispatch: (path: ReducerIdentifier) => (command: ICommand) => void
 	initiallyOpen?: boolean
 }
-export const MetadataSection = ({ metadataType, metadata, dispatch, initiallyOpen }: MetadataSectionProps) => {
+export const MetadataSection = ({ metadataType, metadata, dispatch, initiallyOpen }: Props) => {
 	const summary = (metadataType.path in metadata) ? metadataType.summarize(metadata[metadataType.path as string]) : ""
 	return (
 		<div

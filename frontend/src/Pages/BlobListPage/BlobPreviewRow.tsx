@@ -10,14 +10,14 @@ import { dateToShortDateDisplay, formatSize } from "../../Utils/formatUtils"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 
 
-type RowProps = {
+type Props = {
 	blob: BlobMetadata
 	onCreateArchiveItem: (blob: BlobMetadata) => void
 	onDeleteBlob: (blobId: UUID) => void
 	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<UUID>
 }
-export const Row = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: RowProps) => {
+export const BlobPreviewRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: Props) => {
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
 	return (

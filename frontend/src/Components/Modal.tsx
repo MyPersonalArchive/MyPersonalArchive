@@ -1,12 +1,12 @@
 import { PropsWithChildren, useEffect } from "react"
 
 
-export type ModalProps = {
+export type Props = {
 	onClose: () => void
 	closeOnEscape?: boolean
 	className?: string
 }
-export const Modal = ({ children, onClose, closeOnEscape = true, className }: PropsWithChildren<ModalProps>) => {
+export const Modal = ({ children, onClose, closeOnEscape = true, className }: PropsWithChildren<Props>) => {
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape" && closeOnEscape) onClose()

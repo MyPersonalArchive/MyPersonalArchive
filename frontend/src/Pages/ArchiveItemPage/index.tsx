@@ -12,9 +12,9 @@ import { PreviewList } from "../../Components/PreviewList"
 import { FileDrop } from "../../Components/FileDrop"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
-import { MaximizedBlobPreview } from "./MaximizedBlobPreview"
+import { BlobPreviewMaximized } from "./BlobPreviewMaximized"
 import { TagsInput } from "../../Components/TagsInput"
-import { ThumbnailPreview } from "./ThumbnailPreview"
+import { BlobPreviewThumbnail } from "./BlobPreviewThumbnail"
 import { MetadataSection } from "./MetadataSection"
 import { BlobDisplayInfo } from "../../types/BlobDisplayInfo"
 import { MetadataControlPath } from "../../Utils/Metadata/metadataControlReducer"
@@ -221,7 +221,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 					<PreviewList items={allBlobs}
 						thumbnailPreviewTemplate={
 							(blob, maximize) =>
-								<ThumbnailPreview
+								<BlobPreviewThumbnail
 									key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
 									blob={blob}
 									maximize={maximize}
@@ -230,7 +230,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-								<MaximizedBlobPreview
+								<BlobPreviewMaximized
 									blob={blob}
 									minimize={minimize}
 									canMovePrevious={canMovePrevious}
