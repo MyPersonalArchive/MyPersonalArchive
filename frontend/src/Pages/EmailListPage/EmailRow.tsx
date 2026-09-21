@@ -15,8 +15,8 @@ type Props = {
 }
 export const EmailRow = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: Props) => {
 	return (
-		<div key={email.uniqueId} className="card" >
-			<div className="bg-gray-100 p-2">
+		<div key={email.uniqueId} className="div-row" >
+			<div className="p-2">
 				<div className="flex flex-horizontal justify-between mb-2 ">
 					<div>
 						<span className="font-bold" onClick={clickIfNotSelectingText(() => maximize(email))}>{email.subject}</span>
@@ -46,7 +46,7 @@ export const EmailRow = ({ email, selectionOfEmails, createArchiveItemFromEmails
 
 			<div>
 				<div className="stack-horizontal to-the-right p-2">
-					<button className="btn"
+					<button className="btn btn-primary"
 						onClick={() => createArchiveItemFromEmails([email])}
 					>
 						Create

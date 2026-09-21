@@ -25,7 +25,7 @@ export const ArchiveItemRow = ({ archiveItem, highlightTags, selectedMetadataTyp
 				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 			</span>
 
-			<span className="date float-right ml-3 mb-2">
+			<span className="date ml-3 mb-2">
 				{dateToShortDateDisplay(archiveItem.documentDate)}
 			</span>
 

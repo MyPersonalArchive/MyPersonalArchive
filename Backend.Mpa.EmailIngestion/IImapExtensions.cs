@@ -76,7 +76,7 @@ public static class IImapExtensions
 			var mailFolder = await client.GetFolderAsync(folder);
 			await mailFolder.OpenAsync(FolderAccess.ReadOnly);
 
-			var batchSizes = new Queue<int>([1, 8, 100, 1000, 1000, 1000]); //First fetch a few emails for faster "first email", and for scrolling the first page(s) retrieval, then increase batch size for better overall performance
+			var batchSizes = new Queue<int>([1, 8, 8, 8, 100, 1000, 1000, 1000]); //First fetch a few emails for faster "first email", and for scrolling the first page(s) retrieval, then increase batch size for better overall performance
 
 			// Start from the newest email (end of mailbox) and work backwards
 			int startIndex = mailFolder.Count - 1;

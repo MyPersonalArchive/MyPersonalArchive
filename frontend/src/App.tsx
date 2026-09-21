@@ -106,7 +106,7 @@ const router = createBrowserRouter([
 								element: <BlobListPage />
 							},
 							{
-								path: `${RoutePaths.Email}/:id`,
+								path: `${RoutePaths.Email.List}/:accountId`,
 								element: <EmailListPage />
 							},
 							{

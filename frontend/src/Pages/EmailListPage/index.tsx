@@ -8,7 +8,6 @@ import { UUID } from "crypto"
 import { useSelection } from "../../Utils/Selection"
 import { useEffect, useRef } from "react"
 import { faRefresh, faSpinner } from "@fortawesome/free-solid-svg-icons"
-import { Dialog } from "../../Components/Dialog"
 import { EmailMaximized } from "./EmailMaximized"
 import { EmailRow } from "./EmailRow"
 import { useMailProvider } from "../../Utils/Hooks/useMailProvider"
@@ -18,7 +17,7 @@ export const EmailListPage = () => {
 	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
 
 	const params = useParams()
-	const externalAccountId = params.id as UUID
+	const externalAccountId = params.accountId as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
 
 	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments, isStreamingEmails } = useMailProvider(externalAccountId)
@@ -34,19 +33,18 @@ export const EmailListPage = () => {
 
 	return (
 		<>
+			<header className="dont-touch-walls header sm:hidden">
+				<h1>
+					{adjustmentsModeIsOpen
+						? <input className=""
+							value={externalAccount?.displayName ?? "<unknown account>"}
+							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
+						/>
+						: externalAccount?.displayName ?? "<unknown account>"}
+				</h1>
+			</header>
 
 			<div className="dont-touch-walls flex flex-row gap-2">
-				<header className="header">
-					<h1>
-						{adjustmentsModeIsOpen
-							? <input className=""
-								value={externalAccount?.displayName ?? "<unknown account>"}
-								onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
-							/>
-							: externalAccount?.displayName ?? "<unknown account>"}
-					</h1>
-				</header>
-
 
 				<div className="join">
 					<select className="select w-50 bg-base-100" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
@@ -113,49 +111,46 @@ export const EmailListPage = () => {
 				</div>
 			</div>
 
-			<div>
+			{ emails.length > 0 &&
+				<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
+					<PreviewList
+						items={emails}
+						thumbnailPreviewTemplate={(email, maximize) =>
+							<EmailRow
+								key={email.uniqueId}
+								email={email}
+								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
+								selectionOfEmails={selectionOfEmails}
+								maximize={maximize}
+							/>
+						}
+						maximizedPreviewTemplate={(email, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
+							<EmailMaximized
+								minimize={minimize}
+								canMovePrevious={canMovePrevious}
+								canMoveNext={canMoveNext}
+								movePrevious={movePrevious}
+								moveNext={moveNext}
+								closeOnEscape={true}
+								email={email}
+								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
+								createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
+								externalAccountId={externalAccountId}
+								selectedFolder={selectedFolder!}
+							/>
+						}
+					/>
+					{isStreamingEmails && (
+						<div className="flex justify-center items-center gap-2 py-4 text-gray-400 text-sm">
+							<FontAwesomeIcon icon={faSpinner} spinPulse />
+					Loading emails...
+						</div>
+					)}
+				</div>
+			}
 
-				{emails.length > 0 &&
-					<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
-						<PreviewList
-							items={emails}
-							thumbnailPreviewTemplate={(email, maximize) =>
-								<EmailRow
-									key={email.uniqueId}
-									email={email}
-									createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
-									selectionOfEmails={selectionOfEmails}
-									maximize={maximize}
-								/>
-							}
-							maximizedPreviewTemplate={(email, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-								<Dialog key={email.uniqueId} size="full"
-									onClose={() => minimize()}
-									closeOnEscape={true}
-								>
-									<EmailMaximized
-										email={email}
-										createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
-										createBlobsFromAttachments={(messageId, attachments) => { createBlobsFromAttachments(messageId, attachments) }}
-										externalAccountId={externalAccountId}
-										selectedFolder={selectedFolder!}
-										maximize={minimize}
-									/>
-								</Dialog>
-							}
-						/>
-					</div>
-				}
 
 
-				{isStreamingEmails && (
-					<div className="flex justify-center items-center gap-2 py-4 text-gray-400 text-sm">
-						<FontAwesomeIcon icon={faSpinner} spinPulse />
-						Loading emails...
-					</div>
-				)}
-
-			</div>
 		</>
 	)
 }

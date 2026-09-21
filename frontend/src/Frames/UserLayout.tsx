@@ -135,7 +135,7 @@ const ClickableAccountList = () => {
 		{externalAccounts.map(account => (
 			<NavLink key={account.id}
 				className={({ isActive }) => isActive ? "active" : undefined}
-				to={`${RoutePaths.Email}/${account.id}`}
+				to={`${RoutePaths.Email.List}/${account.id}`}
 				onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
 			>
 				<FontAwesomeIcon icon={faEnvelope} fixedWidth />
@@ -165,7 +165,7 @@ const EditableAccountList = () => {
 			dnd.rows.map(({ rowType, data: account }, index) => rowType === "item-row"
 				?
 				<div key={account.id}
-					className={classNames("nav-link group", { "active": location.pathname === `${RoutePaths.Email}/${account.id}` })}
+					className={classNames("nav-link group", { "active": location.pathname === `${RoutePaths.Email.List}/${account.id}` })}
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}
@@ -180,7 +180,7 @@ const EditableAccountList = () => {
 					<span className="">
 						<input className="text-inherit"
 							type="text"
-							onFocus={(e) => { navigate(`${RoutePaths.Email}/${account.id}`); e.target.select() }}
+							onFocus={(e) => { navigate(`${RoutePaths.Email.List}/${account.id}`); e.target.select() }}
 							value={account.displayName}
 							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: account.id, displayName: e.target.value })} />
 					</span>

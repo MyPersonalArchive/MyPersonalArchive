@@ -12,8 +12,9 @@ export const RoutePaths = {
 	Blob: {
 		List: "/blob/list"
 	},
-	StoredFilters: "/filters",
-	Email: "/email",
+	Email: {
+		List: "/email",
+	},
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic"
 	},
