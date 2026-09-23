@@ -7,6 +7,7 @@ import { AttachmentList } from "./AttachmentList"
 import { EmailAttachment, FullEmail } from "../../Utils/Atoms/EmailAtoms"
 import { UUID } from "crypto"
 import { LightBox } from "../../Components/LightBox"
+import { EmailBodyFrame } from "../../Components/EmailBodyFrame"
 
 
 type Props = {
@@ -29,7 +30,6 @@ export const EmailMaximized = ({ minimize, canMovePrevious, canMoveNext, movePre
 	useEffect(() => {
 		fetchEmailContents(email)
 	}, [email])
-
 
 	return (
 		<LightBox key={email.uniqueId} onClose={() => minimize()} closeOnEscape={closeOnEscape}>
@@ -57,12 +57,15 @@ export const EmailMaximized = ({ minimize, canMovePrevious, canMoveNext, movePre
 					<div className="p-4 overflow-y-scroll">
 						{email.htmlBody === undefined && email.body === undefined
 							? <div className="my-2 flex flex-col gap-3">
+								{email.previewText}
 								<div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
 									<FontAwesomeIcon icon={faSpinner} spinPulse />
 							Loading email content...
 								</div>
 							</div>
-							: <div className="my-2" dangerouslySetInnerHTML={{ __html: email.htmlBody ?? email.body ?? "" }} />
+							: email.htmlBody !== null && email.htmlBody !== undefined
+								? <EmailBodyFrame html={email.htmlBody} />
+								: <div className="my-2 whitespace-pre-wrap">{email.body}</div>
 						}
 					</div>
 
@@ -76,7 +79,7 @@ export const EmailMaximized = ({ minimize, canMovePrevious, canMoveNext, movePre
 								<button className="btn"
 									onClick={() => createArchiveItemFromEmails([email])}
 								>
-							Create
+							Create archive item
 								</button>
 							</div>
 

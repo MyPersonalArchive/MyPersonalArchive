@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { PreviewList } from "../../Components/PreviewList"
-import { useParams } from "react-router-dom"
+import { useParams, useSearchParams } from "react-router-dom"
 import { useAtom, useAtomValue } from "jotai"
 import { externalAccountsAtom } from "../../Utils/Atoms/externalAccountsAtom"
 import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
@@ -11,16 +11,22 @@ import { faRefresh, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { EmailMaximized } from "./EmailMaximized"
 import { EmailRow } from "./EmailRow"
 import { useMailProvider } from "../../Utils/Hooks/useMailProvider"
+import { Filter } from "./Filter"
+import { archiveItemsAtom } from "../../Utils/Atoms/archiveItemsAtom"
 
 export const EmailListPage = () => {
 	const [accounts, dispatch] = useAtom(externalAccountsAtom)
 	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
+	const [searchParams] = useSearchParams()
 
 	const params = useParams()
 	const externalAccountId = params.accountId as UUID
 	const externalAccount = accounts.find(account => account.id === externalAccountId)
 
 	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments, isStreamingEmails } = useMailProvider(externalAccountId)
+	const archiveItems = useAtomValue(archiveItemsAtom)
+
+	const allocatedEmailUniqueIds = new Set<number>(archiveItems.map(ai => ai.metadata.email?.identifier.messageId))
 
 	const selectionOfEmails = useSelection<number>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
@@ -30,6 +36,8 @@ export const EmailListPage = () => {
 			selectAllCheckboxRef.current.checked = selectionOfEmails.allPossibleItems.size > 0 && selectionOfEmails.areAllItemsSelected
 		}
 	}, [selectionOfEmails.selectedItems, emails])
+	const visibleEmails = emails.filter(email => (searchParams.get("hideAllocatedEmails") !== "true") || !allocatedEmailUniqueIds.has(email.uniqueId))
+	const selectedVisibleEmails = visibleEmails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId))
 
 	return (
 		<>
@@ -43,6 +51,10 @@ export const EmailListPage = () => {
 						: externalAccount?.displayName ?? "<unknown account>"}
 				</h1>
 			</header>
+			
+			<div className="dont-touch-walls flex flex-col gap-2 mb-4">
+				<Filter />
+			</div>
 
 			<div className="dont-touch-walls flex flex-row gap-2">
 
@@ -89,9 +101,9 @@ export const EmailListPage = () => {
 				<div className="stack-horizontal to-the-right my-4">
 					<button className="btn btn-primary"
 						disabled={selectionOfEmails.areNoItemsSelected}
-						onClick={() => createArchiveItemFromEmails(emails.filter(email => selectionOfEmails.selectedItems.has(email.uniqueId)))}
+						onClick={() => createArchiveItemFromEmails(selectedVisibleEmails)}
 					>
-						{`Create from ${selectionOfEmails.selectedItems.size} email${selectionOfEmails.selectedItems.size != 1 ? "s" : ""}`}
+						{`Create from ${selectedVisibleEmails.length} email${selectedVisibleEmails.length != 1 ? "s" : ""}`}
 					</button>
 
 					<div className="flex-1"></div>
@@ -114,11 +126,12 @@ export const EmailListPage = () => {
 			{ emails.length > 0 &&
 				<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
 					<PreviewList
-						items={emails}
+						items={visibleEmails}
 						thumbnailPreviewTemplate={(email, maximize) =>
 							<EmailRow
 								key={email.uniqueId}
 								email={email}
+								isAllocated={allocatedEmailUniqueIds.has(email.uniqueId)}
 								createArchiveItemFromEmails={(emails) => { createArchiveItemFromEmails(emails) }}
 								selectionOfEmails={selectionOfEmails}
 								maximize={maximize}

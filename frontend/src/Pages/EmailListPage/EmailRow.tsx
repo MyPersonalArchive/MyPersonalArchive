@@ -5,28 +5,30 @@ import { faPaperclip } from "@fortawesome/free-solid-svg-icons"
 import { AddressList } from "./AddressList"
 import { Selection } from "../../Utils/Selection"
 import { clickIfNotSelectingText } from "../../Utils/event-helpers"
+import { isoToShortDateDisplay, isoToShortTimeDisplay } from "../../Utils/formatUtils"
+import classNames from "classnames"
 
 
 type Props = {
 	email: FullEmail
+	isAllocated: boolean
 	selectionOfEmails: Selection<number>
 	createArchiveItemFromEmails: (emails: FullEmail[]) => void
 	maximize: (email: FullEmail) => void
 }
-export const EmailRow = ({ email, selectionOfEmails, createArchiveItemFromEmails, maximize }: Props) => {
+export const EmailRow = ({ email, isAllocated, selectionOfEmails, createArchiveItemFromEmails, maximize }: Props) => {
 	return (
-		<div key={email.uniqueId} className="div-row" >
+		<div key={email.uniqueId} className="div-row group/email" onClick={clickIfNotSelectingText(() => maximize(email))}>
 			<div className="p-2">
 				<div className="flex flex-horizontal justify-between mb-2 ">
 					<div>
-						<span className="font-bold" onClick={clickIfNotSelectingText(() => maximize(email))}>{email.subject}</span>
+						<span className={classNames("link link-primary link-hover group-hover/email:underline", { "font-bold": !isAllocated })}>
+							{email.subject}
+						</span>
 						{email.attachments.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 					</div>
 					<div>
 						<SelectCheckbox selection={selectionOfEmails} item={email.uniqueId} />
-						{/* <button className="ml-3" type="button" onClick={() => maximize(email)}>
-							<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} />
-						</button> */}
 					</div>
 				</div>
 
@@ -35,23 +37,22 @@ export const EmailRow = ({ email, selectionOfEmails, createArchiveItemFromEmails
 						From: <AddressList addresses={email.from} />
 					</div>
 					<div>
-						Date: {email.receivedTime}
+						{isoToShortDateDisplay(email.receivedTime)} {isoToShortTimeDisplay(email.receivedTime)}
 					</div>
 				</div>
 			</div>
 
-			<div className="overflow-hidden text-ellipsis whitespace-nowrap p-2">
-				{email.previewText}
+			<div className="p-2">
+				<span className="line-clamp-2">{email.previewText}</span>
 			</div>
 
-			<div>
-				<div className="stack-horizontal to-the-right p-2">
-					<button className="btn btn-primary"
-						onClick={() => createArchiveItemFromEmails([email])}
-					>
-						Create
-					</button>
-				</div>
+			<div className="stack-horizontal to-the-left p-2">
+				<button
+					className="btn btn-primary"
+					onClick={e => { e.stopPropagation(); createArchiveItemFromEmails([email]) }}
+				>
+						Create archive item
+				</button>
 			</div>
 		</div>
 	)

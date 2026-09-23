@@ -20,7 +20,7 @@ export const ArchiveItemRow = ({ archiveItem, highlightTags, selectedMetadataTyp
 			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
 			className="group/archive-item div-row block px-2 py-1 layout-title-date-and-more"
 		>
-			<span className="title link link-primary link-hover group-hover/archive-item:underline">
+			<span className="title font-bold link link-primary link-hover group-hover/archive-item:underline">
 				{archiveItem.title}
 				{archiveItem.blobIds.length > 0 && <FontAwesomeIcon icon={faPaperclip} className="ml-1" />}
 			</span>

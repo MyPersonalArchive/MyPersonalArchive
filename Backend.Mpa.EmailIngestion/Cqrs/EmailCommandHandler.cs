@@ -68,10 +68,16 @@ public class EmailCommandHandler :
 			{
 				email = new
 				{
-					to = email.To.Select(a => $"{a.Name} <{a.Address}>"),
-					from = email.From.Select(a => $"{a.Name} <{a.Address}>"),
-					date = email.ReceivedTime,
+					identifier = new
+					{
+						externalAccountId = command.ExternalAccountId,
+						// emailFolder = command.EmailFolder,
+						messageId = email.UniqueId
+					},
 					subject = email.Subject,
+					date = email.ReceivedTime,
+					from = email.From.Select(a => a.Address),
+					to = email.To.Select(a => a.Address),
 					body = email.Body
 				}
 			}) as JsonObject)!;

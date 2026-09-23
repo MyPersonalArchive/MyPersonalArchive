@@ -1,30 +1,39 @@
 import { MetadataComponentProps, MetadataType } from "../../Utils/Metadata/types"
+import { isoToShortDateDisplay, isoToShortTimeDisplay } from "../../Utils/formatUtils"
+
 
 type Command =
 	| { action: "INIT" }
 	| { action: "METADATA_LOADED", metadata: State }
-	| { action: "SET_EMAIL_METADATA", subject: string, date: string, from: string, to: string, body: string }
+	| { action: "SET_EMAIL_METADATA", subject: string, date: string, from: string[], to: string[], body: string }
 	| { action: "SET_SUBJECT", subject: string }
 	| { action: "SET_DATE", date: string }
-	| { action: "SET_FROM", from: string }
-	| { action: "SET_TO", to: string }
+	| { action: "SET_FROM", from: string[] }
+	| { action: "SET_TO", to: string[] }
 	| { action: "SET_BODY", body: string }
 
 type State = {
 	subject: string
 	date: string
-	from: string
-	to: string
+	from: string[]
+	to: string[]
 	body: string
 }
 
 
 const summarize = (state: State) => {
-	if(!state || !state.from && !state.to && !state.date) return undefined
-	const from = ` from ${state.from}`
-	const to = ` to ${state.to}`
-	const date = ` on ${state.date}`
-	return `Email${from}${to}${date}`
+	if(!state || !state.from.length && !state.to.length && !state.date) return undefined
+
+	const fromName = state.from.map(s => s.replace(/ \<.+?>/g, "").replace(/"/g, "")).join(", ")
+	const fromPart = fromName ? `from ${fromName}` : undefined
+	
+	const toNames = state.to.map(s => s.replace(/ \<.+?>/g, "").replace(/"/g, "")).join(", ")
+	const toPart = toNames.length > 0 ? `to ${toNames}` : undefined
+
+	const datePart = state.date ? `on ${isoToShortDateDisplay(state.date)} ${isoToShortTimeDisplay(state.date)}` : undefined
+	
+	const parts = [fromPart, toPart, datePart].filter(part => part !== undefined)
+	return parts.join(", ")
 }
 
 
@@ -34,8 +43,8 @@ const reducer = (state: State, command: Command): State => {
 			return {
 				subject: "",
 				date: "",
-				from: "",
-				to: "",
+				from: [],
+				to: [],
 				body: ""
 			}
 
@@ -106,8 +115,8 @@ const Component = (props: MetadataComponentProps) => {
 
 	return (
 		<>
-			<div className="flex flex-col gap-4">
-				<label className="input mx-4" htmlFor="email-subject">
+			<div className="flex flex-col gap-4 px-4">
+				<label className="input w-full" htmlFor="email-subject">
 					<span className="label">Subject</span>
 					<input
 						type="text"
@@ -119,7 +128,7 @@ const Component = (props: MetadataComponentProps) => {
 					/>
 				</label>
 
-				<label className="input mx-4" htmlFor="email-date">
+				<label className="input" htmlFor="email-date">
 					<span className="label">Date</span>
 					<input
 						type="datetime-local"
@@ -130,36 +139,36 @@ const Component = (props: MetadataComponentProps) => {
 					/>
 				</label>
 
-				<label className="input mx-4" htmlFor="email-from">
+				<label className="input w-full" htmlFor="email-from">
 					<span className="label">From</span>
 					<input
 						type="email"
 						id="email-from"
 						className="input"
 						placeholder="sender@example.com"
-						value={state.from}
-						onChange={e => dispatch({ action: "SET_FROM", from: e.target.value })}
+						value={state.from.join("; ")}
+						onChange={e => dispatch({ action: "SET_FROM", from: e.target.value.split(/[,;]/).map(s => s.trim()) })}
 					/>
 				</label>
 
-				<label className="input mx-4" htmlFor="email-to">
+				<label className="input w-full" htmlFor="email-to">
 					<span className="label">To</span>
 					<input
 						type="email"
 						id="email-to"
 						className="input"
 						placeholder="recipient@example.com"
-						value={state.to}
-						onChange={e => dispatch({ action: "SET_TO", to: e.target.value })}
+						value={state.to.join("; ")}
+						onChange={e => dispatch({ action: "SET_TO", to: e.target.value.split(/[,;]/).map(s => s.trim()) })}
 					/>
 				</label>
 
-				<label className="textarea mx-4" htmlFor="email-body">
+				<label className="textarea w-full" htmlFor="email-body">
 					<span className="label">Body</span>
 					<textarea
 						rows={6}
 						id="email-body"
-						className="input"
+						className="input w-full"
 						placeholder="Email content..."
 						value={state.body}
 						onChange={e => dispatch({ action: "SET_BODY", body: e.target.value })}

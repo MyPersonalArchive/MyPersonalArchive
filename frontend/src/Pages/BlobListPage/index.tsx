@@ -82,11 +82,11 @@ export const BlobListPage = () => {
 
 	return (
 		<>
-			<div className="dont-touch-walls flex flex-col gap-2">
+			<div className="dont-touch-walls flex flex-col gap-2 mb-4">
 				<Filter />
 			</div>
 
-			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center my-4">
+			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center mb-4">
 
 				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}

@@ -36,6 +36,8 @@ export default tseslint.config(
 				{ allowConstantExport: true },
 			],
 
+			'no-useless-escape': ["error", { "allowRegexCharacters": [".", "+", "<"] }],
+
 			// Disable the default no-unused-vars as we use TypeScript's version
 			"no-unused-vars": "off",
 			"@typescript-eslint/no-unused-vars": "warn",

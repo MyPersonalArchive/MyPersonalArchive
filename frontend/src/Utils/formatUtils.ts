@@ -30,6 +30,29 @@ export const dateToShortDateDisplay = (date: Date | null | undefined): string =>
 	})
 }
 
+
+export const isoToShortTimeDisplay = (isoString: string | null | undefined): string => {
+	if (!isoString) return ""
+
+	const [year, month, day, hour, minute, second] = isoString.split(/[T:\.\+-]/).map(Number)
+	// console.log(year, month, day, hour, minute, second)
+	const date = new Date(year, month - 1, day, hour, minute, second)
+
+	return dateToShortTimeDisplay(date)
+}
+
+
+export const dateToShortTimeDisplay = (date: Date | null | undefined): string => {
+	if (!date || isNaN(date.getTime())) return ""
+
+	return date.toLocaleTimeString(navigator.language, {
+		hour: "2-digit",
+		minute: "2-digit",
+		// second: "2-digit",
+	})
+}
+
+
 //
 
 export const formatDateTime = (date?: Date): string | undefined => {

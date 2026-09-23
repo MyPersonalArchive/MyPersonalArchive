@@ -4,30 +4,30 @@ import { createQueryString } from "../../Utils/createQueryString"
 
 
 export const Filter = () => {
-	const [hideAllocatedBlobs, setHideAllocatedBlobs] = useState<boolean>(true)
+	const [hideAllocatedEmails, setHideAllocatedEmails] = useState<boolean>(false)
 	const [searchParams] = useSearchParams()
 	const navigate = useNavigate()
 
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setHideAllocatedBlobs((searchParams.get("hideAllocatedBlobs") ?? "true") === "true")
+		setHideAllocatedEmails((searchParams.get("hideAllocatedEmails") ?? "true") === "true")
 	}, [searchParams])
 
 	useEffect(() => {
 		navigate({
-			search: createQueryString({ hideAllocatedBlobs }, { skipEmptyStrings: true })
+			search: createQueryString({ hideAllocatedEmails }, { skipEmptyStrings: true })
 		})
-	}, [hideAllocatedBlobs])
+	}, [hideAllocatedEmails])
 
 	return (
 		<label className="whitespace-nowrap">
 			<input
 				type="checkbox"
 				className="checkbox mx-2 sm:ml-0"
-				checked={hideAllocatedBlobs}
-				onChange={() => setHideAllocatedBlobs(b => !b)}
+				checked={hideAllocatedEmails}
+				onChange={() => setHideAllocatedEmails(b => !b)}
 			/>
-				Hide allocated blobs
+				Hide allocated emails
 		</label>
 	)
 }
