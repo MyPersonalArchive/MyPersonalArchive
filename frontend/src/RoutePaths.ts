@@ -15,7 +15,7 @@ export const RoutePaths = {
 	},
 	Email: {
 		List: "/email/:externalAccountId/list",
-		View: "/email/:externalAccountId/view/:uniqueId",
+		View: "/email/:externalAccountId/view/:folder/:uniqueId",
 	},
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic/:provider"
