@@ -186,7 +186,7 @@ public class RemoteAuthenticationController : ControllerBase
 		};
 		await externalAccountSettingsService.AddOrReplace(account);
 
-		return Redirect($"{state.ReturnUrl}/{account.Id}");
+		return Redirect($"{state.ReturnUrl}/{account.Id}/list");
 	}
 
 
