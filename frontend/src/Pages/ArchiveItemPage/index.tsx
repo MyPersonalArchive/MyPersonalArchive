@@ -1,12 +1,12 @@
 import { useAtomValue } from "jotai"
 import { useEffect, useState } from "react"
-import { useLocation, useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams, generatePath } from "react-router-dom"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { useBlobsPrefetching } from "../../Utils/Hooks/useBlobsPrefetching"
 import { blobsAtom } from "../../Utils/Atoms/blobsAtom"
 import type { LocalBlob, CommonBlob, GetResponse } from "./types"
 import { UUID } from "crypto"
-import { useSaveShortcut } from "../../Utils/Hooks/useSaveShortcut"
+import { SaveKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
 import { RoutePaths } from "../../RoutePaths"
 import { PreviewList } from "../../Components/PreviewList"
 import { FileDrop } from "../../Components/FileDrop"
@@ -46,9 +46,10 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 	const { metadata, dispatch } = useMetadata(allMetadataTypes)
 
-	const params = useParams()
+	const {archiveItemId} = useParams()
 	const location = useLocation()
 	const navigate = useNavigate()
+
 	const initialMetadataTypes: string[] = location.state?.metadataTypes ?? []	// This is set when creating a new archive item to indicate which metadata types should be initially selected and open
 	
 	const apiClient = useApiClient()
@@ -59,7 +60,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 	useEffect(() => {
 		if(isNewArchiveItem === false) {
-			apiClient.query<GetResponse>("GetArchiveItem", { id: params.id! as UUID })
+			apiClient.query<GetResponse>("GetArchiveItem", { id: archiveItemId! as UUID })
 				.then(item => {
 					setId(item!.id)
 					setTitle(item!.title)
@@ -90,6 +91,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	}
 
 	const save = () => {
+		console.log("Saving archive item with id:", id)
 		const formData = new FormData()
 		const storeRequest = {
 			id: id!,
@@ -109,10 +111,10 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 		apiClient.putFormData("/api/archive/Store", formData)
 
-		navigate(`${RoutePaths.Archive.Edit}/${id}`, {replace: true})
+		navigate(generatePath(RoutePaths.Archive.Edit, {archiveItemId: id}), {replace: true})
 	}
 
-	useSaveShortcut(() => { save() }, true)
+	useKeyboardShortcut(SaveKey, () => { save() }, true)
 
 	const onDeleteArchiveItem = () => {
 		apiClient.execute("DeleteArchiveItem", { id: id! })
@@ -151,7 +153,6 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 				onSubmit={e => { e.preventDefault(); save() }}
 				className="flex flex-col gap-4"
 			>
-
 				<label
 					className="dont-touch-walls input w-full"
 					htmlFor="title"

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { generatePath, Link } from "react-router-dom"
 import classNames from "classnames"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPaperclip } from "@fortawesome/free-solid-svg-icons"
@@ -17,7 +17,7 @@ type Props = {
 export const ArchiveItemRow = ({ archiveItem, highlightTags, selectedMetadataTypes }: Props) => {
 	return (
 		<Link key={archiveItem.id}
-			to={`${RoutePaths.Archive.Edit}/${archiveItem.id}`}
+			to={generatePath(RoutePaths.Archive.Edit, {archiveItemId: archiveItem.id})}
 			className="group/archive-item div-row block px-2 py-1 layout-title-date-and-more"
 		>
 			<span className="title font-bold link link-primary link-hover group-hover/archive-item:underline">

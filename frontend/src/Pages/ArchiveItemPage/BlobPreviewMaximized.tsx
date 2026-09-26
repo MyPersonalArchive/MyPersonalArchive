@@ -63,6 +63,5 @@ export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveN
 				</div>
 			</div>
 		</LightBox>
-
 	)
 }

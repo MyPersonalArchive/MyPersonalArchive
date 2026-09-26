@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useLocation } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUpRightAndDownLeftFromCenter, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { BlobMetadata } from "../../Utils/Atoms/blobsAtom"
@@ -8,6 +9,8 @@ import { ServerViewer } from "../../Components/Viewers/ServerViewer"
 import { DimensionEnum } from "../../types/DimensionEnum"
 import { dateToShortDateDisplay, formatSize } from "../../Utils/formatUtils"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
+import { createPath, generatePath, Link } from "react-router-dom"
+import { RoutePaths } from "../../RoutePaths"
 
 
 type Props = {
@@ -17,8 +20,9 @@ type Props = {
 	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<UUID>
 }
-export const BlobPreviewRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: Props) => {
+export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: Props) => {
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
+	const location = useLocation()
 
 	return (
 		<div className="div-row group/blob-row grid grid-cols-[10rem_1fr] relative has-[.delete-blob:hover]:bg-red-100">
@@ -41,7 +45,12 @@ export const BlobPreviewRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximi
 
 			<div className="p-2">
 				<div className="flex flex-col py-2 px-4">
-					<div className="font-bold">{blob.fileName}</div>
+					<Link className="font-bold link link-primary no-underline hover:underline" to={
+						createPath({
+							pathname: generatePath(RoutePaths.Blob.View, {blobId: blob.id}),
+							search: location.search
+						})
+					}>{blob.fileName}</Link>
 					<div className=" text-sm">{dateToShortDateDisplay(blob.uploadedAt)}</div>
 					<div className=" text-sm">{blob.uploadedByUser}</div>
 					<div className=" text-sm">{formatSize(blob.fileSize)}</div>

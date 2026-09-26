@@ -1,18 +1,23 @@
 import { useEffect, useCallback, KeyboardEvent } from "react"
 
-export const useSaveShortcut = (
+
+type KeyExpression = (e: KeyboardEvent) => boolean
+
+
+export const useKeyboardShortcut = (
+	keyExpression: KeyExpression,
 	callback: (e: KeyboardEvent) => void,
 	enabled: boolean = true
 ) => {
 	const handler = useCallback(
 		(e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
+			if (keyExpression(e)) {
 				e.preventDefault()
 				e.stopPropagation()
 				callback(e)
 			}
 		},
-		[callback]
+		[callback, keyExpression]
 	)
 
 	useEffect(() => {
@@ -26,3 +31,8 @@ export const useSaveShortcut = (
 		}
 	}, [handler, enabled])
 }
+
+
+export const keyExpression = (key: string): KeyExpression => (e: KeyboardEvent) => e.key === key
+export const SaveKey:KeyExpression = (e) => (e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")
+export const LeftOrRightKey: KeyExpression = (e) => e.key === "ArrowLeft" || e.key === "ArrowRight"

@@ -1,9 +1,7 @@
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { PreviewList } from "../../Components/PreviewList"
+import { generatePath, createPath, useNavigate, useSearchParams } from "react-router-dom"
 import { BlobMetadata, blobsAtom } from "../../Utils/Atoms/blobsAtom"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
-import { BlobPreviewMaximized } from "./BlobPreviewMaximized"
-import { BlobPreviewRow } from "./BlobPreviewRow"
+import { BlobRow } from "./BlobRow"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { useAtomValue } from "jotai"
 import { useEffect, useState, useRef } from "react"
@@ -47,6 +45,12 @@ export const BlobListPage = () => {
 		selectionOfBlobs.clearSelection()
 	}
 
+	const onMaximize = (blobId: UUID) => {
+		navigate(createPath({
+			pathname: generatePath(RoutePaths.Blob.View, {blobId}),
+			search: location.search
+		}))
+	}
 	const onDeleteBlob = (blobId: UUID) => {
 		apiClient.execute("DeleteBlobs", { blobIds: [blobId] })
 	}
@@ -65,7 +69,7 @@ export const BlobListPage = () => {
 			metadataTypes: [],
 			documentDate: commonDocumentDate,	
 		}
-		navigate(`${RoutePaths.Archive.New}`, { state })
+		navigate(RoutePaths.Archive.New, { state })
 
 		selectionOfBlobs.clearSelection()
 	}
@@ -77,7 +81,7 @@ export const BlobListPage = () => {
 			documentDate: blob.uploadedAt.toISOString().split("T")[0],
 
 		}
-		navigate(`${RoutePaths.Archive.New}`, { state })
+		navigate(RoutePaths.Archive.New, { state })
 	}
 
 	return (
@@ -121,29 +125,16 @@ export const BlobListPage = () => {
 
 
 			<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
-				<PreviewList<BlobMetadata> items={visibleBlobs}
-					thumbnailPreviewTemplate={
-						(blob, maximize) => <BlobPreviewRow
-							key={blob.id}
-							blob={blob}
-							onCreateArchiveItem={onCreateArchiveItem}
-							onDeleteBlob={onDeleteBlob}
-							maximize={maximize}
-							selectionOfBlobs={selectionOfBlobs}
-						/>
-					}
-					maximizedPreviewTemplate={
-						(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-							<BlobPreviewMaximized
-								blob={blob}
-								minimize={minimize}
-								canMovePrevious={canMovePrevious}
-								canMoveNext={canMoveNext}
-								movePrevious={movePrevious}
-								moveNext={moveNext}
-							/>
-					}
-				/>
+				{visibleBlobs.map((blob) =>
+					<BlobRow
+						key={blob.id}
+						blob={blob}
+						onCreateArchiveItem={onCreateArchiveItem}
+						onDeleteBlob={onDeleteBlob}
+						maximize={() => onMaximize(blob.id)}
+						selectionOfBlobs={selectionOfBlobs}
+					/>
+				)}
 			</div>
 
 			<ConfirmationDialog

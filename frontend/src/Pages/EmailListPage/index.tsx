@@ -26,7 +26,7 @@ export const EmailListPage = () => {
 	const { fetchEmailSummaries, emails, fetchFolders, folders, selectedFolder, setSelectedFolder, createArchiveItemFromEmails, createBlobsFromAttachments, isStreamingEmails } = useMailProvider(externalAccountId)
 	const archiveItems = useAtomValue(archiveItemsAtom)
 
-	const allocatedEmailUniqueIds = new Set<number>(archiveItems.map(ai => ai.metadata.email?.identifier.messageId))
+	const allocatedEmailUniqueIds = new Set<number>(archiveItems.map(ai => ai.metadata.email?.identifier?.messageId))
 
 	const selectionOfEmails = useSelection<number>(new Set(emails.map(email => email.uniqueId)))
 	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)

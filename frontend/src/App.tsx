@@ -20,6 +20,7 @@ import { TenantAdminBillingPage } from "./Pages/TenantAdminBillingPage"
 import { TenantAdminUsersPage } from "./Pages/TenantAdminUsersPage"
 import { TenantAdminBackupPage } from "./Pages/TenantAdminBackupPage"
 import { TenantAdminLogsPage } from "./Pages/TenantAdminLogsPage"
+import { BlobViewPage } from "./Pages/BlobViewPage"
 
 
 const router = createBrowserRouter([
@@ -94,7 +95,7 @@ const router = createBrowserRouter([
 								element: <ArchiveItemListPage />
 							},
 							{
-								path: `${RoutePaths.Archive.Edit}/:id`,
+								path: RoutePaths.Archive.Edit,
 								element: <ArchiveItemPage isNewArchiveItem={false} />
 							},
 							{
@@ -104,6 +105,10 @@ const router = createBrowserRouter([
 							{
 								path: RoutePaths.Blob.List,
 								element: <BlobListPage />
+							},
+							{
+								path: RoutePaths.Blob.View,
+								element: <BlobViewPage />
 							},
 							{
 								path: `${RoutePaths.Email.List}/:accountId`,

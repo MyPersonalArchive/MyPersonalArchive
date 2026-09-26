@@ -6,14 +6,16 @@ export const RoutePaths = {
 	Profile: "/profile",
 	Archive:{
 		List: "/archive/list",
-		Edit: "/archive/edit",
+		Edit: "/archive/edit/:archiveItemId",
 		New: "/archive/new"
 	},
 	Blob: {
-		List: "/blob/list"
+		List: "/blob/list",
+		View: "/blob/view/:blobId"
 	},
 	Email: {
 		List: "/email",
+		// View: "/email/view/:externalAccountId/:emailId",
 	},
 	ExternalAuthentication: {
 		Basic: "/external-authentication/basic"
