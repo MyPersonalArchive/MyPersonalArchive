@@ -2,7 +2,7 @@
 
 ## Scope
 
-- This repository is a .NET 10 solution with backend services, a Web API, EF Core SQLite data access, and a frontend app in React/TypeScript.
+- This repository is a .NET 10 solution with backend services, a Web API, and a frontend app in React/TypeScript.
 - Keep changes focused and idiomatic for the existing codebase; prefer small, local edits over broad refactors.
 
 ## C# Conventions
@@ -18,18 +18,11 @@
 - Never use primary constructors for service classes!
 - Prefer primary constructors for data classes, structs and records!
 
-## EF Core And Database Work
-
-- For EF Core work, keep relationship configuration in `Backend.Mpa.DbModel/Database/MpaDbContext.cs` and update migrations instead of editing the database manually.
-- When changing EF models, update the model, then add a migration, then validate with `dotnet ef database update` using `Backend.WebApi` as the startup project when needed.
-- Treat SQLite schema changes carefully; table rebuilds are common, so prefer minimal migration steps and verify them locally.
-
 ## Solution Layout
 
 - `Backend.WebApi` is the main application host. It should be kept general for any web app, and contain little or no application specific code.
 - `Backend.Core` provide general and non application specific shared backend logic and services.
 - `Backend.Mpa.*` provide application specific code, models, logic and services
-  - `Backend.Mpa.DbModel` contains entity types, DbContext configuration, and EF migrations.
   - `Backend.Mpa.EmailIngestion`  code for email and other external connections.
   - `Backend.Mpa.Core` general application specific shared backend.
 - `ConsoleApp1` is a utility/console entry point and should stay consistent with the backend dependency stack.
