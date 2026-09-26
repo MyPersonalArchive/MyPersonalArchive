@@ -1,23 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { createQueryString } from "../../Utils/createQueryString"
 
 
 export const Filter = () => {
-	const [hideAllocatedBlobs, setHideAllocatedBlobs] = useState<boolean>(true)
 	const [searchParams] = useSearchParams()
 	const navigate = useNavigate()
 
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setHideAllocatedBlobs((searchParams.get("hideAllocatedBlobs") ?? "true") === "true")
-	}, [searchParams])
+	const hideAllocatedParam = searchParams.get("hideAllocatedBlobs")
+	const hideAllocatedBlobs = (hideAllocatedParam ?? "true") === "true"
+
+	const setHideAllocatedBlobs = (value: boolean, replace = false) =>
+		navigate({ search: createQueryString({ hideAllocatedBlobs: value }, { skipEmptyStrings: true }) }, { replace })
 
 	useEffect(() => {
-		navigate({
-			search: createQueryString({ hideAllocatedBlobs }, { skipEmptyStrings: true })
-		})
-	}, [hideAllocatedBlobs])
+		// The list page filters on the URL param, so write the default into the URL when missing
+		if (hideAllocatedParam === null) {
+			setHideAllocatedBlobs(true, true)
+		}
+	}, [hideAllocatedParam])
 
 	return (
 		<label className="whitespace-nowrap">
@@ -25,7 +26,7 @@ export const Filter = () => {
 				type="checkbox"
 				className="checkbox mx-2 sm:ml-0"
 				checked={hideAllocatedBlobs}
-				onChange={() => setHideAllocatedBlobs(b => !b)}
+				onChange={() => setHideAllocatedBlobs(!hideAllocatedBlobs)}
 			/>
 				Hide allocated blobs
 		</label>

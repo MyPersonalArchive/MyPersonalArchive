@@ -1,23 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { createQueryString } from "../../Utils/createQueryString"
 
 
 export const Filter = () => {
-	const [hideAllocatedEmails, setHideAllocatedEmails] = useState<boolean>(false)
 	const [searchParams] = useSearchParams()
 	const navigate = useNavigate()
 
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setHideAllocatedEmails((searchParams.get("hideAllocatedEmails") ?? "true") === "true")
-	}, [searchParams])
+	const hideAllocatedParam = searchParams.get("hideAllocatedEmails")
+	const hideAllocatedEmails = (hideAllocatedParam ?? "true") === "true"
+
+	const setHideAllocatedEmails = (value: boolean, replace = false) =>
+		navigate({ search: createQueryString({ hideAllocatedEmails: value }, { skipEmptyStrings: true }) }, { replace })
 
 	useEffect(() => {
-		navigate({
-			search: createQueryString({ hideAllocatedEmails }, { skipEmptyStrings: true })
-		})
-	}, [hideAllocatedEmails])
+		// The list page filters on the URL param, so write the default into the URL when missing
+		if (hideAllocatedParam === null) {
+			setHideAllocatedEmails(true, true)
+		}
+	}, [hideAllocatedParam])
 
 	return (
 		<label className="whitespace-nowrap">
@@ -25,7 +26,7 @@ export const Filter = () => {
 				type="checkbox"
 				className="checkbox mx-2 sm:ml-0"
 				checked={hideAllocatedEmails}
-				onChange={() => setHideAllocatedEmails(b => !b)}
+				onChange={() => setHideAllocatedEmails(!hideAllocatedEmails)}
 			/>
 				Hide allocated emails
 		</label>
