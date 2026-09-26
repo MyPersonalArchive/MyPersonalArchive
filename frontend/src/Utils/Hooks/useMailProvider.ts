@@ -22,7 +22,7 @@ export function useMailProvider(externalAccountId: UUID) {
 
 	const apiClient = useApiClient()
 
-	const folders = foldersByExternalAccount.get(externalAccountId) ?? []
+	const folders = foldersByExternalAccount.get(externalAccountId)
 	const selectedFolder = selectedFolderByExternalAccount.get(externalAccountId)
 	const emails = emailsByExternalAccountAndFolder.get(externalAccountId)?.get(selectedFolder ?? "") ?? []
 	const isStreamingEmails = isStreamingEmailsMap.get(externalAccountId) ?? false

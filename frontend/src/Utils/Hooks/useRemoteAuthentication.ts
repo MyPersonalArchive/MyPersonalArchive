@@ -1,5 +1,5 @@
 import { createQueryString } from "../createQueryString"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, generatePath } from "react-router-dom"
 import { RoutePaths } from "../../RoutePaths"
 
 
@@ -21,7 +21,7 @@ export function useRemoteAuthentication() {
 			}
 
 			case "basic": {
-				navigate(`${RoutePaths.ExternalAuthentication.Basic}/${provider}`)
+				navigate(generatePath(RoutePaths.ExternalAuthentication.Basic, { provider }))
 				break
 			}
 

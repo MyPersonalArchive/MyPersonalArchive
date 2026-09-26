@@ -40,7 +40,7 @@ export const ToolWindow = ({ blob, canMoveNext, moveNext, setToolWindowIsOpen, t
 					metadataTypes: selectedMetadataType === undefined ? [] : [selectedMetadataType],
 					documentDate: blob.uploadedAt.toISOString().split("T")[0]
 				}
-				navigate(`${RoutePaths.Archive.New}`, { state })
+				navigate(RoutePaths.Archive.New, { state })
 				break
 			}
 

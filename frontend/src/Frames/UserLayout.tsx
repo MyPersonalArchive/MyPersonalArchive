@@ -1,6 +1,6 @@
 
 import { PropsWithChildren, useEffect, useRef, useState } from "react"
-import { NavLink, useLocation, useNavigate } from "react-router-dom"
+import { generatePath, NavLink, useLocation, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
@@ -117,7 +117,6 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 }
 
 
-
 const AccountList = () => {
 	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
 
@@ -135,7 +134,7 @@ const ClickableAccountList = () => {
 		{externalAccounts.map(account => (
 			<NavLink key={account.id}
 				className={({ isActive }) => isActive ? "active" : undefined}
-				to={`${RoutePaths.Email.List}/${account.id}`}
+				to={generatePath(RoutePaths.Email.List, { externalAccountId: account.id })}
 				onClick={() => dispatchLayoutCommand({ action: "CLOSE_NAV" })}
 			>
 				<FontAwesomeIcon icon={faEnvelope} fixedWidth />
@@ -165,7 +164,7 @@ const EditableAccountList = () => {
 			dnd.rows.map(({ rowType, data: account }, index) => rowType === "item-row"
 				?
 				<div key={account.id}
-					className={classNames("nav-link group", { "active": location.pathname === `${RoutePaths.Email.List}/${account.id}` })}
+					className={classNames("nav-link group", { "active": location.pathname ===  generatePath(RoutePaths.Email.List, { externalAccountId: account.id }) })}
 					draggable={true}
 					onMouseDown={dnd.mouseDown}
 					onMouseUp={dnd.mouseUp}
@@ -180,7 +179,7 @@ const EditableAccountList = () => {
 					<span className="">
 						<input className="text-inherit"
 							type="text"
-							onFocus={(e) => { navigate(`${RoutePaths.Email.List}/${account.id}`); e.target.select() }}
+							onFocus={(e) => { navigate(generatePath(RoutePaths.Email.List, { externalAccountId: account.id })); e.target.select() }}
 							value={account.displayName}
 							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: account.id, displayName: e.target.value })} />
 					</span>

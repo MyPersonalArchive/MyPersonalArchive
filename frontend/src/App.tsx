@@ -21,6 +21,7 @@ import { TenantAdminUsersPage } from "./Pages/TenantAdminUsersPage"
 import { TenantAdminBackupPage } from "./Pages/TenantAdminBackupPage"
 import { TenantAdminLogsPage } from "./Pages/TenantAdminLogsPage"
 import { BlobViewPage } from "./Pages/BlobViewPage"
+import { EmailViewPage } from "./Pages/EmailViewPage"
 
 
 const router = createBrowserRouter([
@@ -111,11 +112,15 @@ const router = createBrowserRouter([
 								element: <BlobViewPage />
 							},
 							{
-								path: `${RoutePaths.Email.List}/:accountId`,
+								path: RoutePaths.Email.List,
 								element: <EmailListPage />
 							},
 							{
-								path: `${RoutePaths.ExternalAuthentication.Basic}/:provider`,
+								path: RoutePaths.Email.View,
+								element: <EmailViewPage />
+							},
+							{
+								path: RoutePaths.ExternalAuthentication.Basic,
 								element: <BasicAuthenticationPage />
 							},
 							{
