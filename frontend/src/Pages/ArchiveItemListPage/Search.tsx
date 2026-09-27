@@ -1,34 +1,32 @@
-import { useState, FormEvent } from "react"
+import React, { useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faMagnifyingGlass, faXmark } from "@fortawesome/free-solid-svg-icons"
 
 
 export const Search = () => {
-	const [searchTerm, setSearchTerm] = useState("")
-	const [_, setSearchParams] = useSearchParams()
+	const [searchParams, setSearchParams] = useSearchParams()
+	const [searchTerm, setSearchTerm] = useState(searchParams.get("find") || "")
 
-	const search = (event: FormEvent<HTMLFormElement>) => {
+	const search = (event: React.SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		if (searchTerm.trim() !== "") {
-			setSearchParams(p => {
-				const newParams = new URLSearchParams(p)
-				newParams.set("find", searchTerm)
-				return newParams
-			})
+			const newParams = new URLSearchParams(searchParams)
+			newParams.set("find", searchTerm)
+			setSearchParams(newParams)
 		} else {
 			setSearchParams({})
 		}
 	}
 
-	const reset = (event: FormEvent<HTMLFormElement>) => {
+	const reset = (event: React.SubmitEvent<HTMLFormElement>) => {
 		event.preventDefault()
 		setSearchTerm("")
 		setSearchParams({})
 	}
 
 	return (
-		<form onSubmit={search} onReset={reset} className="join">
+		<form onSubmit={e => search(e)} onReset={reset} className="join">
 			<input className="input"
 				type="text"
 				placeholder="Search for anything"

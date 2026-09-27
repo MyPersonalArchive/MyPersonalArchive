@@ -133,6 +133,7 @@ export const BlobListPage = () => {
 						onDeleteBlob={onDeleteBlob}
 						maximize={() => onMaximize(blob.id)}
 						selectionOfBlobs={selectionOfBlobs}
+						isAllocated={!allocatedBlobs.has(blob.id)}
 					/>
 				)}
 			</div>

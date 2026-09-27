@@ -11,6 +11,7 @@ import { dateToShortDateDisplay, formatSize } from "../../Utils/formatUtils"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 import { createPath, generatePath, Link } from "react-router-dom"
 import { RoutePaths } from "../../RoutePaths"
+import classNames from "classnames"
 
 
 type Props = {
@@ -19,8 +20,9 @@ type Props = {
 	onDeleteBlob: (blobId: UUID) => void
 	maximize: (blob: BlobMetadata) => void
 	selectionOfBlobs: Selection<UUID>
+	isAllocated: boolean
 }
-export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs }: Props) => {
+export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, selectionOfBlobs, isAllocated }: Props) => {
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 	const location = useLocation()
 
@@ -45,20 +47,37 @@ export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, sel
 
 			<div className="p-2">
 				<div className="flex flex-col py-2 px-4">
-					<Link className="font-bold link link-primary no-underline hover:underline" to={
-						createPath({
-							pathname: generatePath(RoutePaths.Blob.View, {blobId: blob.id}),
-							search: location.search
-						})
-					}>{blob.fileName}</Link>
+					<Link
+						className="font-bold link link-primary no-underline hover:underline"
+						to={
+							createPath({
+								pathname: generatePath(RoutePaths.Blob.View, {blobId: blob.id}),
+								search: location.search
+							})
+						}
+					>
+						{blob.fileName}
+					</Link>
 					<div className=" text-sm">{dateToShortDateDisplay(blob.uploadedAt)}</div>
 					<div className=" text-sm">{blob.uploadedByUser}</div>
-					<div className=" text-sm">{formatSize(blob.fileSize)}</div>
+
 				</div>
 
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
 
 				<div className="absolute bottom-2 right-2 space-x-2">
+					{ !isAllocated &&
+						<Link
+							className="link link-primary"
+							to={createPath({
+								pathname: generatePath(RoutePaths.Archive.List),
+								search: `?find=${blob.id}`
+							})}
+						>
+						Show where this is used
+						</Link>
+					}
+
 					<button
 						className="btn btn-primary"
 						disabled={selectionOfBlobs.selectedItems.size > 1}
@@ -67,8 +86,9 @@ export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, sel
 						Create archive item
 					</button>
 					<button
-						className="btn btn-danger btn-square delete-blob group-hover/blob-row:text-red-500 hover:bg-red-100"
+						className={classNames("btn btn-danger btn-square delete-blob",  {"group-hover/blob-row:text-red-500 hover:bg-red-100": isAllocated,  "cursor-not-allowed": !isAllocated })}
 						onClick={() => setOpenDeleteThisDialog(true)}
+						disabled={!isAllocated}
 					>
 						<FontAwesomeIcon icon={faTrash} size="1x" />
 					</button>

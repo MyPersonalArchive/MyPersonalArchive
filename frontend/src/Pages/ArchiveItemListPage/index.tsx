@@ -40,9 +40,11 @@ export const ArchiveItemListPage = () => {
 
 		const searchTerm = searchParams.get("find")?.toLowerCase()
 		if (searchTerm) {
-			if (!item.title.toLowerCase().includes(searchTerm) &&
-				!item.tags.some(tag => tag.toLowerCase().includes(searchTerm)) &&
-				!Object.values(item.metadata).some(value => value?.toString().toLowerCase().includes(searchTerm))
+			// Filter away items that don't match the search term or blob ID
+			if (!item.title.toLowerCase().includes(searchTerm)
+					&& !item.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+					&& !Object.values(item.metadata).some(value => value?.toString().toLowerCase().includes(searchTerm))
+					&& !item.blobIds.some(blobId => blobId.toString().toLowerCase().includes(searchTerm))
 			) {
 				return false
 			}
