@@ -1,12 +1,10 @@
 using System.Security.Claims;
 using Backend.Core;
-using Backend.Mpa.DbModel.Database;
 using Backend.WebApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.WebApi.Controllers;
 

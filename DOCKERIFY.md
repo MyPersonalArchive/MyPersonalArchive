@@ -84,8 +84,8 @@ docker run -d \
   aeinbu/mypersonalarchive:latest
 ```
 
-- `-v mpa-data:/data` — a **named volume**, not a bind mount. `/data` holds the SQLite
-  database and uploaded files, and needs to survive container restarts/recreation.
+- `-v mpa-data:/data` — a **named volume**, not a bind mount. `/data` holds  all the
+  json files and uploaded blobs, and needs to survive container restarts/recreation.
   Using a named volume (rather than a host path) means Docker initializes it from the
   image's `/data` on first use, so it inherits the correct ownership (see
   `Dockerfile`'s `chown 1654:1654 /data`) automatically — no manual `chown` step,
@@ -163,5 +163,3 @@ addition to) local JWT/cookie auth — both are gated behind their respective
 
 - The image bundles the built frontend at `/app/webapp/` and serves it directly —
   no separate frontend container or reverse proxy is required for a basic setup.
-- The database is SQLite, stored under `/data/Database` inside the volume — there's
-  no separate database container to run.

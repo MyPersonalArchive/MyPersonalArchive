@@ -12,8 +12,6 @@ RUN ldconfig
 # RUN chown -R vscode:vscode /tmp
 RUN chmod -R 777 /tmp
 
-RUN apt-get update && apt-get install -y sqlite3
-
 WORKDIR /workspaces/MyPersonalArchive
 RUN mkdir .devcontainer
 RUN chown -R vscode:vscode .devcontainer

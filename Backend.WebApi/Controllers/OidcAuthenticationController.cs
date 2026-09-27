@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using Backend.Core;
-using Backend.Mpa.DbModel.Database;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,14 +15,12 @@ namespace Backend.WebApi.Controllers;
 [Route("api/oidc")]
 public class OidcAuthenticationController : ControllerBase
 {
-	private readonly MpaDbContext _dbContext;
 	private readonly PasswordHasher _passwordHasher;
 	private readonly OidcConfig _oidcConfig;
 
 
-	public OidcAuthenticationController(MpaDbContext dbContext, PasswordHasher passwordHasher, IOptions<OidcConfig> oidcConfig)
+	public OidcAuthenticationController(PasswordHasher passwordHasher, IOptions<OidcConfig> oidcConfig)
 	{
-		_dbContext = dbContext;
 		_passwordHasher = passwordHasher;
 		_oidcConfig = oidcConfig.Value;
 	}

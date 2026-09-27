@@ -6,7 +6,6 @@ using Backend.Core.Services;
 using Backend.Mpa.Core;
 using Backend.Mpa.Core.Services;
 using Backend.Mpa.Core.Store;
-using Backend.Mpa.DbModel.Database;
 using ConsoleApp1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,14 +60,6 @@ internal class Program
 			.AddScoped<DemoDataGenerator>()
 			.AddOptions()
 			.Configure<AppConfig>(config.GetSection(nameof(AppConfig)))
-			.AddTransient<MpaDbContext>(sp =>
-			{
-				var dbConfig = sp.GetRequiredService<IOptions<DbConfig>>().Value;
-				var ambientDataResolver = (DummyAmbientDataResolver)sp.GetRequiredService<IAmbientDataResolver>();
-				var tenantId = ambientDataResolver.TenantId;
-				return new MpaDbContext(dbConfig, tenantId);
-			})
-			.Configure<DbConfig>(config.GetSection(nameof(AppConfig)))
 			.BuildServiceProvider();
 
 		// await SeedArchiveItems(serviceProvider);

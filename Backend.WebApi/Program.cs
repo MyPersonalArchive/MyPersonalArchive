@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -13,7 +12,6 @@ using MailKit.Net.Imap;
 using Backend.Core.Infrastructure;
 using Backend.WebApi.SignalR;
 using Backend.WebApi.Cqrs.Infrastructure;
-using Backend.Mpa.DbModel.Database;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Backend.WebApi.Configuration;
@@ -56,7 +54,6 @@ public static class Program
 		new ControllerDiscovery(builder.Services, _logger)
 			.RegisterControllers([executingAssembly, .. otherRelevantAssemblies]);
 
-		builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("AppConfig"));
 		builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfig"));
 		builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Jwt"));
 		builder.Services.Configure<OidcConfig>(builder.Configuration.GetSection("Oidc"));
@@ -64,7 +61,6 @@ public static class Program
 
 		builder.Services.AddScoped<IAuthorizationHandler, OrganizationRequirementAuthorizationHandler>();
 
-		builder.Services.AddDbContext<MpaDbContext>();
 
 		builder.Services.AddHttpClient();
 		builder.Services.AddOptions();
@@ -78,7 +74,6 @@ public static class Program
 
 		var app = builder.Build();
 
-		app.PrepareDatabase();
 		app.Configure();
 
 		app.Run();
@@ -282,17 +277,6 @@ public static class Program
 			client.BaseAddress = new Uri(keycloakConfig.BaseUrl!);
 		})
 		.AddHttpMessageHandler<KeycloakAuthHandler>();
-	}
-
-
-	private static void PrepareDatabase(this WebApplication app)
-	{
-		var services = app.Services;
-
-		var dbConfig = services.GetRequiredService<IOptions<DbConfig>>().Value;
-		var tenantId = "-1";
-		var dbContext = new MpaDbContext(dbConfig, tenantId);  //tenantId -1 for default tenant when running db migrations scripts
-		dbContext.Database.Migrate();
 	}
 
 

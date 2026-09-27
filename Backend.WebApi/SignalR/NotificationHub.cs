@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Backend.Core.Infrastructure;
-using Backend.Mpa.DbModel.Database;
 
 namespace Backend.WebApi.SignalR;
 
@@ -11,12 +9,10 @@ namespace Backend.WebApi.SignalR;
 public class NotificationHub : Hub
 {
 	private readonly IAmbientDataResolver _resolver;
-	private readonly MpaDbContext _dbContext;
 
-	public NotificationHub(IAmbientDataResolver resolver, MpaDbContext dbContext)
+	public NotificationHub(IAmbientDataResolver resolver)
 	{
 		_resolver = resolver;
-		_dbContext = dbContext;
 	}
 
 	#region SignalR client methods
