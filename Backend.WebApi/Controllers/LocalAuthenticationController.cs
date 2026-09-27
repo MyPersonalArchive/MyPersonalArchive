@@ -1,15 +1,12 @@
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 using Backend.Core;
 using Backend.Mpa.DbModel.Database;
+using Backend.WebApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Backend.WebApi.Configuration;
-using Backend.Mpa.DbModel.Database.EntityModels;
 
 namespace Backend.WebApi.Controllers;
 
@@ -17,14 +14,14 @@ namespace Backend.WebApi.Controllers;
 [Route("api/Authentication")]
 public class LocalAuthenticationController : ControllerBase
 {
-	private readonly MpaDbContext _dbContext;
+	private readonly LocalAuthenticationService _localAuthenticationService;
 	private readonly PasswordHasher _passwordHasher;
 
 
-	public LocalAuthenticationController(MpaDbContext dbContext, PasswordHasher passwordHasher)
+	public LocalAuthenticationController(PasswordHasher passwordHasher, LocalAuthenticationService localAuthenticationService)
 	{
-		_dbContext = dbContext;
 		_passwordHasher = passwordHasher;
+		_localAuthenticationService = localAuthenticationService;
 	}
 
 
@@ -37,9 +34,7 @@ public class LocalAuthenticationController : ControllerBase
 			return BadRequest("Unable to login");
 		}
 
-		var user = await _dbContext.Users
-			.Include(user => user.Tenants)
-			.SingleOrDefaultAsync(user => user.Username == request.Username);
+		var user = await _localAuthenticationService.GetUserAsync(request.Username);
 		if (user == null)
 		{
 			return Unauthorized("Unable to login");
@@ -64,7 +59,7 @@ public class LocalAuthenticationController : ControllerBase
 			authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7); //TODO: consider using 30 days
 		}
 
-		var roles = Array.Empty<string>();
+		var roles = user.Roles;
 		var organization = "default-tenant";
 
 		var identity = new ClaimsIdentity(

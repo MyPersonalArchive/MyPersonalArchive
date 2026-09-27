@@ -21,7 +21,7 @@ export const SignInPage = () => {
 	const authSettings = useAtomValue(authSettingsAtom)
 
 	useEffect(() => {
-		if (authSettings.oidcAuthUrl !== undefined) {
+		if (authSettings.oidcAuthUrl !== null) {
 			const redirect = new URLSearchParams(window.location.search).get("redirect")
 			const returnUrl = redirect ?? RoutePaths.Index
 			const query = new URLSearchParams({ returnUrl }).toString()
@@ -29,7 +29,7 @@ export const SignInPage = () => {
 		}
 	}, [authSettings])
 
-	return (authSettings.oidcAuthUrl !== undefined
+	return (authSettings.oidcAuthUrl !== null
 		? <>Redirecting</>
 		: <SignInComponent />
 	)

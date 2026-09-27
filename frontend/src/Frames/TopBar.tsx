@@ -43,7 +43,7 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 		<div className="profile">
 
 			{!currentUser &&
-				(authSettings.oidcAuthUrl !== undefined
+				(authSettings.oidcAuthUrl !== null
 					? <a className="profile-btn" href={`${authSettings.oidcAuthUrl}?${new URLSearchParams(RoutePaths.Index)}`}>
 						<div className="profile-avatar">
 							<FontAwesomeIcon icon={faUser} />

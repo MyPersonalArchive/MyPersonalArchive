@@ -141,8 +141,6 @@ const ClickableAccountList = () => {
 				{account.displayName}
 			</NavLink>
 		))}
-
-		{/* <div className="h-12"></div> */}
 	</>
 }
 
