@@ -10,6 +10,7 @@ import { CommonBlob } from "./types"
 import { ToolWindow } from "./ToolWindow"
 import { Position } from "../../types/Position"
 import { Size } from "../../types/Size"
+import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 
 
 export type Props = {
@@ -19,12 +20,13 @@ export type Props = {
 	canMoveNext: boolean
 	movePrevious: () => void
 	moveNext: () => void
-	removeUnallocatedBlob: (blob: CommonBlob) => void
+	onRemoveBlob: (blob: CommonBlob) => void
 }
-export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, removeUnallocatedBlob }: Props) => {
+export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, onRemoveBlob }: Props) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickEditToolWindowIsOpenAtom)
 	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
 	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 300 })
+	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
 	return (
 		<LightBox key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName} onClose={() => minimize()}>
@@ -57,11 +59,20 @@ export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveN
 					<button type="button" onClick={e => { minimize(); e.stopPropagation() }} title="Minimize">
 						<FontAwesomeIcon icon={faDownLeftAndUpRightToCenter} size="1x" />
 					</button>
-					<button type="button" onClick={e => { removeUnallocatedBlob(blob); e.stopPropagation() }} title="Delete">
+					<button type="button" onClick={e => { setOpenDeleteThisDialog(true); e.stopPropagation() }} title="Delete">
 						<FontAwesomeIcon icon={faTrash} size="1x" />
 					</button>
 				</div>
 			</div>
+			<ConfirmationDialog
+				open={openDeleteThisDialog}
+				prompt="Are you sure you want to remove this upload?"
+				onClose={() => setOpenDeleteThisDialog(false)}
+				onConfirm={() => {
+					onRemoveBlob(blob)
+				}}
+			/>
+			
 		</LightBox>
 	)
 }

@@ -90,7 +90,7 @@ export const BlobListPage = () => {
 				<Filter />
 			</div>
 
-			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center mb-4">
+			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center mb-4 sticky top-0 bg-base-100 z-10">
 
 				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
@@ -133,7 +133,7 @@ export const BlobListPage = () => {
 						onDeleteBlob={onDeleteBlob}
 						maximize={() => onMaximize(blob.id)}
 						selectionOfBlobs={selectionOfBlobs}
-						isAllocated={!allocatedBlobs.has(blob.id)}
+						isAllocated={allocatedBlobs.has(blob.id)}
 					/>
 				)}
 			</div>

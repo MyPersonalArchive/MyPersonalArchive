@@ -48,7 +48,7 @@ export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, sel
 			<div className="p-2">
 				<div className="flex flex-col py-2 px-4">
 					<Link
-						className="font-bold link link-primary no-underline hover:underline"
+						className={classNames("link link-primary no-underline group-hover/blob-row:underline", {"font-bold": !isAllocated})}
 						to={
 							createPath({
 								pathname: generatePath(RoutePaths.Blob.View, {blobId: blob.id}),
@@ -66,29 +66,29 @@ export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, sel
 				<SelectCheckbox className="absolute right-2 top-2" selection={selectionOfBlobs} item={blob.id} />
 
 				<div className="absolute bottom-2 right-2 space-x-2">
-					{ !isAllocated &&
+					{ isAllocated &&
 						<Link
-							className="link link-primary"
+							className="link link-primary no-underline hover:underline"
 							to={createPath({
 								pathname: generatePath(RoutePaths.Archive.List),
 								search: `?find=${blob.id}`
 							})}
 						>
-						Show where this is used
+						Show use
 						</Link>
 					}
 
 					<button
-						className="btn btn-primary"
+						className={classNames("btn btn-primary", {"btn-soft": isAllocated})}
 						disabled={selectionOfBlobs.selectedItems.size > 1}
 						onClick={() => onCreateArchiveItem(blob)}
 					>
 						Create archive item
 					</button>
 					<button
-						className={classNames("btn btn-danger btn-square delete-blob",  {"group-hover/blob-row:text-red-500 hover:bg-red-100": isAllocated,  "cursor-not-allowed": !isAllocated })}
+						className={classNames("btn btn-danger btn-square delete-blob",  {"group-hover/blob-row:text-red-500 hover:bg-red-100": !isAllocated,  "cursor-not-allowed": !isAllocated })}
 						onClick={() => setOpenDeleteThisDialog(true)}
-						disabled={!isAllocated}
+						disabled={isAllocated}
 					>
 						<FontAwesomeIcon icon={faTrash} size="1x" />
 					</button>

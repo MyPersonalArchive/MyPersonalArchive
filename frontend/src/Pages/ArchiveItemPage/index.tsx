@@ -127,7 +127,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	// 	})
 	// }
 
-	const removeUnallocatedBlob = (blob: CommonBlob) => {
+	const onRemoveBlob = (blob: CommonBlob) => {
 		if ("id" in blob.identifier) {
 			const id = blob.identifier.id
 			setServerBlobs(existingBlobs => existingBlobs.filter(x => x.id !== id))
@@ -226,7 +226,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 									key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
 									blob={blob}
 									maximize={maximize}
-									removeUnallocatedBlob={removeUnallocatedBlob}
+									onRemoveBlob={onRemoveBlob}
 								/>
 						}
 						maximizedPreviewTemplate={
@@ -238,7 +238,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 									canMoveNext={canMoveNext}
 									movePrevious={movePrevious}
 									moveNext={moveNext}
-									removeUnallocatedBlob={removeUnallocatedBlob}
+									onRemoveBlob={onRemoveBlob}
 								/>
 						}
 					/>
