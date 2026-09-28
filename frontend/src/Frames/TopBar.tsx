@@ -21,7 +21,7 @@ type Props = {
 export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, currentUser, profileDropdownIsOpen }: Props) => {
 	const authSettings = useAtomValue(authSettingsAtom)
 
-	return <div id="topBar" className={className}>
+	return <div id="topBar" className={classNames("relative z-20", className)}>
 		<button className="menu-btn" id="menuBtn"
 			aria-label="Open navigation"
 			aria-expanded={navIsOpen}

@@ -90,7 +90,7 @@ export const BlobListPage = () => {
 				<Filter />
 			</div>
 
-			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center py-2 mb-2 sticky top-0 bg-base-200 z-10">
+			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center sticky-top bg-base-200 sticky-top-gradient">
 				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={createArchiveItemFromVisibleSelectedBlobs}

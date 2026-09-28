@@ -61,7 +61,7 @@ export const ArchiveItemListPage = () => {
 
 	return (
 		<>
-			<div className="dont-touch-walls mx-2 sm:mx-0 flex flex-wrap items-baseline gap-2 py-2 mt-2 mb-2 sticky top-0 bg-base-200 z-10">
+			<div className="dont-touch-walls mx-2 sm:mx-0 flex flex-wrap items-baseline gap-2 py-2 mt-2 mb-2 sticky-top bg-base-200 sticky-top-gradient">
 				<Search />
 				<div className="flex-1"></div>
 				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>

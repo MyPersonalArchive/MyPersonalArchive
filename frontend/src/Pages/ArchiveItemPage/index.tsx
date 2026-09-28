@@ -256,14 +256,14 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 					</div>
 				</div>
 
-				<div className="dont-touch-walls stack-horizontal to-the-right my-4 sticky bottom-0">
+				<div className="dont-touch-walls stack-horizontal to-the-right mb-4 sticky-bottom bg-base-200 sticky-bottom-gradient">
 					<button className="btn btn-primary" type="submit">
-						Save
+							Save
 						<kbd className="kbd kbd-sm">⌘</kbd>
 						<kbd className="kbd kbd-sm">S</kbd>
 					</button>
 					<button className="btn btn-warning" type="button" onClick={() => setOpenDeleteDialog(true)}>
-						Delete
+							Delete
 					</button>
 				</div>
 			</form>
