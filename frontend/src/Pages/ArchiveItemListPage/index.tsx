@@ -61,13 +61,13 @@ export const ArchiveItemListPage = () => {
 
 	return (
 		<>
-			<div className="mx-2 sm:mx-0 flex flex-wrap items-baseline gap-2">
+			<div className="dont-touch-walls mx-2 sm:mx-0 flex flex-wrap items-baseline gap-2 py-2 mt-2 mb-2 sticky top-0 bg-base-200 z-10">
 				<Search />
 				<div className="flex-1"></div>
 				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>
 			</div>
 
-			<div className="mx-2 sm:mx-0">
+			<div className="dont-touch-walls mx-2 sm:mx-0 mb-4">
 				<StoredFilterSelector />
 			</div>
 
@@ -82,10 +82,6 @@ export const ArchiveItemListPage = () => {
 						/>
 					)
 				}
-			</div>
-
-			<div className="dont-touch-walls stack-horizontal to-the-right">
-				<Link to={RoutePaths.Archive.New} className="link">Create new item</Link>
 			</div>
 		</>
 	)

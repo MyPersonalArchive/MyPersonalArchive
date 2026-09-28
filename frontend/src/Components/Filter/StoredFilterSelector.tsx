@@ -53,7 +53,7 @@ const ClickableStoredFilters = () => {
 		})
 	}
 
-	return <div className="flex flex-wrap gap-2 my-4">
+	return <div className="flex flex-wrap gap-2">
 		{storedFilters?.map((filter) => (
 			<button key={filter.id}
 				className={classNames("btn btn-primary btn-soft btn-wider block font-mono whitespace-nowrap", { "selected": filter.name === searchParams.get("filter") })}
@@ -88,7 +88,7 @@ const EditableStoredFilters = () => {
 
 	return (
 		<>
-			<div className="flex flex-wrap gap-2 my-4">
+			<div className="flex flex-wrap gap-2">
 				{dnd.rows.map(({ rowType, data: filter }, index) => rowType === "item-row"
 					?
 					<div key={filter.id}

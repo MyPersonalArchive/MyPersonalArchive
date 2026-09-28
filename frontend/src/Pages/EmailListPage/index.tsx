@@ -119,11 +119,11 @@ export const EmailListPage = () => {
 				</h1>
 			</header>
 			
-			<div className="dont-touch-walls flex flex-col gap-2 mb-4">
+			<div className="dont-touch-walls flex flex-col gap-2 mt-4">
 				<Filter />
 			</div>
 
-			<div className="dont-touch-walls flex flex-row gap-2">
+			<div className="dont-touch-walls flex flex-row gap-2 mt-4">
 				<div className="join">
 					<select
 						className="select w-50 bg-base-100"
@@ -147,8 +147,8 @@ export const EmailListPage = () => {
 				</div>
 			</div>
 
-			<div className="dont-touch-walls flex flex-col flex-wrap gap-2 ">
-				<div className="stack-horizontal to-the-right my-4">
+			<div className="dont-touch-walls flex flex-col flex-wrap gap-2 py-2 mt-2 mb-2 sticky top-0 bg-base-200 z-10">
+				<div className="stack-horizontal to-the-right">
 					<button className="btn btn-primary"
 						disabled={selectionOfEmails.areNoItemsSelected}
 						onClick={() => createArchiveItemFromEmails(selectedVisibleEmails ?? [])}

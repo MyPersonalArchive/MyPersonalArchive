@@ -108,7 +108,7 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 			</nav>
 
 			<div id="mainArea">
-				<main>
+				<main className="py-0">
 					{children}
 				</main>
 			</div>

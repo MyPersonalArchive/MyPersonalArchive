@@ -86,12 +86,11 @@ export const BlobListPage = () => {
 
 	return (
 		<>
-			<div className="dont-touch-walls flex flex-col gap-2 mb-4">
+			<div className="dont-touch-walls flex flex-col gap-2 mt-4">
 				<Filter />
 			</div>
 
-			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center mb-4 sticky top-0 bg-base-100 z-10">
-
+			<div className="dont-touch-walls flex flex-row flex-wrap gap-2 items-center py-2 mb-2 sticky top-0 bg-base-200 z-10">
 				<button className="btn btn-primary whitespace-nowrap"
 					disabled={selectionOfBlobs.areNoItemsSelected}
 					onClick={createArchiveItemFromVisibleSelectedBlobs}
@@ -122,6 +121,8 @@ export const BlobListPage = () => {
 						} />
 				</label>
 			</div>
+
+
 
 
 			<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">

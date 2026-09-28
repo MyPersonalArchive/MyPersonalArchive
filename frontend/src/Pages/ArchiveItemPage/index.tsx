@@ -154,7 +154,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 				className="flex flex-col gap-4"
 			>
 				<label
-					className="dont-touch-walls input w-full"
+					className="dont-touch-walls input w-full mt-4"
 					htmlFor="title"
 				>
 					<span className="label">Title</span>
