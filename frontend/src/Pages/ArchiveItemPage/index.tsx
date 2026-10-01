@@ -231,15 +231,17 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 						}
 						maximizedPreviewTemplate={
 							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-								<BlobPreviewMaximized
-									blob={blob}
-									minimize={minimize}
-									canMovePrevious={canMovePrevious}
-									canMoveNext={canMoveNext}
-									movePrevious={movePrevious}
-									moveNext={moveNext}
-									onRemoveBlob={onRemoveBlob}
-								/>
+								<div className="z-20">
+									<BlobPreviewMaximized
+										blob={blob}
+										minimize={minimize}
+										canMovePrevious={canMovePrevious}
+										canMoveNext={canMoveNext}
+										movePrevious={movePrevious}
+										moveNext={moveNext}
+										onRemoveBlob={onRemoveBlob}
+									/>
+								</div>
 						}
 					/>
 

@@ -46,7 +46,7 @@ export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveN
 						setToolWindowPosition={setToolWindowPosition}
 						setToolWindowSize={setToolWindowSize} />}
 				<div className="action-bar">
-					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
+					<button type="button" disabled onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
 						<FontAwesomeIcon icon={faToolbox} size="1x" />
 					</button>
 
