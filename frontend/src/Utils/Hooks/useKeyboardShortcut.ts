@@ -34,5 +34,8 @@ export const useKeyboardShortcut = (
 
 
 export const keyExpression = (key: string): KeyExpression => (e: KeyboardEvent) => e.key === key
+
 export const SaveKey:KeyExpression = (e) => (e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")
-export const LeftOrRightKey: KeyExpression = (e) => e.key === "ArrowLeft" || e.key === "ArrowRight"
+export const LeftKey: KeyExpression = keyExpression("ArrowLeft")
+export const RightKey: KeyExpression = keyExpression("ArrowRight")
+export const EscapeKey: KeyExpression = keyExpression("Escape")

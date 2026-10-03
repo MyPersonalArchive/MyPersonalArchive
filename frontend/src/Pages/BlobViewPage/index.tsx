@@ -5,7 +5,7 @@ import { useAtomValue } from "jotai"
 import { blobsAtom } from "../../Utils/Atoms/blobsAtom"
 import { archiveItemsAtom } from "../../Utils/Atoms/archiveItemsAtom"
 import { RoutePaths } from "../../RoutePaths"
-import { LeftOrRightKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
+import { LeftKey, RightKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
 
 
 export const BlobViewPage = () => {
@@ -44,14 +44,10 @@ export const BlobViewPage = () => {
 		}
 	}
 
-	useKeyboardShortcut(LeftOrRightKey, (e) => {
-		if (e.key === "ArrowLeft") {
-			movePrevious()
-		} else if (e.key === "ArrowRight") {
-			moveNext()
-		}
-	}, true)
-
+	useKeyboardShortcut(LeftKey, movePrevious, true)
+	useKeyboardShortcut(RightKey, moveNext, true)
+	
+	
 	return (
 		<>
 			{currentBlob && (

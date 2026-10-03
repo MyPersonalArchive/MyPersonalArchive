@@ -1,11 +1,10 @@
 import { createPath, generatePath, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { RoutePaths } from "../../RoutePaths"
 import { EmailMaximized } from "../EmailListPage/EmailMaximized"
-import { LeftOrRightKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
+import { LeftKey, RightKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
 import { useMailProvider } from "../../Utils/Hooks/useMailProvider"
 import { UUID } from "crypto"
-import { FullEmail } from "../../Utils/Atoms/EmailAtoms"
 
 export const EmailViewPage = () => {
 	const { externalAccountId: rawExternalAccountId, uniqueId: rawUniqueId, folder: initialFolder } = useParams<{ externalAccountId: string, folder: string, uniqueId: string }>()
@@ -77,13 +76,8 @@ export const EmailViewPage = () => {
 		}
 	}
 
-	useKeyboardShortcut(LeftOrRightKey, (e) => {
-		if (e.key === "ArrowLeft") {
-			movePrevious()
-		} else if (e.key === "ArrowRight") {
-			moveNext()
-		}
-	}, true)
+	useKeyboardShortcut(LeftKey, movePrevious, true)
+	useKeyboardShortcut(RightKey, moveNext, true)
 
 
 	const onMinimize = () => {

@@ -1,9 +1,10 @@
-import { PropsWithChildren, useEffect, useId, useRef, useState } from "react"
+import { PropsWithChildren, useId, useRef, useState } from "react"
 import { faClose } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import classNames from "classnames"
 import { Position } from "../types/Position"
 import { Size } from "../types/Size"
+import { EscapeKey, useKeyboardShortcut } from "../Utils/Hooks/useKeyboardShortcut"
 
 
 
@@ -41,15 +42,7 @@ export const FloatingToolWindow = ({
 	const sizeRef = useRef<Size>(size)
 	const titleId = useId()
 
-	useEffect(() => {
-		if (!closeOnEscape) return
-
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === "Escape") onClose?.()
-		}
-		document.addEventListener("keydown", handleKeyDown)
-		return () => document.removeEventListener("keydown", handleKeyDown)
-	}, [onClose, closeOnEscape])
+	useKeyboardShortcut(EscapeKey, () => { onClose?.() }, closeOnEscape)
 
 	const handleHeaderPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (!e.isPrimary) return

@@ -1,4 +1,5 @@
-import { PropsWithChildren, useEffect } from "react"
+import { PropsWithChildren } from "react"
+import { EscapeKey, useKeyboardShortcut } from "../Utils/Hooks/useKeyboardShortcut"
 
 
 export type Props = {
@@ -7,13 +8,7 @@ export type Props = {
 	className?: string
 }
 export const Modal = ({ children, onClose, closeOnEscape = true, className }: PropsWithChildren<Props>) => {
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === "Escape" && closeOnEscape) onClose()
-		}
-		document.addEventListener("keydown", handleKeyDown)
-		return () => document.removeEventListener("keydown", handleKeyDown)
-	}, [onClose, closeOnEscape])
+	useKeyboardShortcut(EscapeKey, () => { onClose() }, closeOnEscape)
 
 	return (
 		<div className={className}
