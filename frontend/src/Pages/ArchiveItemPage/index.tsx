@@ -6,9 +6,8 @@ import { useBlobsPrefetching } from "../../Utils/Hooks/useBlobsPrefetching"
 import { blobsAtom } from "../../Utils/Atoms/blobsAtom"
 import type { LocalBlob, CommonBlob, GetResponse } from "./types"
 import { UUID } from "crypto"
-import { SaveKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
+import { LeftKey, RightKey, SaveKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
 import { RoutePaths } from "../../RoutePaths"
-import { PreviewList } from "../../Components/PreviewList"
 import { FileDrop } from "../../Components/FileDrop"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
@@ -22,6 +21,7 @@ import { useMetadata } from "../../Utils/Metadata/useMetadata"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { allMetadataTypes } from "../../Components/MetadataTypes"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
+import { useNextAndPreviousNavigation } from "../../Utils/Hooks/useNextAndPreviousNavigation"
 
 
 type Props = {
@@ -42,6 +42,19 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 		...localBlobs.map(blob => ({ url: URL.createObjectURL(blob.fileData), mimeType: blob.fileData.type, identifier: { fileName: blob.fileName } }))
 	]
 
+	const {
+		canMovePrevious,
+		canMoveNext,
+		movePrevious,
+		moveNext,
+		currentItem,
+		setCurrentItem
+	} = useNextAndPreviousNavigation(allBlobs, null)
+
+	useKeyboardShortcut(LeftKey, movePrevious, canMovePrevious)
+	useKeyboardShortcut(RightKey, moveNext, canMoveNext)
+
+
 	const allTags = useAtomValue(tagsAtom)
 
 	const { metadata, dispatch } = useMetadata(allMetadataTypes)
@@ -57,7 +70,6 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	useBlobsPrefetching()
 	const prefetchedBlobs = useAtomValue(blobsAtom)
 	
-
 	useEffect(() => {
 		if(isNewArchiveItem === false) {
 			apiClient.query<GetResponse>("GetArchiveItem", { id: archiveItemId! as UUID })
@@ -148,135 +160,132 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	}
 
 	return (
-		<>
-			<form
-				onSubmit={e => { e.preventDefault(); save() }}
-				className="flex flex-col gap-4"
-			>
-				<label
-					className="dont-touch-walls input w-full mt-4"
-					htmlFor="title"
-				>
-					<span className="label">Title</span>
-					<input type="text"
-						className="input input-xl"
-						id="title"
-						placeholder="Title"
-						autoFocus data-1p-ignore
-						value={title}
-						onChange={event => setTitle(event.target.value)}
-					/>
-				</label>
-
-
-				<div className="dont-touch-walls join">
-					<label className="input">
-						<span className="label">Document date</span>
-						<label className="date" htmlFor="documentDate">
-							<input type="date" className="input"
-								value={documentDate ?? ""}
-								onChange={e => setDocumentDate(e.target.value)}
+		currentItem === undefined
+			? (
+				<>
+					<form
+						onSubmit={e => { e.preventDefault(); save() }}
+						className="flex flex-col gap-4"
+					>
+						<label
+							className="dont-touch-walls input w-full mt-4"
+							htmlFor="title"
+						>
+							<span className="label">Title</span>
+							<input type="text"
+								className="input input-xl"
+								id="title"
+								placeholder="Title"
+								autoFocus data-1p-ignore
+								value={title}
+								onChange={event => setTitle(event.target.value)}
 							/>
 						</label>
-					</label>
-					<button className="btn btn-outline btn-primary" type="button" onClick={() => setDocumentDate("")}>&times;</button>
-				</div>
 
-				<TagsInput
-					className="dont-touch-walls"
-					tags={tags}
-					setTags={setTags}
-					autocompleteList={Array.from(allTags)}
-				/>
 
-				<label
-					className="dont-touch-walls textarea"
-					htmlFor="notes"
-				>
-					<span className="label">Notes</span>
-					<textarea
-						className="input h-auto"
-						id="notes"
-						placeholder="Notes"
-						value={notes ?? ""}
-						onChange={event => setNotes(event.target.value)}
-					/>
-				</label>
+						<div className="dont-touch-walls join">
+							<label className="input">
+								<span className="label">Document date</span>
+								<label className="date" htmlFor="documentDate">
+									<input type="date" className="input"
+										value={documentDate ?? ""}
+										onChange={e => setDocumentDate(e.target.value)}
+									/>
+								</label>
+							</label>
+							<button className="btn btn-outline btn-primary" type="button" onClick={() => setDocumentDate("")}>&times;</button>
+						</div>
 
-				<div className="flex flex-col sm:gap-4">
-					{
-						allMetadataTypes.map(metadataType => (
-							<MetadataSection
-								key={metadataType.path.toString()}
-								metadataType={metadataType}
-								metadata={metadata}
-								dispatch={dispatch}
-								initiallyOpen={initialMetadataTypes.includes(metadataType.path as string)}
+						<TagsInput
+							className="dont-touch-walls"
+							tags={tags}
+							setTags={setTags}
+							autocompleteList={Array.from(allTags)}
+						/>
+
+						<label
+							className="dont-touch-walls textarea"
+							htmlFor="notes"
+						>
+							<span className="label">Notes</span>
+							<textarea
+								className="input h-auto"
+								id="notes"
+								placeholder="Notes"
+								value={notes ?? ""}
+								onChange={event => setNotes(event.target.value)}
 							/>
-						))
-					}
-				</div>
+						</label>
+
+						<div className="flex flex-col sm:gap-4">
+							{
+								allMetadataTypes.map(metadataType => (
+									<MetadataSection
+										key={metadataType.path.toString()}
+										metadataType={metadataType}
+										metadata={metadata}
+										dispatch={dispatch}
+										initiallyOpen={initialMetadataTypes.includes(metadataType.path as string)}
+									/>
+								))
+							}
+						</div>
 
 
-				<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
-					<PreviewList items={allBlobs}
-						thumbnailPreviewTemplate={
-							(blob, maximize) =>
+						<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
+							{ allBlobs.map(blob => (
 								<BlobPreviewThumbnail
 									key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
 									blob={blob}
-									maximize={maximize}
+									maximize={() => setCurrentItem(blob)}
 									onRemoveBlob={onRemoveBlob}
 								/>
-						}
-						maximizedPreviewTemplate={
-							(blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext) =>
-								<div className="z-20">
-									<BlobPreviewMaximized
-										blob={blob}
-										minimize={minimize}
-										canMovePrevious={canMovePrevious}
-										canMoveNext={canMoveNext}
-										movePrevious={movePrevious}
-										moveNext={moveNext}
-										onRemoveBlob={onRemoveBlob}
-									/>
-								</div>
-						}
-					/>
+							)) }
 
-					<div className="btn btn-dash rounded-lg aspect-square w-full h-full p-0">
-						<FileDrop
-							className="w-full h-full flex flex-col justify-center items-center"
-							onFilesUploaded={onFilesUploaded}
-							onClickOverride={() => SelectUploadedFiles()}
-						>
-							<div className="text-sm">Drop file here or</div>
-							<FontAwesomeIcon icon={faPlus} size="10x" />
-							<div className="text-sm">click to select from uploaded files</div>
-						</FileDrop>
-					</div>
-				</div>
 
-				<div className="dont-touch-walls stack-horizontal to-the-right mb-4 sticky-bottom bg-base-200 sticky-bottom-gradient">
-					<button className="btn btn-primary" type="submit">
+							<div className="btn btn-dash rounded-lg aspect-square w-full h-full p-0">
+								<FileDrop
+									className="w-full h-full flex flex-col justify-center items-center"
+									onFilesUploaded={onFilesUploaded}
+									onClickOverride={() => SelectUploadedFiles()}
+								>
+									<div className="text-sm">Drop file here or</div>
+									<FontAwesomeIcon icon={faPlus} size="10x" />
+									<div className="text-sm">click to select from uploaded files</div>
+								</FileDrop>
+							</div>
+						</div>
+
+						<div className="dont-touch-walls stack-horizontal to-the-right mb-4 sticky-bottom bg-base-200 sticky-bottom-gradient">
+							<button className="btn btn-primary" type="submit">
 							Save
-						<kbd className="kbd kbd-sm">⌘</kbd>
-						<kbd className="kbd kbd-sm">S</kbd>
-					</button>
-					<button className="btn btn-warning" type="button" onClick={() => setOpenDeleteDialog(true)}>
+								<kbd className="kbd kbd-sm">⌘</kbd>
+								<kbd className="kbd kbd-sm">S</kbd>
+							</button>
+							<button className="btn btn-warning" type="button" onClick={() => setOpenDeleteDialog(true)}>
 							Delete
-					</button>
-				</div>
-			</form>
+							</button>
+						</div>
+					</form>
 			
-			<ConfirmationDialog
-				open={openDeleteDialog}
-				prompt="Are you sure you want to delete this item?"
-				onClose={() => setOpenDeleteDialog(false)}
-				onConfirm={onDeleteArchiveItem}
-			/>
-		</>
+					<ConfirmationDialog
+						open={openDeleteDialog}
+						prompt="Are you sure you want to delete this item?"
+						onClose={() => setOpenDeleteDialog(false)}
+						onConfirm={onDeleteArchiveItem}
+					/>
+				</>)
+			: (
+				<BlobPreviewMaximized
+					blob={currentItem!}
+					minimize={() => setCurrentItem(undefined)}
+					canMovePrevious={canMovePrevious}
+					canMoveNext={canMoveNext}
+					movePrevious={movePrevious}
+					moveNext={moveNext}
+					onRemoveBlob={onRemoveBlob}
+				/>
+			)
 	)
 }
 
