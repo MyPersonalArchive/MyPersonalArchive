@@ -1,15 +1,13 @@
 import { generatePath, createPath, useNavigate, useSearchParams } from "react-router-dom"
-import { BlobMetadata, blobsAtom } from "../../Utils/Atoms/blobsAtom"
+import { BlobMetadata } from "../../Utils/Atoms/blobsAtom"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 import { BlobRow } from "./BlobRow"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
-import { useAtomValue } from "jotai"
-import { useEffect, useState, useRef } from "react"
-import { archiveItemsAtom } from "../../Utils/Atoms/archiveItemsAtom"
+import { useState } from "react"
 import { UUID } from "crypto"
-import { useSelection } from "../../Utils/Selection"
 import { RoutePaths } from "../../RoutePaths"
 import { Filter } from "./Filter"
+import { useBlobList } from "../../Utils/Hooks/useBlobList"
 
 
 export const BlobListPage = () => {
@@ -19,22 +17,15 @@ export const BlobListPage = () => {
 	const apiClient = useApiClient()
 	const [searchParams] = useSearchParams()
 
-	const blobs = useAtomValue(blobsAtom)
-	const archiveItems = useAtomValue(archiveItemsAtom)
-	const allocatedBlobs = new Set<UUID>(archiveItems.flatMap(ai => ai.blobIds))
+	const showAllocatedBlobs = searchParams.get("hideAllocatedBlobs") !== "true"
 
-	const selectionOfBlobs = useSelection<UUID>(new Set(blobs.map(blob => blob.id)))
-	const selectAllCheckboxRef = useRef<HTMLInputElement>(null)
-	useEffect(() => {
-		if (selectAllCheckboxRef.current !== null) {
-			selectAllCheckboxRef.current.indeterminate = selectionOfBlobs.allPossibleItems.size == 0 || selectionOfBlobs.areOnlySomeItemsSelected
-			selectAllCheckboxRef.current.checked = selectionOfBlobs.allPossibleItems.size > 0 && selectionOfBlobs.areAllItemsSelected
-		}
-	}, [selectionOfBlobs.selectedItems, blobs])
-
-	const visibleBlobs = blobs.filter(blob => (searchParams.get("hideAllocatedBlobs") !== "true") || !allocatedBlobs.has(blob.id))
-
-	const selectedVisibleBlobs = visibleBlobs.filter(blob => selectionOfBlobs.selectedItems.has(blob.id))
+	const {
+		allocatedBlobs,
+		selectionOfBlobs,
+		selectAllCheckboxRef,
+		visibleBlobs,
+		selectedVisibleBlobs
+	} = useBlobList(showAllocatedBlobs)
 
 	const onDeleteVisibleSelectedBlobs = async () => {
 		if (selectionOfBlobs.areNoItemsSelected) return
@@ -51,6 +42,7 @@ export const BlobListPage = () => {
 			search: location.search
 		}))
 	}
+
 	const onDeleteBlob = (blobId: UUID) => {
 		apiClient.execute("DeleteBlobs", { blobIds: [blobId] })
 	}
@@ -112,18 +104,14 @@ export const BlobListPage = () => {
 					<input
 						ref={selectAllCheckboxRef}
 						type="checkbox"
-						// className="checkbox mx-2"
 						className="checkbox ml-2 sm:mr-2"
 						checked={selectionOfBlobs.areAllItemsSelected}
 						onChange={() => selectionOfBlobs.areAllItemsSelected
 							? selectionOfBlobs.clearSelection()
-							: selectionOfBlobs.selectAllItems()		//TODO: Find a way to select only visible blobs
+							: selectionOfBlobs.selectAllItems()
 						} />
 				</label>
 			</div>
-
-
-
 
 			<div className="border-y sm:border-x sm:rounded-lg overflow-hidden border-base-300">
 				{visibleBlobs.map((blob) =>

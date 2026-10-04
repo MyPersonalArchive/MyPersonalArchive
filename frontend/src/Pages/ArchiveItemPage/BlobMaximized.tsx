@@ -22,7 +22,7 @@ export type Props = {
 	moveNext: () => void
 	onRemoveBlob: (blob: CommonBlob) => void
 }
-export const BlobPreviewMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, onRemoveBlob }: Props) => {
+export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, onRemoveBlob }: Props) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickEditToolWindowIsOpenAtom)
 	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
 	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 300 })

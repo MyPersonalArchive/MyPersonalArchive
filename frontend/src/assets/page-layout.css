@@ -136,7 +136,7 @@ div#root {
 
 	/* ── Dialog ── */
 	.dialog-backdrop {
-		@apply flex absolute inset-0 bg-black/45 items-center justify-center z-2;
+		@apply flex absolute inset-0 bg-black/45 items-center justify-center z-20;
 	}
 
 	.dialog {

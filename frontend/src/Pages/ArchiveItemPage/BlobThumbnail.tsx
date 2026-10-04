@@ -12,7 +12,7 @@ type Props = {
 	maximize: (blob: CommonBlob) => void
 	onRemoveBlob: (blob: CommonBlob) => void
 }
-export const BlobPreviewThumbnail = ({ blob, maximize, onRemoveBlob }: Props) => {
+export const BlobThumbnail = ({ blob, maximize, onRemoveBlob }: Props) => {
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
 	return (

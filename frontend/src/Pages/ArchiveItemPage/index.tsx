@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { useLocation, useNavigate, useParams, generatePath } from "react-router-dom"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { useBlobsPrefetching } from "../../Utils/Hooks/useBlobsPrefetching"
-import { blobsAtom } from "../../Utils/Atoms/blobsAtom"
+import { BlobMetadata, blobsAtom } from "../../Utils/Atoms/blobsAtom"
 import type { LocalBlob, CommonBlob, GetResponse } from "./types"
 import { UUID } from "crypto"
 import { LeftKey, RightKey, SaveKey, useKeyboardShortcut } from "../../Utils/Hooks/useKeyboardShortcut"
@@ -11,9 +11,9 @@ import { RoutePaths } from "../../RoutePaths"
 import { FileDrop } from "../../Components/FileDrop"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
-import { BlobPreviewMaximized } from "./BlobPreviewMaximized"
+import { BlobMaximized } from "./BlobMaximized"
 import { TagsInput } from "../../Components/TagsInput"
-import { BlobPreviewThumbnail } from "./BlobPreviewThumbnail"
+import { BlobThumbnail } from "./BlobThumbnail"
 import { MetadataSection } from "./MetadataSection"
 import { BlobDisplayInfo } from "../../types/BlobDisplayInfo"
 import { MetadataControlPath } from "../../Utils/Metadata/metadataControlReducer"
@@ -22,6 +22,7 @@ import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { allMetadataTypes } from "../../Components/MetadataTypes"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 import { useNextAndPreviousNavigation } from "../../Utils/Hooks/useNextAndPreviousNavigation"
+import { BlobSelectionDialog } from "./BlobSelectionDialog"
 
 
 type Props = {
@@ -33,7 +34,9 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	const [tags, setTags] = useState<string[]>([])
 	const [notes, setNotes] = useState<string | undefined>(undefined)
 	const [documentDate, setDocumentDate] = useState("")
+
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
+	const [openBlobSelectionDialog, setOpenBlobSelectionDialog] = useState(false)
 
 	const [serverBlobs, setServerBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
@@ -133,12 +136,6 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 		navigate(RoutePaths.Archive.List)
 	}
 
-	// const attachUnallocatedBlobs = (newBlobs: BlobDisplayInfo[]) => {
-	// 	newBlobs.forEach(blob => {
-	// 		setBlobs(blobs => [...blobs, blob])
-	// 	})
-	// }
-
 	const onRemoveBlob = (blob: CommonBlob) => {
 		if ("id" in blob.identifier) {
 			const id = blob.identifier.id
@@ -156,8 +153,15 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	}
 
 	function SelectUploadedFiles(): void {
-		alert("Select uploaded files - feature not implemented yet.")
+		setOpenBlobSelectionDialog(true)
+		// alert("Select uploaded files - feature not implemented yet.")
 	}
+
+	const attachUnallocatedBlobs = (newBlobs: BlobMetadata[]) => {
+		setServerBlobs(blobs => [...blobs, ...newBlobs.map(x => ({ id: x.id, numberOfPages: x.pageCount, mimeType: x.mimeType }))])
+		setOpenBlobSelectionDialog(false)
+	}
+
 
 	return (
 		currentItem === undefined
@@ -234,7 +238,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 						<div className="dont-touch-walls grid grid-cols-[repeat(auto-fill,minmax(18.25rem,1fr))] gap-4 my-4">
 							{ allBlobs.map(blob => (
-								<BlobPreviewThumbnail
+								<BlobThumbnail
 									key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
 									blob={blob}
 									maximize={() => setCurrentItem(blob)}
@@ -258,25 +262,31 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 						<div className="dont-touch-walls stack-horizontal to-the-right mb-4 sticky-bottom bg-base-200 sticky-bottom-gradient">
 							<button className="btn btn-primary" type="submit">
-							Save
+								Save
 								<kbd className="kbd kbd-sm">⌘</kbd>
 								<kbd className="kbd kbd-sm">S</kbd>
 							</button>
 							<button className="btn btn-warning" type="button" onClick={() => setOpenDeleteDialog(true)}>
-							Delete
+								Delete
 							</button>
 						</div>
 					</form>
 			
 					<ConfirmationDialog
 						open={openDeleteDialog}
-						prompt="Are you sure you want to delete this item?"
+						prompt="Are you sure you want to remove this item?"
 						onClose={() => setOpenDeleteDialog(false)}
 						onConfirm={onDeleteArchiveItem}
 					/>
-				</>)
+
+					<BlobSelectionDialog
+						open={openBlobSelectionDialog}
+						onClose={(blobs) => attachUnallocatedBlobs(blobs)}
+					/>
+				</>
+			)
 			: (
-				<BlobPreviewMaximized
+				<BlobMaximized
 					blob={currentItem!}
 					minimize={() => setCurrentItem(undefined)}
 					canMovePrevious={canMovePrevious}
@@ -288,5 +298,3 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 			)
 	)
 }
-
-
