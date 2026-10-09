@@ -61,7 +61,7 @@ export const TenantAdminBillingPage = () => {
 			<div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4 my-4">
 				{tiersResponse?.availableTiers.map(tier => {
 					const isCurrentTier = tier.id === tiersResponse.currentTierId
-					// const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
+					const maxStorageGB = (tier.maxStorageBytes / (1024 ** 3)).toFixed(0)
 
 					return (
 						<div key={tier.id} className={classNames("card bg-base-100 card-xs shadow-sm p-4 flex flex-col border-2! border-gray-200", { "border-blue-500!": isCurrentTier })}>
@@ -87,8 +87,10 @@ export const TenantAdminBillingPage = () => {
 
 								<div className="flex-1"></div>
 
+								<div className="text-sm text-gray-600 mt-6">Total storage: {maxStorageGB} GB</div>
+
 								{isOwner &&
-									<div className="mt-6">
+									<div>
 										<button className="btn btn-primary btn-block"
 											type="button"
 											disabled={isCurrentTier}
