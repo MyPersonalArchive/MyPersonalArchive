@@ -6,7 +6,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { ExternalAccount, externalAccountsAtom, externalAccountsMimeTypeConverters } from "../Utils/Atoms/externalAccountsAtom"
 import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrashCan, faPlus, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons"
+import { faTrash, faPlus, faBoxArchive, faPhotoFilm, faSliders, faEnvelope, faGripHorizontal, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons"
 import { useSortableDragDrop } from "../Components/DragDropHelpers"
 import { useEmailProvidersPrefetching } from "../Utils/Hooks/useEmailProvidersPrefetching"
 import { emailProvidersAtom } from "../Utils/Atoms/emailProvidersAtom"
@@ -185,7 +185,7 @@ const EditableAccountList = () => {
 					</span>
 					<div className="flex-1"></div>
 					<button className=" text-gray-400 group-hover:text-red-500 cursor-pointer ml-2.5" onClick={() => dispatch({ action: "REMOVE_ACCOUNT", id: account.id })}>
-						<FontAwesomeIcon icon={faTrashCan} fixedWidth />
+						<FontAwesomeIcon icon={faTrash} fixedWidth />
 					</button>
 				</div>
 				: <div key={account.id}

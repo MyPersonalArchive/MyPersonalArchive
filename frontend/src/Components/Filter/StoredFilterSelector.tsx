@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useSearchParams } from "react-router-dom"
-import { faGripVertical, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import { faGripVertical, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { storedFiltersMimeTypeConverters, StoredFilter, storedFiltersAtom } from "../../Utils/Atoms/storedFiltersAtom"
 import { useAtom, useAtomValue } from "jotai"
 import classNames from "classnames"
@@ -116,7 +116,7 @@ const EditableStoredFilters = () => {
 							onClick={() => dispatch({ action: "REMOVE_FILTER", id: filter.id })}
 							onFocus={() => setSelectedFilterId(filter.id)}
 						>
-							<FontAwesomeIcon icon={faTrashCan} fixedWidth />
+							<FontAwesomeIcon icon={faTrash} fixedWidth />
 						</button>
 					</div>
 					:
