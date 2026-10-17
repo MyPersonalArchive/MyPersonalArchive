@@ -80,6 +80,42 @@ public class KeycloakOrganizationClient
 	}
 
 
+	public async Task<List<OrganizationInvitation>> ListPendingInvitationsAsync(CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+
+		return await _http.GetFromJsonAsync<List<OrganizationInvitation>>(
+			$"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}/invitations?status=PENDING",
+			ct)
+			?? [];
+	}
+
+
+	public async Task ResendInvitationAsync(string invitationId, CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+
+		using var response = await _http.PostAsync(
+			$"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}/invitations/{Uri.EscapeDataString(invitationId)}/resend",
+			null,
+			ct);
+
+		response.EnsureSuccessStatusCode();
+	}
+
+
+	public async Task DeleteInvitationAsync(string invitationId, CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+
+		using var response = await _http.DeleteAsync(
+			$"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}/invitations/{Uri.EscapeDataString(invitationId)}",
+			ct);
+
+		response.EnsureSuccessStatusCode();
+	}
+
+
 	private async Task<string> GetCurrentOrganizationIdAsync(CancellationToken ct)
 	{
 		var organizationAlias = _ambientDataResolver.GetCurrentTenantId()!;
@@ -141,6 +177,17 @@ public class KeycloakOrganizationClient
 		[JsonPropertyName("enabled")] public bool Enabled { get; init; }
 		[JsonPropertyName("emailVerified")] public bool EmailVerified { get; init; }
 		[JsonPropertyName("createdTimestamp")] public long CreatedTimestamp { get; init; }
+	}
+
+	public record OrganizationInvitation
+	{
+		[JsonPropertyName("id")] public string Id { get; init; } = "";
+		[JsonPropertyName("email")] public string Email { get; init; } = "";
+		[JsonPropertyName("firstName")] public string? FirstName { get; init; }
+		[JsonPropertyName("lastName")] public string? LastName { get; init; }
+		[JsonPropertyName("sentDate")] public long SentDate { get; init; }
+		[JsonPropertyName("expiresAt")] public long ExpiresAt { get; init; }
+		[JsonPropertyName("status")] public string Status { get; init; } = "";
 	}
 	#endregion
 }

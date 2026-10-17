@@ -5,6 +5,7 @@ import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtom } from "jotai"
 import { usersAtom } from "../Utils/Atoms/usersAtom"
 import { Dialog } from "../Components/Dialog"
+import { useSignalR } from "../Utils/Hooks/useSignalR"
 
 export type UserRole = "accountOwner" | "administrator" | "user"
 
@@ -15,11 +16,33 @@ export type ListUsersResponse = {
 	roles: string[]
 }
 
+type ListInvitationsResponse = {
+	id: string
+	email: string
+	fullname: string
+	expiresAt: string
+}
+
 
 export const TenantAdminUsersPage = () => {
 	const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false)
 	const apiClient = useApiClient()
 	const [users, setUsers] = useAtom(usersAtom)
+	const [invitations, setInvitations] = useState<ListInvitationsResponse[]>([])
+
+	const loadInvitations = () =>
+		apiClient.query<ListInvitationsResponse[]>("ListInvitations")
+			.then(response => setInvitations(response ?? []))
+
+	useEffect(() => {
+		loadInvitations()
+	}, [])
+
+	useSignalR(message => {
+		if (message.messageType === "InvitationsUpdated") {
+			loadInvitations()
+		}
+	})
 
 	useEffect(() => {
 		apiClient.query<ListUsersResponse[]>("ListUsers")
@@ -87,33 +110,31 @@ export const TenantAdminUsersPage = () => {
 						</tr>
 					</thead>
 					<tbody className=" text-sm">
-						<tr className="hover:bg-gray-200 group/invitation has-[.cancel-invitation:hover]:bg-red-100">
-							<td>test@einbu.no</td>
-							<td>Test Testesen</td>
-							<td className="text-right">
-								Valid until 2026-07-01
-								<button className="text-gray-400 group-hover/invitation:text-red-500 cancel-invitation">
-									<FontAwesomeIcon icon={faTrash} fixedWidth />
-								</button>
-							</td>
-							<td className="text-right">
-								<a className="link" href="#">Resend invitation</a>
-							</td>
-						</tr>
-						<tr className="hover:bg-gray-200 group/invitation has-[.cancel-invitation:hover]:bg-red-100">
-							<td>another@example.com</td>
-							<td>Another User</td>
-							<td className="text-right">
-							Valid until 2026-07-01
-								<button className="text-gray-400 group-hover/invitation:text-red-500 cancel-invitation">
-									<FontAwesomeIcon icon={faTrash} fixedWidth />
-								</button>
-							</td>
-							<td className="text-right">
-								<a className="link" href="#">Resend invitation</a>
-							</td>
-						</tr>
-
+						{
+							invitations.map(invitation => (
+								<tr key={invitation.id} className="hover:bg-gray-200 group/invitation has-[.cancel-invitation:hover]:bg-red-100">
+									<td>{invitation.email}</td>
+									<td>{invitation.fullname}</td>
+									<td className="text-right">
+										Valid until {new Date(invitation.expiresAt).toLocaleString()}
+										<button
+											className="text-gray-400 group-hover/invitation:text-red-500 cancel-invitation"
+											onClick={() => apiClient.execute("CancelInvitation", { invitationId: invitation.id })}
+										>
+											<FontAwesomeIcon icon={faTrash} fixedWidth />
+										</button>
+									</td>
+									<td className="text-right">
+										<button
+											className="link"
+											onClick={() => apiClient.execute("ResendInvitation", { invitationId: invitation.id })}
+										>
+											Resend invitation
+										</button>
+									</td>
+								</tr>
+							))
+						}
 					</tbody>
 				</table>
 

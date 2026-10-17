@@ -15,6 +15,35 @@ public class InviteUser : ICommand<InviteUser>
 
 
 [RequireOrganizationId]
+public class ResendInvitation : ICommand<ResendInvitation>
+{
+	public required string InvitationId { get; set; }
+}
+
+
+[RequireOrganizationId]
+public class CancelInvitation : ICommand<CancelInvitation>
+{
+	public required string InvitationId { get; set; }
+}
+
+
+[RequireOrganizationId]
+public class ListInvitations : IQuery<ListInvitations, IEnumerable<ListInvitations.Response>>
+{
+	// No parameters to get all pending invitations for the current organization
+
+	public class Response
+	{
+		public required string Id { get; set; }
+		public required string Email { get; set; }
+		public required string Fullname { get; set; }
+		public required DateTimeOffset ExpiresAt { get; set; }
+	}
+}
+
+
+[RequireOrganizationId]
 public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	// No parameters to get all users for the current organization
@@ -31,6 +60,9 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 
 public class UserRoleHandler :
 	IAsyncCommandHandler<InviteUser>,
+	IAsyncCommandHandler<ResendInvitation>,
+	IAsyncCommandHandler<CancelInvitation>,
+	IAsyncQueryHandler<ListInvitations, IEnumerable<ListInvitations.Response>>,
 	IAsyncQueryHandler<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	private readonly KeycloakOrganizationClient _keycloakClient;
@@ -47,7 +79,39 @@ public class UserRoleHandler :
 	public async Task Handle(InviteUser command)
 	{
 		await _keycloakClient.InviteUserAsync(command.Email, command.FirstName, command.LastName);
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("InvitationsUpdated", null));
+		await PublishInvitationsUpdated();
+	}
+
+
+	public async Task Handle(ResendInvitation command)
+	{
+		await _keycloakClient.ResendInvitationAsync(command.InvitationId);
+		await PublishInvitationsUpdated();
+	}
+
+
+	public async Task Handle(CancelInvitation command)
+	{
+		await _keycloakClient.DeleteInvitationAsync(command.InvitationId);
+		await PublishInvitationsUpdated();
+	}
+
+
+	private Task PublishInvitationsUpdated() =>
+		_signalRService.PublishToTenantChannel(new ISignalRService.Message("InvitationsUpdated", null));
+
+
+	public async Task<IEnumerable<ListInvitations.Response>> Handle(ListInvitations query)
+	{
+		var invitations = await _keycloakClient.ListPendingInvitationsAsync();
+
+		return invitations.Select(i => new ListInvitations.Response
+		{
+			Id = i.Id,
+			Email = i.Email,
+			Fullname = $"{i.FirstName} {i.LastName}",
+			ExpiresAt = DateTimeOffset.FromUnixTimeSeconds(i.ExpiresAt)
+		});
 	}
 
 
