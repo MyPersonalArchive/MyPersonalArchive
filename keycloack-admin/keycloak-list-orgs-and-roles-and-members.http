@@ -1,7 +1,7 @@
 ### Variables — edit these for your environment
 @keycloak-host = {{$processEnv Keycloak__BaseUrl}}
 @realm = {{$processEnv Keycloak__Realm}}
-@org-id = 78324507-26e5-4143-8a7d-809e83632f36
+@org-id = c4569ed4-5f56-42c5-b939-82beb819c7b7
 @client-id = {{$processEnv Keycloak__ClientId}}
 @client-secret = {{$processEnv Keycloak__ClientSecret}}
 
@@ -34,7 +34,7 @@ Accept: application/json
 
 
 ### 5. List members of a specific org group
-@group-id = 99515964-2db5-497d-9799-a1eac4153c2b
+@group-id = f069e571-d301-45d5-8c6c-8b35d6da1138
 GET {{keycloak-host}}/admin/realms/{{realm}}/organizations/{{org-id}}/groups/{{group-id}}/members
 Authorization: Bearer {{getServiceToken.response.body.access_token}}
 Accept: application/json

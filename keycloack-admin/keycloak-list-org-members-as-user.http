@@ -1,0 +1,30 @@
+### Variables — edit these for your environment
+### Signs in as a regular realm user (password grant through the realm's public admin-cli client).
+### The user needs realm-management roles (or fine-grained admin permissions) to view organizations and users.
+@keycloak-host = {{$processEnv Keycloak__BaseUrl}}
+@realm = my-personal-archive
+@client-id = admin-cli
+@username = arjan@einbu.no
+@org-alias = winge-einbu-family
+
+
+### 1. Get a user token (password grant from admin-cli in the realm)
+# @name getUserToken
+# @prompt password Password for the user
+POST {{keycloak-host}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{client-id}}&username={{username}}&password={{password}}&grant_type=password
+
+
+### 2. Find the organization by name/alias
+# @name findOrg
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations
+Authorization: Bearer {{getUserToken.response.body.access_token}}
+Accept: application/json
+
+
+### 3. List members of the organization
+GET {{keycloak-host}}/admin/realms/{{realm}}/organizations/{{findOrg.response.body.0.id}}/members?briefRepresentation=false
+Authorization: Bearer {{getUserToken.response.body.access_token}}
+Accept: application/json
