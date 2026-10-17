@@ -130,6 +130,15 @@ export const TenantAdminUsersPage = () => {
 					</thead>
 					<tbody className=" text-sm">
 						{
+							invitations.length === 0 && (
+								<tr>
+									<td colSpan={4} className="text-center text-gray-500">
+										No pending invitations.
+									</td>
+								</tr>
+							)
+						}
+						{
 							invitations.map(invitation => (
 								<tr key={invitation.id} className="hover:bg-gray-200 group/invitation has-[.cancel-invitation:hover]:bg-red-100">
 									<td>{invitation.email}</td>
@@ -156,17 +165,6 @@ export const TenantAdminUsersPage = () => {
 						}
 					</tbody>
 				</table>
-
-				<div className="todo mt-2">
-					<div>Roles</div>
-				- <span className="underline">Account owner</span>
-					<div className="pl-4">- Pays for the account.</div>
-					<div className="pl-4">- Is by default also an administrator.</div>
-				- <span className="underline">Administrator</span>
-					<div className="pl-4">- Can manage users and permissions, and access all features of the system.</div>
-				- <span className="underline">Regular user</span>
-					<div className="pl-4">- Can access the system but cannot manage users or permissions.</div>
-				</div>
 			</div>
 
 			<InviteUserDialog
