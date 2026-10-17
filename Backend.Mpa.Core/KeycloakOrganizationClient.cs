@@ -23,16 +23,10 @@ public class KeycloakOrganizationClient
 		string? groupName = null,
 		CancellationToken ct = default)
 	{
-		var organizationAlias = _ambientDataResolver.GetCurrentTenantId()!;
-
-		var organizationId = await FindOrganizationIdByAliasAsync(organizationAlias, ct);
-		if (organizationId is null)
-		{
-			throw new InvalidOperationException($"Organization '{organizationAlias}' not found in realm '{_keycloakOptions.Realm}'.");
-		}
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
 
 		var groupId = groupName is not null
-			? await FindGroupIdByNameAsync(organizationId, groupName, ct) ?? throw new InvalidOperationException($"Group '{groupName}' not found in organization '{organizationAlias}'.")
+			? await FindGroupIdByNameAsync(organizationId, groupName, ct) ?? throw new InvalidOperationException($"Group '{groupName}' not found in organization '{_ambientDataResolver.GetCurrentTenantId()}'.")
 			: null;
 
 		string requestUri = groupId is not null
@@ -59,6 +53,39 @@ public class KeycloakOrganizationClient
 		}
 
 		return allMembers;
+	}
+
+
+	public async Task InviteUserAsync(
+		string email,
+		string firstName,
+		string lastName,
+		CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+
+		using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+		{
+			["email"] = email,
+			["firstName"] = firstName,
+			["lastName"] = lastName,
+		});
+
+		using var response = await _http.PostAsync(
+			$"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}/members/invite-user",
+			content,
+			ct);
+
+		response.EnsureSuccessStatusCode();
+	}
+
+
+	private async Task<string> GetCurrentOrganizationIdAsync(CancellationToken ct)
+	{
+		var organizationAlias = _ambientDataResolver.GetCurrentTenantId()!;
+
+		return await FindOrganizationIdByAliasAsync(organizationAlias, ct)
+			?? throw new InvalidOperationException($"Organization '{organizationAlias}' not found in realm '{_keycloakOptions.Realm}'.");
 	}
 
 

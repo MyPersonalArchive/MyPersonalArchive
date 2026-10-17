@@ -1,7 +1,17 @@
 using Backend.Core.Cqrs.Infrastructure;
+using Backend.Core.Services;
 
 
 namespace Backend.Mpa.Core.Cqrs;
+
+
+[RequireOrganizationId]
+public class InviteUser : ICommand<InviteUser>
+{
+	public required string Email { get; set; }
+	public required string FirstName { get; set; }
+	public required string LastName { get; set; }
+}
 
 
 [RequireOrganizationId]
@@ -20,14 +30,24 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 
 
 public class UserRoleHandler :
+	IAsyncCommandHandler<InviteUser>,
 	IAsyncQueryHandler<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	private readonly KeycloakOrganizationClient _keycloakClient;
+	private readonly ISignalRService _signalRService;
 
 
-	public UserRoleHandler(KeycloakOrganizationClient keycloakClient)
+	public UserRoleHandler(KeycloakOrganizationClient keycloakClient, ISignalRService signalRService)
 	{
 		_keycloakClient = keycloakClient;
+		_signalRService = signalRService;
+	}
+
+
+	public async Task Handle(InviteUser command)
+	{
+		await _keycloakClient.InviteUserAsync(command.Email, command.FirstName, command.LastName);
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("InvitationsUpdated", null));
 	}
 
 
