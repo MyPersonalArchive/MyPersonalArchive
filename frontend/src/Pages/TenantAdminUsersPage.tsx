@@ -5,6 +5,7 @@ import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { useAtom } from "jotai"
 import { usersAtom } from "../Utils/Atoms/usersAtom"
 import { Dialog } from "../Components/Dialog"
+import { ConfirmationDialog } from "../Components/ConfirmationDialog"
 import { useSignalR } from "../Utils/Hooks/useSignalR"
 
 export type UserRole = "accountOwner" | "administrator" | "user"
@@ -29,22 +30,13 @@ export const TenantAdminUsersPage = () => {
 	const apiClient = useApiClient()
 	const [users, setUsers] = useAtom(usersAtom)
 	const [invitations, setInvitations] = useState<ListInvitationsResponse[]>([])
+	const [userToRemove, setUserToRemove] = useState<ListUsersResponse>()
 
 	const loadInvitations = () =>
 		apiClient.query<ListInvitationsResponse[]>("ListInvitations")
 			.then(response => setInvitations(response ?? []))
 
-	useEffect(() => {
-		loadInvitations()
-	}, [])
-
-	useSignalR(message => {
-		if (message.messageType === "InvitationsUpdated") {
-			loadInvitations()
-		}
-	})
-
-	useEffect(() => {
+	const loadUsers = () =>
 		apiClient.query<ListUsersResponse[]>("ListUsers")
 			.then(response => {
 				setUsers(response!.map(user => ({
@@ -54,7 +46,31 @@ export const TenantAdminUsersPage = () => {
 					roles: user.roles
 				})))
 			})
+
+	useEffect(() => {
+		loadInvitations()
+		loadUsers()
 	}, [])
+
+	useSignalR(message => {
+		if (message.messageType === "InvitationsUpdated") {
+			loadInvitations()
+		}
+		if (message.messageType === "UsersUpdated") {
+			loadUsers()
+		}
+	})
+
+	const removeUser = async () => {
+		if (!userToRemove)
+			return
+		try {
+			await apiClient.execute("RemoveUser", { subject: userToRemove.subject })
+		} catch (error) {
+			console.error("Failed to remove user:", error)
+		}
+		setUserToRemove(undefined)
+	}
 
 	return (
 		<>
@@ -73,7 +89,10 @@ export const TenantAdminUsersPage = () => {
 											<FontAwesomeIcon icon={user.roles.includes("Owner") || user.roles.includes("Administrator") ? faUserTie : faUser} fixedWidth />
 											{user.fullname}
 										</div>
-										<button className="text-gray-400 group-hover/user:text-red-500 top-2 right-2 absolute remove-user">
+										<button
+											className="text-gray-400 group-hover/user:text-red-500 top-2 right-2 absolute remove-user"
+											onClick={() => setUserToRemove(user)}
+										>
 											<FontAwesomeIcon icon={faTrash} fixedWidth />
 										</button>
 									</div>
@@ -153,6 +172,13 @@ export const TenantAdminUsersPage = () => {
 			<InviteUserDialog
 				isOpen={isAddUserDialogOpen}
 				onClose={() => setIsAddUserDialogOpen(false)}
+			/>
+
+			<ConfirmationDialog
+				open={userToRemove !== undefined}
+				prompt={`Remove ${userToRemove?.fullname} from the organization?`}
+				onClose={() => setUserToRemove(undefined)}
+				onConfirm={removeUser}
 			/>
 		</>
 	)

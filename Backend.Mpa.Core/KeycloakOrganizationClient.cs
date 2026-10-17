@@ -116,6 +116,18 @@ public class KeycloakOrganizationClient
 	}
 
 
+	public async Task RemoveMemberAsync(string memberId, CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+
+		using var response = await _http.DeleteAsync(
+			$"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}/members/{Uri.EscapeDataString(memberId)}",
+			ct);
+
+		response.EnsureSuccessStatusCode();
+	}
+
+
 	private async Task<string> GetCurrentOrganizationIdAsync(CancellationToken ct)
 	{
 		var organizationAlias = _ambientDataResolver.GetCurrentTenantId()!;

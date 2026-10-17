@@ -64,6 +64,7 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 					</button>
 				</div>
 			</div>
+			
 			<ConfirmationDialog
 				open={openDeleteThisDialog}
 				prompt="Are you sure you want to remove this upload?"

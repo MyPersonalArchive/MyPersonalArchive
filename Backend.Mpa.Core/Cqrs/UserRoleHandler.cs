@@ -1,4 +1,5 @@
 using Backend.Core.Cqrs.Infrastructure;
+using Backend.Core.Infrastructure;
 using Backend.Core.Services;
 
 
@@ -44,6 +45,13 @@ public class ListInvitations : IQuery<ListInvitations, IEnumerable<ListInvitatio
 
 
 [RequireOrganizationId]
+public class RemoveUser : ICommand<RemoveUser>
+{
+	public required string Subject { get; set; }
+}
+
+
+[RequireOrganizationId]
 public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	// No parameters to get all users for the current organization
@@ -63,16 +71,19 @@ public class UserRoleHandler :
 	IAsyncCommandHandler<ResendInvitation>,
 	IAsyncCommandHandler<CancelInvitation>,
 	IAsyncQueryHandler<ListInvitations, IEnumerable<ListInvitations.Response>>,
+	IAsyncCommandHandler<RemoveUser>,
 	IAsyncQueryHandler<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	private readonly KeycloakOrganizationClient _keycloakClient;
 	private readonly ISignalRService _signalRService;
+	private readonly IAmbientDataResolver _ambientDataResolver;
 
 
-	public UserRoleHandler(KeycloakOrganizationClient keycloakClient, ISignalRService signalRService)
+	public UserRoleHandler(KeycloakOrganizationClient keycloakClient, ISignalRService signalRService, IAmbientDataResolver ambientDataResolver)
 	{
 		_keycloakClient = keycloakClient;
 		_signalRService = signalRService;
+		_ambientDataResolver = ambientDataResolver;
 	}
 
 
@@ -112,6 +123,18 @@ public class UserRoleHandler :
 			Fullname = $"{i.FirstName} {i.LastName}",
 			ExpiresAt = DateTimeOffset.FromUnixTimeSeconds(i.ExpiresAt)
 		});
+	}
+
+
+	public async Task Handle(RemoveUser command)
+	{
+		if (command.Subject == _ambientDataResolver.GetCurrentUsername())
+		{
+			throw new HttpBadRequestException("You cannot remove yourself from the organization");
+		}
+
+		await _keycloakClient.RemoveMemberAsync(command.Subject);
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
 	}
 
 
