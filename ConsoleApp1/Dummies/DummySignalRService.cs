@@ -19,6 +19,12 @@ public class DummySignalRService : ISignalRService
 		return Task.CompletedTask;
 	}
 
+	public Task PublishToTenantRoleChannel(string role, ISignalRService.Message message)
+	{
+		// Console.WriteLine($"Sending message to {role} role channel: {message}");
+		return Task.CompletedTask;
+	}
+
 	public Task PublishToUserChannel(ISignalRService.Message message)
 	{
 		// Console.WriteLine($"Sending message to user channel: {message}");

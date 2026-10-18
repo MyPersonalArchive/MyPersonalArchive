@@ -214,11 +214,11 @@ public class UserRoleHandler :
 
 
 	private Task PublishUsersUpdated() =>
-		_signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
+		_signalRService.PublishToTenantRoleChannel("Administrator", new ISignalRService.Message("UsersUpdated", null));
 
 
 	private Task PublishInvitationsUpdated() =>
-		_signalRService.PublishToTenantChannel(new ISignalRService.Message("InvitationsUpdated", null));
+		_signalRService.PublishToTenantRoleChannel("Administrator", new ISignalRService.Message("InvitationsUpdated", null));
 
 
 	public async Task<IEnumerable<ListInvitations.Response>> Handle(ListInvitations query)

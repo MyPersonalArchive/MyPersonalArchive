@@ -36,7 +36,18 @@ public class SignalRService : ISignalRService
 			return;
 		}
 
-		await _hubContext.Clients.Group($"tenantId={_tenantId}").SendAsync("ReceiveMessage", message);
+		await _hubContext.Clients.Group(NotificationHub.TenantGroup(_tenantId)).SendAsync("ReceiveMessage", message);
+	}
+
+
+	public async Task PublishToTenantRoleChannel(string role, ISignalRService.Message message)
+	{
+		if (string.IsNullOrEmpty(_tenantId))
+		{
+			return;
+		}
+
+		await _hubContext.Clients.Group(NotificationHub.TenantRoleGroup(_tenantId, role)).SendAsync("ReceiveMessage", message);
 	}
 
 

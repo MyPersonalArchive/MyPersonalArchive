@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Backend.Core.Infrastructure;
@@ -22,10 +23,20 @@ public class NotificationHub : Hub
 
 		if (!string.IsNullOrEmpty(tenantId))
 		{
-			await Groups.AddToGroupAsync(Context.ConnectionId, $"tenantId={tenantId}");
+			await Groups.AddToGroupAsync(Context.ConnectionId, TenantGroup(tenantId));
+
+			foreach (var role in Context.User?.FindAll(ClaimTypes.Role) ?? [])
+			{
+				await Groups.AddToGroupAsync(Context.ConnectionId, TenantRoleGroup(tenantId, role.Value));
+			}
 		}
 
 		await base.OnConnectedAsync();
 	}
 	#endregion
+
+
+	internal static string TenantGroup(string tenantId) => $"tenantId={tenantId}";
+
+	internal static string TenantRoleGroup(string tenantId, string role) => $"{TenantGroup(tenantId)}:role={role}";
 }

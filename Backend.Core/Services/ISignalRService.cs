@@ -4,6 +4,7 @@ public interface ISignalRService
 {
 	Task PublishToSharedChannel(Message message);
 	Task PublishToTenantChannel(Message message);
+	Task PublishToTenantRoleChannel(string role, Message message);
 	Task PublishToUserChannel(Message message);
 
 	public class Message
