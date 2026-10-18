@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Backend.Core.Infrastructure;
-using Backend.Mpa.DbModel.Database;
 
 namespace Backend.WebApi.SignalR;
 
@@ -11,21 +9,21 @@ namespace Backend.WebApi.SignalR;
 public class NotificationHub : Hub
 {
 	private readonly IAmbientDataResolver _resolver;
-	private readonly MpaDbContext _dbContext;
 
-	public NotificationHub(IAmbientDataResolver resolver, MpaDbContext dbContext)
+	public NotificationHub(IAmbientDataResolver resolver)
 	{
 		_resolver = resolver;
-		_dbContext = dbContext;
 	}
 
 	#region SignalR client methods
 	public override async Task OnConnectedAsync()
 	{
-		var username = _resolver.GetCurrentUsername();
 		var tenantId = _resolver.GetCurrentTenantId();
 
-		await Groups.AddToGroupAsync(Context.ConnectionId, $"tenantId={tenantId}");
+		if (!string.IsNullOrEmpty(tenantId))
+		{
+			await Groups.AddToGroupAsync(Context.ConnectionId, $"tenantId={tenantId}");
+		}
 
 		await base.OnConnectedAsync();
 	}

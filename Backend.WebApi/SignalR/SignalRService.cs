@@ -31,6 +31,11 @@ public class SignalRService : ISignalRService
 	// public async Task PublishToTenantChannel(string messageName, object data) => await PublishToTenantChannel(new Message(messageName, data));
 	public async Task PublishToTenantChannel(ISignalRService.Message message)
 	{
+		if (string.IsNullOrEmpty(_tenantId))
+		{
+			return;
+		}
+
 		await _hubContext.Clients.Group($"tenantId={_tenantId}").SendAsync("ReceiveMessage", message);
 	}
 
