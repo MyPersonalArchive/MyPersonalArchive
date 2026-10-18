@@ -7,7 +7,7 @@ namespace Backend.Mpa.Core.Cqrs;
 
 
 [RequireOrganizationId]
-[RequireRole("Owner", "Administrator")]
+[RequireRole("Administrator")]
 public class InviteUser : ICommand<InviteUser>
 {
 	public required string Email { get; set; }
@@ -17,7 +17,7 @@ public class InviteUser : ICommand<InviteUser>
 
 
 [RequireOrganizationId]
-[RequireRole("Owner", "Administrator")]
+[RequireRole("Administrator")]
 public class ResendInvitation : ICommand<ResendInvitation>
 {
 	public required string InvitationId { get; set; }
@@ -25,7 +25,7 @@ public class ResendInvitation : ICommand<ResendInvitation>
 
 
 [RequireOrganizationId]
-[RequireRole("Owner", "Administrator")]
+[RequireRole("Administrator")]
 public class CancelInvitation : ICommand<CancelInvitation>
 {
 	public required string InvitationId { get; set; }
@@ -33,10 +33,21 @@ public class CancelInvitation : ICommand<CancelInvitation>
 
 
 [RequireOrganizationId]
-[RequireRole("Owner", "Administrator")]
+[RequireRole("Administrator")]
 public class RemoveUser : ICommand<RemoveUser>
 {
 	public required string Subject { get; set; }
+}
+
+
+[RequireOrganizationId]
+[RequireRole("Administrator")]
+public class ChangeUserRole : ICommand<ChangeUserRole>
+{
+	public required string Subject { get; set; }
+
+	/// <summary>"Administrator" or "User"</summary>
+	public required string Role { get; set; }
 }
 
 
@@ -59,7 +70,7 @@ public class TransferOwnership : ICommand<TransferOwnership>
 
 
 [RequireOrganizationId]
-[RequireRole("Owner", "Administrator")]
+[RequireRole("Administrator")]
 public class ListInvitations : IQuery<ListInvitations, IEnumerable<ListInvitations.Response>>
 {
 	// No parameters to get all pending invitations for the current organization
@@ -75,7 +86,7 @@ public class ListInvitations : IQuery<ListInvitations, IEnumerable<ListInvitatio
 
 
 [RequireOrganizationId]
-[RequireRole("Owner", "Administrator")]
+[RequireRole("Administrator")]
 public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	// No parameters to get all users for the current organization
@@ -96,6 +107,7 @@ public class UserRoleHandler :
 	IAsyncCommandHandler<ResendInvitation>,
 	IAsyncCommandHandler<CancelInvitation>,
 	IAsyncCommandHandler<RemoveUser>,
+	IAsyncCommandHandler<ChangeUserRole>,
 	IAsyncCommandHandler<TransferOwnership>,
 	IAsyncQueryHandler<ListInvitations, IEnumerable<ListInvitations.Response>>,
 	IAsyncQueryHandler<ListUsers, IEnumerable<ListUsers.Response>>
@@ -141,14 +153,43 @@ public class UserRoleHandler :
 			throw new HttpBadRequestException("You cannot remove yourself from the organization");
 		}
 
-		var owners = await _keycloakClient.ListOrganizationGroupMembersAsync(groupName: "Owner");
-		if (owners.Exists(o => o.Id == command.Subject))
+		if (await IsOwnerAsync(command.Subject))
 		{
 			throw new HttpBadRequestException("A user with the Owner role cannot be removed from the organization");
 		}
 
 		await _keycloakClient.RemoveMemberAsync(command.Subject);
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
+		await PublishUsersUpdated();
+	}
+
+
+	public async Task Handle(ChangeUserRole command)
+	{
+		if (await IsOwnerAsync(command.Subject))
+		{
+			throw new HttpBadRequestException("The role of a user with the Owner role cannot be changed");
+		}
+
+		switch (command.Role)
+		{
+			case "Administrator":
+				await _keycloakClient.AddMemberToGroupAsync("Administrator", command.Subject);
+				break;
+			case "User":
+				await _keycloakClient.RemoveMemberFromGroupAsync("Administrator", command.Subject);
+				break;
+			default:
+				throw new HttpBadRequestException($"Unknown role '{command.Role}'");
+		}
+
+		await PublishUsersUpdated();
+	}
+
+
+	private async Task<bool> IsOwnerAsync(string subject)
+	{
+		var owners = await _keycloakClient.ListOrganizationGroupMembersAsync(groupName: "Owner");
+		return owners.Exists(o => o.Id == subject);
 	}
 
 
@@ -166,10 +207,14 @@ public class UserRoleHandler :
 		// - If the organization is on a paid plan, ensure that billing is updated accordingly
 		//   - Change payment details to be associated with the new owner
 
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
+		await PublishUsersUpdated();
 
 		throw new HttpBadRequestException("Transfer of ownership is not yet implemented");
 	}
+
+
+	private Task PublishUsersUpdated() =>
+		_signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
 
 
 	private Task PublishInvitationsUpdated() =>

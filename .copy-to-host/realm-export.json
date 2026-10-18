@@ -30,7 +30,7 @@
   "enabled": true,
   "sslRequired": "external",
   "registrationAllowed": true,
-  "registrationEmailAsUsername": false,
+  "registrationEmailAsUsername": true,
   "rememberMe": false,
   "verifyEmail": true,
   "loginWithEmailAllowed": true,
@@ -813,6 +813,9 @@
             "uris": [],
             "scopes": [
               {
+                "name": "delegate"
+              },
+              {
                 "name": "manage-group-membership"
               },
               {
@@ -850,6 +853,9 @@
               },
               {
                 "name": "manage-membership"
+              },
+              {
+                "name": "delegate-members"
               },
               {
                 "name": "view-members"
@@ -890,6 +896,29 @@
             "decisionStrategy": "UNANIMOUS",
             "config": {
               "clients": "[\"my-personal-archive\"]"
+            }
+          },
+          {
+            "name": "org-admin-api-client",
+            "description": "",
+            "type": "client",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "clients": "[\"org-admin-api\"]"
+            }
+          },
+          {
+            "name": "manage-group-members-permission",
+            "description": "",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "UNANIMOUS",
+            "config": {
+              "defaultResourceType": "Users",
+              "resources": "[\"Users\"]",
+              "scopes": "[\"manage\",\"manage-group-membership\"]",
+              "applyPolicies": "[\"org-admin-api-client\"]"
             }
           }
         ],
@@ -941,37 +970,59 @@
           },
           {
             "name": "map-roles-composite"
+          },
+          {
+            "name": "delegate"
+          },
+          {
+            "name": "delegate-members"
           }
         ],
         "decisionStrategy": "UNANIMOUS",
         "authorizationSchema": {
           "resourceTypes": {
-            "Groups": {
-              "type": "Groups",
+            "Roles": {
+              "type": "Roles",
+              "scopes": [
+                "map-role",
+                "map-role-composite",
+                "map-role-client-scope"
+              ],
+              "scopeAliases": {}
+            },
+            "Organizations": {
+              "type": "Organizations",
+              "scopes": [
+                "manage",
+                "view"
+              ],
+              "scopeAliases": {}
+            },
+            "Clients": {
+              "type": "Clients",
               "scopes": [
                 "view",
-                "view-members",
-                "manage-membership",
+                "map-roles-client-scope",
+                "map-roles",
                 "manage",
-                "manage-membership-of-members",
-                "manage-members",
-                "impersonate-members"
+                "map-roles-composite"
               ],
               "scopeAliases": {}
             },
             "Users": {
               "type": "Users",
               "scopes": [
-                "map-roles",
+                "impersonate",
                 "manage",
-                "manage-group-membership",
-                "reset-password",
+                "delegate",
+                "map-roles",
                 "view",
-                "impersonate"
+                "reset-password",
+                "manage-group-membership"
               ],
               "scopeAliases": {
-                "impersonate": [
-                  "impersonate-members"
+                "delegate": [
+                  "delegate-members"
                 ],
                 "manage-group-membership": [
                   "manage-membership-of-members"
@@ -981,35 +1032,24 @@
                 ],
                 "manage": [
                   "manage-members"
+                ],
+                "impersonate": [
+                  "impersonate-members"
                 ]
               },
               "groupType": "Groups"
             },
-            "Clients": {
-              "type": "Clients",
+            "Groups": {
+              "type": "Groups",
               "scopes": [
-                "map-roles-composite",
-                "manage",
-                "map-roles",
-                "map-roles-client-scope",
-                "view"
-              ],
-              "scopeAliases": {}
-            },
-            "Organizations": {
-              "type": "Organizations",
-              "scopes": [
+                "impersonate-members",
                 "view",
-                "manage"
-              ],
-              "scopeAliases": {}
-            },
-            "Roles": {
-              "type": "Roles",
-              "scopes": [
-                "map-role-client-scope",
-                "map-role-composite",
-                "map-role"
+                "manage",
+                "delegate-members",
+                "view-members",
+                "manage-membership-of-members",
+                "manage-members",
+                "manage-membership"
               ],
               "scopeAliases": {}
             }
@@ -2051,7 +2091,26 @@
     "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
-  "smtpServer": {},
+  "smtpServer": {
+    "allowutf8": "",
+    "replyToDisplayName": "My Personal Archive",
+    "debug": "false",
+    "starttls": "false",
+    "auth": "true",
+    "writeTimeout": "10000",
+    "envelopeFrom": "",
+    "ssl": "true",
+    "timeout": "10000",
+    "password": "**********",
+    "port": "465",
+    "replyTo": "no-reply@einbu.no",
+    "host": "smtp.lettermint.co",
+    "from": "keycloak-mpa@bitcubator.com",
+    "fromDisplayName": "My Personal Archive",
+    "authType": "basic",
+    "connectionTimeout": "10000",
+    "user": "lettermint"
+  },
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"
@@ -3083,11 +3142,11 @@
     "saml.signature.algorithm": "",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
-    "frontendUrl": "",
+    "frontendUrl": "https://localhost:8443",
     "scimApiEnabled": "false",
     "acr.loa.map": "{}"
   },
-  "keycloakVersion": "26.7.2",
+  "keycloakVersion": "26.8.0",
   "userManagedAccessAllowed": false,
   "organizationsEnabled": true,
   "verifiableCredentialsEnabled": false,

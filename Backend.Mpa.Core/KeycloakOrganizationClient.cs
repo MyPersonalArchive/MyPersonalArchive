@@ -128,6 +128,32 @@ public class KeycloakOrganizationClient
 	}
 
 
+	public async Task AddMemberToGroupAsync(string groupName, string memberId, CancellationToken ct = default)
+	{
+		using var response = await _http.PutAsync(await GetGroupMemberUriAsync(groupName, memberId, ct), null, ct);
+
+		response.EnsureSuccessStatusCode();
+	}
+
+
+	public async Task RemoveMemberFromGroupAsync(string groupName, string memberId, CancellationToken ct = default)
+	{
+		using var response = await _http.DeleteAsync(await GetGroupMemberUriAsync(groupName, memberId, ct), ct);
+
+		response.EnsureSuccessStatusCode();
+	}
+
+
+	private async Task<string> GetGroupMemberUriAsync(string groupName, string memberId, CancellationToken ct)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+		var groupId = await FindGroupIdByNameAsync(organizationId, groupName, ct)
+			?? throw new InvalidOperationException($"Group '{groupName}' not found in organization '{_ambientDataResolver.GetCurrentTenantId()}'.");
+
+		return $"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}/groups/{groupId}/members/{Uri.EscapeDataString(memberId)}";
+	}
+
+
 	private async Task<string> GetCurrentOrganizationIdAsync(CancellationToken ct)
 	{
 		var organizationAlias = _ambientDataResolver.GetCurrentTenantId()!;

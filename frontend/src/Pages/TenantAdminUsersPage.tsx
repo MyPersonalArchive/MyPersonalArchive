@@ -8,8 +8,6 @@ import { Dialog } from "../Components/Dialog"
 import { ConfirmationDialog } from "../Components/ConfirmationDialog"
 import { useSignalR } from "../Utils/Hooks/useSignalR"
 
-export type UserRole = "accountOwner" | "administrator" | "user"
-
 export type ListUsersResponse = {
 	issuer: string
 	subject: string
@@ -63,6 +61,14 @@ export const TenantAdminUsersPage = () => {
 		}
 	})
 
+	const changeUserRole = async (subject: string, role: string) => {
+		try {
+			await apiClient.execute("ChangeUserRole", { subject, role })
+		} catch (error) {
+			console.error("Failed to change user role:", error)
+		}
+	}
+
 	const removeUser = async () => {
 		if (!userToRemove)
 			return
@@ -112,9 +118,13 @@ export const TenantAdminUsersPage = () => {
 											>
 												Transfer ownership
 											</button>
-											: <select className="select my-2 px-4">
-												<option value="administrator" selected={user.roles.length > 0 && ["accountOwner", "administrator"].includes(user.roles[0])}>Administrator</option>
-												<option value="user" selected={user.roles.length === 0}>User</option>
+											: <select
+												className="select my-2 px-4"
+												value={user.roles.includes("Administrator") ? "Administrator" : "User"}
+												onChange={e => changeUserRole(user.subject, e.target.value)}
+											>
+												<option value="Administrator">Administrator</option>
+												<option value="User">User</option>
 											</select>
 									}
 
