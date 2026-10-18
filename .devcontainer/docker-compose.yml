@@ -21,6 +21,10 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=p@ssw0rd
       - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.pem
       - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
+      # Browser-facing URLs use the public hostname, while backchannel endpoints (token, jwks, ...)
+      # follow the request host, so the backend can reach them via http://keycloak:8080.
+      - KC_HOSTNAME=https://localhost:8443
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
     command: start-dev
     volumes:
       - ~/data/mpa/https/:/opt/keycloak/conf/:ro
