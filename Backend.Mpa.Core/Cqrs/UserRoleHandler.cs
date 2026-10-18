@@ -7,6 +7,7 @@ namespace Backend.Mpa.Core.Cqrs;
 
 
 [RequireOrganizationId]
+[RequireRole("Owner", "Administrator")]
 public class InviteUser : ICommand<InviteUser>
 {
 	public required string Email { get; set; }
@@ -16,6 +17,7 @@ public class InviteUser : ICommand<InviteUser>
 
 
 [RequireOrganizationId]
+[RequireRole("Owner", "Administrator")]
 public class ResendInvitation : ICommand<ResendInvitation>
 {
 	public required string InvitationId { get; set; }
@@ -23,6 +25,7 @@ public class ResendInvitation : ICommand<ResendInvitation>
 
 
 [RequireOrganizationId]
+[RequireRole("Owner", "Administrator")]
 public class CancelInvitation : ICommand<CancelInvitation>
 {
 	public required string InvitationId { get; set; }
@@ -30,6 +33,33 @@ public class CancelInvitation : ICommand<CancelInvitation>
 
 
 [RequireOrganizationId]
+[RequireRole("Owner", "Administrator")]
+public class RemoveUser : ICommand<RemoveUser>
+{
+	public required string Subject { get; set; }
+}
+
+
+[RequireOrganizationId]
+[RequireRole("Owner")]
+public class TransferOwnership : ICommand<TransferOwnership>
+{
+	public required string NewOwnerSubject { get; set; }
+	public required PaymentDetails NewPaymentDetails { get; set; }
+	public required string Subject { get; set; }
+
+	public class PaymentDetails
+	{
+		public required string CardNumber { get; set; }
+		public required string ExpiryDate { get; set; }
+		public required string Cvc { get; set; }
+		public required string CardholderName { get; set; }
+	}
+}
+
+
+[RequireOrganizationId]
+[RequireRole("Owner", "Administrator")]
 public class ListInvitations : IQuery<ListInvitations, IEnumerable<ListInvitations.Response>>
 {
 	// No parameters to get all pending invitations for the current organization
@@ -45,13 +75,7 @@ public class ListInvitations : IQuery<ListInvitations, IEnumerable<ListInvitatio
 
 
 [RequireOrganizationId]
-public class RemoveUser : ICommand<RemoveUser>
-{
-	public required string Subject { get; set; }
-}
-
-
-[RequireOrganizationId]
+[RequireRole("Owner", "Administrator")]
 public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	// No parameters to get all users for the current organization
@@ -61,6 +85,7 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 		public required string Issuer { get; set; }
 		public required string Subject { get; set; }
 		public required string Fullname { get; set; }
+		public string? Email { get; set; }
 		public required IEnumerable<string> Roles { get; set; }
 	}
 }
@@ -70,8 +95,9 @@ public class UserRoleHandler :
 	IAsyncCommandHandler<InviteUser>,
 	IAsyncCommandHandler<ResendInvitation>,
 	IAsyncCommandHandler<CancelInvitation>,
-	IAsyncQueryHandler<ListInvitations, IEnumerable<ListInvitations.Response>>,
 	IAsyncCommandHandler<RemoveUser>,
+	IAsyncCommandHandler<TransferOwnership>,
+	IAsyncQueryHandler<ListInvitations, IEnumerable<ListInvitations.Response>>,
 	IAsyncQueryHandler<ListUsers, IEnumerable<ListUsers.Response>>
 {
 	private readonly KeycloakOrganizationClient _keycloakClient;
@@ -108,6 +134,44 @@ public class UserRoleHandler :
 	}
 
 
+	public async Task Handle(RemoveUser command)
+	{
+		if (command.Subject == _ambientDataResolver.GetCurrentUsername())
+		{
+			throw new HttpBadRequestException("You cannot remove yourself from the organization");
+		}
+
+		var owners = await _keycloakClient.ListOrganizationGroupMembersAsync(groupName: "Owner");
+		if (owners.Exists(o => o.Id == command.Subject))
+		{
+			throw new HttpBadRequestException("A user with the Owner role cannot be removed from the organization");
+		}
+
+		await _keycloakClient.RemoveMemberAsync(command.Subject);
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
+	}
+
+
+	public async Task Handle(TransferOwnership command)
+	{
+		if (command.NewOwnerSubject == _ambientDataResolver.GetCurrentUsername())
+		{
+			throw new HttpBadRequestException("You cannot transfer ownership to yourself");
+		}
+
+		// TODO: Implement the actual transfer of ownership logic
+		// - Remove the current owner from the "Owner" group
+		// - Add the new owner to the "Owner" group
+		// - Enforce that there is exactly one owner at all times
+		// - If the organization is on a paid plan, ensure that billing is updated accordingly
+		//   - Change payment details to be associated with the new owner
+
+		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
+
+		throw new HttpBadRequestException("Transfer of ownership is not yet implemented");
+	}
+
+
 	private Task PublishInvitationsUpdated() =>
 		_signalRService.PublishToTenantChannel(new ISignalRService.Message("InvitationsUpdated", null));
 
@@ -123,18 +187,6 @@ public class UserRoleHandler :
 			Fullname = $"{i.FirstName} {i.LastName}",
 			ExpiresAt = DateTimeOffset.FromUnixTimeSeconds(i.ExpiresAt)
 		});
-	}
-
-
-	public async Task Handle(RemoveUser command)
-	{
-		if (command.Subject == _ambientDataResolver.GetCurrentUsername())
-		{
-			throw new HttpBadRequestException("You cannot remove yourself from the organization");
-		}
-
-		await _keycloakClient.RemoveMemberAsync(command.Subject);
-		await _signalRService.PublishToTenantChannel(new ISignalRService.Message("UsersUpdated", null));
 	}
 
 
@@ -160,6 +212,7 @@ public class UserRoleHandler :
 				Issuer = "//TODO: Get issuer from Keycloak config or ambient data",
 				Subject = m.Id,
 				Fullname = $"{m.FirstName} {m.LastName}",
+				Email = m.Email,
 				Roles = roles
 			};
 		});

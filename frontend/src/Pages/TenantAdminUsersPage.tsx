@@ -14,6 +14,7 @@ export type ListUsersResponse = {
 	issuer: string
 	subject: string
 	fullname: string
+	email?: string
 	roles: string[]
 }
 
@@ -43,6 +44,7 @@ export const TenantAdminUsersPage = () => {
 					issuer: user.issuer,
 					subject: user.subject,
 					fullname: user.fullname,
+					email: user.email,
 					roles: user.roles
 				})))
 			})
@@ -89,19 +91,33 @@ export const TenantAdminUsersPage = () => {
 											<FontAwesomeIcon icon={user.roles.includes("Owner") || user.roles.includes("Administrator") ? faUserTie : faUser} fixedWidth />
 											{user.fullname}
 										</div>
-										<button
-											className="text-gray-400 group-hover/user:text-red-500 top-2 right-2 absolute remove-user"
-											onClick={() => setUserToRemove(user)}
-										>
-											<FontAwesomeIcon icon={faTrash} fixedWidth />
-										</button>
+										{!user.roles.includes("Owner") &&
+											<button
+												className="text-gray-400 group-hover/user:text-red-500 top-2 right-2 absolute remove-user"
+												onClick={() => setUserToRemove(user)}
+											>
+												<FontAwesomeIcon icon={faTrash} fixedWidth />
+											</button>
+										}
 									</div>
-									<select className="select my-2 px-4">
-										<option value="accountOwner" selected={user.roles.length > 0 && user.roles[0] === "accountOwner"}>Account owner</option>
-										<option value="administrator" selected={user.roles.length > 0 && user.roles[0] === "administrator"}>Administrator</option>
-										<option value="user" selected={user.roles.length === 0}>User</option>
-									</select>
-									<div className="text-sm my-2 px-4">Email: {user.subject}</div>
+
+									<div className="text-sm my-2 px-4">{user.email}</div>
+
+
+									{
+										user.roles.includes("Owner")
+											? <button
+												className="btn my-2 px-4 w-full"
+												onClick={() => alert("Transfer ownership not implemented yet")}
+											>
+												Transfer ownership
+											</button>
+											: <select className="select my-2 px-4">
+												<option value="administrator" selected={user.roles.length > 0 && ["accountOwner", "administrator"].includes(user.roles[0])}>Administrator</option>
+												<option value="user" selected={user.roles.length === 0}>User</option>
+											</select>
+									}
+
 								</div>
 							</div>
 						))
