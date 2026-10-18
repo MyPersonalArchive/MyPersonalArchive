@@ -114,7 +114,7 @@ public class DemoDataGenerator
 
 						var createdAt = DateTimeOffset.Now.Date.AddDays(-rng.Next(0, 365)).AddMinutes(-rng.Next(0, 1440));
 
-						await archiveItemCommandService.CreateArchiveItem(title, tags, notes, new(), [], []);
+						await archiveItemCommandService.CreateArchiveItem(title, tags, notes, new(), createdAt, [], []);
 
 						count++;
 					}
