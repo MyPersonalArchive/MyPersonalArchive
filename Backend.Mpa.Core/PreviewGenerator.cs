@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Backend.Core.Infrastructure;
 using Backend.Mpa.Core.Store;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetVips;
 
 namespace Backend.Mpa.Core;
@@ -11,6 +12,9 @@ namespace Backend.Mpa.Core;
 [RegisterService(ServiceLifetime.Scoped)]
 public class PreviewGenerator
 {
+	private static readonly bool VipsAvailable = ModuleInitializer.VipsInitialized;
+	private static int _vipsUnavailableLogged;
+
 	private readonly Dictionary<string, Type> _previewGenerators = new Dictionary<string, Type>()
 	{
 		["application/pdf"] = typeof(PdfPreviewGenerator),
@@ -37,31 +41,79 @@ public class PreviewGenerator
 	};
 
 	private readonly IServiceScope _serviceScope;
+	private readonly ILogger<PreviewGenerator> _logger;
 
-	public PreviewGenerator(IServiceScopeFactory serviceScopeFactory)
+	public PreviewGenerator(IServiceScopeFactory serviceScopeFactory, ILogger<PreviewGenerator> logger)
 	{
 		_serviceScope = serviceScopeFactory.CreateScope();
+		_logger = logger;
+
+		if (!VipsAvailable && Interlocked.Exchange(ref _vipsUnavailableLogged, 1) == 0)
+		{
+			logger.LogWarning(
+				"libvips could not be loaded, so image and PDF previews are disabled. Original files will be served instead. Reason: {Reason}",
+				ModuleInitializer.Exception?.Message);
+		}
 	}
 
 
 	public bool AcceptsMimeType(string mimeType)
 	{
-		return _previewGenerators.ContainsKey(mimeType);
+		return VipsAvailable && _previewGenerators.ContainsKey(mimeType);
 	}
 
 
-	public Stream GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
+	/// <summary>
+	/// Generates a preview, or returns <c>null</c> when no preview can be produced (for example when
+	/// libvips, or the loader for the given format, is unavailable). Callers should fall back to the
+	/// original file in that case.
+	/// </summary>
+	public Stream? GeneratePreview(Stream originalStream, string mimeType, int maxX, int maxY, int pageNumber)
 	{
-		IPreviewGenerator generator = GetPreviewGenerator(mimeType);
+		if (!AcceptsMimeType(mimeType))
+		{
+			return null;
+		}
 
-		return generator.GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
+		try
+		{
+			return GetPreviewGenerator(mimeType).GeneratePreview(originalStream, mimeType, maxX, maxY, pageNumber);
+		}
+		catch (Exception e) when (IsNativeLibraryFailure(e))
+		{
+			_logger.LogWarning(e, "Unable to generate a preview for {MimeType}. The original file will be served instead.", mimeType);
+			return null;
+		}
 	}
 
 
+	/// <summary>
+	/// Reads type specific metadata, or returns <c>null</c> when it cannot be determined (for example
+	/// when libvips, or the loader for the given format, is unavailable).
+	/// </summary>
 	public ITypeSpecificMetadata? GetFileTypeSpecificMetadata(string mimeType, Stream stream)
 	{
-		var generator = GetPreviewGenerator(mimeType);
-		return generator.GetFileTypeSpecificMetadata(stream, mimeType);
+		if (!AcceptsMimeType(mimeType))
+		{
+			return null;
+		}
+
+		try
+		{
+			return GetPreviewGenerator(mimeType).GetFileTypeSpecificMetadata(stream, mimeType);
+		}
+		catch (Exception e) when (IsNativeLibraryFailure(e))
+		{
+			_logger.LogWarning(e, "Unable to read type specific metadata for {MimeType}. The file will be stored without it.", mimeType);
+			return null;
+		}
+	}
+
+
+	private static bool IsNativeLibraryFailure(Exception e)
+	{
+		// VipsException is also thrown when libvips is present but has no loader for the format.
+		return e is DllNotFoundException or TypeInitializationException or VipsException;
 	}
 
 
