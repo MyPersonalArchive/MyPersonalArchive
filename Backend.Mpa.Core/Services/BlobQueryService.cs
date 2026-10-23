@@ -63,8 +63,16 @@ public class BlobQueryService
 			}
 			else
 			{
-				using var contentStream = await _blobObjectStore.GetObject(blobId, extension) ?? throw new Exception($"Content stream for blob with Id:{blobId} was null, this should never happen");
-				previewStream = _previewGenerator.GeneratePreview(contentStream, blobMetadata.MimeType, maxX, maxY, pageNo);
+				var contentStream = await _blobObjectStore.GetObject(blobId, extension) ?? throw new Exception($"Content stream for blob with Id:{blobId} was null, this should never happen");
+				var generatedPreview = _previewGenerator.GeneratePreview(contentStream, blobMetadata.MimeType, maxX, maxY, pageNo);
+				if (generatedPreview is null)
+				{
+					// No preview could be generated, so serve the original file. Ownership of contentStream passes to the caller.
+					return (contentStream, mimeType: blobMetadata.MimeType, suggestedFilename: blobMetadata.OriginalFilename);
+				}
+
+				contentStream.Dispose();
+				previewStream = generatedPreview;
 				if (storePreview)
 				{
 					await _blobObjectStore.StoreObject(blobId, previewExtension, previewStream);

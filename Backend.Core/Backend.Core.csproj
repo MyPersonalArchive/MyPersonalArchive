@@ -14,4 +14,11 @@
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.2" />
 	</ItemGroup>
 
+	<ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+		<!-- The container images provide libvips built from source (see docker/build-libvips.sh). This
+		     supplies the native binaries when running on a Windows host, with a version aligned with the
+		     containers. Linux builds (e.g. the Docker image) are unaffected by this condition. -->
+		<PackageReference Include="NetVips.Native.win-x64" Version="8.13.2" />
+	</ItemGroup>
+
 </Project>
