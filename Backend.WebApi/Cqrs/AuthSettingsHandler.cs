@@ -13,6 +13,8 @@ public class GetAuthSettings : IQuery<GetAuthSettings, GetAuthSettings.Response>
 	public class Response
 	{
 		required public string? OidcAuthUrl { get; set; }
+		required public string? OidcRegisterUrl { get; set; }
+		required public bool IsManaged { get; set; }
 	}
 }
 
@@ -28,9 +30,12 @@ public class AuthSettingsHandler : IQueryHandler<GetAuthSettings, GetAuthSetting
 
 	public GetAuthSettings.Response Handle(GetAuthSettings query)
 	{
+		var isOidcValidForLoginFlow = _oidcConfig.IsValidForLoginFlow();
 		return new GetAuthSettings.Response
 		{
-			OidcAuthUrl = _oidcConfig.IsValidForLoginFlow() ? "/api/oidc/signin" : null
+			OidcAuthUrl = isOidcValidForLoginFlow ? "/api/oidc/signin" : null,
+			OidcRegisterUrl = isOidcValidForLoginFlow ? "/api/oidc/register" : null,
+			IsManaged = isOidcValidForLoginFlow
 		};
 	}
 }

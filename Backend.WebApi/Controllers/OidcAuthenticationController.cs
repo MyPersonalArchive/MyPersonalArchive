@@ -5,6 +5,7 @@ using Backend.Core;
 using Backend.Mpa.DbModel.Database;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,21 @@ public class OidcAuthenticationController : ControllerBase
 	[HttpGet("signin")]
 	public IActionResult StartOidcSignIn([FromQuery] string? returnUrl = null)
 	{
+		return StartOidcChallenge(returnUrl, prompt: null);
+	}
+
+
+	[AllowAnonymous]
+	[HttpGet("register")]
+	public IActionResult StartOidcRegistration([FromQuery] string? returnUrl = null)
+	{
+		// "prompt=create" asks the identity provider to show its registration page instead of the login page
+		return StartOidcChallenge(returnUrl, prompt: "create");
+	}
+
+
+	private IActionResult StartOidcChallenge(string? returnUrl, string? prompt)
+	{
 		if (!_oidcConfig.IsValidForLoginFlow())
 		{
 			return BadRequest("OIDC login is not enabled/configured");
@@ -44,9 +60,10 @@ public class OidcAuthenticationController : ControllerBase
 			return BadRequest("returnUrl must be a local URL");
 		}
 
-		var properties = new AuthenticationProperties
+		var properties = new OpenIdConnectChallengeProperties
 		{
-			RedirectUri = Url.Action(nameof(FinishOidcSignIn), new { returnUrl = target })
+			RedirectUri = Url.Action(nameof(FinishOidcSignIn), new { returnUrl = target }),
+			Prompt = prompt
 		};
 
 		return Challenge(properties, "Oidc");

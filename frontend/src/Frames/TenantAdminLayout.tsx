@@ -32,7 +32,7 @@ export const TenantAdminLayout = ({ children }: PropsWithChildren) => {
 	}, [adjustmentsModeIsOpen])
 
 	return (
-		<>
+		<div className="layout-root">
 			<TopBar className="tenant-admin-layout"
 				title="Manage tenant"
 				navIsOpen={navIsOpen}
@@ -123,6 +123,6 @@ export const TenantAdminLayout = ({ children }: PropsWithChildren) => {
 					{children}
 				</main>
 			</div>
-		</>
+		</div>
 	)
 }

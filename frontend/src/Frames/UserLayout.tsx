@@ -46,7 +46,7 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 	}
 
 	return (
-		<>
+		<div className="layout-root">
 			<TopBar className="user-layout"
 				navIsOpen={navIsOpen}
 				dispatchLayoutCommand={dispatchLayoutCommand}
@@ -112,7 +112,7 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 					{children}
 				</main>
 			</div>
-		</>
+		</div>
 	)
 }
 

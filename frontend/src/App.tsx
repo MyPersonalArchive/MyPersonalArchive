@@ -1,10 +1,10 @@
 import { SignInPage } from "./Pages/SignInPage"
+import { IndexPage } from "./Pages/IndexPage"
 import { useEffect } from "react"
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom"
 import { RoutePaths } from "./RoutePaths"
 import { SignOutPage } from "./Pages/SignOutPage"
 import { ArchiveItemListPage } from "./Pages/ArchiveItemListPage"
-import { IndexPage } from "./Pages/IndexPage"
 import { ArchiveItemPage } from "./Pages/ArchiveItemPage"
 import { PrefetchDataFrame } from "./Frames/PrefetchDataFrame"
 import { UserLayout } from "./Frames/UserLayout"
@@ -32,6 +32,10 @@ const router = createBrowserRouter([
 			</RootFrame>
 		),
 		children: [
+			{ /* Landing page */
+				path: RoutePaths.Index,
+				element: <IndexPage />
+			},
 			{ /* Tenant admin layout */
 				element: (
 					<TenantAdminLayout>
@@ -68,10 +72,6 @@ const router = createBrowserRouter([
 					</UserLayout>
 				),
 				children: [
-					{
-						path: RoutePaths.Index,
-						element: <IndexPage />
-					},
 					{
 						path: RoutePaths.SignIn,
 						element: <SignInPage />

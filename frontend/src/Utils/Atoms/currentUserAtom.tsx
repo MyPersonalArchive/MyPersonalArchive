@@ -8,3 +8,6 @@ export type User = {
 	roles: Set<string>
 }
 export const currentUserAtom = atom<User | undefined>(undefined)
+
+// True once we know whether a user is signed in (either way)
+export const authResolvedAtom = atom(false)

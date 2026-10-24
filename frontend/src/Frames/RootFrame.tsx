@@ -1,11 +1,13 @@
 import { useAtom, useSetAtom } from "jotai"
 import { PropsWithChildren, useEffect } from "react"
 import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
-import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
+import { currentUserAtom, authResolvedAtom } from "../Utils/Atoms/currentUserAtom"
 
 
 type GetAuthSettingsResponse = {
 	oidcAuthUrl: string
+	oidcRegisterUrl: string
+	isManaged: boolean
 }
 
 type GetCurrentUserInfoResponse = {
@@ -20,6 +22,7 @@ type GetCurrentUserInfoResponse = {
 export const RootFrame = ({ children }: PropsWithChildren) => {
 	const setAuthSettings = useSetAtom(authSettingsAtom)
 	const [currentUser, setCurrentUser] = useAtom(currentUserAtom)
+	const setAuthResolved = useSetAtom(authResolvedAtom)
 
 	useEffect(() => {
 		(async () => {
@@ -31,13 +34,15 @@ export const RootFrame = ({ children }: PropsWithChildren) => {
 			})
 
 			if (!httpResponse.ok) {
-				setAuthSettings({ oidcAuthUrl: undefined })
+				setAuthSettings({ oidcAuthUrl: undefined, oidcRegisterUrl: undefined, isManaged: undefined })
 				return null
 			}
 
 			const response = await httpResponse.json() as GetAuthSettingsResponse
 			const settings = {
-				oidcAuthUrl: response.oidcAuthUrl
+				oidcAuthUrl: response.oidcAuthUrl,
+				oidcRegisterUrl: response.oidcRegisterUrl,
+				isManaged: response.isManaged
 			}
 			setAuthSettings(settings)
 		})()
@@ -71,6 +76,8 @@ export const RootFrame = ({ children }: PropsWithChildren) => {
 				} catch (error) {
 					console.error("Auth check failed:", error)
 					return null
+				} finally {
+					setAuthResolved(true)
 				}
 			})()
 		}
