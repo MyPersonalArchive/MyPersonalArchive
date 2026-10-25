@@ -25,15 +25,32 @@ public class TenantService : SettingsServiceBase<TenantSettings>
 	public async Task<TenantSettings.Tenant> GetCurrentTenantSettingsAsync()
 	{
 		var tenants = await LoadSettingsAsync();
-		var currentTenant = tenants.Tenants.Single(tenant => tenant.Id == _ambientDataResolver.GetCurrentTenantId());
+		var currentTenant = tenants.Tenants.SingleOrDefault(tenant => tenant.Id == _ambientDataResolver.GetCurrentTenantId())
+			?? CreateDefaultTenant();
+
 		return currentTenant;
+	}
+
+	private TenantSettings.Tenant CreateDefaultTenant()
+	{
+		return new TenantSettings.Tenant
+		{
+			Id = _ambientDataResolver.GetCurrentTenantId() ?? throw new InvalidOperationException("GetCurrentTenantID returned null"),
+			TierId = "starter"
+		};
 	}
 
 	public async Task SetTierAsync(string tierId)
 	{
 		await ChangeSettingsAsync(settings =>
 		{
-			var currentTenant = settings.Tenants.Single(tenant => tenant.Id == _ambientDataResolver.GetCurrentTenantId());
+			var currentTenant = settings.Tenants.SingleOrDefault(tenant => tenant.Id == _ambientDataResolver.GetCurrentTenantId());
+			if (currentTenant == null)
+			{
+				currentTenant = CreateDefaultTenant();
+				settings.Tenants = settings.Tenants.Append(currentTenant);
+			}
+	
 			currentTenant.TierId = tierId;
 			return settings;
 		});
@@ -50,7 +67,6 @@ public class TenantSettings : SettingsBase
 	public class Tenant
 	{
 		public required string Id { get; set; }
-		public required string Title { get; set; }
 		public required string TierId { get; set; }
 	}
 }
