@@ -981,12 +981,56 @@
         "decisionStrategy": "UNANIMOUS",
         "authorizationSchema": {
           "resourceTypes": {
+            "Users": {
+              "type": "Users",
+              "scopes": [
+                "reset-password",
+                "manage-group-membership",
+                "impersonate",
+                "manage",
+                "delegate",
+                "map-roles",
+                "view"
+              ],
+              "scopeAliases": {
+                "manage": [
+                  "manage-members"
+                ],
+                "impersonate": [
+                  "impersonate-members"
+                ],
+                "delegate": [
+                  "delegate-members"
+                ],
+                "manage-group-membership": [
+                  "manage-membership-of-members"
+                ],
+                "view": [
+                  "view-members"
+                ]
+              },
+              "groupType": "Groups"
+            },
+            "Groups": {
+              "type": "Groups",
+              "scopes": [
+                "view-members",
+                "manage-membership-of-members",
+                "manage-members",
+                "manage-membership",
+                "impersonate-members",
+                "view",
+                "manage",
+                "delegate-members"
+              ],
+              "scopeAliases": {}
+            },
             "Roles": {
               "type": "Roles",
               "scopes": [
+                "map-role-client-scope",
                 "map-role",
-                "map-role-composite",
-                "map-role-client-scope"
+                "map-role-composite"
               ],
               "scopeAliases": {}
             },
@@ -1001,55 +1045,11 @@
             "Clients": {
               "type": "Clients",
               "scopes": [
+                "manage",
+                "map-roles-composite",
                 "view",
                 "map-roles-client-scope",
-                "map-roles",
-                "manage",
-                "map-roles-composite"
-              ],
-              "scopeAliases": {}
-            },
-            "Users": {
-              "type": "Users",
-              "scopes": [
-                "impersonate",
-                "manage",
-                "delegate",
-                "map-roles",
-                "view",
-                "reset-password",
-                "manage-group-membership"
-              ],
-              "scopeAliases": {
-                "delegate": [
-                  "delegate-members"
-                ],
-                "manage-group-membership": [
-                  "manage-membership-of-members"
-                ],
-                "view": [
-                  "view-members"
-                ],
-                "manage": [
-                  "manage-members"
-                ],
-                "impersonate": [
-                  "impersonate-members"
-                ]
-              },
-              "groupType": "Groups"
-            },
-            "Groups": {
-              "type": "Groups",
-              "scopes": [
-                "impersonate-members",
-                "view",
-                "manage",
-                "delegate-members",
-                "view-members",
-                "manage-membership-of-members",
-                "manage-members",
-                "manage-membership"
+                "map-roles"
               ],
               "scopeAliases": {}
             }
@@ -2113,9 +2113,113 @@
   },
   "eventsEnabled": false,
   "eventsListeners": [
-    "jboss-logging"
+    "jboss-logging",
+    "org-on-register"
   ],
-  "enabledEventTypes": [],
+  "enabledEventTypes": [
+    "UPDATE_CONSENT_ERROR",
+    "UPDATE_TOTP",
+    "UPDATE_CREDENTIAL",
+    "IMPERSONATE_ERROR",
+    "CUSTOM_REQUIRED_ACTION",
+    "RESTART_AUTHENTICATION",
+    "VERIFIABLE_CREDENTIAL_OFFER_REQUEST",
+    "IMPERSONATE",
+    "LOGIN",
+    "CLIENT_INITIATED_ACCOUNT_LINKING",
+    "OAUTH2_EXTENSION_GRANT",
+    "USER_DISABLED_BY_PERMANENT_LOCKOUT",
+    "VERIFIABLE_CREDENTIAL_REQUEST",
+    "REMOVE_CREDENTIAL_ERROR",
+    "TOKEN_EXCHANGE",
+    "REGISTER",
+    "DELETE_ACCOUNT_ERROR",
+    "VERIFIABLE_CREDENTIAL_OFFER_REQUEST_ERROR",
+    "IDENTITY_PROVIDER_LINK_ACCOUNT",
+    "USER_DISABLED_BY_TEMPORARY_LOCKOUT",
+    "DELETE_ACCOUNT",
+    "UPDATE_PASSWORD",
+    "IDENTITY_PROVIDER_FIRST_LOGIN",
+    "VERIFY_EMAIL",
+    "CLIENT_LOGIN_ERROR",
+    "RESTART_AUTHENTICATION_ERROR",
+    "EXECUTE_ACTIONS",
+    "REMOVE_FEDERATED_IDENTITY_ERROR",
+    "TOKEN_EXCHANGE_ERROR",
+    "VERIFIABLE_CREDENTIAL_PRE_AUTHORIZED_GRANT",
+    "FEDERATED_IDENTITY_OVERRIDE_LINK",
+    "SEND_IDENTITY_PROVIDER_LINK_ERROR",
+    "VERIFIABLE_CREDENTIAL_CREATE_OFFER",
+    "JWT_AUTHORIZATION_GRANT_ERROR",
+    "VERIFIABLE_CREDENTIAL_PRE_AUTHORIZED_GRANT_ERROR",
+    "EXECUTE_ACTION_TOKEN_ERROR",
+    "OAUTH2_EXTENSION_GRANT_ERROR",
+    "SEND_VERIFY_EMAIL",
+    "EXECUTE_ACTIONS_ERROR",
+    "OAUTH2_DEVICE_CODE_TO_TOKEN",
+    "OAUTH2_DEVICE_VERIFY_USER_CODE_ERROR",
+    "REVOKE_GRANT_ERROR",
+    "UPDATE_EMAIL_ERROR",
+    "INVITE_ORG_ERROR",
+    "UPDATE_PROFILE",
+    "VERIFIABLE_CREDENTIAL_REQUEST_ERROR",
+    "SEND_IDENTITY_PROVIDER_LINK",
+    "SEND_VERIFY_EMAIL_ERROR",
+    "CLIENT_INITIATED_ACCOUNT_LINKING_ERROR",
+    "OAUTH2_DEVICE_AUTH_ERROR",
+    "REMOVE_TOTP_ERROR",
+    "VERIFY_EMAIL_ERROR",
+    "CLIENT_UPDATE",
+    "JWT_AUTHORIZATION_GRANT",
+    "UPDATE_TOTP_ERROR",
+    "VERIFY_PROFILE",
+    "GRANT_CONSENT_ERROR",
+    "SEND_RESET_PASSWORD",
+    "GRANT_CONSENT",
+    "VERIFY_PROFILE_ERROR",
+    "REMOVE_TOTP",
+    "REVOKE_GRANT",
+    "LOGIN_ERROR",
+    "CLIENT_LOGIN",
+    "RESET_PASSWORD_ERROR",
+    "CODE_TO_TOKEN_ERROR",
+    "OAUTH2_DEVICE_CODE_TO_TOKEN_ERROR",
+    "UPDATE_PROFILE_ERROR",
+    "OAUTH2_DEVICE_VERIFY_USER_CODE",
+    "UPDATE_PASSWORD_ERROR",
+    "IDENTITY_PROVIDER_LOGIN",
+    "AUTHREQID_TO_TOKEN",
+    "LOGOUT",
+    "CLIENT_REGISTER",
+    "CLIENT_DELETE",
+    "FEDERATED_IDENTITY_LINK_ERROR",
+    "CLIENT_DELETE_ERROR",
+    "PERMISSION_TOKEN",
+    "UPDATE_CREDENTIAL_ERROR",
+    "OAUTH2_DEVICE_AUTH",
+    "REMOVE_FEDERATED_IDENTITY",
+    "IDENTITY_PROVIDER_POST_LOGIN",
+    "VERIFIABLE_CREDENTIAL_CREATE_OFFER_ERROR",
+    "IDENTITY_PROVIDER_LINK_ACCOUNT_ERROR",
+    "FEDERATED_IDENTITY_OVERRIDE_LINK_ERROR",
+    "UPDATE_EMAIL",
+    "REGISTER_ERROR",
+    "LOGOUT_ERROR",
+    "CLIENT_UPDATE_ERROR",
+    "AUTHREQID_TO_TOKEN_ERROR",
+    "CLIENT_REGISTER_ERROR",
+    "FEDERATED_IDENTITY_LINK",
+    "INVITE_ORG",
+    "IDENTITY_PROVIDER_LOGIN_ERROR",
+    "RESET_PASSWORD",
+    "REMOVE_CREDENTIAL",
+    "UPDATE_CONSENT",
+    "SEND_RESET_PASSWORD_ERROR",
+    "CUSTOM_REQUIRED_ACTION_ERROR",
+    "IDENTITY_PROVIDER_POST_LOGIN_ERROR",
+    "CODE_TO_TOKEN",
+    "IDENTITY_PROVIDER_FIRST_LOGIN_ERROR"
+  ],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
   "identityProviders": [],

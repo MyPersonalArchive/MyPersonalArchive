@@ -17,8 +17,8 @@ services:
     container_name: keycloak-server
     restart: unless-stopped
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=p@ssw0rd
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=p@ssw0rd
       - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.pem
       - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
       # Browser-facing URLs use the public hostname, while backchannel endpoints (token, jwks, ...)
@@ -29,6 +29,7 @@ services:
     volumes:
       - ~/data/mpa/https/:/opt/keycloak/conf/:ro
       - keycloak-data:/opt/keycloak/data/
+      - ~/dev/org-on-register/out/org-on-register.jar:/opt/keycloak/providers/org-on-register.jar:ro
     ports:
       - "8080:8080"
       - "8443:8443"
