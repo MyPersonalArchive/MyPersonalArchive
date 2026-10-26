@@ -8,9 +8,14 @@ import { quickEditToolWindowIsOpenAtom } from "../../Utils/Atoms"
 import { faArrowLeft, faArrowRight, faDownLeftAndUpRightToCenter, faToolbox, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { CommonBlob } from "./types"
 import { ToolWindow } from "./ToolWindow"
+import type { ToolWindowTab } from "./ToolWindow"
 import { Position } from "../../types/Position"
 import { Size } from "../../types/Size"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
+import { OCR_MIME_TYPES } from "../../Utils/OCR/tesseractWorker"
+import { OcrImageView } from "./ReceiptCapture/OcrImageView"
+import { useReceiptCapture } from "./ReceiptCapture/useReceiptCapture"
+import type { ReceiptCaptureApi } from "./ReceiptCapture/useReceiptCapture"
 
 
 export type Props = {
@@ -21,21 +26,38 @@ export type Props = {
 	movePrevious: () => void
 	moveNext: () => void
 	onRemoveBlob: (blob: CommonBlob) => void
+	receipt: ReceiptCaptureApi
 }
-export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, onRemoveBlob }: Props) => {
+export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, movePrevious, moveNext, onRemoveBlob, receipt }: Props) => {
 	const [toolWindowIsOpen, setToolWindowIsOpen] = useAtom(quickEditToolWindowIsOpenAtom)
 	const [toolWindowPosition, setToolWindowPosition] = useState<Position>({ x: 100, y: 100 })
-	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 360, height: 300 })
+	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 400, height: 520 })
+	const [selectedTab, setSelectedTab] = useState<ToolWindowTab>()
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
+	const blobId = "id" in blob.identifier ? blob.identifier.id : undefined
+	const isOcrImage = blobId !== undefined && OCR_MIME_TYPES.includes(blob.mimeType)
+
+	const url = "id" in blob.identifier
+		? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.full}&inline=true`
+		: blob.url
+
+	const capture = useReceiptCapture(blob, receipt, toolWindowIsOpen, url)
+
+	// Until the user picks a tab, follow the content: captured text means the receipt tab is
+	// the useful one.
+	const activeTab: ToolWindowTab = selectedTab ?? (capture.pageLines ? "receipt" : "general")
+
 	return (
-		<LightBox key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName} onClose={() => minimize()}>
+		<LightBox key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
+			onClose={() => minimize()}
+			closeOnEscape={!toolWindowIsOpen}
+		>
 			<div className="w-full h-full flex justify-center action-bar-host">
-				<BaseViewer
-					url={"id" in blob.identifier
-						? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.full}&inline=true`
-						: blob.url}
-					mimeType={blob.mimeType} />
+				{toolWindowIsOpen && isOcrImage && activeTab === "receipt"
+					? <OcrImageView url={url} capture={capture} />
+					: <BaseViewer url={url} mimeType={blob.mimeType} />
+				}
 				{toolWindowIsOpen &&
 					<ToolWindow
 						canMoveNext={canMoveNext}
@@ -44,9 +66,15 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 						toolWindowPosition={toolWindowPosition}
 						toolWindowSize={toolWindowSize}
 						setToolWindowPosition={setToolWindowPosition}
-						setToolWindowSize={setToolWindowSize} />}
+						setToolWindowSize={setToolWindowSize}
+						activeTab={activeTab}
+						onSelectTab={setSelectedTab}
+						blobId={blobId}
+						receipt={receipt}
+						capture={capture}
+					/>}
 				<div className="action-bar">
-					<button type="button" disabled onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick registration tool">
+					<button type="button" onClick={e => { setToolWindowIsOpen(!toolWindowIsOpen); e.stopPropagation() }} title="Quick edit archive item">
 						<FontAwesomeIcon icon={faToolbox} size="1x" />
 					</button>
 
@@ -64,7 +92,7 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 					</button>
 				</div>
 			</div>
-			
+
 			<ConfirmationDialog
 				open={openDeleteThisDialog}
 				prompt="Are you sure you want to remove this upload?"
@@ -73,7 +101,7 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 					onRemoveBlob(blob)
 				}}
 			/>
-			
+
 		</LightBox>
 	)
 }

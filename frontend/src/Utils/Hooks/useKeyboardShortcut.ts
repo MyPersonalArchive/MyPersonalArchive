@@ -4,20 +4,34 @@ import { useEffect, useCallback, KeyboardEvent } from "react"
 type KeyExpression = (e: KeyboardEvent) => boolean
 
 
+const isEditableTarget = (target: EventTarget | null): boolean => {
+	const element = target as HTMLElement | null
+	if (!element || typeof element.tagName !== "string") return false
+
+	return element.tagName === "INPUT"
+		|| element.tagName === "TEXTAREA"
+		|| element.tagName === "SELECT"
+		|| element.isContentEditable
+}
+
+
 export const useKeyboardShortcut = (
 	keyExpression: KeyExpression,
 	callback: (e: KeyboardEvent) => void,
-	enabled: boolean = true
+	enabled: boolean = true,
+	ignoreEditable: boolean = false
 ) => {
 	const handler = useCallback(
 		(e: KeyboardEvent) => {
+			if (ignoreEditable && isEditableTarget(e.target)) return
+
 			if (keyExpression(e)) {
 				e.preventDefault()
 				e.stopPropagation()
 				callback(e)
 			}
 		},
-		[callback, keyExpression]
+		[callback, keyExpression, ignoreEditable]
 	)
 
 	useEffect(() => {

@@ -27,7 +27,7 @@ public sealed record BlobOcrPage(
 	JsonArray? Blocks);
 
 public sealed record BlobOcrUpload(
-	string FileName,
+	string? FileName,
 	string EngineVersion,
 	int Oem,
 	string Psm,

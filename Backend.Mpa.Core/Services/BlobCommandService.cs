@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
 using Backend.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,14 +76,11 @@ public class BlobCommandService
 	public const int MaxOcrTextLength = 2_000_000;
 
 
-	/// <summary>
-	/// Stores the OCR result as a sidecar file next to the blob content, so it is deleted together with the blob.
-	/// </summary>
-	private async Task StoreBlobOcr(BlobModel blobMetadata, BlobOcrUpload upload)
+	private async Task<bool> StoreBlobOcr(BlobModel blobMetadata, BlobOcrUpload upload)
 	{
 		if (upload.Text.Length > MaxOcrTextLength)
 		{
-			return;
+			return false;
 		}
 
 		var ocr = new BlobOcrModel(
@@ -103,6 +101,25 @@ public class BlobCommandService
 
 		await using var ocrStream = await _blobObjectStore.GetWritableObjectStream(blobMetadata.Id, "ocr.json");
 		await JsonSerializer.SerializeAsync(ocrStream, ocr, JsonSerializerDefaults.Options);
+		return true;
+	}
+
+
+	public async Task SaveBlobOcr(Guid blobId, BlobOcrUpload ocr)
+	{
+		using var metadataStream = await _blobObjectStore.GetObject(blobId, "metadata.json");
+		if (metadataStream is null)
+		{
+			throw new HttpNotFoundException($"Blob with id {blobId} not found");
+		}
+
+		var blobMetadata = await JsonSerializer.DeserializeAsync<BlobModel>(metadataStream, JsonSerializerDefaults.Options)
+			?? throw new HttpNotFoundException($"Metadata for blob with id {blobId} was null after deserialization");
+
+		if (!await StoreBlobOcr(blobMetadata, ocr))
+		{
+			throw new HttpBadRequestException($"OCR text exceeds the maximum length of {MaxOcrTextLength} characters");
+		}
 	}
 
 
