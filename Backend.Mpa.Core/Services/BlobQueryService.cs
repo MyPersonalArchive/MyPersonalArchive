@@ -102,6 +102,21 @@ public class BlobQueryService
 	}
 
 
+	/// <summary>
+	/// Reads the OCR sidecar for a blob, or <c>null</c> when OCR has never been run on it.
+	/// </summary>
+	public async Task<BlobOcrModel?> GetBlobOcr(Guid blobId)
+	{
+		using var ocrStream = await _blobObjectStore.GetObject(blobId, "ocr.json");
+		if (ocrStream is null)
+		{
+			return null;
+		}
+
+		return await JsonSerializer.DeserializeAsync<BlobOcrModel>(ocrStream, JsonSerializerDefaults.Options);
+	}
+
+
 	public async Task<ICollection<BlobModel>> GetBlobs(IEnumerable<Guid> blobIds)
 	{
 		var blobs = new List<BlobModel>();

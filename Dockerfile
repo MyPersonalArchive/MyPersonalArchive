@@ -9,7 +9,7 @@ RUN chmod +x /tmp/build-libvips.sh && /tmp/build-libvips.sh
 FROM node:24-slim AS frontend-build
 WORKDIR /src/frontend
 RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 RUN pnpm run build

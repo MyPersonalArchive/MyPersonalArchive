@@ -23,6 +23,7 @@ import { allMetadataTypes } from "../../Components/MetadataTypes"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 import { useNextAndPreviousNavigation } from "../../Utils/Hooks/useNextAndPreviousNavigation"
 import { BlobSelectionDialog } from "./BlobSelectionDialog"
+import { enqueueOcr, getOcrResult } from "../../Utils/OCR/ocrQueue"
 
 
 type Props = {
@@ -37,6 +38,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 	const [openBlobSelectionDialog, setOpenBlobSelectionDialog] = useState(false)
+	const [isSaving, setIsSaving] = useState(false)
 
 	const [serverBlobs, setServerBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
@@ -61,6 +63,17 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	const allTags = useAtomValue(tagsAtom)
 
 	const { metadata, dispatch } = useMetadata(allMetadataTypes)
+
+	// OCR only applies to receipts, so it starts once the receipt metadata type is selected.
+	const receiptIsSelected = "receipt" in metadata
+
+	useEffect(() => {
+		if (!receiptIsSelected) {
+			return
+		}
+
+		localBlobs.forEach(blob => { enqueueOcr(blob.fileData) })
+	}, [receiptIsSelected, localBlobs])
 
 	const {archiveItemId} = useParams()
 	const location = useLocation()
@@ -105,28 +118,43 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 		})
 	}
 
-	const save = () => {
-		console.log("Saving archive item with id:", id)
-		const formData = new FormData()
-		const storeRequest = {
-			id: id!,
-			title: title!,
-			documentDate: documentDate ? new Date(documentDate) : undefined,
-			tags,
-			notes,
-			metadata,
-			existingBlobIds: serverBlobs.map(blob => blob.id)
+	const save = async () => {
+		if (isSaving) {
+			return
 		}
 
-		formData.append("rawRequest", JSON.stringify(storeRequest))
+		setIsSaving(true)
+		try {
+			// Receipt images are recognized in the background as soon as they are added.
+			// Saving waits for them so the result travels with the files themselves.
+			const ocr = receiptIsSelected
+				? await Promise.all(localBlobs.map(blob => getOcrResult(blob.fileData)))
+				: []
 
-		localBlobs.forEach(blob => {
-			formData.append("files", blob.fileData, blob.fileName)
-		})
+			const formData = new FormData()
+			const storeRequest = {
+				id: id!,
+				title: title!,
+				documentDate: documentDate ? new Date(documentDate) : undefined,
+				tags,
+				notes,
+				metadata,
+				existingBlobIds: serverBlobs.map(blob => blob.id),
+				ocr: ocr.length > 0 ? ocr : undefined
+			}
 
-		apiClient.putFormData("/api/archive/Store", formData)
+			formData.append("rawRequest", JSON.stringify(storeRequest))
 
-		navigate(generatePath(RoutePaths.Archive.Edit, {archiveItemId: id}), {replace: true})
+			localBlobs.forEach(blob => {
+				formData.append("files", blob.fileData, blob.fileName)
+			})
+
+			await apiClient.putFormData("/api/archive/Store", formData)
+
+			navigate(generatePath(RoutePaths.Archive.Edit, {archiveItemId: id}), {replace: true})
+		} finally {
+			setIsSaving(false)
+		}
 	}
 
 	useKeyboardShortcut(SaveKey, () => { save() }, true)
@@ -261,10 +289,15 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 						</div>
 
 						<div className="dont-touch-walls stack-horizontal to-the-right mb-4 sticky-bottom bg-base-200 sticky-bottom-gradient">
-							<button className="btn btn-primary" type="submit">
-								Save
-								<kbd className="kbd kbd-sm">⌘</kbd>
-								<kbd className="kbd kbd-sm">S</kbd>
+							<button className="btn btn-primary" type="submit" disabled={isSaving}>
+								{isSaving
+									? "Saving…"
+									: <>
+										Save
+										<kbd className="kbd kbd-sm">⌘</kbd>
+										<kbd className="kbd kbd-sm">S</kbd>
+									</>
+								}
 							</button>
 							<button className="btn btn-warning" type="button" onClick={() => setOpenDeleteDialog(true)}>
 								Delete

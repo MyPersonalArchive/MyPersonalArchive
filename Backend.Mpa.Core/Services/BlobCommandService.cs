@@ -25,11 +25,13 @@ public class BlobCommandService
 	}
 
 
-	public async Task<IEnumerable<Guid>> UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files)
+	public async Task<IEnumerable<Guid>> UploadBlobs(IEnumerable<(Stream contentStream, string fileName, string mimeType)> files, IReadOnlyList<BlobOcrUpload?>? ocr = null)
 	{
+		var fileList = files.ToList();
 		var blobs = new List<Guid>();
-		foreach (var file in files)
+		for (var index = 0; index < fileList.Count; index++)
 		{
+			var file = fileList[index];
 			var blobId = Guid.NewGuid();
 			file.contentStream.Seek(0, SeekOrigin.Begin);
 			await _blobObjectStore.StoreObject(blobId, Path.GetExtension(file.fileName).TrimStart('.'), file.contentStream);
@@ -54,11 +56,53 @@ public class BlobCommandService
 			await using var objectStream = await _blobObjectStore.GetWritableObjectStream(blobId, "metadata.json");
 			await JsonSerializer.SerializeAsync(objectStream, metadata, JsonSerializerDefaults.Options);
 
+			// The OCR result is sent alongside the file, in the same order. The file name is verified so a
+			// reordered upload can never attach the text of one file to another.
+			var blobOcr = ocr is not null && index < ocr.Count ? ocr[index] : null;
+			if (blobOcr is not null && blobOcr.FileName == file.fileName)
+			{
+				await StoreBlobOcr(metadata, blobOcr);
+			}
+
 			blobs.Add(blobId);
 		}
 
 		await _blobPublicationService.PublishBlobsAddedMessage(blobs);
 		return blobs;
+	}
+
+
+	public const int MaxOcrTextLength = 2_000_000;
+
+
+	/// <summary>
+	/// Stores the OCR result as a sidecar file next to the blob content, so it is deleted together with the blob.
+	/// </summary>
+	private async Task StoreBlobOcr(BlobModel blobMetadata, BlobOcrUpload upload)
+	{
+		if (upload.Text.Length > MaxOcrTextLength)
+		{
+			return;
+		}
+
+		var ocr = new BlobOcrModel(
+			BlobId: blobMetadata.Id,
+			SourceFileName: blobMetadata.OriginalFilename,
+			MimeType: blobMetadata.MimeType,
+			PageCount: upload.Pages.Count,
+			Engine: "tesseract.js",
+			EngineVersion: upload.EngineVersion,
+			Oem: upload.Oem,
+			Psm: upload.Psm,
+			RotateRadians: upload.RotateRadians,
+			Language: upload.Language,
+			Text: upload.Text,
+			Pages: upload.Pages,
+			CreatedAt: DateTimeOffset.Now,
+			CreatedBy: _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"));
+
+		await using var ocrStream = await _blobObjectStore.GetWritableObjectStream(blobMetadata.Id, "ocr.json");
+		await JsonSerializer.SerializeAsync(ocrStream, ocr, JsonSerializerDefaults.Options);
 	}
 
 

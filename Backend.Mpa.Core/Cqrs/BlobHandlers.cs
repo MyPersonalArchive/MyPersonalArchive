@@ -48,9 +48,23 @@ public class DeleteBlobs : ICommand<DeleteBlobs>
 }
 
 
+[RequireOrganizationId]
+public class GetBlobOcr : IQuery<GetBlobOcr, GetBlobOcr.Response>
+{
+	public Guid Id { get; set; }
+
+	public class Response
+	{
+		public bool Exists { get; set; }
+		public BlobOcrModel? Ocr { get; set; }
+	}
+}
+
+
 public class BlobHandlers :
 	IAsyncQueryHandler<GetBlob, GetBlob.Response>,
 	IAsyncQueryHandler<ListBlobs, IEnumerable<ListBlobs.Response>>,
+	IAsyncQueryHandler<GetBlobOcr, GetBlobOcr.Response>,
 	IAsyncCommandHandler<DeleteBlobs>
 {
 	private readonly BlobQueryService _blobQueryService;
@@ -104,5 +118,16 @@ public class BlobHandlers :
 	public async Task Handle(DeleteBlobs command)
 	{
 		await _blobCommandService.DeleteBlobs(command.BlobIds);
+	}
+
+
+	public async Task<GetBlobOcr.Response> Handle(GetBlobOcr query)
+	{
+		var ocr = await _blobQueryService.GetBlobOcr(query.Id);
+		return new GetBlobOcr.Response
+		{
+			Exists = ocr is not null,
+			Ocr = ocr
+		};
 	}
 }
