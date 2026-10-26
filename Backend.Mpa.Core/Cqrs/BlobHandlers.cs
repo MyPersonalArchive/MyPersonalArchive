@@ -61,11 +61,20 @@ public class GetBlobOcr : IQuery<GetBlobOcr, GetBlobOcr.Response>
 }
 
 
+[RequireOrganizationId]
+public class SaveBlobOcr : ICommand<SaveBlobOcr>
+{
+	public Guid Id { get; set; }
+	public required BlobOcrUpload Ocr { get; set; }
+}
+
+
 public class BlobHandlers :
 	IAsyncQueryHandler<GetBlob, GetBlob.Response>,
 	IAsyncQueryHandler<ListBlobs, IEnumerable<ListBlobs.Response>>,
 	IAsyncQueryHandler<GetBlobOcr, GetBlobOcr.Response>,
-	IAsyncCommandHandler<DeleteBlobs>
+	IAsyncCommandHandler<DeleteBlobs>,
+	IAsyncCommandHandler<SaveBlobOcr>
 {
 	private readonly BlobQueryService _blobQueryService;
 	private readonly BlobCommandService _blobCommandService;
@@ -129,5 +138,11 @@ public class BlobHandlers :
 			Exists = ocr is not null,
 			Ocr = ocr
 		};
+	}
+
+
+	public async Task Handle(SaveBlobOcr command)
+	{
+		await _blobCommandService.SaveBlobOcr(command.Id, command.Ocr);
 	}
 }

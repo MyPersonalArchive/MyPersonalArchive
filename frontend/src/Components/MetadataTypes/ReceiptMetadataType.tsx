@@ -4,8 +4,9 @@ import { changeAtIndex, moveInArray, removeAtIndex } from "../../Utils/array-hel
 import { MimeTypeConverterArray, useDrop, useSortableDragDrop } from "../DragDropHelpers"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash, faPlus, faGripVertical } from "@fortawesome/free-solid-svg-icons"
+import type { OcrBbox } from "../../Utils/OCR/ocrGeometry"
 
-type Command =
+export type ReceiptCommand =
 	| { action: "INIT" }
 	| { action: "METADATA_LOADED", metadata: State }
 	| { action: "UPDATE_CURRENCY", currency: string }
@@ -23,11 +24,23 @@ type State = {
 	receiptLines: ReceiptLine[]
 }
 
-type ReceiptLine = {
+/**
+ * Where a captured line came from, in the coordinate space of the OCR'ed image.
+ */
+export type ReceiptLineSource = {
+	blobId: string
+	pageNumber: number
+	bbox: OcrBbox
+	text: string
+	confidence: number
+}
+
+export type ReceiptLine = {
 	description: string
 	amount: string
 	warranty: string
 	dispositionStatus: string
+	source?: ReceiptLineSource
 }
 
 
@@ -37,7 +50,7 @@ const summarize = (state: State) => {
 }
 
 
-const reducer = (state: State, command: Command): State => {
+const reducer = (state: State, command: ReceiptCommand): State => {
 	switch (command.action) {
 		case "INIT":
 			return {
@@ -124,7 +137,7 @@ export const receiptLineMimeTypeConverters: MimeTypeConverterArray<ReceiptLine, 
 
 const Component = (props: MetadataComponentProps) => {
 	const state = props.state
-	const dispatch = props.dispatch as React.Dispatch<Command>
+	const dispatch = props.dispatch as React.Dispatch<ReceiptCommand>
 
 	const dnd = useSortableDragDrop<ReceiptLine, HTMLDivElement>(
 		".draghandle",

@@ -12,6 +12,7 @@ import { FileDrop } from "../../Components/FileDrop"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
 import { BlobMaximized } from "./BlobMaximized"
+import type { ReceiptLine } from "../../Components/MetadataTypes/ReceiptMetadataType"
 import { TagsInput } from "../../Components/TagsInput"
 import { BlobThumbnail } from "./BlobThumbnail"
 import { MetadataSection } from "./MetadataSection"
@@ -56,8 +57,8 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 		setCurrentItem
 	} = useNextAndPreviousNavigation(allBlobs, null)
 
-	useKeyboardShortcut(LeftKey, movePrevious, canMovePrevious)
-	useKeyboardShortcut(RightKey, moveNext, canMoveNext)
+	useKeyboardShortcut(LeftKey, movePrevious, canMovePrevious, true)
+	useKeyboardShortcut(RightKey, moveNext, canMoveNext, true)
 
 
 	const allTags = useAtomValue(tagsAtom)
@@ -66,6 +67,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 	// OCR only applies to receipts, so it starts once the receipt metadata type is selected.
 	const receiptIsSelected = "receipt" in metadata
+	const receiptMetadata = metadata["receipt"] as { currency?: string; receiptLines?: ReceiptLine[] } | undefined
 
 	useEffect(() => {
 		if (!receiptIsSelected) {
@@ -327,6 +329,12 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 					movePrevious={movePrevious}
 					moveNext={moveNext}
 					onRemoveBlob={onRemoveBlob}
+					receipt={{
+						lines: receiptMetadata?.receiptLines ?? [],
+						currency: receiptMetadata?.currency ?? "",
+						ensureSelected: () => dispatch(MetadataControlPath)({ action: "SELECT_METADATA_TYPE", type: "receipt" }),
+						dispatch: command => dispatch("receipt")(command)
+					}}
 				/>
 			)
 	)
