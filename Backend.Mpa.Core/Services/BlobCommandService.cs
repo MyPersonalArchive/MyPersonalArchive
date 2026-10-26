@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Backend.Core.Cqrs.Infrastructure;
 using Backend.Core.Infrastructure;
@@ -75,7 +76,6 @@ public class BlobCommandService
 
 	public const int MaxOcrTextLength = 2_000_000;
 
-
 	private async Task<bool> StoreBlobOcr(BlobModel blobMetadata, BlobOcrUpload upload)
 	{
 		if (upload.Text.Length > MaxOcrTextLength)
@@ -99,8 +99,17 @@ public class BlobCommandService
 			CreatedAt: DateTimeOffset.Now,
 			CreatedBy: _resolver.GetCurrentUsername() ?? throw new Exception("Missing NameIdentifier claim"));
 
-		await using var ocrStream = await _blobObjectStore.GetWritableObjectStream(blobMetadata.Id, "ocr.json");
-		await JsonSerializer.SerializeAsync(ocrStream, ocr, JsonSerializerDefaults.Options);
+		await using (var ocrStream = await _blobObjectStore.GetWritableObjectStream(blobMetadata.Id, "ocr.json"))
+		{
+			await JsonSerializer.SerializeAsync(ocrStream, ocr, JsonSerializerDefaults.Options);
+		}
+
+		await using (var textStream = await _blobObjectStore.GetWritableObjectStream(blobMetadata.Id, "ocr.txt"))
+		{
+			var Utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+			await textStream.WriteAsync(Utf8NoBom.GetBytes(upload.Text));
+		}
+
 		return true;
 	}
 
