@@ -18,7 +18,7 @@ export type GetResponse = {
 
 export type LocalBlob = {
 	fileName: string
-	fileData: Blob
+	fileData: File
 }
 
 export type CommonBlob = {

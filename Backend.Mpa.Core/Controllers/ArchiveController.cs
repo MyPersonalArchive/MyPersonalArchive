@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Backend.Mpa.Core.Services;
+using Backend.Mpa.Core.Store;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public class ArchiveController : ControllerBase
 		}
 
 		var uploadedBlobs = files.Select(file => (file.OpenReadStream(), file.FileName, file.ContentType));
-		await _archiveItemCommandService.StoreArchiveItem(storeRequest.Id, storeRequest.Title, storeRequest.Tags, storeRequest.Notes, storeRequest.Metadata, storeRequest.DocumentDate, storeRequest.ExistingBlobIds, uploadedBlobs);
+		await _archiveItemCommandService.StoreArchiveItem(storeRequest.Id, storeRequest.Title, storeRequest.Tags, storeRequest.Notes, storeRequest.Metadata, storeRequest.DocumentDate, storeRequest.ExistingBlobIds, uploadedBlobs, storeRequest.Ocr);
 
 		return NoContent();
 	}
@@ -47,6 +48,7 @@ public class ArchiveController : ControllerBase
 		public string? Notes { get; set; }
 		public required JsonObject Metadata { get; set; }
 		public required Guid[] ExistingBlobIds { get; set; }
+		public List<BlobOcrUpload?>? Ocr { get; set; }
 	}
 	#endregion
 }

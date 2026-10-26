@@ -38,9 +38,10 @@ public class ArchiveItemCommandService
 													 JsonObject? metadata,
 													 DateTimeOffset? documentDate,
 													 IEnumerable<Guid> existingBlobIds,
-													 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+													 IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs,
+													 IReadOnlyList<BlobOcrUpload?>? blobOcr = null)
 	{
-		var newBlobIds = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var newBlobIds = await _blobCommandService.UploadBlobs(uploadedBlobs, blobOcr);
 		var connectedBlobIds = new HashSet<Guid>([.. existingBlobIds, .. newBlobIds]);
 
 		var newArchiveItemId = Guid.NewGuid();
@@ -80,9 +81,10 @@ public class ArchiveItemCommandService
 													   JsonObject? metadata,
 													   DateTimeOffset? documentDate,
 													   IEnumerable<Guid> existingBlobIds,
-													   IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs)
+													   IEnumerable<(Stream stream, string fileName, string contentType)> uploadedBlobs,
+													   IReadOnlyList<BlobOcrUpload?>? blobOcr = null)
 	{
-		var uploadedBlobIds = await _blobCommandService.UploadBlobs(uploadedBlobs);
+		var uploadedBlobIds = await _blobCommandService.UploadBlobs(uploadedBlobs, blobOcr);
 
 		var originalArchiveItem = await _archiveItemQueryService.GetArchiveItem(archiveItemId) ?? null;
 		var updatedArchiveItem = new ArchiveItemModel
