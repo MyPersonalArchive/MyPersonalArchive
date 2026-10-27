@@ -24,7 +24,7 @@ import { allMetadataTypes } from "../../Components/MetadataTypes"
 import { ConfirmationDialog } from "../../Components/ConfirmationDialog"
 import { useNextAndPreviousNavigation } from "../../Utils/Hooks/useNextAndPreviousNavigation"
 import { BlobSelectionDialog } from "./BlobSelectionDialog"
-import { enqueueOcr, getOcrResult } from "../../Utils/OCR/ocrQueue"
+import { enqueueOcr, getOcrResult, isOcrPending, subscribeOcrQueue } from "../../Utils/OCR/ocrQueue"
 
 
 type Props = {
@@ -43,6 +43,11 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 
 	const [serverBlobs, setServerBlobs] = useState<BlobDisplayInfo[]>([])
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
+	const [, setOcrQueueVersion] = useState(0)
+
+	// Recognition runs outside React, so the thumbnails re-render when a file starts or finishes.
+	useEffect(() => subscribeOcrQueue(() => setOcrQueueVersion(version => version + 1)), [])
+
 	const allBlobs: CommonBlob[] = [
 		...serverBlobs.map(blob => ({ url: `/api/blob/GetFile?blobId=${blob.id}`, mimeType: blob.mimeType, identifier: { id: blob.id } })),
 		...localBlobs.map(blob => ({ url: blob.url, mimeType: blob.fileData.type, identifier: { fileName: blob.fileName }, localFile: blob.fileData }))
@@ -275,6 +280,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 								<BlobThumbnail
 									key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}
 									blob={blob}
+									ocrPending={blob.localFile !== undefined && isOcrPending(blob.localFile)}
 									maximize={() => setCurrentItem(blob)}
 									onRemoveBlob={onRemoveBlob}
 								/>

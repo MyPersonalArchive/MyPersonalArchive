@@ -6,12 +6,22 @@ import type { OcrUpload } from "./types"
 const MAX_OCR_WAIT_MS = 120_000
 
 const jobs = new WeakMap<File, Promise<OcrUpload | undefined>>()
+const inFlight = new Set<File>()
+const progressListeners = new WeakMap<File, (progress: number) => void>()
+const queueListeners = new Set<() => void>()
 let queue: Promise<unknown> = Promise.resolve()
+
+
+const notifyQueueChanged = () => queueListeners.forEach(listener => listener())
 
 
 const recognize = async (file: File): Promise<OcrUpload | undefined> => {
 	try {
-		const result = await recognizeImage(file)
+		const result = await recognizeImage(file, update => {
+			if (update.status === "recognizing text") {
+				progressListeners.get(file)?.(update.progress)
+			}
+		})
 
 		return {
 			fileName: file.name,
@@ -46,8 +56,43 @@ export const enqueueOcr = (file: File, force: boolean = false) => {
 	}
 
 	const job = queue.then(() => recognize(file))
+		.finally(() => {
+			inFlight.delete(file)
+			notifyQueueChanged()
+		})
+
 	jobs.set(file, job)
+	inFlight.add(file)
+	notifyQueueChanged()
 	queue = job
+}
+
+
+/**
+ * True while a file is waiting in the queue or being recognized.
+ */
+export const isOcrPending = (file: File) => inFlight.has(file)
+
+
+/**
+ * Notifies when a file starts or finishes recognition, so views can re-render their pending state.
+ * Progress within a file is reported through `subscribeOcrProgress`.
+ */
+export const subscribeOcrQueue = (listener: () => void) => {
+	queueListeners.add(listener)
+
+	return () => { queueListeners.delete(listener) }
+}
+
+
+/**
+ * Reports recognition progress (0..1) for a file. Files are recognized one at a time, so a single
+ * listener per file is enough.
+ */
+export const subscribeOcrProgress = (file: File, listener: (progress: number) => void) => {
+	progressListeners.set(file, listener)
+
+	return () => { progressListeners.delete(file) }
 }
 
 

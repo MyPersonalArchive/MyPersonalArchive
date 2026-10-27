@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { CommonBlob } from "../types"
 import { useApiClient } from "../../../Utils/Hooks/useApiClient"
 import { invalidateBlobOcr, useBlobOcr } from "../../../Utils/Hooks/useBlobOcr"
-import { enqueueOcr, getOcrResult } from "../../../Utils/OCR/ocrQueue"
+import { enqueueOcr, getOcrResult, subscribeOcrProgress } from "../../../Utils/OCR/ocrQueue"
 import { OCR_ENGINE_VERSION, OCR_LANGUAGES, recognizeImage } from "../../../Utils/OCR/tesseractWorker"
 import { getPageLines, isSameBbox, splitAmount, unionBbox } from "../../../Utils/OCR/ocrGeometry"
 import type { OcrBbox, OcrLine, OcrWord } from "../../../Utils/OCR/ocrGeometry"
@@ -62,12 +62,23 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 
 	const { status: serverStatus, ocr: serverOcr } = useBlobOcr(enabled ? blobId : undefined, refreshKey)
 
+	// Recognition of a local file runs in the queue, so its progress arrives through the queue
+	// instead of the manual run below.
+	useEffect(() => {
+		if (!enabled || !localFile) {
+			return
+		}
+
+		return subscribeOcrProgress(localFile, progress => setOcrJob(current => ({ ...current, progress })))
+	}, [enabled, localFile])
+
 	const isLocal = blobId === undefined
 	const localUpload = localOcr && localOcr.file === localFile ? localOcr.upload : undefined
 	const ocr = isLocal ? localUpload : serverOcr
 	const ocrStatus = isLocal
 		? (!localFile ? "idle" : localOcr?.file === localFile ? "ready" : "loading")
 		: serverStatus
+	const ocrRunning = ocrJob.running || (isLocal && ocrStatus === "loading")
 
 	const page = ocr?.pages?.[0]
 
@@ -216,7 +227,7 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 
 	return {
 		ocrStatus,
-		ocrRunning: ocrJob.running,
+		ocrRunning,
 		ocrProgress: ocrJob.progress,
 		ocrError: ocrJob.error,
 		pageLines,
