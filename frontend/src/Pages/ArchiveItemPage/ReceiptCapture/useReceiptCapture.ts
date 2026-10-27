@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { CommonBlob } from "../types"
 import { useApiClient } from "../../../Utils/Hooks/useApiClient"
 import { invalidateBlobOcr, useBlobOcr } from "../../../Utils/Hooks/useBlobOcr"
+import { enqueueOcr, getOcrResult } from "../../../Utils/OCR/ocrQueue"
 import { OCR_ENGINE_VERSION, OCR_LANGUAGES, recognizeImage } from "../../../Utils/OCR/tesseractWorker"
 import { getPageLines, isSameBbox, splitAmount, unionBbox } from "../../../Utils/OCR/ocrGeometry"
 import type { OcrBbox, OcrLine, OcrWord } from "../../../Utils/OCR/ocrGeometry"
 import type { OcrUpload } from "../../../Utils/OCR/types"
-import type { ReceiptCommand, ReceiptLine } from "../../../Components/MetadataTypes/ReceiptMetadataType"
+import type { ReceiptCommand, ReceiptLine, ReceiptLineSource } from "../../../Components/MetadataTypes/ReceiptMetadataType"
 
 
 /**
@@ -29,13 +30,45 @@ type OcrJob = {
 
 export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, enabled: boolean = true, url?: string) => {
 	const apiClient = useApiClient()
-	const [selection, setSelection] = useState<{ blobId?: string, words: OcrWord[] }>({ words: [] })
-	const [highlight, setHighlight] = useState<{ blobId?: string, lineId: string | null, bbox: OcrBbox | null }>({ lineId: null, bbox: null })
+	const [selection, setSelection] = useState<{ key?: string, words: OcrWord[] }>({ words: [] })
+	const [highlight, setHighlight] = useState<{ key?: string, lineId: string | null, bbox: OcrBbox | null }>({ lineId: null, bbox: null })
 	const [refreshKey, setRefreshKey] = useState(0)
 	const [ocrJob, setOcrJob] = useState<OcrJob>({ running: false, progress: 0 })
+	const [localOcr, setLocalOcr] = useState<{ file: File, upload?: OcrUpload }>()
 
 	const blobId = "id" in blob.identifier ? blob.identifier.id : undefined
-	const { status: ocrStatus, ocr } = useBlobOcr(enabled ? blobId : undefined, refreshKey)
+	const fileName = "fileName" in blob.identifier ? blob.identifier.fileName : undefined
+	const blobKey = blobId ?? fileName ?? ""
+	const localFile = blob.localFile
+
+	// A file that has not been uploaded yet keeps its OCR in the in-browser queue: the same result
+	// that is sent to the server when the item is saved.
+	useEffect(() => {
+		if (!enabled || !localFile) {
+			return
+		}
+
+		let isCancelled = false
+
+		enqueueOcr(localFile)
+		getOcrResult(localFile).then(upload => {
+			if (!isCancelled) {
+				setLocalOcr({ file: localFile, upload })
+			}
+		})
+
+		return () => { isCancelled = true }
+	}, [enabled, localFile])
+
+	const { status: serverStatus, ocr: serverOcr } = useBlobOcr(enabled ? blobId : undefined, refreshKey)
+
+	const isLocal = blobId === undefined
+	const localUpload = localOcr && localOcr.file === localFile ? localOcr.upload : undefined
+	const ocr = isLocal ? localUpload : serverOcr
+	const ocrStatus = isLocal
+		? (!localFile ? "idle" : localOcr?.file === localFile ? "ready" : "loading")
+		: serverStatus
+
 	const page = ocr?.pages?.[0]
 
 	const pageLines = useMemo(() => {
@@ -48,25 +81,25 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 
 	// Selection and highlight are scoped to a blob, so moving to another image drops them
 	// without an effect that would render twice.
-	const selectedWords = selection.blobId === blobId ? selection.words : []
-	const highlightedLineId = highlight.blobId === blobId ? highlight.lineId : null
-	const highlightedBbox = highlight.blobId === blobId ? highlight.bbox : null
+	const selectedWords = selection.key === blobKey ? selection.words : []
+	const highlightedLineId = highlight.key === blobKey ? highlight.lineId : null
+	const highlightedBbox = highlight.key === blobKey ? highlight.bbox : null
 
 	const setHighlighted = (update: { lineId?: string | null, bbox?: OcrBbox | null }) => {
 		setHighlight(current => ({
-			blobId,
-			lineId: update.lineId !== undefined ? update.lineId : (current.blobId === blobId ? current.lineId : null),
-			bbox: update.bbox !== undefined ? update.bbox : (current.blobId === blobId ? current.bbox : null)
+			key: blobKey,
+			lineId: update.lineId !== undefined ? update.lineId : (current.key === blobKey ? current.lineId : null),
+			bbox: update.bbox !== undefined ? update.bbox : (current.key === blobKey ? current.bbox : null)
 		}))
 	}
 
-	const clearSelection = () => setSelection({ blobId, words: [] })
+	const clearSelection = () => setSelection({ key: blobKey, words: [] })
 
 	const toggleWord = (word: OcrWord) => {
 		setSelection(current => {
-			const words = current.blobId === blobId ? current.words : []
+			const words = current.key === blobKey ? current.words : []
 			return {
-				blobId,
+				key: blobKey,
 				words: words.some(selected => selected.id === word.id)
 					? words.filter(selected => selected.id !== word.id)
 					: [...words, word]
@@ -75,26 +108,30 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 	}
 
 	const addCapturedLine = (text: string, bbox: OcrBbox, confidence: number) => {
-		if (!blobId) {
-			return
-		}
+		const captured = splitAmount(text)
 
-		const alreadyCaptured = receipt.lines.some(captured =>
-			captured.source?.blobId === blobId && isSameBbox(captured.source.bbox, bbox))
+		// A local file has no blob to point at yet, so its captured lines carry the values only.
+		const source: ReceiptLineSource | undefined = blobId !== undefined
+			? { blobId, pageNumber: 0, bbox, text, confidence }
+			: undefined
+
+		const alreadyCaptured = source !== undefined && receipt.lines.some(capturedLine =>
+			capturedLine.source?.blobId === source.blobId && isSameBbox(capturedLine.source.bbox, bbox))
 
 		if (!alreadyCaptured) {
-			const captured = splitAmount(text)
+			const receiptLine: ReceiptLine = {
+				description: captured.text,
+				amount: captured.amount,
+				warranty: "",
+				dispositionStatus: ""
+			}
+
+			if (source) {
+				receiptLine.source = source
+			}
+
 			receipt.ensureSelected()
-			receipt.dispatch({
-				action: "ADD_RECEIPTLINE",
-				receiptLine: {
-					description: captured.text,
-					amount: captured.amount,
-					warranty: "",
-					dispositionStatus: "",
-					source: { blobId, pageNumber: 0, bbox, text, confidence }
-				}
-			})
+			receipt.dispatch({ action: "ADD_RECEIPTLINE", receiptLine })
 		}
 
 		clearSelection()
@@ -116,7 +153,24 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 	}
 
 	const runOcr = async () => {
-		if (!blobId || !url || ocrJob.running) {
+		if (ocrJob.running) {
+			return
+		}
+
+		if (isLocal) {
+			if (!localFile) {
+				return
+			}
+
+			setOcrJob({ running: true, progress: 0 })
+			enqueueOcr(localFile, true)
+			const upload = await getOcrResult(localFile)
+			setLocalOcr({ file: localFile, upload })
+			setOcrJob({ running: false, progress: 0 })
+			return
+		}
+
+		if (!blobId || !url) {
 			return
 		}
 

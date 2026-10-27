@@ -45,7 +45,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 	const [localBlobs, setLocalBlobs] = useState<LocalBlob[]>([])
 	const allBlobs: CommonBlob[] = [
 		...serverBlobs.map(blob => ({ url: `/api/blob/GetFile?blobId=${blob.id}`, mimeType: blob.mimeType, identifier: { id: blob.id } })),
-		...localBlobs.map(blob => ({ url: URL.createObjectURL(blob.fileData), mimeType: blob.fileData.type, identifier: { fileName: blob.fileName } }))
+		...localBlobs.map(blob => ({ url: blob.url, mimeType: blob.fileData.type, identifier: { fileName: blob.fileName }, localFile: blob.fileData }))
 	]
 
 	const {
@@ -172,13 +172,17 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 			setServerBlobs(existingBlobs => existingBlobs.filter(x => x.id !== id))
 		} else {
 			const filename = blob.identifier.fileName
+			const removed = localBlobs.find(localBlob => localBlob.fileName === filename)
+			if (removed) {
+				URL.revokeObjectURL(removed.url)
+			}
 			setLocalBlobs(localBlobs.filter(localBlob => localBlob.fileName !== filename))
 		}
 	}
 
 
 	const onFilesUploaded = (files: FileList): void => {
-		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file }))
+		const newLocalBlobs = Array.from(files).map(file => ({ fileName: file.name, fileData: file, url: URL.createObjectURL(file) }))
 		setLocalBlobs([...localBlobs, ...newLocalBlobs])
 	}
 

@@ -84,8 +84,9 @@ export const ReceiptCapturePanel = ({
 
 			{ocrRunning &&
 				<div className="flex flex-col gap-1">
-					<progress className="progress progress-primary w-full" value={progress} max={100} />
-					<span className="text-xs opacity-70">Running OCR… {progress}%</span>
+					{/* A local file has no progress reports, so the bar stays indeterminate. */}
+					<progress className="progress progress-primary w-full" value={ocrProgress > 0 ? progress : undefined} max={100} />
+					<span className="text-xs opacity-70">{ocrProgress > 0 ? `Running OCR… ${progress}%` : "Running OCR…"}</span>
 				</div>
 			}
 

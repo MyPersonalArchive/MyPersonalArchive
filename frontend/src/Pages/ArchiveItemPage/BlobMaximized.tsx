@@ -36,7 +36,7 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
 	const blobId = "id" in blob.identifier ? blob.identifier.id : undefined
-	const isOcrImage = blobId !== undefined && OCR_MIME_TYPES.includes(blob.mimeType)
+	const isOcrImage = OCR_MIME_TYPES.includes(blob.mimeType)
 
 	const url = "id" in blob.identifier
 		? `/api/blob/GetFile?blobId=${blob.identifier.id}&dimension=${DimensionEnum.full}&inline=true`
