@@ -19,10 +19,13 @@ export type GetResponse = {
 export type LocalBlob = {
 	fileName: string
 	fileData: File
+	url: string
 }
 
 export type CommonBlob = {
 	url: string
 	mimeType: string
 	identifier: { id: UUID } | { fileName: string }
+	/** Set for files that are not uploaded yet, so their in-browser OCR can be used. */
+	localFile?: File
 }

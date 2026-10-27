@@ -40,8 +40,8 @@ const recognize = async (file: File): Promise<OcrUpload | undefined> => {
  * Queues a file for OCR. Calls are idempotent per file, and files are recognized one at a time
  * so a bulk drop does not start several workers at once.
  */
-export const enqueueOcr = (file: File) => {
-	if (!OCR_MIME_TYPES.includes(file.type) || jobs.has(file)) {
+export const enqueueOcr = (file: File, force: boolean = false) => {
+	if (!OCR_MIME_TYPES.includes(file.type) || (!force && jobs.has(file))) {
 		return
 	}
 
