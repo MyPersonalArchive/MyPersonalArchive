@@ -44,9 +44,9 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 
 	const capture = useReceiptCapture(blob, receipt, toolWindowIsOpen, url)
 
-	// Until the user picks a tab, follow the content: captured text means the receipt tab is
-	// the useful one.
-	const activeTab: ToolWindowTab = selectedTab ?? (capture.pageLines ? "receipt" : "general")
+	// Until the user picks a tab, follow the content: while recognition runs, or once it produced
+	// text, the receipt tab is the useful one.
+	const activeTab: ToolWindowTab = selectedTab ?? (isOcrImage && (capture.ocrRunning || capture.pageLines !== undefined) ? "receipt" : "general")
 
 	return (
 		<LightBox key={"id" in blob.identifier ? blob.identifier.id : blob.identifier.fileName}

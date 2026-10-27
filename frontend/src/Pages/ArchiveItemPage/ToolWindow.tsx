@@ -62,6 +62,9 @@ export const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindow
 					onClick={() => onSelectTab("receipt")}
 				>
 					Receipt
+					{capture.ocrRunning &&
+						<span className="loading loading-spinner loading-xs ml-1 align-middle" title="Running OCR" />
+					}
 				</button>
 			</div>
 

@@ -9,10 +9,11 @@ import { useState } from "react"
 
 type Props = {
 	blob: CommonBlob
+	ocrPending?: boolean
 	maximize: (blob: CommonBlob) => void
 	onRemoveBlob: (blob: CommonBlob) => void
 }
-export const BlobThumbnail = ({ blob, maximize, onRemoveBlob }: Props) => {
+export const BlobThumbnail = ({ blob, ocrPending, maximize, onRemoveBlob }: Props) => {
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
 
 	return (
@@ -32,6 +33,12 @@ export const BlobThumbnail = ({ blob, maximize, onRemoveBlob }: Props) => {
 				mimeType={blob.mimeType}
 				forceImageViewer={true}
 			/>
+			{ocrPending &&
+				<div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-black/60 py-1 text-[10px] text-white pointer-events-none">
+					<span className="loading loading-spinner loading-xs" />
+					OCR
+				</div>
+			}
 			<div className="action-bar">
 				<button type="button" onClick={e => { maximize(blob); e.stopPropagation() }} title="Expand">
 					<FontAwesomeIcon icon={faUpRightAndDownLeftFromCenter} size="1x" />
