@@ -4,8 +4,8 @@ import { currentUserAtom, authResolvedAtom } from "../Utils/Atoms/currentUserAto
 
 
 type Props = {
-	authorized: ReactNode
-	anonymous: ReactNode
+	authorized?: ReactNode
+	anonymous?: ReactNode
 }
 
 // Renders different content for signed in and anonymous users on the same route

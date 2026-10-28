@@ -31,9 +31,9 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 			<FontAwesomeIcon icon={faBars} />
 		</button>
 
-		<span className="logo hidden sm:inline">
+		<Link className="logo hidden sm:inline" to={RoutePaths.Index}>
 			My Personal Archive {title && ` - ${title}`}
-		</span>
+		</Link>
 		<span className="logo sm:hidden">
 			{title ?? "MPA"}
 		</span>
