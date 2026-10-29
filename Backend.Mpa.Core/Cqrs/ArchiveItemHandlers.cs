@@ -74,7 +74,7 @@ public class DeleteArchiveItem : ICommand<DeleteArchiveItem>
 }
 
 
-public class ArchiveItemsHandler :
+public class ArchiveItemHandlers :
 	IAsyncQueryHandler<GetArchiveItem, GetArchiveItem.Response>,
 	IAsyncQueryHandler<ListArchiveItems, IEnumerable<ListArchiveItems.Response>>,
 	// IAsyncCommandHandler<CreateArchiveItem>,
@@ -83,7 +83,7 @@ public class ArchiveItemsHandler :
 	private readonly ArchiveItemQueryService _archiveItemQueryService;
 	private readonly ArchiveItemCommandService _archiveItemCommandService;
 
-	public ArchiveItemsHandler(ArchiveItemQueryService archiveItemQueryService, ArchiveItemCommandService archiveItemCommandService)
+	public ArchiveItemHandlers(ArchiveItemQueryService archiveItemQueryService, ArchiveItemCommandService archiveItemCommandService)
 	{
 		_archiveItemQueryService = archiveItemQueryService;
 		_archiveItemCommandService = archiveItemCommandService;
