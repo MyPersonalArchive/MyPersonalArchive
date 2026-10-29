@@ -33,13 +33,13 @@ public class GetStoredFilters : IQuery<GetStoredFilters, IEnumerable<StoredFilte
 }
 
 
-public class StoredFilterHandler :
+public class StoredFilterHandlers :
 	IAsyncCommandHandler<SaveStoredFilters>,
 	IAsyncQueryHandler<GetStoredFilters, IEnumerable<StoredFilter>>
 {
 	private readonly StoredFilterService _storedFilterService;
 
-	public StoredFilterHandler(StoredFilterService storedFilterService)
+	public StoredFilterHandlers(StoredFilterService storedFilterService)
 	{
 		_storedFilterService = storedFilterService;
 	}
