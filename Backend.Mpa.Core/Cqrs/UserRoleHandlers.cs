@@ -102,7 +102,7 @@ public class ListUsers : IQuery<ListUsers, IEnumerable<ListUsers.Response>>
 }
 
 
-public class UserRoleHandler :
+public class UserRoleHandlers :
 	IAsyncCommandHandler<InviteUser>,
 	IAsyncCommandHandler<ResendInvitation>,
 	IAsyncCommandHandler<CancelInvitation>,
@@ -117,7 +117,7 @@ public class UserRoleHandler :
 	private readonly IAmbientDataResolver _ambientDataResolver;
 
 
-	public UserRoleHandler(KeycloakOrganizationClient keycloakClient, ISignalRService signalRService, IAmbientDataResolver ambientDataResolver)
+	public UserRoleHandlers(KeycloakOrganizationClient keycloakClient, ISignalRService signalRService, IAmbientDataResolver ambientDataResolver)
 	{
 		_keycloakClient = keycloakClient;
 		_signalRService = signalRService;
