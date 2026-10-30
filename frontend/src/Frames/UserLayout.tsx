@@ -50,7 +50,6 @@ export const UserLayout = ({ children }: PropsWithChildren) => {
 			<TopBar className="user-layout"
 				navIsOpen={navIsOpen}
 				dispatchLayoutCommand={dispatchLayoutCommand}
-				currentUser={currentUser}
 				profileDropdownIsOpen={profileDropdownIsOpen}
 			/>
 

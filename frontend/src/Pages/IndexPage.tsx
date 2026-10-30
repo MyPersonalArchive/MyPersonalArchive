@@ -67,7 +67,7 @@ const ManagedIndexPage = ({ isAnonymous }: { isAnonymous: boolean }) => {
 	return (
 		<div className="hero bg-base-200 overflow-x-clip">
 			<div className="hero-content text-left">
-				<div className="max-w-3xl">
+				<div className="max-w-3xl mb-40">
 					<MainMessage/>
 					{ isAnonymous && <SelectManagedOrSelfHostedPage/> }
 				</div>
@@ -265,7 +265,7 @@ const SelectManagedOrSelfHostedPage = () => {
 				</div>
 			</div>
 
-			<div className="card bg-info/15 mt-6 mb-40">
+			<div className="card bg-info/15 mt-6">
 				<div className="card-body">
 					<h2 className="card-title">
 						Not sure? Switch whenever.

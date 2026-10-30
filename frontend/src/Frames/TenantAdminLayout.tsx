@@ -37,7 +37,6 @@ export const TenantAdminLayout = ({ children }: PropsWithChildren) => {
 				title="Manage tenant"
 				navIsOpen={navIsOpen}
 				dispatchLayoutCommand={dispatchLayoutCommand}
-				currentUser={currentUser}
 				profileDropdownIsOpen={profileDropdownIsOpen}
 			/>
 

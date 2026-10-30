@@ -1,10 +1,10 @@
 import { ReactNode } from "react"
 import { useAtomValue } from "jotai"
-import { currentUserAtom, authResolvedAtom } from "../Utils/Atoms/currentUserAtom"
+import { currentUserAtom, authResolvedAtom, User } from "../Utils/Atoms/currentUserAtom"
 
 
 type Props = {
-	authorized?: ReactNode
+	authorized?: ReactNode | ((user: User) => ReactNode)
 	anonymous?: ReactNode
 }
 
@@ -18,5 +18,7 @@ export const AuthSwitch = ({ authorized, anonymous }: Props) => {
 		return null
 	}
 
-	return currentUser ? authorized : anonymous
+	return currentUser
+		? (typeof authorized === "function" ? authorized(currentUser) : authorized)
+		: anonymous
 }

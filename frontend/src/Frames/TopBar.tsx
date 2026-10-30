@@ -1,12 +1,12 @@
 
 import { Link } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
-import { User } from "../Utils/Atoms/currentUserAtom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUser, faBars, faChevronDown, faRightFromBracket } from "@fortawesome/free-solid-svg-icons"
 import classNames from "classnames"
 import { useAtomValue } from "jotai"
 import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
+import { AuthSwitch } from "./AuthSwitch"
 
 
 
@@ -15,10 +15,9 @@ type Props = {
 	title?: string
 	navIsOpen: boolean,
 	dispatchLayoutCommand: (args_0: { action: "TOGGLE_NAV" } | { action: "CLOSE_NAV" } | { action: "TOGGLE_PROFILE_DROPDOWN" } | { action: "CLOSE_PROFILE_DROPDOWN" } | { action: "TOGGLE_ADJUSTMENTS_MODE" }) => void,
-	currentUser: User | undefined,
 	profileDropdownIsOpen: boolean,
 }
-export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, currentUser, profileDropdownIsOpen }: Props) => {
+export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, profileDropdownIsOpen }: Props) => {
 	const authSettings = useAtomValue(authSettingsAtom)
 
 	return <div id="topBar" className={classNames("relative z-20", className)}>
@@ -41,80 +40,82 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, cur
 		<div className="flex-1"></div>
 
 		<div className="profile">
-
-			{!currentUser &&
-				(authSettings.oidcAuthUrl !== undefined
-					? <a className="profile-btn" href={`${authSettings.oidcAuthUrl}?${new URLSearchParams(RoutePaths.Index)}`}>
-						<div className="profile-avatar">
-							<FontAwesomeIcon icon={faUser} />
-						</div>
-						Sign in
-					</a>
-					: <Link className="profile-btn"
-						id="profileBtn"
-						to={RoutePaths.SignIn}
-					>
-						<div className="profile-avatar">
-							<FontAwesomeIcon icon={faUser} />
-						</div>
-						Sign in
-					</Link>)}
-			{currentUser &&
-				<>
-					<button className="profile-btn"
-						// id="profileBtn"
-						aria-haspopup="true"
-						aria-expanded={profileDropdownIsOpen}
-						aria-controls="profileDropdown"
-						onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PROFILE_DROPDOWN" })}
-					>
-						<div className="profile-avatar">
-							<FontAwesomeIcon icon={faUser} />
-						</div>
-						{currentUser?.fullname.split(" ", 1)}
-
-						<FontAwesomeIcon icon={faChevronDown} />
-					</button>
-
-					<div className={classNames("profile-dropdown", { "open": profileDropdownIsOpen })}
-						role="menu"
-						id="profileDropdown"
-					>
-						<div className="profile-dropdown-header">
-							<strong title={currentUser?.username}>{currentUser?.fullname}</strong>
-							<span>{currentUser?.tenantId}</span>
-						</div>
-						<div className="hr"></div>
-						<Link role="menuitem"
-							to={RoutePaths.Profile}
-							onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
+			<AuthSwitch
+				anonymous={
+					authSettings.oidcAuthUrl !== undefined
+						? <a className="profile-btn" href={`${authSettings.oidcAuthUrl}?${new URLSearchParams(RoutePaths.Index)}`}>
+							<div className="profile-avatar">
+								<FontAwesomeIcon icon={faUser} />
+							</div>
+							Sign in
+						</a>
+						: <Link className="profile-btn"
+							id="profileBtn"
+							to={RoutePaths.SignIn}
 						>
-							<FontAwesomeIcon icon={faUser} />
-							My profile
+							<div className="profile-avatar">
+								<FontAwesomeIcon icon={faUser} />
+							</div>
+							Sign in
 						</Link>
+				}
+				authorized={currentUser =>
+					<>
+						<button className="profile-btn"
+							// id="profileBtn"
+							aria-haspopup="true"
+							aria-expanded={profileDropdownIsOpen}
+							aria-controls="profileDropdown"
+							onClick={() => dispatchLayoutCommand({ action: "TOGGLE_PROFILE_DROPDOWN" })}
+						>
+							<div className="profile-avatar">
+								<FontAwesomeIcon icon={faUser} />
+							</div>
+							{currentUser.fullname.split(" ", 1)}
 
-						{(currentUser.roles.has("Owner") || currentUser.roles.has("Administrator")) &&
+							<FontAwesomeIcon icon={faChevronDown} />
+						</button>
+
+						<div className={classNames("profile-dropdown", { "open": profileDropdownIsOpen })}
+							role="menu"
+							id="profileDropdown"
+						>
+							<div className="profile-dropdown-header">
+								<strong title={currentUser.username}>{currentUser.fullname}</strong>
+								<span>{currentUser.tenantId}</span>
+							</div>
+							<div className="hr"></div>
 							<Link role="menuitem"
-								to={RoutePaths.TenantAdmin.Dashboard}
+								to={RoutePaths.Profile}
 								onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
 							>
-								{/* <FontAwesomeIcon icon={faUser} /> */}
-								<span className="w-3"></span>
-								Manage tenant
+								<FontAwesomeIcon icon={faUser} />
+								My profile
 							</Link>
-						}
 
-						<div className="hr"></div>
-						<Link
-							to={RoutePaths.SignOut} role="menuitem"
-							onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
-							className="danger"
-						>
-							<FontAwesomeIcon icon={faRightFromBracket} />
-							Sign Out
-						</Link>
-					</div>
-				</>}
+							{(currentUser.roles.has("Owner") || currentUser.roles.has("Administrator")) &&
+								<Link role="menuitem"
+									to={RoutePaths.TenantAdmin.Dashboard}
+									onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
+								>
+									{/* <FontAwesomeIcon icon={faUser} /> */}
+									<span className="w-3"></span>
+									Manage tenant
+								</Link>
+							}
+
+							<div className="hr"></div>
+							<Link
+								to={RoutePaths.SignOut} role="menuitem"
+								onClick={() => dispatchLayoutCommand({ action: "CLOSE_PROFILE_DROPDOWN" })}
+								className="danger"
+							>
+								<FontAwesomeIcon icon={faRightFromBracket} />
+								Sign Out
+							</Link>
+						</div>
+					</>}
+			/>
 		</div>
 	</div>
 }
