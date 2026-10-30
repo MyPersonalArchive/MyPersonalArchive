@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Backend.Core.Infrastructure;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,35 @@ public class KeycloakOrganizationClient
 		_http = http;
 		_keycloakOptions = keycloakOptions.Value;
 		_ambientDataResolver = ambientDataResolver;
+	}
+
+
+	public async Task<string> GetOrganizationNameAsync(CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+
+		var organization = await _http.GetFromJsonAsync<Organization>(
+			$"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}",
+			ct)
+			?? throw new InvalidOperationException($"Organization '{organizationId}' not found in realm '{_keycloakOptions.Realm}'.");
+
+		return organization.Name;
+	}
+
+
+	public async Task RenameOrganizationAsync(string newName, CancellationToken ct = default)
+	{
+		var organizationId = await GetCurrentOrganizationIdAsync(ct);
+		var requestUri = $"{_keycloakOptions.BaseUrl}/admin/realms/{_keycloakOptions.Realm}/organizations/{organizationId}";
+
+		// Keycloak replaces the whole representation on update, so round-trip it to keep domains, attributes etc.
+		var organization = await _http.GetFromJsonAsync<JsonObject>(requestUri, ct)
+			?? throw new InvalidOperationException($"Organization '{organizationId}' not found in realm '{_keycloakOptions.Realm}'.");
+		organization["name"] = newName;
+
+		using var response = await _http.PutAsJsonAsync(requestUri, organization, ct);
+
+		response.EnsureSuccessStatusCode();
 	}
 
 

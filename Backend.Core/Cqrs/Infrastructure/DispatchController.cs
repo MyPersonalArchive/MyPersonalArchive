@@ -11,6 +11,7 @@ namespace Backend.WebApi.Cqrs.Infrastructure;
 
 [ApiController]
 [Route("api/")]
+[Produces("application/json")]
 [Authorize]
 [AllowAnonymous]
 public class DispatchController : ControllerBase
