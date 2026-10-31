@@ -1,8 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { createPath, generatePath, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { useAtom, useAtomValue } from "jotai"
-import { externalAccountsAtom } from "../../Utils/Atoms/externalAccountsAtom"
-import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
+import { useAtomValue } from "jotai"
 import { UUID } from "crypto"
 import { useSelection } from "../../Utils/Selection"
 import { useEffect, useRef } from "react"
@@ -16,14 +14,11 @@ import { RoutePaths } from "../../RoutePaths"
 const RELOAD_FOLDERS_OPTION = `__reload-folders__${crypto.randomUUID()}__`
 
 export const EmailListPage = () => {
-	const [accounts, dispatch] = useAtom(externalAccountsAtom)
-	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
 	const [searchParams, setSearchParams] = useSearchParams()
 	const navigate = useNavigate()
 	
 	const params = useParams()
 	const externalAccountId = params.externalAccountId as UUID
-	const externalAccount = accounts.find(account => account.id === externalAccountId)
 
 	const folderParam = searchParams.get("folder") ?? undefined
 	const {
@@ -108,17 +103,6 @@ export const EmailListPage = () => {
 
 	return (
 		<>
-			<header className="dont-touch-walls header sm:hidden">
-				<h1>
-					{adjustmentsModeIsOpen
-						? <input className=""
-							value={externalAccount?.displayName ?? "<unknown account>"}
-							onChange={e => dispatch({ action: "EDIT_ACCOUNT_DISPLAYNAME", id: externalAccountId, displayName: e.target.value })}
-						/>
-						: externalAccount?.displayName ?? "<unknown account>"}
-				</h1>
-			</header>
-			
 			<div className="dont-touch-walls flex flex-col gap-2 mt-4">
 				<Filter />
 			</div>

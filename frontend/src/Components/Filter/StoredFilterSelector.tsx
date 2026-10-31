@@ -4,36 +4,31 @@ import { faGripVertical, faPlus, faTrash } from "@fortawesome/free-solid-svg-ico
 import { storedFiltersMimeTypeConverters, StoredFilter, storedFiltersAtom } from "../../Utils/Atoms/storedFiltersAtom"
 import { useAtom, useAtomValue } from "jotai"
 import classNames from "classnames"
-import { layoutStateAtom } from "../../Utils/Atoms/layoutStateAtom"
 import { useDrop, useSortableDragDrop } from "../DragDropHelpers"
-import { FormEvent, useEffect, useRef, useState } from "react"
+import { FormEvent, useState } from "react"
 import { TagsInput } from "../TagsInput"
 import { tagsAtom } from "../../Utils/Atoms/tagsAtom"
 import { UUID } from "crypto"
 import { useApiClient } from "../../Utils/Hooks/useApiClient"
 import { allMetadataTypes } from "../MetadataTypes"
+import { useAdjustmentsMode } from "../../Utils/Hooks/useAdjustmentsMode"
 
 
 export const StoredFilterSelector = () => {
-	const { adjustmentsModeIsOpen } = useAtomValue(layoutStateAtom)
 	const storedFilters = useAtomValue(storedFiltersAtom)
-
 	const apiClient = useApiClient()
-	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
-	useEffect(() => {
-		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
-			apiClient.execute("SaveStoredFilters", {
-				storedFilters: storedFilters.map(filter => ({
-					...filter,
-					filterDefinition: {
-						...filter.filterDefinition,
-						metadataTypes: Array.from(filter.filterDefinition.metadataTypes)
-					}
-				}))
-			})
-		}
-		previousAdjustmentsModeIsOpen.current = adjustmentsModeIsOpen
-	}, [adjustmentsModeIsOpen])
+	
+	const adjustmentsModeIsOpen = useAdjustmentsMode(() => {
+		apiClient.execute("SaveStoredFilters", {
+			storedFilters: storedFilters.map(filter => ({
+				...filter,
+				filterDefinition: {
+					...filter.filterDefinition,
+					metadataTypes: Array.from(filter.filterDefinition.metadataTypes)
+				}
+			}))
+		})
+	})
 
 	return adjustmentsModeIsOpen
 		? <EditableStoredFilters />

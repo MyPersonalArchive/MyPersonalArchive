@@ -1,5 +1,5 @@
 
-import { PropsWithChildren, useEffect, useRef, useState } from "react"
+import { PropsWithChildren, useState } from "react"
 import { generatePath, NavLink, useLocation, useNavigate } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -16,25 +16,23 @@ import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 import { FileDrop } from "../Components/FileDrop"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { TopBar } from "./TopBar"
+import { useAdjustmentsMode } from "../Utils/Hooks/useAdjustmentsMode"
 
 
 
 export const UserLayout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
-	const [{ navIsOpen, profileDropdownIsOpen, adjustmentsModeIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
-
-	const externalAccounts = useAtomValue(externalAccountsAtom)
+	const [{ navIsOpen, profileDropdownIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
 
 	const apiClient = useApiClient()
-	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
-	useEffect(() => {
-		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
-			apiClient.execute("SaveExternalAccounts", {
-				externalAccounts
-			})
-		}
-		previousAdjustmentsModeIsOpen.current = adjustmentsModeIsOpen
-	}, [adjustmentsModeIsOpen])
+	const externalAccounts = useAtomValue(externalAccountsAtom)
+
+	const adjustmentsModeIsOpen = useAdjustmentsMode(() => {
+		apiClient.execute("SaveExternalAccounts", {
+			externalAccounts
+		})
+
+	})
 
 	const onFilesUploaded = (files: FileList): void => {
 		const formData = new FormData()

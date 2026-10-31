@@ -1,5 +1,5 @@
 
-import { PropsWithChildren, useEffect, useRef } from "react"
+import { PropsWithChildren } from "react"
 import { NavLink } from "react-router-dom"
 import { RoutePaths } from "../RoutePaths"
 import { useAtom, useAtomValue } from "jotai"
@@ -11,30 +11,27 @@ import classNames from "classnames"
 import { layoutStateAtom } from "../Utils/Atoms/layoutStateAtom"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
 import { TopBar } from "./TopBar"
+import { useAdjustmentsMode } from "../Utils/Hooks/useAdjustmentsMode"
 
 
 
 export const TenantAdminLayout = ({ children }: PropsWithChildren) => {
 	const currentUser = useAtomValue(currentUserAtom)
-	const [{ navIsOpen, profileDropdownIsOpen, adjustmentsModeIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
+	const [{ navIsOpen, profileDropdownIsOpen }, dispatchLayoutCommand] = useAtom(layoutStateAtom)
 
 	const externalAccounts = useAtomValue(externalAccountsAtom)
-
 	const apiClient = useApiClient()
-	const previousAdjustmentsModeIsOpen = useRef(adjustmentsModeIsOpen)
-	useEffect(() => {
-		if (previousAdjustmentsModeIsOpen.current && !adjustmentsModeIsOpen) {
-			apiClient.execute("SaveExternalAccounts", {
-				externalAccounts
-			})
-		}
-		previousAdjustmentsModeIsOpen.current = adjustmentsModeIsOpen
-	}, [adjustmentsModeIsOpen])
+
+	const adjustmentsModeIsOpen = useAdjustmentsMode(() => {
+		apiClient.execute("SaveExternalAccounts", {
+			externalAccounts
+		})
+
+	})
 
 	return (
 		<div className="layout-root">
 			<TopBar className="tenant-admin-layout"
-				title="Manage tenant"
 				navIsOpen={navIsOpen}
 				dispatchLayoutCommand={dispatchLayoutCommand}
 				profileDropdownIsOpen={profileDropdownIsOpen}
