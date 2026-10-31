@@ -7,8 +7,7 @@ import classNames from "classnames"
 import { useAtomValue } from "jotai"
 import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
 import { AuthSwitch } from "../Components/AuthSwitch"
-import { OrganizationName } from "../Components/OrganizationName"
-
+import { CurrentOrganizationName } from "../Components/OrganizationName"
 
 
 type Props = {
@@ -34,9 +33,7 @@ export const TopBar = ({ className, navIsOpen, dispatchLayoutCommand, profileDro
 			My Personal Archive
 		</Link>
 		<AuthSwitch
-			authorized={currentUser =>
-				<OrganizationName tenantId={currentUser.tenantId} />
-			}
+			authorized={<CurrentOrganizationName editableInAdjustmentsMode={true}/>}
 			anonymous={
 				<span className="logo sm:hidden">
 					MPA
@@ -90,7 +87,7 @@ export const TopBar = ({ className, navIsOpen, dispatchLayoutCommand, profileDro
 							<div className="profile-dropdown-header">
 								<strong title={currentUser.username}>{currentUser.fullname}</strong>
 								<span title={currentUser.tenantId}>
-									<OrganizationName tenantId={currentUser.tenantId} />
+									<CurrentOrganizationName/>
 								</span>
 							</div>
 							<div className="hr"></div>

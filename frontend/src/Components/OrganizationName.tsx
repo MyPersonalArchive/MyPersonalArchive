@@ -1,36 +1,27 @@
-import { useAtom } from "jotai"
-import { useEffect } from "react"
-import { organizationNameAtom } from "../Utils/Atoms/organizationNameAtom"
+import { currentUserAtom } from "../Utils/Atoms/currentUserAtom"
+import { useAtomValue } from "jotai"
+import { useAdjustmentsMode } from "../Utils/Hooks/useAdjustmentsMode"
 import { useApiClient } from "../Utils/Hooks/useApiClient"
-import { useSignalR } from "../Utils/Hooks/useSignalR"
+import { useOrganizationName } from "../Utils/Hooks/useOrganizationName"
 
 
 
-export const OrganizationName = ({ tenantId }: { tenantId: string }) => {
+export const CurrentOrganizationName = ({ editableInAdjustmentsMode = false }: { editableInAdjustmentsMode?: boolean }) => {
+	const currentUser = useAtomValue(currentUserAtom)!
+	const tenantId = currentUser.tenantId
+
+	const {organizationName, setOrganizationName} = useOrganizationName(tenantId)
+
 	const apiClient = useApiClient()
-	const [organizationName, setOrganizationName] = useAtom(organizationNameAtom)
-	const isCached = organizationName?.tenantId === tenantId
 
-	useEffect(() => {
-		if (isCached) {
-			return
-		}
-		apiClient.query<string>("GetOrganizationName")
-			.then(response => {
-				if (response !== undefined) {
-					setOrganizationName({ tenantId, name: response })
-				}
-			})
-	}, [tenantId])
-
-	useSignalR(message => {
-		switch (message.messageType) {
-			case "OrganizationNameUpdated": {
-				setOrganizationName({ tenantId, name: message.data as string })
-				break
-			}
-		}
+	const adjustmentsModeIsOpen = useAdjustmentsMode(() => {
+		apiClient.execute("RenameOrganization", { newName: organizationName })
 	})
 
-	return isCached ? organizationName.name : tenantId
+	return editableInAdjustmentsMode && adjustmentsModeIsOpen
+		? <input type="text" className="organization-name-input" value={organizationName} onChange={e => setOrganizationName(e.target.value)} />
+		: organizationName
 }
+
+
+
