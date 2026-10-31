@@ -6,18 +6,18 @@ import { faUser, faBars, faChevronDown, faRightFromBracket } from "@fortawesome/
 import classNames from "classnames"
 import { useAtomValue } from "jotai"
 import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
-import { AuthSwitch } from "./AuthSwitch"
+import { AuthSwitch } from "../Components/AuthSwitch"
+import { OrganizationName } from "../Components/OrganizationName"
 
 
 
 type Props = {
 	className?: string,
-	title?: string
 	navIsOpen: boolean,
 	dispatchLayoutCommand: (args_0: { action: "TOGGLE_NAV" } | { action: "CLOSE_NAV" } | { action: "TOGGLE_PROFILE_DROPDOWN" } | { action: "CLOSE_PROFILE_DROPDOWN" } | { action: "TOGGLE_ADJUSTMENTS_MODE" }) => void,
 	profileDropdownIsOpen: boolean,
 }
-export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, profileDropdownIsOpen }: Props) => {
+export const TopBar = ({ className, navIsOpen, dispatchLayoutCommand, profileDropdownIsOpen }: Props) => {
 	const authSettings = useAtomValue(authSettingsAtom)
 
 	return <div id="topBar" className={classNames("relative z-20", className)}>
@@ -31,11 +31,18 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, pro
 		</button>
 
 		<Link className="logo hidden sm:inline" to={RoutePaths.Index}>
-			My Personal Archive {title && ` - ${title}`}
+			My Personal Archive
 		</Link>
-		<span className="logo sm:hidden">
-			{title ?? "MPA"}
-		</span>
+		<AuthSwitch
+			authorized={currentUser =>
+				<OrganizationName tenantId={currentUser.tenantId} />
+			}
+			anonymous={
+				<span className="logo sm:hidden">
+					MPA
+				</span>
+			}
+		/>
 
 		<div className="flex-1"></div>
 
@@ -82,7 +89,9 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, pro
 						>
 							<div className="profile-dropdown-header">
 								<strong title={currentUser.username}>{currentUser.fullname}</strong>
-								<span>{currentUser.tenantId}</span>
+								<span title={currentUser.tenantId}>
+									<OrganizationName tenantId={currentUser.tenantId} />
+								</span>
 							</div>
 							<div className="hr"></div>
 							<Link role="menuitem"
@@ -119,3 +128,4 @@ export const TopBar = ({ className, title, navIsOpen, dispatchLayoutCommand, pro
 		</div>
 	</div>
 }
+

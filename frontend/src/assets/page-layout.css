@@ -1,6 +1,13 @@
 
 /* This file contains the layout for the page topbar (with dropdown) and sidebar menu */
 
+div.anonymous-layout-root {
+	@apply grid h-dvh font-sans;
+	@apply grid-rows-[56px_1fr];
+	@apply [grid-template-areas:'header'_'main'];
+}
+
+
 div.layout-root {
 	@apply grid h-dvh font-sans;
 	@apply grid-rows-[56px_1fr] grid-cols-[280px_1fr];

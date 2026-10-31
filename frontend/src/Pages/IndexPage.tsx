@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom"
 import { useAtomValue } from "jotai"
 import { RoutePaths } from "../RoutePaths"
 import { authSettingsAtom } from "../Utils/Atoms/authSettingsAtom"
 import { UserLayout } from "../Frames/UserLayout"
-import { AuthSwitch } from "../Frames/AuthSwitch"
+import { AuthSwitch } from "../Components/AuthSwitch"
+import { TopBar } from "../Frames/TopBar"
 
 
 export const IndexPage = () => {
@@ -22,14 +22,13 @@ export const IndexPage = () => {
 // Index page for signed in users
 const AuthorizedIndexPage = () => {
 	const authSettings = useAtomValue(authSettingsAtom)
-
-	return authSettings.isManaged
-		? <UserLayout>
-			<ManagedIndexPage isAnonymous={false} />
-		</UserLayout>
-		: <UserLayout>
-			<SelfHostedIndexPage isAnonymous={false} />
-		</UserLayout>
+	
+	return <UserLayout>
+		{authSettings.isManaged
+			? <ManagedIndexPage />
+			: <SelfHostedIndexPage />
+		}
+	</UserLayout>
 }
 
 
@@ -37,39 +36,33 @@ const AuthorizedIndexPage = () => {
 const AnonymousIndexPage = () => {
 	const authSettings = useAtomValue(authSettingsAtom)
 
-	return <>
-		<div className="navbar bg-base-200 shadow-sm sticky top-0 z-10">
-			<div className="flex-1 text-3xl font-bold ml-2">
-					My Personal Archive
-			</div>
-			<div className="flex-none">
-				<Link className="profile-btn"
-					id="profileBtn"
-					to={RoutePaths.SignIn}
-				>
-					<div className="btn btn-primary">
-						Sign in
-					</div>
-				</Link>
-			</div>
-		</div>
-		<div className="container mx-auto">
+	return <div className="anonymous-layout-root">
+		<TopBar
+			className="user-layout"
+			navIsOpen={false}
+			dispatchLayoutCommand={function (args_0: { action: "TOGGLE_NAV" } | { action: "CLOSE_NAV" } | { action: "TOGGLE_PROFILE_DROPDOWN" } | { action: "CLOSE_PROFILE_DROPDOWN" } | { action: "TOGGLE_ADJUSTMENTS_MODE" }): void {
+				throw new Error("Function not implemented.")
+			} }
+			profileDropdownIsOpen={false} />
+		<div className="w-full mx-auto h-full overflow-scroll">
 			{ authSettings.isManaged
-				? <ManagedIndexPage isAnonymous={true} />
-				: <SelfHostedIndexPage isAnonymous={true}/>
+				? <ManagedIndexPage />
+				: <SelfHostedIndexPage />
 			}
 		</div>
-	</>
+	</div>
 }
 
 
-const ManagedIndexPage = ({ isAnonymous }: { isAnonymous: boolean }) => {
+const ManagedIndexPage = () => {
 	return (
 		<div className="hero bg-base-200 overflow-x-clip">
 			<div className="hero-content text-left">
 				<div className="max-w-3xl mb-40">
 					<MainMessage/>
-					{ isAnonymous && <SelectManagedOrSelfHostedPage/> }
+					<AuthSwitch anonymous={
+						<SelectManagedOrSelfHostedPage/>
+					}/>
 				</div>
 			</div>
 		</div>
@@ -78,17 +71,17 @@ const ManagedIndexPage = ({ isAnonymous }: { isAnonymous: boolean }) => {
 }
 
 
-const SelfHostedIndexPage = ({ isAnonymous }: { isAnonymous: boolean }) => {
+const SelfHostedIndexPage = () => {
 	return (
 		<div className="hero bg-base-200 overflow-x-clip">
 			<div className="hero-content text-left">
 				<div className="max-w-3xl">
 					<MainMessage/>
-					{ isAnonymous &&
+					<AuthSwitch anonymous={
 						<p>
 							Contact your administrator for access.
 						</p>
-					}
+					}/>
 				</div>
 			</div>
 		</div>
@@ -136,8 +129,8 @@ const MainMessage = () => (
 
 
 		<AuthSwitch anonymous={
-			<a href="#get-started" className="btn btn-primary btn-soft mt-6">
-					Get Started
+			<a href="#get-started" className="btn btn-soft rounded-full p-4 mt-6">
+				Get Started
 			</a>
 		}/>
 
@@ -231,7 +224,7 @@ const SelectManagedOrSelfHostedPage = () => {
 						<p>
 							<b>Best for:</b> most people. Especially if you'd rather not think about servers.
 						</p>
-						<a className="btn btn-primary m-2 mt-auto" href={`${authSettings.oidcRegisterUrl}?${new URLSearchParams({ returnUrl: RoutePaths.Archive.List })}`}>
+						<a className="btn btn-primary rounded-full p-4 m-2 mt-auto" href={`${authSettings.oidcRegisterUrl}?${new URLSearchParams({ returnUrl: RoutePaths.Archive.List })}`}>
 							Create my archive
 						</a>
 					</div>
@@ -258,7 +251,7 @@ const SelectManagedOrSelfHostedPage = () => {
 						<p>
 							<b>Best for:</b> the technically comfortable, the privacy-first, and anyone who wants their family's records to outlive any company.
 						</p>
-						<a className="btn btn-soft m-2 mt-auto" href={`${authSettings.oidcRegisterUrl}?${new URLSearchParams({ returnUrl: RoutePaths.Archive.List })}`}>
+						<a className="btn btn-soft rounded-full p-4 m-2 mt-auto" href={`${authSettings.oidcRegisterUrl}?${new URLSearchParams({ returnUrl: RoutePaths.Archive.List })}`}>
 							Read the self-hosting guide
 						</a>
 					</div>
