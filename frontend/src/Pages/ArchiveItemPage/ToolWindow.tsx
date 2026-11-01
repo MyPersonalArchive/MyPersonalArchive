@@ -109,6 +109,7 @@ export const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindow
 					ocrError={capture.ocrError}
 					pageLines={capture.pageLines}
 					blobId={blobId}
+					captureField={capture.captureField}
 					lines={receipt.lines}
 					currency={receipt.currency}
 					selectedWords={capture.selectedWords}
@@ -117,6 +118,8 @@ export const ToolWindow = ({ setToolWindowIsOpen, toolWindowPosition, toolWindow
 					onAddSelection={capture.addSelection}
 					onRunOcr={capture.runOcr}
 					onClearSelection={capture.clearSelection}
+					onFocusField={capture.setCaptureField}
+					onClearField={capture.clearCaptureField}
 					onHoverSource={bbox => capture.setHighlighted({ bbox })}
 					onHoverLine={lineId => capture.setHighlighted({ lineId })}
 				/>
