@@ -4,7 +4,7 @@ import { useApiClient } from "../../../Utils/Hooks/useApiClient"
 import { invalidateBlobOcr, useBlobOcr } from "../../../Utils/Hooks/useBlobOcr"
 import { enqueueOcr, getOcrResult, subscribeOcrProgress } from "../../../Utils/OCR/ocrQueue"
 import { OCR_ENGINE_VERSION, OCR_LANGUAGES, recognizeImage } from "../../../Utils/OCR/tesseractWorker"
-import { getPageLines, isSameBbox, splitAmount, unionBbox } from "../../../Utils/OCR/ocrGeometry"
+import { getPageLines, isSameBbox, parseAmount, splitAmount, unionBbox } from "../../../Utils/OCR/ocrGeometry"
 import type { OcrBbox, OcrLine, OcrWord } from "../../../Utils/OCR/ocrGeometry"
 import type { OcrUpload } from "../../../Utils/OCR/types"
 import type { ReceiptCommand, ReceiptLine, ReceiptLineSource } from "../../../Components/MetadataTypes/ReceiptMetadataType"
@@ -27,6 +27,15 @@ type OcrJob = {
 	error?: string
 }
 
+/**
+ * A receipt line input that image text is being filled into, so a line whose amount ended up in a
+ * separate OCR box can be completed without typing.
+ */
+export type CaptureField = {
+	index: number
+	field: "description" | "amount"
+}
+
 
 export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, enabled: boolean = true, url?: string) => {
 	const apiClient = useApiClient()
@@ -35,6 +44,7 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 	const [refreshKey, setRefreshKey] = useState(0)
 	const [ocrJob, setOcrJob] = useState<OcrJob>({ running: false, progress: 0 })
 	const [localOcr, setLocalOcr] = useState<{ file: File, upload?: OcrUpload }>()
+	const [captureField, setCaptureField] = useState<CaptureField>()
 
 	const blobId = "id" in blob.identifier ? blob.identifier.id : undefined
 	const fileName = "fileName" in blob.identifier ? blob.identifier.fileName : undefined
@@ -106,7 +116,40 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 
 	const clearSelection = () => setSelection({ key: blobKey, words: [] })
 
+	const clearCaptureField = () => setCaptureField(undefined)
+
+	// Fills the focused receipt input with text from the image instead of adding a line. Returns
+	// false when no input is waiting for text.
+	const insertIntoField = (text: string) => {
+		if (!captureField || captureField.index >= receipt.lines.length) {
+			return false
+		}
+
+		const { index, field } = captureField
+		setCaptureField(undefined)
+
+		if (field === "amount") {
+			receipt.dispatch({
+				action: "UPDATE_RECEIPTLINE_AMOUNT",
+				index,
+				amount: parseAmount(text) || text.trim()
+			})
+		} else {
+			receipt.dispatch({
+				action: "UPDATE_RECEIPTLINE_DESCRIPTION",
+				index,
+				description: text.trim()
+			})
+		}
+
+		return true
+	}
+
 	const toggleWord = (word: OcrWord) => {
+		if (insertIntoField(word.text)) {
+			return
+		}
+
 		setSelection(current => {
 			const words = current.key === blobKey ? current.words : []
 			return {
@@ -149,6 +192,13 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 	}
 
 	const addDetectedLine = (line: OcrLine) => {
+		const captured = splitAmount(line.text)
+
+		if (captureField) {
+			insertIntoField(captureField.field === "amount" ? captured.amount || line.text : captured.text)
+			return
+		}
+
 		addCapturedLine(line.text, line.bbox, line.confidence)
 	}
 
@@ -231,6 +281,9 @@ export const useReceiptCapture = (blob: CommonBlob, receipt: ReceiptCaptureApi, 
 		ocrProgress: ocrJob.progress,
 		ocrError: ocrJob.error,
 		pageLines,
+		captureField,
+		setCaptureField,
+		clearCaptureField,
 		selectedWords,
 		highlightedLineId,
 		highlightedBbox,

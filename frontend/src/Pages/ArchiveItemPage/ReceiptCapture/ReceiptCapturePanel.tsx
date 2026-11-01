@@ -5,6 +5,7 @@ import { faArrowRotateRight, faPlus, faTrash } from "@fortawesome/free-solid-svg
 import type { ReceiptCommand, ReceiptLine } from "../../../Components/MetadataTypes/ReceiptMetadataType"
 import { hasLowConfidence } from "../../../Utils/OCR/ocrGeometry"
 import type { OcrBbox, OcrLine, OcrPageLines, OcrWord } from "../../../Utils/OCR/ocrGeometry"
+import type { CaptureField } from "./useReceiptCapture"
 
 
 export type ReceiptCapturePanelProps = {
@@ -14,6 +15,7 @@ export type ReceiptCapturePanelProps = {
 	ocrError?: string
 	pageLines?: OcrPageLines
 	blobId?: string
+	captureField?: CaptureField
 	lines: ReceiptLine[]
 	currency: string
 	selectedWords: OcrWord[]
@@ -22,6 +24,8 @@ export type ReceiptCapturePanelProps = {
 	onAddSelection: () => void
 	onRunOcr: () => void
 	onClearSelection: () => void
+	onFocusField: (field: CaptureField) => void
+	onClearField: () => void
 	onHoverSource: (bbox: OcrBbox | null) => void
 	onHoverLine: (lineId: string | null) => void
 }
@@ -34,6 +38,7 @@ export const ReceiptCapturePanel = ({
 	ocrError,
 	pageLines,
 	blobId,
+	captureField,
 	lines,
 	currency,
 	selectedWords,
@@ -42,19 +47,25 @@ export const ReceiptCapturePanel = ({
 	onAddSelection,
 	onRunOcr,
 	onClearSelection,
+	onFocusField,
+	onClearField,
 	onHoverSource,
 	onHoverLine
 }: ReceiptCapturePanelProps) => {
 	const [tab, setTab] = useState<"lines" | "text">("lines")
 	const amountRefs = useRef<(HTMLInputElement | null)[]>([])
 	const previousLineCount = useRef(lines.length)
+	const programmaticFocus = useRef(false)
 
 	// A captured line is added from the image, so focus its amount right away to make a bad
 	// parse a single keystroke away.
 	useEffect(() => {
 		if (lines.length > previousLineCount.current) {
 			const amount = amountRefs.current[lines.length - 1]
+			// Focus without arming "fill this field from the image": the user did not pick it.
+			programmaticFocus.current = true
 			amount?.focus()
+			programmaticFocus.current = false
 			amount?.select()
 		}
 		previousLineCount.current = lines.length
@@ -66,7 +77,13 @@ export const ReceiptCapturePanel = ({
 	const canRunOcr = !ocrRunning && ocrStatus !== "loading"
 
 	return (
-		<div className="flex flex-col gap-2 flex-1 min-h-0">
+		<div className="flex flex-col gap-2 flex-1 min-h-0"
+			onPointerDown={event => {
+				if (!(event.target as HTMLElement).closest("[data-capture-field]")) {
+					onClearField()
+				}
+			}}
+		>
 			<div role="tablist" className="tabs tabs-border tabs-xs">
 				<button type="button" role="tab"
 					className={classNames("tab", tab === "lines" && "tab-active")}
@@ -81,6 +98,15 @@ export const ReceiptCapturePanel = ({
 					Detected text
 				</button>
 			</div>
+
+			{captureField &&
+				<div className="rounded border border-primary/40 bg-primary/10 px-2 py-1 flex items-center justify-between gap-2">
+					<span className="text-[10px]">
+						Click text in the image to fill <strong>{captureField.field === "amount" ? "Amount" : "Description"}</strong> on line {captureField.index + 1}
+					</span>
+					<button type="button" className="btn btn-xs btn-ghost" title="Stop filling" onClick={onClearField}>&times;</button>
+				</div>
+			}
 
 			{ocrRunning &&
 				<div className="flex flex-col gap-1">
@@ -162,7 +188,10 @@ export const ReceiptCapturePanel = ({
 									<input
 										className="input input-xs flex-1"
 										placeholder="Description"
+										data-capture-field="description"
 										value={line.description}
+										onPointerDown={() => onFocusField({ index, field: "description" })}
+										onFocus={() => onFocusField({ index, field: "description" })}
 										onChange={event => dispatch({ action: "UPDATE_RECEIPTLINE_DESCRIPTION", index, description: event.target.value })}
 									/>
 									{source &&
@@ -183,7 +212,15 @@ export const ReceiptCapturePanel = ({
 										className="input input-xs w-24"
 										placeholder="Amount"
 										inputMode="decimal"
+										data-capture-field="amount"
 										value={line.amount}
+										onPointerDown={() => onFocusField({ index, field: "amount" })}
+										onFocus={() => {
+											if (programmaticFocus.current) {
+												return
+											}
+											onFocusField({ index, field: "amount" })
+										}}
 										onChange={event => dispatch({ action: "UPDATE_RECEIPTLINE_AMOUNT", index, amount: event.target.value })}
 									/>
 									<span className="text-xs opacity-60">{currency}</span>
