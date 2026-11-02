@@ -16,8 +16,10 @@
 
 	<ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
 		<!-- The container images provide libvips built from source (see docker/build-libvips.sh). This
-		     supplies the native binaries when running on a Windows host, with a version aligned with the
-		     containers. Linux builds (e.g. the Docker image) are unaffected by this condition. -->
+		     supplies native binaries as a convenience when developing on a Windows host only. It is the
+		     reduced "web" variant of libvips and lacks several loaders enabled in the containers, notably
+		     PDF (poppler) and HEIC (libde265/x265), so PDF previews are unavailable on Windows.
+		     Linux builds (e.g. the Docker image) are unaffected by this condition. -->
 		<PackageReference Include="NetVips.Native.win-x64" Version="8.13.2" />
 	</ItemGroup>
 
