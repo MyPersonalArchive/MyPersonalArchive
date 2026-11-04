@@ -131,7 +131,7 @@ export const BlobListPage = () => {
 				open={openDeleteAllSelectedDialog}
 				prompt="Are you sure you want to delete all selected uploads?"
 				onClose={() => setOpenDeleteAllSelectedDialog(false)}
-				onConfirm={onDeleteVisibleSelectedBlobs}
+				onConfirm={() => { onDeleteVisibleSelectedBlobs(); setOpenDeleteAllSelectedDialog(false) }}
 			/>
 		</>
 	)

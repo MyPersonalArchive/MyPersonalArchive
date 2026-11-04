@@ -99,9 +99,7 @@ export const BlobRow = ({ blob, onCreateArchiveItem, onDeleteBlob, maximize, sel
 				open={openDeleteThisDialog}
 				prompt="Are you sure you want to delete this upload?"
 				onClose={() => setOpenDeleteThisDialog(false)}
-				onConfirm={() => {
-					onDeleteBlob(blob.id)
-				}}
+				onConfirm={() => {onDeleteBlob(blob.id); setOpenDeleteThisDialog(false) }}
 			/>
 
 		</div>

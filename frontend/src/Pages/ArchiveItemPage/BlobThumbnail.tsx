@@ -52,9 +52,7 @@ export const BlobThumbnail = ({ blob, ocrPending, maximize, onRemoveBlob }: Prop
 				open={openDeleteThisDialog}
 				prompt="Are you sure you want to remove this upload?"
 				onClose={() => setOpenDeleteThisDialog(false)}
-				onConfirm={() => {
-					onRemoveBlob(blob)
-				}}
+				onConfirm={() => { onRemoveBlob(blob); setOpenDeleteThisDialog(false) }}
 			/>
 		</div>)
 }

@@ -97,9 +97,7 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 				open={openDeleteThisDialog}
 				prompt="Are you sure you want to remove this upload?"
 				onClose={() => setOpenDeleteThisDialog(false)}
-				onConfirm={() => {
-					onRemoveBlob(blob)
-				}}
+				onConfirm={() => { onRemoveBlob(blob); setOpenDeleteThisDialog(false) }}
 			/>
 
 		</LightBox>

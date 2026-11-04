@@ -321,7 +321,7 @@ export const ArchiveItemPage = ({ isNewArchiveItem }: Props) => {
 						open={openDeleteDialog}
 						prompt="Are you sure you want to remove this item?"
 						onClose={() => setOpenDeleteDialog(false)}
-						onConfirm={onDeleteArchiveItem}
+						onConfirm={() => { onDeleteArchiveItem(); setOpenDeleteDialog(false) }}
 					/>
 
 					<BlobSelectionDialog
