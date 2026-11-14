@@ -358,8 +358,8 @@ public class DispatchController : ControllerBase
 		isConfigurationError = false;
 
 		var currentAttributes = queryOrCommandType.GetCustomAttributes(typeof(IRequirement), true).Cast<IRequirement>();
-		//Mandatory attribute "types": authentication requirement, permission requirement, etc.
-		//Optional attribute "types": tenant requirement, feature flag requirement, etc.
+		//Mandatory attribute "types": authentication requirement, role requirement, tenant requirement, permission requirement, etc.
+		//Optional attribute "types": feature flag requirement, specific header requirement, etc.
 
 		var requiredAttributes = new[] { typeof(RequireAuthenticationAttribute) };
 		var missingRequiredAttributes = requiredAttributes
