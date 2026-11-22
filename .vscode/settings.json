@@ -37,5 +37,6 @@
 		"tab.activeForeground": "#ffffff",
 		"tab.inactiveBackground": "#FFFFFF22",
 		"tab.inactiveForeground": "#95a5a6"
-	}
+	},
+	"dotnet.defaultSolution": "MyPersonalArchive.slnx"
 }

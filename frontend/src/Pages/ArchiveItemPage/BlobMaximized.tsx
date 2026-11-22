@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { LightBox } from "../../Components/LightBox"
 import { BaseViewer } from "../../Components/Viewers/BaseViewer"
 import { useAtom } from "jotai"
@@ -16,6 +16,7 @@ import { OCR_MIME_TYPES } from "../../Utils/OCR/tesseractWorker"
 import { OcrImageView } from "./ReceiptCapture/OcrImageView"
 import { useReceiptCapture } from "./ReceiptCapture/useReceiptCapture"
 import type { ReceiptCaptureApi } from "./ReceiptCapture/useReceiptCapture"
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch"
 
 
 export type Props = {
@@ -34,6 +35,20 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 	const [toolWindowSize, setToolWindowSize] = useState<Size>({ width: 400, height: 520 })
 	const [selectedTab, setSelectedTab] = useState<ToolWindowTab>()
 	const [openDeleteThisDialog, setOpenDeleteThisDialog] = useState(false)
+
+	useEffect(() => {
+		const block = (e: Event) => {
+			if ((e.target as Element).closest(".photo-zoom")) return
+			if (e instanceof WheelEvent && !e.ctrlKey) return
+			e.preventDefault()
+		}
+		document.addEventListener("wheel", block, { passive: false })
+		document.addEventListener("gesturestart", block)
+		return () => {
+			document.removeEventListener("wheel", block)
+			document.removeEventListener("gesturestart", block)
+		}
+	}, [])
 
 	const blobId = "id" in blob.identifier ? blob.identifier.id : undefined
 	const isOcrImage = OCR_MIME_TYPES.includes(blob.mimeType)
@@ -54,10 +69,21 @@ export const BlobMaximized = ({ blob, minimize, canMovePrevious, canMoveNext, mo
 			closeOnEscape={!toolWindowIsOpen}
 		>
 			<div className="w-full h-full flex justify-center action-bar-host">
-				{toolWindowIsOpen && isOcrImage && activeTab === "receipt"
-					? <OcrImageView url={url} capture={capture} />
-					: <BaseViewer url={url} mimeType={blob.mimeType} />
-				}
+				<TransformWrapper
+					minScale={1}
+					maxScale={5}
+					doubleClick={{ mode: "toggle" }}
+					// Plain scroll pans the image; Ctrl/Cmd+scroll or trackpad pinch zooms
+					wheel={{ activationKeys: (keys) => keys.includes("Control") || keys.includes("Meta") }}
+					trackPadPanning={{ disabled: false }}
+				>
+					<TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full">
+						{toolWindowIsOpen && isOcrImage && activeTab === "receipt"
+							? <OcrImageView url={url} capture={capture} />
+							: <BaseViewer url={url} mimeType={blob.mimeType} />
+						}
+					</TransformComponent>
+				</TransformWrapper>
 				{toolWindowIsOpen &&
 					<ToolWindow
 						canMoveNext={canMoveNext}
