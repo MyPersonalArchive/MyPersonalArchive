@@ -15,12 +15,15 @@ public class ServiceDiscovery
 		_logger = logger;
 	}
 
-	public ServiceDiscovery RegisterServices(IEnumerable<Assembly> assemblies)
+
+	public ServiceDiscovery RegisterServices(params IEnumerable<Assembly> assemblies) => RegisterServices(assemblies.ToHashSet());
+
+
+	public ServiceDiscovery RegisterServices(HashSet<Assembly> assemblySet)
 	{
-		_logger.LogInformation($"Discovering services with RegisterServiceAttribute in assemblies [{string.Join(", ", assemblies.Select(a => a.FullName))}]");
+		_logger.LogInformation($"Discovering services with RegisterServiceAttribute in assemblies [{string.Join(", ", assemblySet.Select(a => a.FullName))}]");
 
-
-		var serviceTypes = assemblies
+		var serviceTypes = assemblySet
 			.SelectMany(assembly => assembly.GetTypes())
 			.Where(t => t.GetCustomAttributes<RegisterServiceAttribute>().Any());
 
@@ -29,7 +32,10 @@ public class ServiceDiscovery
 			var attribute = serviceType.GetCustomAttribute<RegisterServiceAttribute>();
 			if (attribute == null) continue;
 
-			var interfacetypes = serviceType.GetInterfaces();
+			// Only application interfaces (declared in the scanned assemblies), skipping framework interfaces like IDisposable
+			var interfacetypes = serviceType.GetInterfaces()
+				.Where(i => assemblySet.Contains(i.Assembly))
+				.ToArray();
 
 			if (attribute.Mode == RegistrationMode.Auto)
 			{

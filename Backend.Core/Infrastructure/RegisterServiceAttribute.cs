@@ -19,8 +19,9 @@ public class RegisterServiceAttribute : Attribute
 public enum RegistrationMode
 {
 	/// <summary>
-	/// Automatically determine whether to register the class as itself or its interfaces based on whether it implements any interfaces.
-	/// If it implements interfaces, register as those interfaces; otherwise, register as itself.
+	/// Automatically determine whether to register the class as itself or its interfaces based on whether it implements any application interfaces.
+	/// If it implements application interfaces, register as those interfaces; otherwise, register as itself.
+	/// Application interfaces are those declared in the scanned assemblies; framework interfaces like IDisposable are ignored.
 	/// </summary>
 	Auto = 0b00,
 
@@ -30,13 +31,13 @@ public enum RegistrationMode
 	RegisterAsSelf = 0b01,
 
 	/// <summary>
-	/// Register the class as its interfaces, if it implements any.
-	/// If it does not implement any interfaces, the class will NOT be registered.
+	/// Register the class as its application interfaces, if it implements any.
+	/// If it does not implement any application interfaces, the class will NOT be registered.
 	/// </summary>
 	RegisterInterfaces = 0b10,
 
 	/// <summary>
-	/// Register the class as both itself and its interfaces, if it implements any interfaces.
+	/// Register the class as both itself and its application interfaces, if it implements any.
 	/// </summary>
 	RegisterAsBoth = RegisterAsSelf | RegisterInterfaces
 }
