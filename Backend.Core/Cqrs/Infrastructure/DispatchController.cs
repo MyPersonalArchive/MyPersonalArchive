@@ -42,13 +42,9 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(queryType, out var isAuthenticationFailure, out var isConfigurationError);
+		var failureReasons = CheckRequirements(queryType, out var isAuthenticationFailure);
 		if (failureReasons.Count != 0)
 		{
-			if (isConfigurationError)
-			{
-				return StatusCode(500, string.Join("; ", failureReasons));
-			}
 			if (isAuthenticationFailure)
 			{
 				return Unauthorized(string.Join("; ", failureReasons));
@@ -110,13 +106,9 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetQueryHandlerInterface(queryName, queryHandlerType);
 		var queryType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(queryType, out var isAuthenticationFailure, out var isConfigurationError);
+		var failureReasons = CheckRequirements(queryType, out var isAuthenticationFailure);
 		if (failureReasons.Count != 0)
 		{
-			if (isConfigurationError)
-			{
-				return StatusCode(500, string.Join("; ", failureReasons));
-			}
 			if (isAuthenticationFailure)
 			{
 				return Unauthorized(string.Join("; ", failureReasons));
@@ -178,13 +170,9 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure, out var isConfigurationError);
+		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure);
 		if (failureReasons.Count != 0)
 		{
-			if (isConfigurationError)
-			{
-				return StatusCode(500, string.Join("; ", failureReasons));
-			}
 			if (isAuthenticationFailure)
 			{
 				return Unauthorized(string.Join("; ", failureReasons));
@@ -240,13 +228,9 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure, out var isConfigurationError);
+		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure);
 		if (failureReasons.Count != 0)
 		{
-			if (isConfigurationError)
-			{
-				return StatusCode(500, string.Join("; ", failureReasons));
-			}
 			if (isAuthenticationFailure)
 			{
 				return Unauthorized(string.Join("; ", failureReasons));
@@ -302,13 +286,9 @@ public class DispatchController : ControllerBase
 		var handlerInterface = GetCommandHandlerInterface(commandName, commandHandlerType);
 		var commandType = handlerInterface.GetGenericArguments()[0];
 
-		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure, out var isConfigurationError);
+		var failureReasons = CheckRequirements(commandType, out var isAuthenticationFailure);
 		if (failureReasons.Count != 0)
 		{
-			if (isConfigurationError)
-			{
-				return StatusCode(500, string.Join("; ", failureReasons));
-			}
 			if (isAuthenticationFailure)
 			{
 				return Unauthorized(string.Join("; ", failureReasons));
@@ -350,10 +330,9 @@ public class DispatchController : ControllerBase
 		}
 	}
 
-	private ICollection<string> CheckRequirements(Type queryOrCommandType, out bool isAuthenticationFailure, out bool isConfigurationError)
+	private ICollection<string> CheckRequirements(Type queryOrCommandType, out bool isAuthenticationFailure)
 	{
 		isAuthenticationFailure = false;
-		isConfigurationError = false;
 
 		var currentAttributes = queryOrCommandType.GetCustomAttributes(typeof(IRequirement), true).Cast<IRequirement>();
 		//Mandatory attribute "types": authentication requirement, role requirement, tenant requirement, permission requirement, etc.
@@ -373,8 +352,7 @@ public class DispatchController : ControllerBase
 			// The developer forgot to annotate this query/command type with a security requirement
 			// attribute (e.g. [RequireAuthentication], [RequireOrganizationId], [NoRequirement]) - this
 			// is a server-side misconfiguration, not something the caller did wrong.
-			isConfigurationError = true;
-			return [$"Missing required requirement attributes: {string.Join(", ", missingRequiredAttributes.Select(t => t.Name))}"];
+			throw new InvalidOperationException($"{queryOrCommandType.FullName} is missing required requirement attributes: {string.Join(", ", missingRequiredAttributes.Select(t => t.Name))}");
 		}
 
 		var failureReasons = new List<string>();
