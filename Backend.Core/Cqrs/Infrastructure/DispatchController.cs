@@ -60,8 +60,7 @@ public class DispatchController : ControllerBase
 		var handleMethod = queryHandlerType.GetMethod("Handle", [queryType])!;
 
 		// Create query instance and map parameters
-		var query = Activator.CreateInstance(queryType);
-		MapParametersToObject(query!, parameters);
+		var query = DeserializeQueryString(queryType, parameters);
 
 		try
 		{
@@ -321,8 +320,7 @@ public class DispatchController : ControllerBase
 		var handleMethod = commandHandlerType.GetMethod("Handle", [commandType])!;
 
 		// Create query instance and map parameters
-		var command = Activator.CreateInstance(commandType);
-		MapParametersToObject(command!, parameters);
+		var command = DeserializeQueryString(commandType, parameters);
 
 		try
 		{
@@ -443,10 +441,9 @@ public class DispatchController : ControllerBase
 	}
 
 
-
-
-	private void MapParametersToObject(object target, Dictionary<string, string> parameters)
+	private object DeserializeQueryString(Type queryType, Dictionary<string, string> parameters)
 	{
+		var target = Activator.CreateInstance(queryType) ?? throw new InvalidOperationException($"Unable to create instance of type {queryType.FullName}");
 		var targetType = target.GetType();
 
 		foreach (var param in parameters)
@@ -470,5 +467,7 @@ public class DispatchController : ControllerBase
 				}
 			}
 		}
+
+		return target!;
 	}
 }
