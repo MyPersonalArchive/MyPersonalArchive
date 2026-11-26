@@ -31,13 +31,16 @@ public enum RegistrationMode
 	RegisterAsSelf = 0b01,
 
 	/// <summary>
-	/// Register the class as its application interfaces, if it implements any.
+	/// Register the class as each of its application interfaces (see <see cref="Auto"/>), but not as itself.
+	/// Each interface is a separate registration, so a class implementing several interfaces gets a separate
+	/// instance per interface, even for singleton and scoped lifetimes. Use <see cref="RegisterAsBoth"/> to share one instance.
 	/// If it does not implement any application interfaces, the class will NOT be registered.
 	/// </summary>
 	RegisterInterfaces = 0b10,
 
 	/// <summary>
 	/// Register the class as both itself and its application interfaces, if it implements any.
+	/// The interfaces resolve through the self registration, so they share the same instance within the lifetime.
 	/// </summary>
 	RegisterAsBoth = RegisterAsSelf | RegisterInterfaces
 }

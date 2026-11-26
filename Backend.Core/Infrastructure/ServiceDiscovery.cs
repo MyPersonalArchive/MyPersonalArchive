@@ -57,7 +57,7 @@ public class ServiceDiscovery
 
 				if (attribute.Mode.HasFlag(RegistrationMode.RegisterInterfaces))
 				{
-					RegisterInterfaces(serviceType, attribute, interfacetypes);
+					RegisterInterfaces(serviceType, attribute, interfacetypes, forwardToSelf: attribute.Mode == RegistrationMode.RegisterAsBoth);
 				}
 			}
 		}
@@ -65,13 +65,21 @@ public class ServiceDiscovery
 		return this;
 	}
 
-	private void RegisterInterfaces(Type serviceType, RegisterServiceAttribute attribute, Type[] interfacetypes)
+	private void RegisterInterfaces(Type serviceType, RegisterServiceAttribute attribute, Type[] interfacetypes, bool forwardToSelf = false)
 	{
 		// Register each interface implemented by the class
 		_logger.LogInformation($"Registering service {serviceType.FullName} with interfaces [{string.Join(", ", interfacetypes.Select(i => i.FullName))}] and lifetime {attribute.Lifetime} in assembly {serviceType.Assembly.FullName}");
 		foreach (var interfaceType in interfacetypes)
 		{
-			RegisterService(interfaceType, serviceType, attribute.Lifetime);
+			if (forwardToSelf)
+			{
+				// Resolve the interface through the self registration, so they share the same instance within the lifetime
+				_services.Add(new ServiceDescriptor(interfaceType, sp => sp.GetRequiredService(serviceType), attribute.Lifetime));
+			}
+			else
+			{
+				RegisterService(interfaceType, serviceType, attribute.Lifetime);
+			}
 		}
 	}
 
