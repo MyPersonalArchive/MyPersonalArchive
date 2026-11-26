@@ -1,4 +1,5 @@
 using Backend.Core.Cqrs.Infrastructure;
+using Backend.Core.Cqrs.Infrastructure.Requirements;
 
 namespace Backend.Mpa.EmailIngestion.Cqrs;
 

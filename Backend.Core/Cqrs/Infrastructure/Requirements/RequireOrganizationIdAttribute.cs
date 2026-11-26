@@ -1,22 +1,16 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 
-namespace Backend.Core.Cqrs.Infrastructure;
+namespace Backend.Core.Cqrs.Infrastructure.Requirements;
 
 /// <summary>
-/// Requires that the user has at least one of roles specified in the Roles property.
+/// Requires Organization claim to be present.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-public class RequireRoleAttribute : RequireAuthenticationAttribute, IRequirement
+public class RequireOrganizationIdAttribute : RequireAuthenticationAttribute, IRequirement
 {
-	public string[] Roles { get; }
-
-	public RequireRoleAttribute(params string[] roles)
-	{
-		Roles = roles;
-	}
-
 	public override bool TryCheck(HttpContext httpContext, ILogger logger, out string? failureReason)
 	{
 		// First, check authentication
@@ -25,17 +19,17 @@ public class RequireRoleAttribute : RequireAuthenticationAttribute, IRequirement
 			return false;
 		}
 		
-		// Check if user is authenticated and has the role claim
+		// Check if user is authenticated and has the organization claim
 		var user = httpContext.User;
 		if (user.Identity?.IsAuthenticated ?? false)
 		{
 			var username = user.Identity?.Name;
 
-			bool hasRole = Roles.Any(role => httpContext.User.IsInRole(role));
-			if (!hasRole)
+			string? organizationClaim = httpContext.User.FindFirstValue("organization");
+			if (string.IsNullOrWhiteSpace(organizationClaim))
 			{
-				failureReason = "User does not have the required role";
-				logger.LogWarning("User {Username} does not have the required role", username);
+				failureReason = "User does not have an organization claim or it is empty";
+				logger.LogWarning("User {Username} has an empty organization claim", username);
 				return false;
 			}
 

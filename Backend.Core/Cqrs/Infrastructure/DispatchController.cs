@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Backend.Core.Cqrs.Infrastructure;
+using Backend.Core.Cqrs.Infrastructure.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;

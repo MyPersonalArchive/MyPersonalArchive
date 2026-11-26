@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 
 
-namespace Backend.Core.Cqrs.Infrastructure;
+namespace Backend.Core.Cqrs.Infrastructure.Requirements;
 
 /// <summary>
 /// Requires the user to be authenticated to execute the query or command.

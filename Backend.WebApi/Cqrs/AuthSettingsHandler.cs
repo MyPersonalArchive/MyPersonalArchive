@@ -1,11 +1,12 @@
 using System.Security.Claims;
 using Backend.Core.Cqrs.Infrastructure;
+using Backend.Core.Cqrs.Infrastructure.Requirements;
 using Backend.WebApi.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Backend.WebApi.Cqrs;
 
-[NoRequirement]
+[AuthenticationNotRequired]
 public class GetAuthSettings : IQuery<GetAuthSettings, GetAuthSettings.Response>
 {
 	// no properties needed for this query, as it retrieves authentication settings
